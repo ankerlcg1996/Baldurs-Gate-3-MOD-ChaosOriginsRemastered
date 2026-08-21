@@ -36,6 +36,7 @@ local function validateCharacter(record, characterId)
     validateBooleanMap(record.Granted.Passives, "passive grant ledger")
     validateBooleanMap(record.Granted.Spells, "spell grant ledger")
 
+    -- 保留 1.0.07 的奖励字段只为兼容旧存档；新版本不再读写或补发这些物品。
     assert(type(record.RewardItems) == "table",
         "ChaosOriginsRemastered: reward ledger must be a table " .. characterId)
     for template, object in pairs(record.RewardItems) do

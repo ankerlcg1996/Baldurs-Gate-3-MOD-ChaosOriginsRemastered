@@ -139,7 +139,7 @@ foreach ($value in @($moduleUuid, $originUuid)) {
 $luaRoot = Split-Path $bootstrapPath -Parent
 $expectedLuaFiles = @(
     'BaseFeatures.lua', 'BootstrapServer.lua', 'ChaosCharacter.lua',
-    'ChaosState.lua', 'GrantLedger.lua', 'StarterRewards.lua'
+    'ChaosState.lua', 'GrantLedger.lua'
 ) | Sort-Object
 $actualLuaFiles = @(Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua' | ForEach-Object Name) | Sort-Object
 Require (-not (Compare-Object $actualLuaFiles $expectedLuaFiles)) 'Server Lua module list is invalid'
@@ -180,14 +180,8 @@ foreach ($token in @('VERIFY_TIMEOUT_MS = 2000', 'scheduleVerification', 'GrantL
 foreach ($token in @('LEVEL_12_TOTAL_EXPERIENCE = 100000', 'Osi.AddExplorationExperience')) {
     Require ($bootstrap.Contains($token)) "Level-12 test experience behavior is missing: $token"
 }
-$rewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'StarterRewards.lua') -Encoding UTF8
-foreach ($token in @('TemplateAddedTo', 'TemplateAddTo', 'RewardItems', 'Osi.Equip', 'Osi.IsEquipped',
-    'created reward identity mismatch')) {
-    Require ($rewardsLua.Contains($token)) "Starter reward behavior is missing: $token"
-}
-Require ($bootstrap.Contains('runIndependent("base features"') -and
-    $bootstrap.Contains('runIndependent("starter rewards"')) `
-    'Base features and starter rewards must synchronize independently'
+Require (-not $bootstrap.Contains('StarterRewards')) `
+    'Bootstrap must not load the removed Digital Deluxe reward module'
 
 $officialSharedStats = Join-Path $ProjectRoot 'work\official-validation\Shared'
 $officialGustavXStats = Join-Path $ProjectRoot 'work\official-validation\GustavX'
@@ -204,24 +198,22 @@ $boomingHit = Get-ChildItem -LiteralPath $officialGustavXStats -Recurse -File -F
     Select-String -SimpleMatch 'new entry "Target_BoomingBlade_ClassSpell"' | Select-Object -First 1
 Require ($null -ne $boomingHit) 'Official GustavX Booming Blade stat is missing'
 
-$officialTemplates = Join-Path $ProjectRoot 'work\official-validation\Gustav\Public\GustavDev\RootTemplates\_merged.lsf.lsx'
-Require (Test-Path -LiteralPath $officialTemplates -PathType Leaf) `
-    "Extracted official root templates are missing: $officialTemplates"
-$templateText = Get-Content -Raw -LiteralPath $officialTemplates -Encoding UTF8
-foreach ($templateId in @(
+$removedDeluxeTemplates = @(
     '5d66776d-0650-4512-b300-b2ac38e2be3a',
     '8a1f5dc0-3f13-47ed-b238-50fdcaa2f680',
     '0ae83daa-1096-4b38-9b8c-fc610a9306aa'
-)) {
-    Require ($templateText.Contains("value=`"$templateId`"")) "Official reward template is missing: $templateId"
-    Require ($rewardsLua.Contains('"' + $templateId + '"')) "Starter reward template is missing from Lua: $templateId"
+)
+foreach ($templateId in $removedDeluxeTemplates) {
+    $sourceHit = Get-ChildItem -LiteralPath $source -Recurse -File |
+        Select-String -SimpleMatch $templateId | Select-Object -First 1
+    Require ($null -eq $sourceHit) "Removed Digital Deluxe template remains in source: $templateId"
 }
 
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 15 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 15) `
-    'package-files.json must contain exactly 15 unique paths'
+Require ($declaredPackageFiles.Count -eq 14 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 14) `
+    'package-files.json must contain exactly 14 unique paths'
 foreach ($luaName in $expectedLuaFiles) {
     Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
         "Package manifest omits Lua module: $luaName"

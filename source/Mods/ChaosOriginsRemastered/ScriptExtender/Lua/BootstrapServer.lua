@@ -4,7 +4,6 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 local State = Ext.Require("ChaosState.lua")
 local GrantLedger = Ext.Require("GrantLedger.lua")
 local BaseFeatures = Ext.Require("BaseFeatures.lua")
-local StarterRewards = Ext.Require("StarterRewards.lua")
 local LEVEL_12_TOTAL_EXPERIENCE = 100000
 
 State.Register()
@@ -23,19 +22,8 @@ local function syncCharacter(character)
     syncing[character] = true
     local ok, failure = xpcall(function()
         local record = State.GetCharacter(character)
-        local failures = {}
-        local function runIndependent(label, callback)
-            local succeeded, reason = xpcall(callback, debug.traceback)
-            if not succeeded then failures[#failures + 1] = label .. ": " .. reason end
-        end
-
-        -- 基础能力与奖励互不阻断，任一模块失败时另一模块仍能完成自己的同步。
-        runIndependent("base features", function() BaseFeatures.Sync(character, record) end)
-        runIndependent("starter rewards", function() StarterRewards.Sync(character, record) end)
-        if #failures > 0 then
-            error("ChaosOriginsRemastered: character sync failed " .. character
-                .. "\n" .. table.concat(failures, "\n"))
-        end
+        -- 豪华版物品属于官方 DLC，混沌起源只同步自身的基础能力。
+        BaseFeatures.Sync(character, record)
     end, debug.traceback)
     syncing[character] = nil
     if not ok then error(failure) end
@@ -90,7 +78,6 @@ Ext.Events.SessionLoaded:Subscribe(function()
     syncing = {}
     scheduled = {}
     GrantLedger.ResetRuntime()
-    StarterRewards.ResetRuntime()
 end)
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function()
