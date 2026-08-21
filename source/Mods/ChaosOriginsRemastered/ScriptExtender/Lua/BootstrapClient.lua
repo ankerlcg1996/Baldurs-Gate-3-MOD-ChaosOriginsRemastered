@@ -171,9 +171,6 @@ end)
 
 Ext.ModEvents.BG3MCM.MCM_Window_Closed:Subscribe(function()
     mcmOpen = false
-    uiGeneration = uiGeneration + 1
-    controls = { Origins = {}, Mechanics = {}, WoundEffects = {} }
-    statusText = nil
 end)
 
 MCM.InsertModMenuTab(loc(Protocol.Text.Tab), render, MODULE_UUID, true)

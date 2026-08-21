@@ -536,6 +536,12 @@ foreach ($token in @('SetRequestHandler', 'request.CharacterId ~= snapshot.Chara
 }
 Require (-not $mcmClient.Contains('MCM_Window_Ready')) `
     'MCM Ready event must not invalidate controls rendered during the same window build'
+$mcmCloseBlock = [regex]::Match($mcmClient,
+    '(?s)MCM_Window_Closed:Subscribe\(function\(\).*?end\)').Value
+Require ($mcmCloseBlock -ne '' -and $mcmCloseBlock.Contains('mcmOpen = false') `
+    -and -not $mcmCloseBlock.Contains('uiGeneration = uiGeneration + 1') `
+    -and -not $mcmCloseBlock.Contains('controls =')) `
+    'Closing MCM must stop polling without invalidating the retained UI tree'
 
 $publicRoot = Join-Path $source "Public\$moduleName"
 $modsRoot = Join-Path $source "Mods\$moduleName"
