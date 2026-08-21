@@ -377,11 +377,62 @@ foreach ($templateId in $removedDeluxeTemplates) {
     Require ($null -eq $sourceHit) "Removed Digital Deluxe template remains in source: $templateId"
 }
 
+$mechanicStats = @(
+    Join-Path (Split-Path $passivePath -Parent) 'ChaosCore.txt'
+    Join-Path (Split-Path $passivePath -Parent) 'ChaosRuntime.txt'
+    Join-Path (Split-Path $passivePath -Parent) 'Interrupt.txt'
+)
+$allStatEntries = @($passiveEntries)
+foreach ($path in @($statusPath) + $mechanicStats) {
+    Require (Test-Path -LiteralPath $path -PathType Leaf) "Mechanic stat file is missing: $path"
+    $content = Get-Content -Raw -LiteralPath $path -Encoding UTF8
+    Require (-not $content.Contains('LOC_')) "Mechanic stat file contains a legacy LOC_ identifier: $path"
+    $allStatEntries += @([regex]::Matches($content, 'new entry "([^"]+)"') |
+        ForEach-Object { $_.Groups[1].Value })
+}
+Require ($allStatEntries.Count -eq 235 -and
+    ($allStatEntries | Select-Object -Unique).Count -eq 235) `
+    'Mechanic stats must contain exactly 235 globally unique entries'
+
+$resourcePath = Join-Path $source "Public\$moduleName\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
+$iconMapPath = Join-Path $source "Public\$moduleName\GUI\Icons_ChaosOrigins.lsx"
+$iconTexturePath = Join-Path $source "Public\$moduleName\Assets\Textures\Icons\Icons_ChaosOrigins.dds"
+foreach ($path in @($resourcePath, $iconMapPath, $iconTexturePath)) {
+    Require (Test-Path -LiteralPath $path -PathType Leaf) "Mechanic resource is missing: $path"
+}
+$resourceXml = [xml](Get-Content -Raw -LiteralPath $resourcePath -Encoding UTF8)
+$resources = @($resourceXml.save.region.node.children.node)
+Require ($resources.Count -eq 3) 'Exactly three Chaos action resources are required'
+$actualResources = @{}
+foreach ($resource in $resources) {
+    $values = @{}
+    foreach ($attribute in $resource.attribute) { $values[$attribute.id] = $attribute.value }
+    $actualResources[$values.Name] = $values
+}
+$expectedResources = [ordered]@{
+    COR_ChaosStrike = @('e5c69543-0a9d-4a7f-8dc9-6c814b9e3e01', '1', 'ShortRest')
+    COR_ChaosAllInUse = @('e5c69543-0a9d-4a7f-8dc9-6c814b9e3e02', '3', 'ShortRest')
+    COR_ChaosPowerPoint = @('e5c69543-0a9d-4a7f-8dc9-6c814b9e3e03', '3', 'Never')
+}
+foreach ($entry in $expectedResources.GetEnumerator()) {
+    $actual = $actualResources[$entry.Key]
+    Require ($null -ne $actual -and $actual.UUID -eq $entry.Value[0] `
+        -and $actual.MaxValue -eq $entry.Value[1] -and $actual.ReplenishType -eq $entry.Value[2]) `
+        "Chaos action resource is invalid: $($entry.Key)"
+}
+$iconXml = [xml](Get-Content -Raw -LiteralPath $iconMapPath -Encoding UTF8)
+$iconKeys = @($iconXml.SelectNodes('//node[@id="IconUV"]/attribute[@id="MapKey"]') |
+    ForEach-Object value | Sort-Object)
+Require (-not (Compare-Object $iconKeys @(
+    'CO_AllIn', 'CO_Echo', 'CO_Finisher', 'CO_Genesis', 'CO_Identity',
+    'CO_Lost', 'CO_Power', 'CO_Status', 'CO_Strike'
+))) 'Chaos icon atlas keys are invalid'
+
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 18 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 18) `
-    'package-files.json must contain exactly 18 unique paths'
+Require ($declaredPackageFiles.Count -eq 24 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 24) `
+    'package-files.json must contain exactly 24 unique paths'
 foreach ($luaName in $expectedLuaFiles) {
     Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
         "Package manifest omits Lua module: $luaName"
@@ -413,17 +464,13 @@ foreach ($pattern in $forbiddenPatterns) {
     Require ($null -eq $hit) "Remastered source contains forbidden legacy identifier: $pattern"
 }
 
-$expectedHandles = @(
-    $descriptionHandle, $displayHandle,
-    'hfa05cce9gef4dg570bgbc1fg7187d154129d',
-    'h4bf4229cg4ca7g5b86ga678g71397f548bd6',
-    'hc53c9c68g2e77g5942gb976gef3da865ae2f',
-    'h8e938e08g4ff5g5681gab82gc0174825c89b',
-    'hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686',
-    'hcf23c2c6ga9a3g55bega9c4g60781e86156a',
-    'h47aa1ba3g2956g5ba5gb309g7e66f6e19d84',
-    'h049bbad7g2b78g5bedg831dga2a983c40cda'
-) | Sort-Object
+$localizedResourceText = @(
+    Get-ChildItem -LiteralPath $source -Recurse -File |
+        Where-Object { $_.Extension -in @('.txt', '.lsx') } |
+        ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName -Encoding UTF8 }
+) -join "`n"
+$expectedHandles = @([regex]::Matches($localizedResourceText, 'h[a-z0-9]{36}') |
+    ForEach-Object Value | Sort-Object -Unique)
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $ProjectRoot "localization-src\$language\ChaosOriginsRemastered.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Localization is missing: $language"

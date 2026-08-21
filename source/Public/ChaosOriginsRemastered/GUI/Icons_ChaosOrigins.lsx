@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+  <version major="4" minor="8" revision="0" build="500" />
+  <region id="IconUVList">
+    <node id="root">
+      <children>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Identity" />
+          <attribute id="U1" type="float" value="0.0009765625" />
+          <attribute id="U2" type="float" value="0.1240234375" />
+          <attribute id="V1" type="float" value="0.0009765625" />
+          <attribute id="V2" type="float" value="0.1240234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Status" />
+          <attribute id="U1" type="float" value="0.1259765625" />
+          <attribute id="U2" type="float" value="0.2490234375" />
+          <attribute id="V1" type="float" value="0.0009765625" />
+          <attribute id="V2" type="float" value="0.1240234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Lost" />
+          <attribute id="U1" type="float" value="0.2509765625" />
+          <attribute id="U2" type="float" value="0.3740234375" />
+          <attribute id="V1" type="float" value="0.0009765625" />
+          <attribute id="V2" type="float" value="0.1240234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Power" />
+          <attribute id="U1" type="float" value="0.3759765625" />
+          <attribute id="U2" type="float" value="0.4990234375" />
+          <attribute id="V1" type="float" value="0.0009765625" />
+          <attribute id="V2" type="float" value="0.1240234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_AllIn" />
+          <attribute id="U1" type="float" value="0.0009765625" />
+          <attribute id="U2" type="float" value="0.1240234375" />
+          <attribute id="V1" type="float" value="0.1259765625" />
+          <attribute id="V2" type="float" value="0.2490234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Echo" />
+          <attribute id="U1" type="float" value="0.1259765625" />
+          <attribute id="U2" type="float" value="0.2490234375" />
+          <attribute id="V1" type="float" value="0.1259765625" />
+          <attribute id="V2" type="float" value="0.2490234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Strike" />
+          <attribute id="U1" type="float" value="0.2509765625" />
+          <attribute id="U2" type="float" value="0.3740234375" />
+          <attribute id="V1" type="float" value="0.1259765625" />
+          <attribute id="V2" type="float" value="0.2490234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Genesis" />
+          <attribute id="U1" type="float" value="0.3759765625" />
+          <attribute id="U2" type="float" value="0.4990234375" />
+          <attribute id="V1" type="float" value="0.1259765625" />
+          <attribute id="V2" type="float" value="0.2490234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="CO_Finisher" />
+          <attribute id="U1" type="float" value="0.0009765625" />
+          <attribute id="U2" type="float" value="0.1240234375" />
+          <attribute id="V1" type="float" value="0.2509765625" />
+          <attribute id="V2" type="float" value="0.3740234375" />
+        </node>
+      </children>
+    </node>
+  </region>
+  <region id="TextureAtlasInfo">
+    <node id="root">
+      <children>
+        <node id="TextureAtlasIconSize">
+          <attribute id="Height" type="int32" value="64" />
+          <attribute id="Width" type="int32" value="64" />
+        </node>
+        <node id="TextureAtlasPath">
+          <attribute id="Path" type="string" value="Assets/Textures/Icons/Icons_ChaosOrigins.dds" />
+          <attribute id="UUID" type="FixedString" value="d79ea40e-83dc-4e45-ac90-9c62d5dd9af1" />
+        </node>
+        <node id="TextureAtlasTextureSize">
+          <attribute id="Height" type="int32" value="512" />
+          <attribute id="Width" type="int32" value="512" />
+        </node>
+      </children>
+    </node>
+  </region>
+</save>
+
