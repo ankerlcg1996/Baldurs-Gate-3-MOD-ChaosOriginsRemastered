@@ -3,7 +3,7 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
-local SCHEMA_VERSION = 2
+local SCHEMA_VERSION = 3
 local registered = false
 
 local function assertOnlyKeys(value, allowed, label)
@@ -56,6 +56,8 @@ local function validateCharacter(record, characterId)
     assertOnlyKeys(record, {
         Granted = true,
         RaceGranted = true,
+        OriginGranted = true,
+        ActiveOriginIdentity = true,
         NativeRaceTags = true,
         RewardItems = true,
         StarterRewardsVersion = true
@@ -69,6 +71,21 @@ local function validateCharacter(record, characterId)
     validateGrantMap(record.RaceGranted.Passives, "racial passive grant ledger")
     validateGrantMap(record.RaceGranted.Spells, "racial spell grant ledger")
     validateGrantMap(record.RaceGranted.Tags, "racial tag grant ledger")
+
+    assert(type(record.OriginGranted) == "table",
+        "ChaosOriginsRemastered: origin grant ledger must be a table " .. characterId)
+    assertOnlyKeys(record.OriginGranted,
+        { Passives = true, Spells = true }, "origin grant ledger")
+    validateGrantMap(record.OriginGranted.Passives, "origin passive grant ledger")
+    validateGrantMap(record.OriginGranted.Spells, "origin spell grant ledger")
+    local validIdentity = {
+        [""] = true, Astarion = true, Gale = true, Laezel = true,
+        Shadowheart = true, Wyll = true, Karlach = true, DarkUrge = true
+    }
+    assert(type(record.ActiveOriginIdentity) == "string"
+        and validIdentity[record.ActiveOriginIdentity] == true,
+        "ChaosOriginsRemastered: invalid active origin identity "
+            .. tostring(record.ActiveOriginIdentity) .. " for " .. characterId)
 
     assert(type(record.NativeRaceTags) == "table",
         "ChaosOriginsRemastered: native race-tag order must be a table " .. characterId)
@@ -90,6 +107,8 @@ local function newCharacter()
     return {
         Granted = { Passives = {}, Spells = {} },
         RaceGranted = { Passives = {}, Spells = {}, Tags = {} },
+        OriginGranted = { Passives = {}, Spells = {} },
+        ActiveOriginIdentity = "",
         NativeRaceTags = {},
         RewardItems = {},
         StarterRewardsVersion = 0
@@ -129,6 +148,18 @@ local function root()
             validateLegacyCharacter(record, characterId)
             record.RaceGranted = { Passives = {}, Spells = {}, Tags = {} }
             record.NativeRaceTags = {}
+            record.OriginGranted = { Passives = {}, Spells = {} }
+            record.ActiveOriginIdentity = ""
+        end
+        state.SchemaVersion = SCHEMA_VERSION
+        M.MarkDirty()
+    end
+    if state.SchemaVersion == 2 then
+        -- 1.0.09 及以前没有起源身份开关；迁移后保持全部关闭，避免读档时自动触发剧情。
+        for characterId, record in pairs(state.Characters) do
+            record.OriginGranted = { Passives = {}, Spells = {} }
+            record.ActiveOriginIdentity = ""
+            validateCharacter(record, characterId)
         end
         state.SchemaVersion = SCHEMA_VERSION
         M.MarkDirty()

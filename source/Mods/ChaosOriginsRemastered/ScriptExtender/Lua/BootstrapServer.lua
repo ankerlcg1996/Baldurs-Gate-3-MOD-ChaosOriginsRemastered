@@ -5,6 +5,7 @@ local State = Ext.Require("ChaosState.lua")
 local GrantLedger = Ext.Require("GrantLedger.lua")
 local BaseFeatures = Ext.Require("BaseFeatures.lua")
 local RaceFeatures = Ext.Require("RaceFeatures.lua")
+local OriginFeatures = Ext.Require("OriginFeatures.lua")
 local LEVEL_12_TOTAL_EXPERIENCE = 100000
 
 State.Register()
@@ -29,6 +30,7 @@ local function syncCharacter(character)
         -- 豪华版物品属于官方 DLC，混沌起源只同步自身与官方种族能力。
         BaseFeatures.Sync(character, record)
         RaceFeatures.Sync(character, record)
+        OriginFeatures.Sync(character, record)
     end, debug.traceback)
     syncing[character] = nil
     if not ok then error(failure) end
@@ -133,6 +135,23 @@ Ext.Events.SessionLoaded:Subscribe(function()
     syncing = {}
     scheduled = {}
     GrantLedger.ResetRuntime()
+    OriginFeatures.ResetRuntime()
+end)
+
+local function handleOriginStatus(character, status, enabled)
+    if not OriginFeatures.IsStatus(status) or not ChaosCharacter.IsEligible(character) then return end
+    local record = State.GetCharacter(character)
+    if OriginFeatures.HandleStatus(character, status, enabled, record) then
+        scheduleCharacter(character, 200)
+    end
+end
+
+Ext.Osiris.RegisterListener("StatusApplied", 4, "after", function(character, status, _, _)
+    handleOriginStatus(character, status, true)
+end)
+
+Ext.Osiris.RegisterListener("StatusRemoved", 4, "after", function(character, status, _, _)
+    handleOriginStatus(character, status, false)
 end)
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function()

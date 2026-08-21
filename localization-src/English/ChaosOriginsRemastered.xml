@@ -2,4 +2,12 @@
 <contentList>
     <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">Chaos</content>
     <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">A child of chaos unbound by predetermined fate, master of every arm and skill, bearing six starter spells and unique journey gifts.</content>
+    <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">Astarion Identity</content>
+    <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">Gale Identity</content>
+    <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">Lae'zel Identity</content>
+    <content contentuid="h8e938e08g4ff5g5681gab82gc0174825c89b" version="1">Shadowheart Identity</content>
+    <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">Wyll Identity</content>
+    <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">Karlach Identity</content>
+    <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">Dark Urge Identity</content>
+    <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">Toggle this origin identity and its abilities unlocked at your current level. Only one identity can be active at a time; enabling a new identity disables the previous one. Cannot be changed in combat.</content>
 </contentList>

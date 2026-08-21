@@ -74,8 +74,10 @@ $passiveEntries = @([regex]::Matches($passive, 'new entry "([^"]+)"') | ForEach-
 Require (-not (Compare-Object ($passiveEntries | Sort-Object) @(
     'COR_AllSkillMastery', 'COR_BaseProficiencies', 'COR_OriginMarker',
     'COR_BaseStarterSpells',
-    'COR_RacialSpells_Level1', 'COR_RacialSpells_Level3', 'COR_RacialSpells_Level5'
-))) 'Passive.txt must contain exactly the marker, base features, and three racial-spell passives'
+    'COR_RacialSpells_Level1', 'COR_RacialSpells_Level3', 'COR_RacialSpells_Level5',
+    'COR_Origin_Astarion', 'COR_Origin_DarkUrge', 'COR_Origin_Gale',
+    'COR_Origin_Karlach', 'COR_Origin_Laezel', 'COR_Origin_Shadowheart', 'COR_Origin_Wyll'
+))) 'Passive.txt must contain exactly the marker, base features, three racial-spell passives, and seven origin toggles'
 Require ($passive.Contains("new entry `"COR_OriginMarker`"`ntype `"PassiveData`"`ndata `"Properties`" `"IsHidden`"")) `
     'Origin marker must remain a hidden no-effect passive'
 
@@ -96,14 +98,13 @@ $proficientSkills = @([regex]::Matches($skillBlock, 'ProficiencyBonus\(Skill,([A
     ForEach-Object { $_.Groups[1].Value }) | Sort-Object
 $expertSkills = @([regex]::Matches($skillBlock, 'ExpertiseBonus\(([A-Za-z]+)\)') |
     ForEach-Object { $_.Groups[1].Value }) | Sort-Object
-$fixedBonusSkills = @([regex]::Matches($skillBlock, 'Skill\(([A-Za-z]+),5\)') |
-    ForEach-Object { $_.Groups[1].Value }) | Sort-Object
+$fixedSkillBonuses = @([regex]::Matches($skillBlock, '\bSkill\([^)]+\)'))
 Require ($proficientSkills.Count -eq 18 -and -not (Compare-Object $proficientSkills $expectedSkills)) `
     'All-skill passive must grant proficiency to exactly 18 unique skills'
 Require ($expertSkills.Count -eq 18 -and -not (Compare-Object $expertSkills $expectedSkills)) `
     'All-skill passive must grant expertise to exactly 18 unique skills'
-Require ($fixedBonusSkills.Count -eq 18 -and -not (Compare-Object $fixedBonusSkills $expectedSkills)) `
-    'All-skill passive must grant fixed +5 to exactly 18 unique skills'
+Require ($fixedSkillBonuses.Count -eq 0) `
+    'All-skill passive must not grant any fixed skill bonus'
 
 $tagXml = [xml](Get-Content -Raw -LiteralPath $tagPath -Encoding UTF8)
 $tag = $tagXml.save.region.node
@@ -144,7 +145,7 @@ foreach ($value in @($moduleUuid, $originUuid)) {
 $luaRoot = Split-Path $bootstrapPath -Parent
 $expectedLuaFiles = @(
     'BaseFeatures.lua', 'BootstrapServer.lua', 'ChaosCharacter.lua',
-    'ChaosState.lua', 'GrantLedger.lua', 'RaceCatalog.lua', 'RaceFeatures.lua'
+    'ChaosState.lua', 'GrantLedger.lua', 'OriginFeatures.lua', 'RaceCatalog.lua', 'RaceFeatures.lua'
 ) | Sort-Object
 $actualLuaFiles = @(Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua' | ForEach-Object Name) | Sort-Object
 Require (-not (Compare-Object $actualLuaFiles $expectedLuaFiles)) 'Server Lua module list is invalid'
@@ -170,9 +171,9 @@ Require (([regex]::Matches($baseFeatures, '"(?:Target|Shout)_[A-Za-z0-9_]+"')).C
     'BaseFeatures.lua must declare exactly seven spells'
 
 $stateLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosState.lua') -Encoding UTF8
-foreach ($token in @('SCHEMA_VERSION = 2', 'state.SchemaVersion == 1', 'NativeRaceTags',
+foreach ($token in @('SCHEMA_VERSION = 3', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
-    'owned == "adding"', 'owned == "removing"')) {
+    'OriginGranted', 'ActiveOriginIdentity', 'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
 }
 $characterLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosCharacter.lua') -Encoding UTF8
@@ -352,8 +353,8 @@ foreach ($templateId in $removedDeluxeTemplates) {
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 16 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 16) `
-    'package-files.json must contain exactly 16 unique paths'
+Require ($declaredPackageFiles.Count -eq 18 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 18) `
+    'package-files.json must contain exactly 18 unique paths'
 foreach ($luaName in $expectedLuaFiles) {
     Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
         "Package manifest omits Lua module: $luaName"
@@ -385,7 +386,17 @@ foreach ($pattern in $forbiddenPatterns) {
     Require ($null -eq $hit) "Remastered source contains forbidden legacy identifier: $pattern"
 }
 
-$expectedHandles = @($descriptionHandle, $displayHandle) | Sort-Object
+$expectedHandles = @(
+    $descriptionHandle, $displayHandle,
+    'hfa05cce9gef4dg570bgbc1fg7187d154129d',
+    'h4bf4229cg4ca7g5b86ga678g71397f548bd6',
+    'hc53c9c68g2e77g5942gb976gef3da865ae2f',
+    'h8e938e08g4ff5g5681gab82gc0174825c89b',
+    'hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686',
+    'hcf23c2c6ga9a3g55bega9c4g60781e86156a',
+    'h47aa1ba3g2956g5ba5gb309g7e66f6e19d84',
+    'h049bbad7g2b78g5bedg831dga2a983c40cda'
+) | Sort-Object
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $ProjectRoot "localization-src\$language\ChaosOriginsRemastered.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Localization is missing: $language"

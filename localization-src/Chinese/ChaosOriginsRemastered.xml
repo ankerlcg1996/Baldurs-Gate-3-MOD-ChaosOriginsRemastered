@@ -2,4 +2,12 @@
 <contentList>
     <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">混沌</content>
     <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">挣脱既定命运的混沌之子，掌握所有武装与技能，并携带六种初始法术和独有旅途赠礼。</content>
+    <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">阿斯代伦身份</content>
+    <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">盖尔身份</content>
+    <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">莱埃泽尔身份</content>
+    <content contentuid="h8e938e08g4ff5g5681gab82gc0174825c89b" version="1">影心身份</content>
+    <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">威尔身份</content>
+    <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">卡菈克身份</content>
+    <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">邪念身份</content>
+    <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">切换该起源身份及当前等级已解锁的对应能力。同一时间最多启用一种身份；开启新身份会关闭旧身份，战斗中不能切换。</content>
 </contentList>
