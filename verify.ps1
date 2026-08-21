@@ -21,7 +21,8 @@ $passivePath = Join-Path $source "Public\$moduleName\Stats\Generated\Data\Passiv
 $tagPath = Join-Path $ProjectRoot "resource-src\Public\$moduleName\Tags\$originTag.lsf.lsx"
 $configPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Config.json"
 $bootstrapPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Lua\BootstrapServer.lua"
-foreach ($path in @($originPath, $metaPath, $passivePath, $tagPath, $configPath, $bootstrapPath)) {
+$packageFilesPath = Join-Path $ProjectRoot 'package-files.json'
+foreach ($path in @($originPath, $metaPath, $passivePath, $tagPath, $configPath, $bootstrapPath, $packageFilesPath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Required minimal source is missing: $path"
 }
 
@@ -178,8 +179,8 @@ foreach ($token in @('TemplateAddedTo', 'TemplateAddTo', 'RewardItems', 'Osi.Equ
     Require ($rewardsLua.Contains($token)) "Starter reward behavior is missing: $token"
 }
 
-$officialSharedStats = Join-Path $ProjectRoot 'work\official-shared-stats-20260822'
-$officialGustavXStats = Join-Path $ProjectRoot 'work\official-gustavx-stats-20260822'
+$officialSharedStats = Join-Path $ProjectRoot 'work\official-validation\Shared'
+$officialGustavXStats = Join-Path $ProjectRoot 'work\official-validation\GustavX'
 Require (Test-Path -LiteralPath $officialSharedStats -PathType Container) `
     "Extracted official Shared stats are missing: $officialSharedStats"
 Require (Test-Path -LiteralPath $officialGustavXStats -PathType Container) `
@@ -193,7 +194,7 @@ $boomingHit = Get-ChildItem -LiteralPath $officialGustavXStats -Recurse -File -F
     Select-String -SimpleMatch 'new entry "Target_BoomingBlade_ClassSpell"' | Select-Object -First 1
 Require ($null -ne $boomingHit) 'Official GustavX Booming Blade stat is missing'
 
-$officialTemplates = Join-Path $ProjectRoot 'work\official\Public\GustavDev\RootTemplates\_merged.lsf.lsx'
+$officialTemplates = Join-Path $ProjectRoot 'work\official-validation\Gustav\Public\GustavDev\RootTemplates\_merged.lsf.lsx'
 Require (Test-Path -LiteralPath $officialTemplates -PathType Leaf) `
     "Extracted official root templates are missing: $officialTemplates"
 $templateText = Get-Content -Raw -LiteralPath $officialTemplates -Encoding UTF8
@@ -204,6 +205,16 @@ foreach ($templateId in @(
 )) {
     Require ($templateText.Contains("value=`"$templateId`"")) "Official reward template is missing: $templateId"
     Require ($rewardsLua.Contains('"' + $templateId + '"')) "Starter reward template is missing from Lua: $templateId"
+}
+
+$packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
+Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
+$declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
+Require ($declaredPackageFiles.Count -eq 15 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 15) `
+    'package-files.json must contain exactly 15 unique paths'
+foreach ($luaName in $expectedLuaFiles) {
+    Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
+        "Package manifest omits Lua module: $luaName"
 }
 
 $publicRoot = Join-Path $source "Public\$moduleName"

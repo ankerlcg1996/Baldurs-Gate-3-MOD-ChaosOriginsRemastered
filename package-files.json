@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "files": [
+    "Localization/Chinese/ChaosOriginsRemastered.loca",
+    "Localization/English/ChaosOriginsRemastered.loca",
+    "Localization/Japanese/ChaosOriginsRemastered.loca",
+    "Localization/Korean/ChaosOriginsRemastered.loca",
+    "Mods/ChaosOriginsRemastered/meta.lsx",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Config.json",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/BaseFeatures.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/BootstrapServer.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/ChaosCharacter.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/ChaosState.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/GrantLedger.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/StarterRewards.lua",
+    "Public/ChaosOriginsRemastered/Origins/Origins.lsx",
+    "Public/ChaosOriginsRemastered/Stats/Generated/Data/Passive.txt",
+    "Public/ChaosOriginsRemastered/Tags/7bb4d001-3c7e-445d-b52b-db0507db38d4.lsf"
+  ]
+}

@@ -1,5 +1,5 @@
 param(
-    [string]$LslibPath = 'C:\Users\ankerlcg\Desktop\BG3ModManager_Latest\_Lib\LSLib.dll'
+    [string]$LslibPath = $env:BG3_LSLIB_PATH
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,6 +14,7 @@ $reverseRoot = Join-Path $workRoot 'reverse'
 $distRoot = Join-Path $projectRoot 'dist'
 $pakPath = Join-Path $distRoot "$moduleName.pak"
 $versionPath = Join-Path $projectRoot 'version.json'
+$packageFilesPath = Join-Path $projectRoot 'package-files.json'
 
 function Require([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
@@ -40,8 +41,11 @@ function Relative-Path([string]$Root, [string]$Child) {
 }
 
 & (Join-Path $projectRoot 'verify.ps1') -ProjectRoot $projectRoot
+Require (-not [string]::IsNullOrWhiteSpace($LslibPath)) `
+    'Pass -LslibPath or set BG3_LSLIB_PATH to LSLib.dll'
 Require (Test-Path -LiteralPath $LslibPath -PathType Leaf) "LSLib is missing: $LslibPath"
 Require (Test-Path -LiteralPath $versionPath -PathType Leaf) 'version.json is missing'
+Require (Test-Path -LiteralPath $packageFilesPath -PathType Leaf) 'package-files.json is missing'
 Add-Type -Path $LslibPath
 
 $version = Get-Content -Raw -LiteralPath $versionPath -Encoding UTF8 | ConvertFrom-Json
@@ -51,6 +55,11 @@ $nextBuild = [int64]$version.lastBuild + 1
 Require ($nextBuild -ge 1 -and $nextBuild -le 2147483647) 'Build number is outside BG3 Version64 range'
 $displayVersion = '1.0.{0:D2}' -f $nextBuild
 $version64 = [int64]36028797018963968 + $nextBuild
+$packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
+Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
+$expectedFiles = @($packageFiles.files | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object)
+Require ($expectedFiles.Count -eq 15 -and ($expectedFiles | Select-Object -Unique).Count -eq 15) `
+    'package-files.json must contain exactly 15 unique paths'
 
 Reset-WorkDirectory $stageRoot
 Reset-WorkDirectory $reverseRoot
@@ -108,16 +117,18 @@ Require (Test-Path -LiteralPath $pakPath -PathType Leaf) 'PAK creation failed'
 $packager.UncompressPackage($pakPath, $reverseRoot)
 
 $stagedFiles = @(Get-ChildItem -LiteralPath $stageRoot -Recurse -File | ForEach-Object {
-    Relative-Path $stageRoot $_.FullName
+    (Relative-Path $stageRoot $_.FullName).Replace('\', '/')
 } | Sort-Object)
 $reverseFiles = @(Get-ChildItem -LiteralPath $reverseRoot -Recurse -File | ForEach-Object {
-    Relative-Path $reverseRoot $_.FullName
+    (Relative-Path $reverseRoot $_.FullName).Replace('\', '/')
 } | Sort-Object)
-Require ($stagedFiles.Count -eq 10) "Minimal PAK must contain exactly 10 files, found $($stagedFiles.Count)"
+Require (-not (Compare-Object $expectedFiles $stagedFiles)) `
+    'Staging file list differs from package-files.json'
 Require (-not (Compare-Object $stagedFiles $reverseFiles)) 'Reverse-unpacked file list differs from staging'
 foreach ($relative in $stagedFiles) {
-    $stagedHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $stageRoot $relative)).Hash
-    $reverseHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $reverseRoot $relative)).Hash
+    $nativeRelative = $relative.Replace('/', '\')
+    $stagedHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $stageRoot $nativeRelative)).Hash
+    $reverseHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $reverseRoot $nativeRelative)).Hash
     Require ($stagedHash -eq $reverseHash) "Reverse-unpacked file differs: $relative"
 }
 
