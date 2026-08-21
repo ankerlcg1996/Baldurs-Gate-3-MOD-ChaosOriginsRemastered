@@ -50,6 +50,26 @@ function Expand-Stats([string]$PakName, [string]$OutputName) {
 Expand-Stats 'Shared.pak' 'Shared'
 Expand-Stats 'GustavX.pak' 'GustavX'
 
+$catalogTarget = Join-Path $outputRoot 'catalog-source'
+New-Item -ItemType Directory -Path $catalogTarget -Force | Out-Null
+$catalogPaths = @(
+    'Public/Shared/Races/Races.lsx',
+    'Public/SharedDev/Races/Races.lsx',
+    'Public/Shared/Progressions/Progressions.lsx',
+    'Public/SharedDev/Progressions/Progressions.lsx',
+    'Public/Shared/Lists/SpellLists.lsx',
+    'Public/SharedDev/Lists/SpellLists.lsx'
+)
+$catalogFilter = [Func[LSLib.LS.PackagedFileInfo, bool]]{
+    param($file)
+    return $catalogPaths -contains $file.Name.Replace('\', '/')
+}
+$packager.UncompressPackage((Join-Path $GameDataPath 'Shared.pak'), $catalogTarget, $catalogFilter)
+foreach ($relativePath in $catalogPaths) {
+    Require (Test-Path -LiteralPath (Join-Path $catalogTarget $relativePath) -PathType Leaf) `
+        "Official race-catalog source is missing after extraction: $relativePath"
+}
+
 $gustavTarget = Join-Path $outputRoot 'Gustav'
 New-Item -ItemType Directory -Path $gustavTarget -Force | Out-Null
 $rootTemplateFilter = [Func[LSLib.LS.PackagedFileInfo, bool]]{

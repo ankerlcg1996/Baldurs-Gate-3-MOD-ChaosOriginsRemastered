@@ -1,0 +1,1431 @@
+{
+  "schema": 1,
+  "progressionOverridePolicy": "later_rows_override",
+  "finalProgressionSha256": "bdcd48224cbe3976e98d33f0a0342deaf166b8a971838cbddf7f724b842e3d8c",
+  "playableParentRoot": "899d275e-9893-490a-9cd5-be856794929f",
+  "racialSpellUnlockPolicy": "fixed_sources_override_candidate_sources",
+  "baseProvidedRacialSpells": ["Target_MageHand", "Target_MinorIllusion"],
+  "racialSpellUnlocks": [
+    { "spell": "Projectile_AcidSplash", "level": 1, "boost": "UnlockSpell(Projectile_AcidSplash,,,,Intelligence)" },
+    { "spell": "Projectile_FireBolt", "level": 1, "boost": "UnlockSpell(Projectile_FireBolt,,,,Intelligence)" },
+    { "spell": "Projectile_PoisonSpray", "level": 1, "boost": "UnlockSpell(Projectile_PoisonSpray,,,,Intelligence)" },
+    { "spell": "Projectile_RayOfFrost", "level": 1, "boost": "UnlockSpell(Projectile_RayOfFrost,,,,Intelligence)" },
+    { "spell": "Shout_AstralKnowledge", "level": 1, "boost": "UnlockSpell(Shout_AstralKnowledge,AddChildren)" },
+    { "spell": "Shout_BladeWard", "level": 1, "boost": "UnlockSpell(Shout_BladeWard,,,,Intelligence)" },
+    { "spell": "Shout_ProduceFlame", "level": 1, "boost": "UnlockSpell(Shout_ProduceFlame,,,,Charisma)" },
+    { "spell": "Shout_SpeakWithAnimals_ForestGnome", "level": 1, "boost": "UnlockSpell(Shout_SpeakWithAnimals_ForestGnome,Singular,None,UntilRest,Intelligence)" },
+    { "spell": "Shout_Thaumaturgy", "level": 1, "boost": "UnlockSpell(Shout_Thaumaturgy,,,,Charisma)" },
+    { "spell": "Target_ChillTouch", "level": 1, "boost": "UnlockSpell(Target_ChillTouch,,,,Intelligence)" },
+    { "spell": "Target_DancingLights", "level": 1, "boost": "UnlockSpell(Target_DancingLights,,,,Charisma)" },
+    { "spell": "Target_Friends", "level": 1, "boost": "UnlockSpell(Target_Friends,,,,Intelligence)" },
+    { "spell": "Target_Light", "level": 1, "boost": "UnlockSpell(Target_Light,,,,Intelligence)" },
+    { "spell": "Target_MageHand", "level": 1, "boost": "UnlockSpell(Target_MageHand,,,,Charisma)" },
+    { "spell": "Target_MageHand_GithyankiPsionics", "level": 1, "boost": "UnlockSpell(Target_MageHand_GithyankiPsionics,,,,Intelligence)" },
+    { "spell": "Target_MinorIllusion", "level": 1, "boost": "UnlockSpell(Target_MinorIllusion,,,,Intelligence)" },
+    { "spell": "Target_ShockingGrasp", "level": 1, "boost": "UnlockSpell(Target_ShockingGrasp,,,,Intelligence)" },
+    { "spell": "Target_TrueStrike", "level": 1, "boost": "UnlockSpell(Target_TrueStrike,,,,Intelligence)" },
+    { "spell": "Shout_Enlarge_Duergar", "level": 3, "boost": "UnlockSpell(Shout_Enlarge_Duergar)" },
+    { "spell": "Shout_HellishRebuke_AsmodeusTiefling", "level": 3, "boost": "UnlockSpell(Shout_HellishRebuke_AsmodeusTiefling,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Target_FaerieFire_DrowMagic", "level": 3, "boost": "UnlockSpell(Target_FaerieFire_DrowMagic,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Target_Jump_Githyanki", "level": 3, "boost": "UnlockSpell(Target_Jump_Githyanki,Singular,None,UntilRest,Intelligence)" },
+    { "spell": "Target_Smite_Searing_ZarielTiefling", "level": 3, "boost": "UnlockSpell(Target_Smite_Searing_ZarielTiefling,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Zone_BurningHands_MephistophelesTiefling", "level": 3, "boost": "UnlockSpell(Zone_BurningHands_MephistophelesTiefling,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Shout_FlameBlade_MephistophelesTiefling", "level": 5, "boost": "UnlockSpell(Shout_FlameBlade_MephistophelesTiefling,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Shout_Invisibility_Duergar", "level": 5, "boost": "UnlockSpell(Shout_Invisibility_Duergar)" },
+    { "spell": "Target_Darkness_DrowMagic", "level": 5, "boost": "UnlockSpell(Target_Darkness_DrowMagic,Singular,None,UntilRest,Charisma)" },
+    { "spell": "Target_MistyStep_Githyanki", "level": 5, "boost": "UnlockSpell(Target_MistyStep_Githyanki,Singular,None,UntilRest,Intelligence)" },
+    { "spell": "Target_Smite_Branding_ZarielTiefling_Container", "level": 5, "boost": "UnlockSpell(Target_Smite_Branding_ZarielTiefling_Container,AddChildren,None,UntilRest,Charisma)" }
+  ],
+  "sources": [
+    {
+      "path": "Public/Shared/Races/Races.lsx",
+      "size": 1970165,
+      "sha256": "1189bc93af6c98f56f2bf05138ac3a2f0d8a91f6e4eaaaeeac74e945c9dbf9b5"
+    },
+    {
+      "path": "Public/SharedDev/Races/Races.lsx",
+      "size": 315568,
+      "sha256": "094a49599a0913d9494d1548ce117cf4fcfc5f70c4242f1bb090316b7375177e"
+    },
+    {
+      "path": "Public/Shared/Progressions/Progressions.lsx",
+      "size": 201090,
+      "sha256": "3111732c90e9b7db21f6c900b3ac4bb82c0c9114100c44ff50a956446412a878"
+    },
+    {
+      "path": "Public/SharedDev/Progressions/Progressions.lsx",
+      "size": 422467,
+      "sha256": "a0bfc7c1822d07d041d27931800b9dd5989a0deed594537b40fca087a2e1c4c4"
+    },
+    {
+      "path": "Public/Shared/Lists/SpellLists.lsx",
+      "size": 73828,
+      "sha256": "9900d63b30460334125af85cd401839159d023349e675b2fe3df86f61ebddfc7"
+    },
+    {
+      "path": "Public/SharedDev/Lists/SpellLists.lsx",
+      "size": 91884,
+      "sha256": "74ce4e07dc778b76420000712c62e67f46eed4bbcb6cee85d17b35d97dd6263f"
+    }
+  ],
+  "races": [
+    {
+      "uuid": "fe584d14-71ea-4bee-8ba0-99f780d4c957",
+      "name": "Duergar",
+      "parent_uuid": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+      "tags": [
+        "60f6b464-752f-4970-a855-f729565b5e07",
+        "78adf3cd-4741-47a8-94f6-f3d322432591"
+      ]
+    },
+    {
+      "uuid": "78f5e3e8-a9f8-4249-8007-84dc922640b2",
+      "name": "Dwarf_GoldHill",
+      "parent_uuid": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+      "tags": [
+        "534098fa-601d-4f6e-8c4e-b3a8d4b1f141"
+      ]
+    },
+    {
+      "uuid": "6e455d3b-293a-420b-baae-74260ed9aebf",
+      "name": "Dwarf_ShieldMountain",
+      "parent_uuid": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+      "tags": [
+        "1dc20a7a-00e7-4126-80ad-aa1152a2136c"
+      ]
+    },
+    {
+      "uuid": "e966f47f-998a-41df-ad86-d83b44299efb",
+      "name": "HalfElf_Drow",
+      "parent_uuid": "45f4ac10-3c89-4fb2-b37d-f973bb9110c0",
+      "tags": [
+        "4fa13243-199d-4c9a-b455-d844276a98f5",
+        "eae44d86-3321-4a0a-811d-4fd8e48b5723"
+      ]
+    },
+    {
+      "uuid": "30fafb0b-7c8b-4917-bd2a-536233b35d3c",
+      "name": "HalfElf_High",
+      "parent_uuid": "45f4ac10-3c89-4fb2-b37d-f973bb9110c0",
+      "tags": [
+        "52b71dea-9d4e-402d-9700-fb9c360a44c9"
+      ]
+    },
+    {
+      "uuid": "76057327-da03-4398-aaf0-c59345ef3a8b",
+      "name": "HalfElf_Wood",
+      "parent_uuid": "45f4ac10-3c89-4fb2-b37d-f973bb9110c0",
+      "tags": [
+        "5ffb703c-3ef4-493b-966d-749bc038f6bd"
+      ]
+    },
+    {
+      "uuid": "c5f8ebdd-f4a5-4d2d-9eab-4a8d1b1dd724",
+      "name": "Drow_LolthSworn",
+      "parent_uuid": "4f5d1434-5175-4fa9-b7dc-ab24fba37929",
+      "tags": [
+        "ef9c5b74-56a8-48cc-b0b9-169ee16bf026"
+      ]
+    },
+    {
+      "uuid": "4d30b4f9-7bb2-4fc2-a7bc-080f116e325a",
+      "name": "Drow_Seldarine",
+      "parent_uuid": "4f5d1434-5175-4fa9-b7dc-ab24fba37929",
+      "tags": [
+        "6e913b6e-58b1-41bf-8751-89250dd17bff"
+      ]
+    },
+    {
+      "uuid": "4fda6bce-0b91-4427-901f-690c2d091c47",
+      "name": "Elf_HighElf",
+      "parent_uuid": "6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a",
+      "tags": [
+        "492c3200-1226-4114-bad1-f6b1ba737f3d"
+      ]
+    },
+    {
+      "uuid": "a459ba68-a9ec-4c8e-b127-602615f5b4c0",
+      "name": "Elf_WoodElf",
+      "parent_uuid": "6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a",
+      "tags": [
+        "889e0db5-d03e-4b63-86d7-13418f69729f"
+      ]
+    },
+    {
+      "uuid": "a8828cb9-589d-489e-8373-6495eb31ffc1",
+      "name": "Halfling_Lightfoot",
+      "parent_uuid": "78cd3bcc-1c43-4a2a-aa80-c34322c16a04",
+      "tags": [
+        "57a00605-9e74-477c-bd9d-53c721e25e56"
+      ]
+    },
+    {
+      "uuid": "24e075cc-b21e-4639-ac60-fc513083b0e7",
+      "name": "Halfling_Strongheart",
+      "parent_uuid": "78cd3bcc-1c43-4a2a-aa80-c34322c16a04",
+      "tags": [
+        "8d545fa1-8416-493f-8325-7d112bceced8"
+      ]
+    },
+    {
+      "uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "name": "Dragonborn",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "02e5e9ed-b6b2-4524-99cd-cb2bc84c754a"
+      ]
+    },
+    {
+      "uuid": "4f5d1434-5175-4fa9-b7dc-ab24fba37929",
+      "name": "Drow",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "60f6b464-752f-4970-a855-f729565b5e07",
+        "a672ac1d-d088-451a-9537-3da4bf74466c",
+        "eae44d86-3321-4a0a-811d-4fd8e48b5723"
+      ]
+    },
+    {
+      "uuid": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+      "name": "Dwarf",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "486a2562-31ae-437b-bf63-30393e18cbdd",
+        "50e7beca-4e90-43cd-b7c5-c235e236077f"
+      ]
+    },
+    {
+      "uuid": "6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a",
+      "name": "Elf",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "351f4e42-1217-4c06-b47a-443dcf69b111"
+      ]
+    },
+    {
+      "uuid": "bdf9b779-002c-4077-b377-8ea7c1faa795",
+      "name": "Githyanki",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "677ffa76-2562-4217-873e-2253d4720ba4"
+      ]
+    },
+    {
+      "uuid": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+      "name": "Gnome",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "1f0551f3-d769-47a9-b02b-5d3a8c51978c",
+        "50e7beca-4e90-43cd-b7c5-c235e236077f"
+      ]
+    },
+    {
+      "uuid": "45f4ac10-3c89-4fb2-b37d-f973bb9110c0",
+      "name": "HalfElf",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "34317158-8e6e-45a2-bd1e-6604d82fdda2"
+      ]
+    },
+    {
+      "uuid": "5c39a726-71c8-4748-ba8d-f768b3c11a91",
+      "name": "HalfOrc",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "3311a9a9-cdbc-4b05-9bf6-e02ba1fc72a3"
+      ]
+    },
+    {
+      "uuid": "78cd3bcc-1c43-4a2a-aa80-c34322c16a04",
+      "name": "Halfling",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "b99b6a5d-8445-44e4-ac58-81b2ee88aab1",
+        "50e7beca-4e90-43cd-b7c5-c235e236077f"
+      ]
+    },
+    {
+      "uuid": "0eb594cb-8820-4be6-a58d-8be7a1a98fba",
+      "name": "Human",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "69fd1443-7686-4ca9-9516-72ec0b9d94d7"
+      ]
+    },
+    {
+      "uuid": "b6dccbed-30f3-424b-a181-c4540cf38197",
+      "name": "Tiefling",
+      "parent_uuid": "899d275e-9893-490a-9cd5-be856794929f",
+      "tags": [
+        "aaef5d43-c6f3-434d-b11e-c763290dbe0c"
+      ]
+    },
+    {
+      "uuid": "fdae09c5-7bfc-47bc-8996-01f797e0c170",
+      "name": "Dragonborn_Black",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "2103e15a-1eae-4dc0-a9b7-3b96c3a08869",
+      "name": "Dragonborn_Blue",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "32f676f0-41ca-4469-baa6-341d5c95a708",
+      "name": "Dragonborn_Brass",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "48318453-8aa8-4924-827d-173c957ac1de",
+      "name": "Dragonborn_Bronze",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "3f7e4753-277e-4259-9b29-423b9149cfb4",
+      "name": "Dragonborn_Copper",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "fe648fc4-3bc9-412c-b692-15fecddc3c69",
+      "name": "Dragonborn_Gold",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "d6eadf47-54f7-4b05-84b3-0a83eb88d016",
+      "name": "Dragonborn_Green",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "61a2c59d-fe8d-4644-8d04-6fae2b239eaf",
+      "name": "Dragonborn_Red",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "dff74c31-2ddc-4270-9615-01a1438ee61c",
+      "name": "Dragonborn_Silver",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "cbe10ab9-11a6-450e-844a-175bcca25de7",
+      "name": "Dragonborn_White",
+      "parent_uuid": "9c61a74a-20df-4119-89c5-d996956b6c66",
+      "tags": []
+    },
+    {
+      "uuid": "3f30547c-248c-4781-b0e3-6ef2ab99426b",
+      "name": "Tiefling_Asmodeus",
+      "parent_uuid": "b6dccbed-30f3-424b-a181-c4540cf38197",
+      "tags": [
+        "c3fd1fc3-2edf-4d17-935d-44ab92406df1"
+      ]
+    },
+    {
+      "uuid": "b03bdf0f-876d-4567-a0a3-28627319c919",
+      "name": "Tiefling_Mephistopeles",
+      "parent_uuid": "b6dccbed-30f3-424b-a181-c4540cf38197",
+      "tags": [
+        "ec5bea6b-26f1-4917-919c-375f67ac13d1"
+      ]
+    },
+    {
+      "uuid": "88d0d219-9dcb-462b-aab6-ccf31eeee2e3",
+      "name": "Tiefling_Zariel",
+      "parent_uuid": "b6dccbed-30f3-424b-a181-c4540cf38197",
+      "tags": [
+        "ab677895-e08a-479f-a043-eac2d8447188"
+      ]
+    },
+    {
+      "uuid": "3560f4a2-c0b8-4f8b-baf8-6b6eaef0c160",
+      "name": "Gnome_Deep",
+      "parent_uuid": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+      "tags": [
+        "2bbc3217-3d8c-46e6-b599-a0f1c9063f9a",
+        "60f6b464-752f-4970-a855-f729565b5e07"
+      ]
+    },
+    {
+      "uuid": "0c6f801e-74fc-492a-ab25-3ca9604156b4",
+      "name": "Gnome_Forest",
+      "parent_uuid": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+      "tags": [
+        "09518377-4ea1-4ce2-b8e8-61477c26ebdd"
+      ]
+    },
+    {
+      "uuid": "2cf6c770-24ab-4608-9617-d1e46c11ab55",
+      "name": "Gnome_Rock",
+      "parent_uuid": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+      "tags": [
+        "664cc044-a0ea-43a1-b21f-d8cad7721102"
+      ]
+    }
+  ],
+  "progressions": [
+    {
+      "uuid": "bdd1cf22-1b3c-4bc6-8313-898a49fcfe49",
+      "table_uuid": "0d83cb0b-1f39-47bb-97bc-a6e49cd8a5c5",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Target_MageHand"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bdd1cf22-1b3c-4bc6-8313-898a49fcfe49",
+      "table_uuid": "0d83cb0b-1f39-47bb-97bc-a6e49cd8a5c5",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Target_MageHand"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "938b6f72-18a6-4af0-924b-5292251d32bf",
+      "table_uuid": "0f6d9f53-a2d0-422b-beea-a2fdfd88628a",
+      "level": 1,
+      "passives_added": [
+        "SuperiorDarkvision",
+        "DeepGnome_StoneCamouflage"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "938b6f72-18a6-4af0-924b-5292251d32bf",
+      "table_uuid": "0f6d9f53-a2d0-422b-beea-a2fdfd88628a",
+      "level": 1,
+      "passives_added": [
+        "SuperiorDarkvision",
+        "DeepGnome_StoneCamouflage"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bd012f5b-0a0b-424e-ab7c-186dbd82ab30",
+      "table_uuid": "0f8458cb-9edd-401d-8066-86ba8e1529cf",
+      "level": 1,
+      "passives_added": [
+        "SuperiorDarkvision",
+        "Duergar_DuergarResilience"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bd012f5b-0a0b-424e-ab7c-186dbd82ab30",
+      "table_uuid": "0f8458cb-9edd-401d-8066-86ba8e1529cf",
+      "level": 1,
+      "passives_added": [
+        "SuperiorDarkvision",
+        "Duergar_DuergarResilience"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3feba964-0ae4-4ae5-b2a1-e515f0973efe",
+      "table_uuid": "1037326e-43ed-4840-9f37-10f1efb3779a",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3feba964-0ae4-4ae5-b2a1-e515f0973efe",
+      "table_uuid": "1037326e-43ed-4840-9f37-10f1efb3779a",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "56529178-3df2-4067-b1c0-e35fe82fbd37",
+      "table_uuid": "1640733f-c32b-4d9d-9132-5ca6e985155c",
+      "level": 1,
+      "passives_added": [
+        "Darkvision"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "56529178-3df2-4067-b1c0-e35fe82fbd37",
+      "table_uuid": "1640733f-c32b-4d9d-9132-5ca6e985155c",
+      "level": 1,
+      "passives_added": [
+        "Darkvision",
+        "Tiefling_HellishResistance"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "aa2257a9-1779-4d8b-be65-8a08eede07fa",
+      "table_uuid": "1e9f254e-6aa4-4e54-9937-82065b3182ee",
+      "level": 1,
+      "passives_added": [
+        "Darkvision",
+        "RockGnome_ArtificersLore"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "aa2257a9-1779-4d8b-be65-8a08eede07fa",
+      "table_uuid": "1e9f254e-6aa4-4e54-9937-82065b3182ee",
+      "level": 1,
+      "passives_added": [
+        "Darkvision",
+        "RockGnome_ArtificersLore"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "f5a766a1-9379-47ed-bfeb-cccbba64346f",
+      "table_uuid": "445a41db-995d-4e35-892a-4ab0e34d4594",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Acid"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Acid"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "dbde4d66-d3e4-4c3f-ae87-fd6e2d1cd276",
+      "table_uuid": "4b6e7ec9-145b-4a95-9d8a-b2181de2749e",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "dbde4d66-d3e4-4c3f-ae87-fd6e2d1cd276",
+      "table_uuid": "4b6e7ec9-145b-4a95-9d8a-b2181de2749e",
+      "level": 1,
+      "passives_added": [
+        "HumanMilitia",
+        "HumanVersatility"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "58dae581-c25a-4dfb-8a57-589bf4b34f62",
+      "table_uuid": "4ef615e7-e401-4304-bedc-5c229caa1dc2",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Target_DancingLights"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "58dae581-c25a-4dfb-8a57-589bf4b34f62",
+      "table_uuid": "4ef615e7-e401-4304-bedc-5c229caa1dc2",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Target_DancingLights"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a8b18f0c-fe70-4f13-9dbc-23f4dbc3d648",
+      "table_uuid": "5ae9c280-64fd-43fb-85f3-40d1796c5b24",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_Thaumaturgy"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a8b18f0c-fe70-4f13-9dbc-23f4dbc3d648",
+      "table_uuid": "5ae9c280-64fd-43fb-85f3-40d1796c5b24",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_ProduceFlame"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a1729574-2f7b-4561-91d8-3766cf940420",
+      "table_uuid": "5f06db9e-31b0-41d9-bfbe-3446323c4bf6",
+      "level": 1,
+      "passives_added": [
+        "Darkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a1729574-2f7b-4561-91d8-3766cf940420",
+      "table_uuid": "5f06db9e-31b0-41d9-bfbe-3446323c4bf6",
+      "level": 1,
+      "passives_added": [
+        "HumanMilitia",
+        "Darkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "db13a1fb-7d64-4309-a1c8-e2a5c752ded5",
+      "table_uuid": "5fd1dfd5-b5bd-4152-a04a-87fb3faba1e9",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": [
+        "Projectile_AcidSplash",
+        "Projectile_FireBolt",
+        "Projectile_PoisonSpray",
+        "Projectile_RayOfFrost",
+        "Shout_BladeWard",
+        "Target_ChillTouch",
+        "Target_DancingLights",
+        "Target_Friends",
+        "Target_Light",
+        "Target_MageHand",
+        "Target_MinorIllusion",
+        "Target_ShockingGrasp",
+        "Target_TrueStrike"
+      ]
+    },
+    {
+      "uuid": "db13a1fb-7d64-4309-a1c8-e2a5c752ded5",
+      "table_uuid": "5fd1dfd5-b5bd-4152-a04a-87fb3faba1e9",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": [
+        "Projectile_AcidSplash",
+        "Projectile_FireBolt",
+        "Projectile_PoisonSpray",
+        "Projectile_RayOfFrost",
+        "Shout_BladeWard",
+        "Target_ChillTouch",
+        "Target_DancingLights",
+        "Target_Friends",
+        "Target_Light",
+        "Target_MageHand",
+        "Target_MinorIllusion",
+        "Target_ShockingGrasp",
+        "Target_TrueStrike"
+      ]
+    },
+    {
+      "uuid": "cb0f84ec-1b1d-4ecc-9ab5-76261e332f5a",
+      "table_uuid": "685d3b16-1f7f-49b3-906d-d7726276926b",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "cb0f84ec-1b1d-4ecc-9ab5-76261e332f5a",
+      "table_uuid": "685d3b16-1f7f-49b3-906d-d7726276926b",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "816fa8c7-7648-48f7-8309-cb4e7383e45f",
+      "table_uuid": "74e2e44d-e8c0-4b99-a6dc-c02f43cea8a6",
+      "level": 1,
+      "passives_added": [
+        "Darkvision",
+        "RelentlessEndurance",
+        "SavageAttacks"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b7a39730-2820-40c7-be96-2c134fead68a",
+      "table_uuid": "786cb743-3286-462b-af46-3b1ba84c801e",
+      "level": 1,
+      "passives_added": [
+        "Halfling_StoutResilience"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b7a39730-2820-40c7-be96-2c134fead68a",
+      "table_uuid": "786cb743-3286-462b-af46-3b1ba84c801e",
+      "level": 1,
+      "passives_added": [
+        "Halfling_StoutResilience"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "963edcba-c572-4f51-b447-8810bbb43a8e",
+      "table_uuid": "7e1ae395-6f2a-456b-ab64-1012c18065d4",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "963edcba-c572-4f51-b447-8810bbb43a8e",
+      "table_uuid": "7e1ae395-6f2a-456b-ab64-1012c18065d4",
+      "level": 1,
+      "passives_added": [
+        "Halfling_Lucky",
+        "Halfling_Brave"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "f653d537-bc14-4fea-b7d2-25734ec928a2",
+      "table_uuid": "81e2cb57-6a12-4429-b3a5-f72549355b3b",
+      "level": 1,
+      "passives_added": [
+        "Gith_MartialProdigy"
+      ],
+      "spells_added": [
+        "Target_MageHand_GithyankiPsionics"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "f653d537-bc14-4fea-b7d2-25734ec928a2",
+      "table_uuid": "81e2cb57-6a12-4429-b3a5-f72549355b3b",
+      "level": 1,
+      "passives_added": [
+        "Gith_MartialProdigy"
+      ],
+      "spells_added": [
+        "Shout_AstralKnowledge",
+        "Target_MageHand_GithyankiPsionics"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "02abcdb7-301c-4ed5-9a39-223359e8d5fa",
+      "table_uuid": "829ed0e9-25dc-49ca-aee2-2494bbca180b",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Lightning"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Lightning"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "f6fa4014-79fc-4c9c-910b-8e3738424cac",
+      "table_uuid": "8aeadd65-f951-4004-8f65-b3cd127e1e6d",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Fire"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Fire_Cone"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "e557c3b8-7cc1-43f8-bd8a-6838ff01e6d1",
+      "table_uuid": "91577000-c8f7-465b-b56f-eb6d87d173d2",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Cold"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Cold"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "89d57acd-85ff-4da6-b989-9b82d0241e46",
+      "table_uuid": "957ba6a9-68f4-4190-a432-25675d00f434",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_Thaumaturgy"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "89d57acd-85ff-4da6-b989-9b82d0241e46",
+      "table_uuid": "957ba6a9-68f4-4190-a432-25675d00f434",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_Thaumaturgy"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "43bfa29a-fd63-4f47-850e-6714f0333022",
+      "table_uuid": "9efb7794-dc6f-45f3-8cf9-74ad5286c792",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": [
+        "Projectile_AcidSplash",
+        "Projectile_FireBolt",
+        "Projectile_PoisonSpray",
+        "Projectile_RayOfFrost",
+        "Shout_BladeWard",
+        "Target_ChillTouch",
+        "Target_DancingLights",
+        "Target_Friends",
+        "Target_Light",
+        "Target_MageHand",
+        "Target_MinorIllusion",
+        "Target_ShockingGrasp",
+        "Target_TrueStrike"
+      ]
+    },
+    {
+      "uuid": "43bfa29a-fd63-4f47-850e-6714f0333022",
+      "table_uuid": "9efb7794-dc6f-45f3-8cf9-74ad5286c792",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": [
+        "Projectile_AcidSplash",
+        "Projectile_FireBolt",
+        "Projectile_PoisonSpray",
+        "Projectile_RayOfFrost",
+        "Shout_BladeWard",
+        "Target_ChillTouch",
+        "Target_DancingLights",
+        "Target_Friends",
+        "Target_Light",
+        "Target_MageHand",
+        "Target_MinorIllusion",
+        "Target_ShockingGrasp",
+        "Target_TrueStrike"
+      ]
+    },
+    {
+      "uuid": "4a634f24-bdcb-4559-b8be-7847133ad1c3",
+      "table_uuid": "a43498f5-d72f-4a05-b721-1feea9acb3ad",
+      "level": 1,
+      "passives_added": [
+        "Drow_DrowWeaponTraining",
+        "SuperiorDarkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [
+        "Target_DancingLights"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "4a634f24-bdcb-4559-b8be-7847133ad1c3",
+      "table_uuid": "a43498f5-d72f-4a05-b721-1feea9acb3ad",
+      "level": 1,
+      "passives_added": [
+        "Drow_DrowWeaponTraining",
+        "SuperiorDarkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [
+        "Target_DancingLights"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b262db2c-7a80-4c76-a1e8-0efdb9c1db13",
+      "table_uuid": "c0210455-03b5-437c-9d80-3cc4e3c61a9f",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b262db2c-7a80-4c76-a1e8-0efdb9c1db13",
+      "table_uuid": "c0210455-03b5-437c-9d80-3cc4e3c61a9f",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3576f8c6-e515-49c5-808c-b68b77154ffd",
+      "table_uuid": "c19dc7fa-0a57-459c-ae4a-648472cbb8fe",
+      "level": 1,
+      "passives_added": [
+        "MountainDwarf_DwarvenArmorTraining"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3576f8c6-e515-49c5-808c-b68b77154ffd",
+      "table_uuid": "c19dc7fa-0a57-459c-ae4a-648472cbb8fe",
+      "level": 1,
+      "passives_added": [
+        "MountainDwarf_DwarvenArmorTraining"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "d48f8fb3-4351-4b5d-a28c-946fd33be726",
+      "table_uuid": "c1d4adfe-9f00-44b4-a433-a45250d00631",
+      "level": 1,
+      "passives_added": [
+        "Gnome_Cunning"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "d48f8fb3-4351-4b5d-a28c-946fd33be726",
+      "table_uuid": "c1d4adfe-9f00-44b4-a433-a45250d00631",
+      "level": 1,
+      "passives_added": [
+        "Gnome_Cunning"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b7e781e6-fa09-4a35-993a-b59e1e52a66f",
+      "table_uuid": "cc914fb7-e0eb-49f0-a195-20d11917bf1a",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Poison"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Poison"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "04ec0b37-ddb6-405d-989a-4f3e25ed1dfe",
+      "table_uuid": "ccbbbf91-53a4-4777-9676-5469d3d5b821",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Cold"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Cold"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "c91bb3ce-73d0-4330-80e1-562880a53472",
+      "table_uuid": "cda01bce-b09b-459a-bdb0-b162de09e54d",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "c91bb3ce-73d0-4330-80e1-562880a53472",
+      "table_uuid": "cda01bce-b09b-459a-bdb0-b162de09e54d",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "ec92e1f3-b8cf-42a8-aefc-29c053d22c44",
+      "table_uuid": "d5338f29-2047-40a7-ad72-f65241150858",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Fire"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Fire_Line"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3c9a0bd8-bb0f-4a42-b77f-7a9a1cff2e5d",
+      "table_uuid": "d93def5b-a2df-4675-8a33-e47c9647eeae",
+      "level": 1,
+      "passives_added": [
+        "Dwarf_DwarvenCombatTraining",
+        "Darkvision"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3c9a0bd8-bb0f-4a42-b77f-7a9a1cff2e5d",
+      "table_uuid": "d93def5b-a2df-4675-8a33-e47c9647eeae",
+      "level": 1,
+      "passives_added": [
+        "Dwarf_DwarvenCombatTraining",
+        "Darkvision",
+        "Dwarf_DwarvenResilience"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "fc46455a-24f8-4b5f-9340-05806e44257b",
+      "table_uuid": "dbe8c9aa-8a1d-49d2-b0b1-816966fe2c8c",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Lightning"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Lightning"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "cabc4d46-f08e-4a48-8937-0bd1067ab43d",
+      "table_uuid": "e2472b4f-682a-4ac8-b11c-723f921fd7a1",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "496486a4-b5f2-4f91-90ea-6cad9023952e",
+      "table_uuid": "eb9db11d-1091-49fa-9006-2f52bbb76f6a",
+      "level": 1,
+      "passives_added": [
+        "Elf_WeaponTraining",
+        "Darkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "496486a4-b5f2-4f91-90ea-6cad9023952e",
+      "table_uuid": "eb9db11d-1091-49fa-9006-2f52bbb76f6a",
+      "level": 1,
+      "passives_added": [
+        "Elf_WeaponTraining",
+        "Darkvision",
+        "FeyAncestry"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "c0202100-b905-4791-8eaa-1c110fe0bd02",
+      "table_uuid": "ed5b3a12-7f18-46c2-8fe9-1ff96d44ed96",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Fire"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Fire_Cone"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "37b52fb8-71be-45c7-889d-aca8110e931b",
+      "table_uuid": "f0747c54-dccd-4a1b-89d3-adee8bcc8b76",
+      "level": 1,
+      "passives_added": [
+        "Dragonborn_Resistance_Acid"
+      ],
+      "spells_added": [
+        "Zone_BreathWeapon_Acid"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a63bbb3c-c37c-4578-94e6-7d1c4c063d5c",
+      "table_uuid": "f0a6b572-9612-403f-981c-978c21225845",
+      "level": 1,
+      "passives_added": [
+        "Darkvision"
+      ],
+      "spells_added": [
+        "Shout_SpeakWithAnimals_ForestGnome"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a63bbb3c-c37c-4578-94e6-7d1c4c063d5c",
+      "table_uuid": "f0a6b572-9612-403f-981c-978c21225845",
+      "level": 1,
+      "passives_added": [
+        "Darkvision"
+      ],
+      "spells_added": [
+        "Shout_SpeakWithAnimals_ForestGnome"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bc2d257b-a405-4f58-891e-3083c5f71127",
+      "table_uuid": "fa29312c-6ec6-4bf9-9613-6d99feb57467",
+      "level": 1,
+      "passives_added": [
+        "Halfling_LightfootStealth"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bc2d257b-a405-4f58-891e-3083c5f71127",
+      "table_uuid": "fa29312c-6ec6-4bf9-9613-6d99feb57467",
+      "level": 1,
+      "passives_added": [
+        "Halfling_LightfootStealth"
+      ],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "207d038e-1add-4335-81d1-b0861f524c19",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "207d038e-1add-4335-81d1-b0861f524c19",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 1,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "10ae22cc-08d8-4c19-aa28-06fffb0782c2",
+      "table_uuid": "0d83cb0b-1f39-47bb-97bc-a6e49cd8a5c5",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "e29562f0-4bda-4dae-a079-637934af5511",
+      "table_uuid": "4b6e7ec9-145b-4a95-9d8a-b2181de2749e",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "f49fff52-8267-426c-ab23-176fc36f8c4e",
+      "table_uuid": "4ef615e7-e401-4304-bedc-5c229caa1dc2",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "2d07c1b4-baec-4bdb-a75a-ca513ad8df46",
+      "table_uuid": "5ae9c280-64fd-43fb-85f3-40d1796c5b24",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a35fe910-7525-4989-ba34-f9f76ff818ec",
+      "table_uuid": "5f06db9e-31b0-41d9-bfbe-3446323c4bf6",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "3d2b0fe9-ba54-4c5d-bdf9-2d67939276aa",
+      "table_uuid": "5fd1dfd5-b5bd-4152-a04a-87fb3faba1e9",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "1781a8fd-d8ce-4fc5-8674-6a176813917f",
+      "table_uuid": "81e2cb57-6a12-4429-b3a5-f72549355b3b",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "786ed4d4-7dd8-4ae6-b5a8-4a9e6572bc78",
+      "table_uuid": "957ba6a9-68f4-4190-a432-25675d00f434",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bd4b36f8-4835-4b1d-b432-3021011cabe6",
+      "table_uuid": "a43498f5-d72f-4a05-b721-1feea9acb3ad",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "cfb4d42f-ebe2-4f66-ad73-3ce7b6a635de",
+      "table_uuid": "eb9db11d-1091-49fa-9006-2f52bbb76f6a",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "d06d7fea-98ee-42a4-a298-8db698c88644",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 2,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "5b3c1a37-18a8-40cf-8bf6-cad43b3ff0cc",
+      "table_uuid": "0d83cb0b-1f39-47bb-97bc-a6e49cd8a5c5",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Zone_BurningHands_MephistophelesTiefling"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "02828bce-0bee-4010-a614-f4e46d0aba12",
+      "table_uuid": "0f8458cb-9edd-401d-8066-86ba8e1529cf",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_Enlarge_Duergar"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "b2b5d9e7-869d-42b7-b8fa-722442d1bc00",
+      "table_uuid": "4b6e7ec9-145b-4a95-9d8a-b2181de2749e",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "87d2588b-bd2e-43df-ace0-2c2d3efea0ca",
+      "table_uuid": "4ef615e7-e401-4304-bedc-5c229caa1dc2",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Target_FaerieFire_DrowMagic"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "bf3c33f5-4b95-4048-91f5-d8ff6f7a9cdd",
+      "table_uuid": "5ae9c280-64fd-43fb-85f3-40d1796c5b24",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_HellishRebuke_AsmodeusTiefling"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "25c0008d-57ca-4b88-a0f2-1dfbd5597f69",
+      "table_uuid": "5f06db9e-31b0-41d9-bfbe-3446323c4bf6",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "31068b3c-7a1a-4a44-bf3b-72010ba560be",
+      "table_uuid": "5fd1dfd5-b5bd-4152-a04a-87fb3faba1e9",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "851880cb-3b5d-4129-9b25-3bb17d849f87",
+      "table_uuid": "81e2cb57-6a12-4429-b3a5-f72549355b3b",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Jump_Githyanki"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "09be3a4b-3360-414e-b3fb-1e4a04b63331",
+      "table_uuid": "957ba6a9-68f4-4190-a432-25675d00f434",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Smite_Searing_ZarielTiefling"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "334e0ddd-33cb-468f-a232-40cfe9ad23da",
+      "table_uuid": "a43498f5-d72f-4a05-b721-1feea9acb3ad",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [
+        "Target_FaerieFire_DrowMagic"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "46ac9fd4-811c-4977-abeb-adfc31ab21c4",
+      "table_uuid": "eb9db11d-1091-49fa-9006-2f52bbb76f6a",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "c968fd3c-59b4-46e3-bbe0-ddd53f6a4d58",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 3,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "2fad3365-78a6-4b37-8583-d00ae2311cbd",
+      "table_uuid": "4b6e7ec9-145b-4a95-9d8a-b2181de2749e",
+      "level": 4,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "1567ea04-775f-4d2c-b752-cc47e69e9dae",
+      "table_uuid": "5fd1dfd5-b5bd-4152-a04a-87fb3faba1e9",
+      "level": 4,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "81e112c6-efc4-4e20-9a98-5d93856a0313",
+      "table_uuid": "eb9db11d-1091-49fa-9006-2f52bbb76f6a",
+      "level": 4,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "eebb77af-b7ee-4a48-84f9-5d4272745de8",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 4,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "a9e766ce-7641-4fac-9510-99389b86546f",
+      "table_uuid": "0d83cb0b-1f39-47bb-97bc-a6e49cd8a5c5",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_FlameBlade_MephistophelesTiefling"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "77f416e5-406b-40ee-a2ff-dea281c32c8f",
+      "table_uuid": "0f8458cb-9edd-401d-8066-86ba8e1529cf",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Shout_Invisibility_Duergar"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "60758c3f-d9c5-4f1a-a253-cf2a5e60b627",
+      "table_uuid": "4ef615e7-e401-4304-bedc-5c229caa1dc2",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Darkness_DrowMagic"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "76ced3c8-2244-477b-bab3-ba741db463d3",
+      "table_uuid": "5ae9c280-64fd-43fb-85f3-40d1796c5b24",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Darkness_DrowMagic"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "37ad7172-291b-4a05-b226-2734170fb4fa",
+      "table_uuid": "81e2cb57-6a12-4429-b3a5-f72549355b3b",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Target_MistyStep_Githyanki"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "0394d93d-5f86-42e6-821b-91777c6e120b",
+      "table_uuid": "957ba6a9-68f4-4190-a432-25675d00f434",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Smite_Branding_ZarielTiefling_Container"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "db485b48-fc71-4de4-a62d-47675659678b",
+      "table_uuid": "a43498f5-d72f-4a05-b721-1feea9acb3ad",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [
+        "Target_Darkness_DrowMagic"
+      ],
+      "spells_selected": []
+    },
+    {
+      "uuid": "4bf7aa2d-5abe-42a9-ad3e-8764f8532de8",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 5,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    },
+    {
+      "uuid": "c6d8c5b5-3143-4f1e-aeaf-563f0715199f",
+      "table_uuid": "fa449725-ed8a-4d8c-8908-9ff1469c2e21",
+      "level": 6,
+      "passives_added": [],
+      "spells_added": [],
+      "spells_selected": []
+    }
+  ]
+}

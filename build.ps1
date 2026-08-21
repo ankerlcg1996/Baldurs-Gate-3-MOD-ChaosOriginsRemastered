@@ -58,8 +58,8 @@ $version64 = [int64]36028797018963968 + $nextBuild
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $expectedFiles = @($packageFiles.files | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object)
-Require ($expectedFiles.Count -eq 14 -and ($expectedFiles | Select-Object -Unique).Count -eq 14) `
-    'package-files.json must contain exactly 14 unique paths'
+Require ($expectedFiles.Count -eq 16 -and ($expectedFiles | Select-Object -Unique).Count -eq 16) `
+    'package-files.json must contain exactly 16 unique paths'
 
 Reset-WorkDirectory $stageRoot
 Reset-WorkDirectory $reverseRoot

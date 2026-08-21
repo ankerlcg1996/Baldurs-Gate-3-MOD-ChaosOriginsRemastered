@@ -11,3 +11,23 @@ new entry "COR_AllSkillMastery"
 type "PassiveData"
 data "Properties" "IsHidden"
 data "Boosts" "ProficiencyBonus(Skill,Athletics);ExpertiseBonus(Athletics);Skill(Athletics,5);ProficiencyBonus(Skill,Acrobatics);ExpertiseBonus(Acrobatics);Skill(Acrobatics,5);ProficiencyBonus(Skill,SleightOfHand);ExpertiseBonus(SleightOfHand);Skill(SleightOfHand,5);ProficiencyBonus(Skill,Stealth);ExpertiseBonus(Stealth);Skill(Stealth,5);ProficiencyBonus(Skill,Arcana);ExpertiseBonus(Arcana);Skill(Arcana,5);ProficiencyBonus(Skill,History);ExpertiseBonus(History);Skill(History,5);ProficiencyBonus(Skill,Investigation);ExpertiseBonus(Investigation);Skill(Investigation,5);ProficiencyBonus(Skill,Nature);ExpertiseBonus(Nature);Skill(Nature,5);ProficiencyBonus(Skill,Religion);ExpertiseBonus(Religion);Skill(Religion,5);ProficiencyBonus(Skill,AnimalHandling);ExpertiseBonus(AnimalHandling);Skill(AnimalHandling,5);ProficiencyBonus(Skill,Insight);ExpertiseBonus(Insight);Skill(Insight,5);ProficiencyBonus(Skill,Medicine);ExpertiseBonus(Medicine);Skill(Medicine,5);ProficiencyBonus(Skill,Perception);ExpertiseBonus(Perception);Skill(Perception,5);ProficiencyBonus(Skill,Survival);ExpertiseBonus(Survival);Skill(Survival,5);ProficiencyBonus(Skill,Deception);ExpertiseBonus(Deception);Skill(Deception,5);ProficiencyBonus(Skill,Intimidation);ExpertiseBonus(Intimidation);Skill(Intimidation,5);ProficiencyBonus(Skill,Performance);ExpertiseBonus(Performance);Skill(Performance,5);ProficiencyBonus(Skill,Persuasion);ExpertiseBonus(Persuasion);Skill(Persuasion,5)"
+
+new entry "COR_BaseStarterSpells"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_BoomingBlade_ClassSpell);UnlockSpell(Target_Guidance);UnlockSpell(Target_MageHand,,,,Charisma);UnlockSpell(Target_MinorIllusion,,,,Intelligence);UnlockSpell(Shout_FeatherFall);UnlockSpell(Target_Jump);UnlockSpell(Shout_DisguiseSelf,AddChildren)"
+
+new entry "COR_RacialSpells_Level1"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Projectile_AcidSplash,,,,Intelligence);UnlockSpell(Projectile_FireBolt,,,,Intelligence);UnlockSpell(Projectile_PoisonSpray,,,,Intelligence);UnlockSpell(Projectile_RayOfFrost,,,,Intelligence);UnlockSpell(Shout_AstralKnowledge,AddChildren);UnlockSpell(Shout_BladeWard,,,,Intelligence);UnlockSpell(Shout_ProduceFlame,,,,Charisma);UnlockSpell(Shout_SpeakWithAnimals_ForestGnome,Singular,None,UntilRest,Intelligence);UnlockSpell(Shout_Thaumaturgy,,,,Charisma);UnlockSpell(Target_ChillTouch,,,,Intelligence);UnlockSpell(Target_DancingLights,,,,Charisma);UnlockSpell(Target_Friends,,,,Intelligence);UnlockSpell(Target_Light,,,,Intelligence);UnlockSpell(Target_MageHand_GithyankiPsionics,,,,Intelligence);UnlockSpell(Target_ShockingGrasp,,,,Intelligence);UnlockSpell(Target_TrueStrike,,,,Intelligence)"
+
+new entry "COR_RacialSpells_Level3"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_Enlarge_Duergar);UnlockSpell(Shout_HellishRebuke_AsmodeusTiefling,Singular,None,UntilRest,Charisma);UnlockSpell(Target_FaerieFire_DrowMagic,Singular,None,UntilRest,Charisma);UnlockSpell(Target_Jump_Githyanki,Singular,None,UntilRest,Intelligence);UnlockSpell(Target_Smite_Searing_ZarielTiefling,Singular,None,UntilRest,Charisma);UnlockSpell(Zone_BurningHands_MephistophelesTiefling,Singular,None,UntilRest,Charisma)"
+
+new entry "COR_RacialSpells_Level5"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_FlameBlade_MephistophelesTiefling,Singular,None,UntilRest,Charisma);UnlockSpell(Shout_Invisibility_Duergar);UnlockSpell(Target_Darkness_DrowMagic,Singular,None,UntilRest,Charisma);UnlockSpell(Target_MistyStep_Githyanki,Singular,None,UntilRest,Intelligence);UnlockSpell(Target_Smite_Branding_ZarielTiefling_Container,AddChildren,None,UntilRest,Charisma)"

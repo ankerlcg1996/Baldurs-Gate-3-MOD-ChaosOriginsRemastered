@@ -3,7 +3,7 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
-local SCHEMA_VERSION = 1
+local SCHEMA_VERSION = 2
 local registered = false
 
 local function assertOnlyKeys(value, allowed, label)
@@ -13,30 +13,22 @@ local function assertOnlyKeys(value, allowed, label)
     end
 end
 
-local function validateBooleanMap(value, label)
+local function validateGrantMap(value, label)
     assert(type(value) == "table", "ChaosOriginsRemastered: " .. label .. " must be a table")
     for key, owned in pairs(value) do
-        assert(type(key) == "string" and owned == true,
+        assert(type(key) == "string"
+            and (owned == true or owned == "adding" or owned == "removing"),
             "ChaosOriginsRemastered: invalid " .. label .. " entry " .. tostring(key))
     end
 end
 
-local function validateCharacter(record, characterId)
-    assert(type(record) == "table",
-        "ChaosOriginsRemastered: character state must be a table " .. characterId)
-    assertOnlyKeys(record, {
-        Granted = true,
-        RewardItems = true,
-        StarterRewardsVersion = true
-    }, "character state")
-
+local function validateLegacyFields(record, characterId)
     assert(type(record.Granted) == "table",
         "ChaosOriginsRemastered: grant ledger must be a table " .. characterId)
     assertOnlyKeys(record.Granted, { Passives = true, Spells = true }, "grant ledger")
-    validateBooleanMap(record.Granted.Passives, "passive grant ledger")
-    validateBooleanMap(record.Granted.Spells, "spell grant ledger")
+    validateGrantMap(record.Granted.Passives, "passive grant ledger")
+    validateGrantMap(record.Granted.Spells, "spell grant ledger")
 
-    -- 保留 1.0.07 的奖励字段只为兼容旧存档；新版本不再读写或补发这些物品。
     assert(type(record.RewardItems) == "table",
         "ChaosOriginsRemastered: reward ledger must be a table " .. characterId)
     for template, object in pairs(record.RewardItems) do
@@ -47,9 +39,58 @@ local function validateCharacter(record, characterId)
         "ChaosOriginsRemastered: invalid starter reward version " .. characterId)
 end
 
+local function validateLegacyCharacter(record, characterId)
+    assert(type(record) == "table",
+        "ChaosOriginsRemastered: character state must be a table " .. characterId)
+    assertOnlyKeys(record, {
+        Granted = true,
+        RewardItems = true,
+        StarterRewardsVersion = true
+    }, "character state")
+    validateLegacyFields(record, characterId)
+end
+
+local function validateCharacter(record, characterId)
+    assert(type(record) == "table",
+        "ChaosOriginsRemastered: character state must be a table " .. characterId)
+    assertOnlyKeys(record, {
+        Granted = true,
+        RaceGranted = true,
+        NativeRaceTags = true,
+        RewardItems = true,
+        StarterRewardsVersion = true
+    }, "character state")
+    validateLegacyFields(record, characterId)
+
+    assert(type(record.RaceGranted) == "table",
+        "ChaosOriginsRemastered: racial grant ledger must be a table " .. characterId)
+    assertOnlyKeys(record.RaceGranted,
+        { Passives = true, Spells = true, Tags = true }, "racial grant ledger")
+    validateGrantMap(record.RaceGranted.Passives, "racial passive grant ledger")
+    validateGrantMap(record.RaceGranted.Spells, "racial spell grant ledger")
+    validateGrantMap(record.RaceGranted.Tags, "racial tag grant ledger")
+
+    assert(type(record.NativeRaceTags) == "table",
+        "ChaosOriginsRemastered: native race-tag order must be a table " .. characterId)
+    local seenTags = {}
+    local tagCount = 0
+    for index, tag in pairs(record.NativeRaceTags) do
+        assert(type(index) == "number" and index >= 1 and index % 1 == 0
+            and type(tag) == "string" and not seenTags[tag],
+            "ChaosOriginsRemastered: invalid native race-tag order entry " .. tostring(tag))
+        ChaosCharacter.CanonicalGuid(tag, "native race tag")
+        seenTags[tag] = true
+        tagCount = tagCount + 1
+    end
+    assert(tagCount == #record.NativeRaceTags,
+        "ChaosOriginsRemastered: native race-tag order must be a dense array " .. characterId)
+end
+
 local function newCharacter()
     return {
         Granted = { Passives = {}, Spells = {} },
+        RaceGranted = { Passives = {}, Spells = {}, Tags = {} },
+        NativeRaceTags = {},
         RewardItems = {},
         StarterRewardsVersion = 0
     }
@@ -80,10 +121,20 @@ local function root()
     local state = variables[STATE_NAME]
     assert(type(state) == "table", "ChaosOriginsRemastered: saved state must be a table")
     assertOnlyKeys(state, { SchemaVersion = true, Characters = true }, "saved state")
-    assert(state.SchemaVersion == SCHEMA_VERSION,
-        "ChaosOriginsRemastered: unsupported saved-state schema " .. tostring(state.SchemaVersion))
     assert(type(state.Characters) == "table",
         "ChaosOriginsRemastered: saved character map must be a table")
+    if state.SchemaVersion == 1 then
+        -- 1.0.08 存档只新增独立种族账本，旧能力与已有物品记录原样保留。
+        for characterId, record in pairs(state.Characters) do
+            validateLegacyCharacter(record, characterId)
+            record.RaceGranted = { Passives = {}, Spells = {}, Tags = {} }
+            record.NativeRaceTags = {}
+        end
+        state.SchemaVersion = SCHEMA_VERSION
+        M.MarkDirty()
+    end
+    assert(state.SchemaVersion == SCHEMA_VERSION,
+        "ChaosOriginsRemastered: unsupported saved-state schema " .. tostring(state.SchemaVersion))
     return state
 end
 
