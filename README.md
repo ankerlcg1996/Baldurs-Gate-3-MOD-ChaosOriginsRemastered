@@ -1,7 +1,28 @@
 # Chaos Origins Remastered
 
-第一阶段最小验证版本。它只注册一个基于官方 `Generic` 数据形态的“混沌”起源、一个独立起源标签和一个隐藏标记被动。
+混沌起源重制版。当前正式基础机制在已通过实机验证的起源、守护者和官方升级流程上，增加以下内容：
 
-当前明确不包含：自定义种族、默认角色模板、Progressions、CharacterCreation、角色视觉、Story 逻辑、MCM 和任何战斗机制。
+- 全简易/军用武器、轻/中/重甲、盾牌和乐器熟练；
+- 18 项技能全部获得熟练、精通和固定 `+5`；
+- 回响之刃、神导术、法师之手、次级幻影、羽落术和强化跳跃；
+- 变形者面具、数字豪华版服装箱和冒险者包，每个混沌角色只发放一次；
+- 按存档、按角色保存的授予归属与奖励账本。
 
-执行 `build.ps1` 会构建并反向解包验证 `dist/ChaosOriginsRemastered.pak`。首个成功构建为 `1.0.01`，以后每次构建递增末位版本。
+当前仍不包含种族能力聚合、七起源身份开关、混沌资源、随机机制和 MCM 设置。项目不修改职业 Progressions、专长成长、角色模板或视觉资源。
+
+## 构建
+
+首次构建或游戏更新后，先从本机游戏 PAK 准备最小验证数据：
+
+```powershell
+& .\prepare-official-data.ps1 -GameDataPath '<BG3 Data目录>' -LslibPath '<LSLib.dll路径>'
+```
+
+然后验证并构建：
+
+```powershell
+& .\verify.ps1
+& .\build.ps1 -LslibPath '<LSLib.dll路径>'
+```
+
+`package-files.json` 是受版本控制的 PAK 文件清单。构建会先做机制与官方标识检查，再核对 staging 清单，最后反向解包并逐文件比较 SHA-256。首个成功构建为 `1.0.01`，以后每次成功构建递增末位版本。
