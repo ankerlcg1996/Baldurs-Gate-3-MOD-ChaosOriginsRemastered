@@ -174,10 +174,20 @@ $ledgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua'
 foreach ($token in @('Osi.HasPassive', 'Osi.AddPassive', 'Osi.HasSpell', 'Osi.AddSpell', 'State.MarkDirty')) {
     Require ($ledgerLua.Contains($token)) "Grant ledger behavior is missing: $token"
 }
+foreach ($token in @('VERIFY_TIMEOUT_MS = 2000', 'scheduleVerification', 'GrantLedger.ResetRuntime')) {
+    Require (($ledgerLua + $bootstrap).Contains($token)) "Asynchronous grant verification is missing: $token"
+}
+foreach ($token in @('LEVEL_12_TOTAL_EXPERIENCE = 100000', 'Osi.AddExplorationExperience')) {
+    Require ($bootstrap.Contains($token)) "Level-12 test experience behavior is missing: $token"
+}
 $rewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'StarterRewards.lua') -Encoding UTF8
-foreach ($token in @('TemplateAddedTo', 'TemplateAddTo', 'RewardItems', 'Osi.Equip', 'Osi.IsEquipped')) {
+foreach ($token in @('TemplateAddedTo', 'TemplateAddTo', 'RewardItems', 'Osi.Equip', 'Osi.IsEquipped',
+    'created reward identity mismatch')) {
     Require ($rewardsLua.Contains($token)) "Starter reward behavior is missing: $token"
 }
+Require ($bootstrap.Contains('runIndependent("base features"') -and
+    $bootstrap.Contains('runIndependent("starter rewards"')) `
+    'Base features and starter rewards must synchronize independently'
 
 $officialSharedStats = Join-Path $ProjectRoot 'work\official-validation\Shared'
 $officialGustavXStats = Join-Path $ProjectRoot 'work\official-validation\GustavX'
@@ -235,8 +245,7 @@ $textFiles = @(
 ) | Where-Object { $_.Extension -in $textExtensions }
 $forbiddenPatterns = @(
     'LegacyOfDeath', 'LOD_', 'LOC_Chaos', 'b60b330f-f303-4a78-ad37-b79659c63821',
-    '8f7dc353-74fa-5ad9-a628-f467675b1f99', 'AddExplorationExperience',
-    'LEVEL_12_TOTAL_EXPERIENCE'
+    '8f7dc353-74fa-5ad9-a628-f467675b1f99'
 )
 foreach ($pattern in $forbiddenPatterns) {
     $hit = $textFiles | Select-String -SimpleMatch $pattern | Select-Object -First 1

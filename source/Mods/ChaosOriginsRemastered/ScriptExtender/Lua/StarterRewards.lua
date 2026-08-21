@@ -77,37 +77,42 @@ end
 
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "after",
     function(template, object, inventoryHolder, _)
+        local holderKey = string.sub(tostring(inventoryHolder), -36)
+        local templateKey = string.sub(tostring(template), -36)
+        local operation = active[holderKey]
+        if operation == nil or operation.PendingTemplate ~= templateKey then return end
+
         local holderGuid = ChaosCharacter.CanonicalGuid(inventoryHolder, "reward holder")
         local templateGuid = ChaosCharacter.CanonicalGuid(template, "reward template")
         local objectGuid = ChaosCharacter.CanonicalGuid(object, "reward object")
-        local operation = active[holderGuid]
-        if operation == nil or operation.PendingTemplate ~= templateGuid then return end
         guarded(holderGuid, operation, function()
-            local actualTemplate = ChaosCharacter.CanonicalGuid(Osi.GetTemplate(objectGuid),
-                "created reward template")
-            local actualHolder = ChaosCharacter.CanonicalGuid(Osi.GetInventoryOwner(objectGuid),
-                "created reward holder")
-            assert(actualTemplate == templateGuid and actualHolder == holderGuid,
-                "ChaosOriginsRemastered: created reward identity mismatch " .. objectGuid
-                    .. " for " .. holderGuid .. " template " .. templateGuid)
-
-            -- 记录事件返回的真实对象，而不是按模板查询背包，避免误认玩家原有物品。
+            -- 创建事件本身就是对象来源证据，先持久化可避免后续验证失败时重复创建。
             operation.Record.RewardItems[templateGuid] = objectGuid
             operation.PendingTemplate = nil
             State.MarkDirty()
             Ext.Timer.WaitFor(100, function()
-                if active[holderGuid] == operation then
-                    guarded(holderGuid, operation, function() continueRewards(holderGuid) end)
-                end
+                if active[holderGuid] ~= operation then return end
+                guarded(holderGuid, operation, function()
+                    local actualTemplate = ChaosCharacter.CanonicalGuid(Osi.GetTemplate(objectGuid),
+                        "created reward template")
+                    local actualHolder = ChaosCharacter.CanonicalGuid(Osi.GetInventoryOwner(objectGuid),
+                        "created reward holder")
+                    assert(actualTemplate == templateGuid and actualHolder == holderGuid,
+                        "ChaosOriginsRemastered: created reward identity mismatch " .. objectGuid
+                            .. " for " .. holderGuid .. " template " .. templateGuid)
+                    continueRewards(holderGuid)
+                end)
             end)
         end)
     end)
 
 Ext.Osiris.RegisterListener("Equipped", 2, "after", function(item, character)
+    local characterKey = string.sub(tostring(character), -36)
+    local operation = active[characterKey]
+    if operation == nil or not operation.Equipping then return end
+
     local characterGuid = ChaosCharacter.CanonicalGuid(character, "equipped character")
     local itemGuid = ChaosCharacter.CanonicalGuid(item, "equipped item")
-    local operation = active[characterGuid]
-    if operation == nil or not operation.Equipping then return end
     if operation.Record.RewardItems[MASK_TEMPLATE] ~= itemGuid then return end
 
     guarded(characterGuid, operation, function()
