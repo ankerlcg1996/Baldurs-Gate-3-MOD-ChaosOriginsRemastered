@@ -1,4 +1,5 @@
 local M = {}
+local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
@@ -91,11 +92,14 @@ function M.MarkDirty()
 end
 
 function M.CharacterId(character)
-    local entity = assert(Ext.Entity.Get(character),
-        "ChaosOriginsRemastered: character entity is unavailable " .. tostring(character))
+    local canonical = ChaosCharacter.CanonicalGuid(character, "character")
+    local entity = assert(Ext.Entity.Get(canonical),
+        "ChaosOriginsRemastered: character entity is unavailable " .. canonical)
     local uuid = assert(entity.Uuid,
-        "ChaosOriginsRemastered: character UUID is unavailable " .. tostring(character))
-    return tostring(uuid.EntityUuid)
+        "ChaosOriginsRemastered: character UUID component is unavailable " .. canonical)
+    assert(uuid.EntityUuid ~= nil,
+        "ChaosOriginsRemastered: character UUID value is unavailable " .. canonical)
+    return ChaosCharacter.CanonicalGuid(uuid.EntityUuid, "character entity")
 end
 
 function M.GetCharacter(character)

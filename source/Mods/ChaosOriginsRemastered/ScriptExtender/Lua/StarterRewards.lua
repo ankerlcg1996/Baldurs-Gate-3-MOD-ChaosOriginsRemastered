@@ -1,4 +1,5 @@
 local State = Ext.Require("ChaosState.lua")
+local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 local M = {}
 
 local MASK_TEMPLATE = "5d66776d-0650-4512-b300-b2ac38e2be3a"
@@ -11,6 +12,14 @@ local NULL_UUID = "00000000-0000-0000-0000-000000000000"
 local active = {}
 local templatesValidated = false
 local continueRewards
+
+local function guarded(character, operation, callback)
+    local ok, failure = xpcall(callback, debug.traceback)
+    if not ok then
+        if active[character] == operation then active[character] = nil end
+        error(failure)
+    end
+end
 
 local function validateTemplates()
     if templatesValidated then return end
@@ -38,15 +47,11 @@ local function finishByEquippingMask(character, operation)
 
     operation.Equipping = true
     Osi.Equip(character, maskObject, 1, 1, 0)
-    Ext.Timer.WaitFor(200, function()
+    Ext.Timer.WaitFor(2000, function()
         if active[character] ~= operation then return end
         active[character] = nil
-        assert(Osi.IsEquipped(maskObject) == 1,
-            "ChaosOriginsRemastered: failed to equip starter mask " .. maskObject
-                .. " for " .. character)
-        -- 三件奖励和自动装备全部成功后，才允许写入完成版本。
-        operation.Record.StarterRewardsVersion = 1
-        State.MarkDirty()
+        error("ChaosOriginsRemastered: timed out equipping starter mask " .. maskObject
+            .. " for " .. character)
     end)
 end
 
@@ -72,26 +77,57 @@ end
 
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "after",
     function(template, object, inventoryHolder, _)
-        local operation = active[inventoryHolder]
-        if operation == nil or operation.PendingTemplate ~= template then return end
-        assert(type(object) == "string" and object ~= "" and object ~= NULL_UUID,
-            "ChaosOriginsRemastered: invalid created reward object " .. tostring(object)
-                .. " for " .. inventoryHolder .. " template " .. template)
+        local holderGuid = ChaosCharacter.CanonicalGuid(inventoryHolder, "reward holder")
+        local templateGuid = ChaosCharacter.CanonicalGuid(template, "reward template")
+        local objectGuid = ChaosCharacter.CanonicalGuid(object, "reward object")
+        local operation = active[holderGuid]
+        if operation == nil or operation.PendingTemplate ~= templateGuid then return end
+        guarded(holderGuid, operation, function()
+            local actualTemplate = ChaosCharacter.CanonicalGuid(Osi.GetTemplate(objectGuid),
+                "created reward template")
+            local actualHolder = ChaosCharacter.CanonicalGuid(Osi.GetInventoryOwner(objectGuid),
+                "created reward holder")
+            assert(actualTemplate == templateGuid and actualHolder == holderGuid,
+                "ChaosOriginsRemastered: created reward identity mismatch " .. objectGuid
+                    .. " for " .. holderGuid .. " template " .. templateGuid)
 
-        -- 记录事件返回的真实对象，而不是按模板查询背包，避免误认玩家原有物品。
-        operation.Record.RewardItems[template] = object
-        operation.PendingTemplate = nil
-        State.MarkDirty()
-        Ext.Timer.WaitFor(100, function()
-            if active[inventoryHolder] == operation then continueRewards(inventoryHolder) end
+            -- 记录事件返回的真实对象，而不是按模板查询背包，避免误认玩家原有物品。
+            operation.Record.RewardItems[templateGuid] = objectGuid
+            operation.PendingTemplate = nil
+            State.MarkDirty()
+            Ext.Timer.WaitFor(100, function()
+                if active[holderGuid] == operation then
+                    guarded(holderGuid, operation, function() continueRewards(holderGuid) end)
+                end
+            end)
         end)
     end)
 
+Ext.Osiris.RegisterListener("Equipped", 2, "after", function(item, character)
+    local characterGuid = ChaosCharacter.CanonicalGuid(character, "equipped character")
+    local itemGuid = ChaosCharacter.CanonicalGuid(item, "equipped item")
+    local operation = active[characterGuid]
+    if operation == nil or not operation.Equipping then return end
+    if operation.Record.RewardItems[MASK_TEMPLATE] ~= itemGuid then return end
+
+    guarded(characterGuid, operation, function()
+        assert(Osi.IsEquipped(itemGuid) == 1,
+            "ChaosOriginsRemastered: starter mask equip event was not applied " .. itemGuid
+                .. " for " .. characterGuid)
+        -- 三件奖励和自动装备全部成功后，才允许写入完成版本。
+        operation.Record.StarterRewardsVersion = 1
+        State.MarkDirty()
+        active[characterGuid] = nil
+    end)
+end)
+
 function M.Sync(character, record)
+    character = ChaosCharacter.CanonicalGuid(character, "reward character")
     if record.StarterRewardsVersion == 1 or active[character] ~= nil then return end
     validateTemplates()
-    active[character] = { Record = record, PendingTemplate = nil, Equipping = false }
-    continueRewards(character)
+    local operation = { Record = record, PendingTemplate = nil, Equipping = false }
+    active[character] = operation
+    guarded(character, operation, function() continueRewards(character) end)
 end
 
 function M.ResetRuntime()

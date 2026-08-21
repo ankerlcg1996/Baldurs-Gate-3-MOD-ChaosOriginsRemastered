@@ -8,8 +8,10 @@ local StarterRewards = Ext.Require("StarterRewards.lua")
 State.Register()
 
 local syncing = {}
+local scheduled = {}
 
 local function syncCharacter(character)
+    character = ChaosCharacter.CanonicalGuid(character, "sync character")
     if not ChaosCharacter.IsEligible(character) then return end
     if syncing[character] then
         Ext.Utils.PrintWarning("ChaosOriginsRemastered: skipped re-entrant sync for " .. character)
@@ -17,17 +19,23 @@ local function syncCharacter(character)
     end
 
     syncing[character] = true
-    local ok, failure = pcall(function()
+    local ok, failure = xpcall(function()
         local record = State.GetCharacter(character)
         BaseFeatures.Sync(character, record)
         StarterRewards.Sync(character, record)
-    end)
+    end, debug.traceback)
     syncing[character] = nil
     if not ok then error(failure) end
 end
 
 local function scheduleCharacter(character, delay)
-    Ext.Timer.WaitFor(delay, function() syncCharacter(character) end)
+    character = ChaosCharacter.CanonicalGuid(character, "scheduled character")
+    if scheduled[character] then return end
+    scheduled[character] = true
+    Ext.Timer.WaitFor(delay, function()
+        scheduled[character] = nil
+        syncCharacter(character)
+    end)
 end
 
 local function scheduleAllPlayers(delay)
@@ -41,6 +49,7 @@ end
 
 Ext.Events.SessionLoaded:Subscribe(function()
     syncing = {}
+    scheduled = {}
     StarterRewards.ResetRuntime()
 end)
 
