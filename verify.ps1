@@ -243,7 +243,8 @@ foreach ($token in @(
     Require ($mechanicsLua.Contains($token)) "Chaos mechanic runtime is missing: $token"
 }
 foreach ($token in @('uuid(event.Caster)', 'uuid(event.Target)', 'eventKey(source, target, actionId, event.Hit)',
-    'applyingTargets[target]', 'function M.ResetRuntime()', 'function M.IsApplying')) {
+    'applyingTargets[target]', 'function M.ResetRuntime()', 'function M.IsApplying',
+    'source = assert(uuid(source)', 'character = assert(uuid(character)')) {
     Require ($dualityLua.Contains($token)) "Correlated Duality runtime is missing: $token"
 }
 Require (-not $dualityLua.Contains('table.remove(captured, 1)')) `

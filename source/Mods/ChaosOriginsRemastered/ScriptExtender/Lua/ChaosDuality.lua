@@ -405,6 +405,8 @@ function M.IsApplying(source, target)
 end
 
 function M.ClearForSource(source)
+    source = assert(uuid(source),
+        "ChaosOriginsRemastered: Duality source is unavailable while clearing")
     for key, entry in pairs(captured) do
         if entry.Source == source then captured[key] = nil end
     end
@@ -420,6 +422,8 @@ end
 
 function M.OnTurnStarted(character)
     assert(options ~= nil, "ChaosOriginsRemastered: Chaos Duality is not configured")
+    character = assert(uuid(character),
+        "ChaosOriginsRemastered: Duality turn character is unavailable")
     local delayed = options.Delayed()
     local changed = false
     for index = #delayed, 1, -1 do
