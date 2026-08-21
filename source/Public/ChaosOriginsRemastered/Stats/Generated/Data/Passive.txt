@@ -37,7 +37,7 @@ type "PassiveData"
 data "DisplayName" "hfa05cce9gef4dg570bgbc1fg7187d154129d;1"
 data "Description" "h049bbad7g2b78g5bedg831dga2a983c40cda;1"
 data "Icon" "Icon_Origin_Astarion"
-data "Properties" "IsToggled;Highlighted"
+data "Properties" "IsToggled;IsHidden"
 data "ToggleOnFunctors" "ApplyStatus(COR_ORIGIN_ASTARION,100,-1)"
 data "ToggleOffFunctors" "RemoveStatus(COR_ORIGIN_ASTARION)"
 

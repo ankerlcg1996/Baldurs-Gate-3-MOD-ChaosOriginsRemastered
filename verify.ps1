@@ -18,13 +18,14 @@ $source = Join-Path $ProjectRoot 'source'
 $originPath = Join-Path $source "Public\$moduleName\Origins\Origins.lsx"
 $metaPath = Join-Path $source "Mods\$moduleName\meta.lsx"
 $passivePath = Join-Path $source "Public\$moduleName\Stats\Generated\Data\Passive.txt"
+$statusPath = Join-Path $source "Public\$moduleName\Stats\Generated\Data\Status_BOOST.txt"
 $tagPath = Join-Path $ProjectRoot "resource-src\Public\$moduleName\Tags\$originTag.lsf.lsx"
 $configPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Config.json"
 $bootstrapPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Lua\BootstrapServer.lua"
 $packageFilesPath = Join-Path $ProjectRoot 'package-files.json'
 $raceCatalogPath = Join-Path $ProjectRoot 'official-data\race-catalog.json'
 $raceCatalogGeneratorPath = Join-Path $ProjectRoot 'generate-race-catalog.ps1'
-foreach ($path in @($originPath, $metaPath, $passivePath, $tagPath, $configPath, $bootstrapPath, $packageFilesPath)) {
+foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $configPath, $bootstrapPath, $packageFilesPath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Required minimal source is missing: $path"
 }
 
@@ -80,6 +81,32 @@ Require (-not (Compare-Object ($passiveEntries | Sort-Object) @(
 ))) 'Passive.txt must contain exactly the marker, base features, three racial-spell passives, and seven origin toggles'
 Require ($passive.Contains("new entry `"COR_OriginMarker`"`ntype `"PassiveData`"`ndata `"Properties`" `"IsHidden`"")) `
     'Origin marker must remain a hidden no-effect passive'
+
+$originToggleNames = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
+foreach ($name in $originToggleNames) {
+    $status = 'COR_ORIGIN_' + $name.ToUpperInvariant()
+    $block = [regex]::Match($passive,
+        '(?ms)^new entry "COR_Origin_' + $name + '"\r?\n.*?(?=^new entry |\z)').Value
+    Require ($block -ne '' -and $block.Contains('data "ToggleOnFunctors" "ApplyStatus(' + $status + ',100,-1)"') `
+        -and $block.Contains('data "ToggleOffFunctors" "RemoveStatus(' + $status + ')"')) `
+        "Origin toggle functors are invalid: $name"
+}
+
+$statusText = Get-Content -Raw -LiteralPath $statusPath -Encoding UTF8
+$originStatusTags = [ordered]@{
+    ASTARION = 'REALLY_ASTARION'; GALE = 'REALLY_GALE'; LAEZEL = 'REALLY_LAEZEL'
+    SHADOWHEART = 'REALLY_SHADOWHEART'; WYLL = 'REALLY_WYLL'; KARLACH = 'REALLY_KARLACH'
+    DARKURGE = 'REALLY_DARK_URGE'
+}
+foreach ($entry in $originStatusTags.GetEnumerator()) {
+    $block = [regex]::Match($statusText,
+        '(?ms)^new entry "COR_ORIGIN_' + $entry.Key + '"\r?\n.*?(?=^new entry |\z)').Value
+    Require ($block -ne '' -and $block.Contains('data "StackId" "COR_ORIGIN_IDENTITY"') `
+        -and $block.Contains('data "Boosts" "Tag(' + $entry.Value + ')"')) `
+        "Origin identity status is invalid: $($entry.Key)"
+}
+Require (([regex]::Matches($statusText, '^new entry "COR_ORIGIN_', 'Multiline')).Count -eq 7) `
+    'Status_BOOST.txt must contain exactly seven origin identity statuses'
 
 $proficiencyBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)'
 Require ($passive.Contains("new entry `"COR_BaseProficiencies`"`ntype `"PassiveData`"`ndata `"Properties`" `"IsHidden`"`ndata `"Boosts`" `"$proficiencyBoosts`"")) `
