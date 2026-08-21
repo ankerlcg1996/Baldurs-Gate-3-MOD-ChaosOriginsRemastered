@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">混沌</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">挣脱既定命运的混沌之子，掌握所有武装与技能，并携带六种初始法术和独有旅途赠礼。</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">挣脱既定命运的混沌之子。掌握全部武器、护甲与十八项技能，并拥有七种初始法术；不发放任何豪华版物品。</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">阿斯代伦身份</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">盖尔身份</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">莱埃泽尔身份</content>
@@ -88,7 +88,7 @@
   <content contentuid="h5d7268c9gdbe1g5cc0g88degf4db5f03573f" version="1">回响与极端</content>
   <content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">撕开混沌，重塑当前回合。立即恢复全部生命，解除有害状态，并恢复行动、附赠动作与移动力。随后获得&lt;LSTag Type="Status" Tooltip="COR_CHAOS_GENESIS"&gt;开天辟地&lt;/LSTag&gt;与一次&lt;LSTag Type="Status" Tooltip="COR_CHAOS_KILL"&gt;混沌必杀&lt;/LSTag&gt;。</content>
   <content contentuid="h5f4722a1g9c8eg5e1ega61ag71b084670f0d" version="1">双相脉冲（4%）：一半立即结算，另一半在目标下回合开始时结算。双时回响（2%）：现在与目标下回合各结算一次完整轮盘伤害。虚空吞噬（8%）：轮盘伤害消失。创世裂击（2.5%）：原目标承受4倍轮盘伤害。</content>
-  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">每回合第一次受到敌方或友方的攻击或法术伤害时，等概率抽取一种&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;负面结果&lt;/LSTag&gt;、&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;正面结果&lt;/LSTag&gt;或&lt;LSTag Type="Status" Tooltip="WET"&gt;潮湿&lt;/LSTag&gt;。只有敌方造成的负面结果会加深混沌迷失并尝试获取混沌之力；若免疫抽中的状态，本回合不会重抽。</content>
+  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">从你的一个回合开始到下个回合开始之间，第一次受到敌方或友方的攻击或法术伤害时，等概率抽取一种&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;负面结果&lt;/LSTag&gt;、&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;正面结果&lt;/LSTag&gt;或&lt;LSTag Type="Status" Tooltip="WET"&gt;潮湿&lt;/LSTag&gt;。只有敌方造成的负面结果会加深混沌迷失并尝试获取混沌之力；若免疫抽中的状态，本周期不会重抽。</content>
   <content contentuid="h61e4f35cg35f9g5361gaa83g395c378c4c4b" version="1">混沌受创：寒冷易伤</content>
   <content contentuid="h6208a824g1cb1g5297gbb0ag4fd59dd907e9" version="1">原目标与最近的敌人平分轮盘伤害；没有其他敌人时，原目标承受全部。</content>
   <content contentuid="h6212830cgb80eg5b83ga89bg653bda4345c9" version="1">混沌受创：隐形</content>
@@ -199,4 +199,50 @@
   <content contentuid="hfa04251eg55e7g542dg8f68ga1c4f0426b87" version="1">获得光耀易伤1回合，受到的光耀伤害翻倍。</content>
   <content contentuid="hfa735a2eg7424g5bf1g9346gce5dfab94c69" version="1">混沌受创：额外闪电伤害</content>
   <content contentuid="hfeeab437gdb16g5ae7g8b8bg4562bbae9385" version="1">混沌受创：额外寒冷伤害</content>
+  <content contentuid="h09ef30d0g8113g529egacafgc8b9394801cb" version="1">恐慌</content>
+  <content contentuid="h2d8cb8c6g0024g5a27gb5afg8d6551a7fff1" version="1">燃烧</content>
+  <content contentuid="h3361bca1gfeecg55fdga020g9bdb650d7443" version="1">正在等待服务器状态……</content>
+  <content contentuid="h34e5ef1bgfce4g5caegbd21g49f972f751fd" version="1">当前角色不是混沌起源或混沌种族</content>
+  <content contentuid="h38371f6dgd579g5393gbd3cgde1acfa3d726" version="1">目盲</content>
+  <content contentuid="h43dfa019gbb54g59efg8812gc3481cb26ec6" version="1">疯狂</content>
+  <content contentuid="h4b0045f7gc2ecg5e6fgb980g48c62df96040" version="1">倒伏</content>
+  <content contentuid="h5c5360d8g7cf2g5f47gb8a4g0480adbc6f22" version="1">沉默</content>
+  <content contentuid="h67562061ga6a9g5d25gb1b4g77a39e3e843d" version="1">额外2d6伤害</content>
+  <content contentuid="h681d07d7ge875g5347gbdb6g126202c40257" version="1">远程劣势</content>
+  <content contentuid="h68d76013gcde7g55f9g8a4cgff57d90df89c" version="1">输出调试日志</content>
+  <content contentuid="h77a76816g434ag5c49g8199g60ba18bd10fb" version="1">仅主机可以修改混沌起源设置。</content>
+  <content contentuid="h79d96da5g780fg5489g8e98gd7155a003f37" version="1">十八项技能：熟练并精通</content>
+  <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">中毒</content>
+  <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">法术劣势</content>
+  <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">流血</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下开关仅作用于当前主控混沌角色，并随存档保存。战斗中全部锁定；关闭机制会立即移除由本模组授予的对应能力。</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">起源身份七选一，也可全部关闭。启用后会授予对应官方起源标签与按等级解锁的能力，可能改变剧情判定；战斗中不能切换。</content>
+  <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">眩晕</content>
+  <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">常规设置</content>
+  <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">击杀获取混沌之力</content>
+  <content contentuid="hc23ab5a8gd939g5c82gb186g9860d3002cd6" version="1">减速</content>
+  <content contentuid="hd401dbd8g93e4g550eg83a8g796d88425b00" version="1">近战劣势</content>
+  <content contentuid="h09a36d7fg601fg59e4g8a03g449aa4434f76" version="1">最近受创结果</content>
+  <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">当前迷失层数</content>
+  <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">当前击杀计数</content>
+  <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">当前混沌之力</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">全部十八项技能获得熟练与精通，按正常熟练加值成长；不再提供固定+5加值。</content>
+  <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">全武装训练</content>
+  <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">获得轻甲、中甲、重甲、盾牌、简易武器、军用武器与乐器熟练。</content>
+  <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">七种初始法术</content>
+  <content contentuid="h5e92d463ga625g4e57gd9f2gcbdbec6805ad" version="1">获得轰雷剑、神导术、法师之手、次级幻影、羽落术、跳跃术与自我伪装。</content>
+  <content contentuid="h61000001g0001g4001g8001g000000000001" version="1">祝福术</content>
+  <content contentuid="h61000002g0002g4002g8002g000000000002" version="1">加速术</content>
+  <content contentuid="h61000003g0003g4003g8003g000000000003" version="1">朦胧术</content>
+  <content contentuid="h61000004g0004g4004g8004g000000000004" version="1">英雄气概</content>
+  <content contentuid="h61000005g0005g4005g8005g000000000005" version="1">隐形术</content>
+  <content contentuid="h61000006g0006g4006g8006g000000000006" version="1">近战优势</content>
+  <content contentuid="h61000007g0007g4007g8007g000000000007" version="1">远程优势</content>
+  <content contentuid="h61000008g0008g4008g8008g000000000008" version="1">法术优势</content>
+  <content contentuid="h61000009g0009g4009g8009g000000000009" version="1">恢复本次伤害</content>
+  <content contentuid="h6100000ag000ag400ag800ag00000000000a" version="1">嗜血</content>
+  <content contentuid="h6100000bg000bg400bg800bg00000000000b" version="1">潮湿</content>
+  <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">尚未触发</content>
+  <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">主控角色已变化，设置未应用。</content>
+  <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">战斗中不能修改混沌设置。</content>
 </contentList>

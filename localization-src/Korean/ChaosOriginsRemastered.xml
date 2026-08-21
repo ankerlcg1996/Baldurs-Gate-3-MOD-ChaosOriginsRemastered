@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">혼돈</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">정해진 운명에서 벗어나 모든 무기와 기술을 익히고 여섯 가지 시작 주문과 특별한 여행 선물을 지닌 혼돈의 아이입니다.</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">정해진 운명에서 벗어난 혼돈의 아이입니다. 모든 무기와 방어구, 18개 기술을 익히고 일곱 가지 시작 주문을 얻습니다. 디지털 디럭스 아이템은 지급하지 않습니다.</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">아스타리온 정체성</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">게일 정체성</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">레이젤 정체성</content>
@@ -88,7 +88,7 @@
   <content contentuid="h5d7268c9gdbe1g5cc0g88degf4db5f03573f" version="1">메아리와 극단</content>
   <content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">혼돈을 찢어 현재 턴을 다시 빚습니다. 생명력을 모두 회복하고 해로운 상태를 제거하며 행동, 추가 행동과 이동력을 되찾습니다. 이어서 &lt;LSTag Type="Status" Tooltip="COR_CHAOS_GENESIS"&gt;혼돈의 천지개벽&lt;/LSTag&gt;과 &lt;LSTag Type="Status" Tooltip="COR_CHAOS_KILL"&gt;혼돈의 필살&lt;/LSTag&gt; 1회를 얻습니다.</content>
   <content contentuid="h5f4722a1g9c8eg5e1ega61ag71b084670f0d" version="1">이중 맥동(4%): 절반은 즉시, 나머지는 대상의 다음 턴 시작에 적용됩니다. 이중 시간 메아리(2%): 전체 룰렛 피해가 지금 한 번, 대상의 다음 턴 시작에 한 번 적용됩니다. 공허 포식(8%): 룰렛 피해가 사라집니다. 창세 균열격(2.5%): 원래 대상이 룰렛 피해의 4배를 받습니다.</content>
-  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">매 라운드 처음으로 적 또는 아군의 공격이나 주문 피해를 받으면 동일 확률로 &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;부정 결과&lt;/LSTag&gt;, &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;긍정 결과&lt;/LSTag&gt; 또는 &lt;LSTag Type="Status" Tooltip="WET"&gt;젖음&lt;/LSTag&gt; 중 하나를 뽑습니다. 적이 만든 부정 결과만 혼돈의 방황을 깊게 하고 혼돈의 힘 획득을 시도합니다. 뽑힌 상태에 면역이어도 그 라운드에는 다시 뽑지 않습니다.</content>
+  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">내 턴 시작부터 다음 내 턴 시작까지 적 또는 아군의 공격이나 주문으로 처음 피해를 받으면 동일 확률로 &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;부정 결과&lt;/LSTag&gt;, &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;긍정 결과&lt;/LSTag&gt; 또는 &lt;LSTag Type="Status" Tooltip="WET"&gt;젖음&lt;/LSTag&gt; 중 하나를 뽑습니다. 적이 만든 부정 결과만 혼돈의 방황을 깊게 하고 혼돈의 힘 획득을 시도합니다. 뽑힌 상태에 면역이어도 그 주기에는 다시 뽑지 않습니다.</content>
   <content contentuid="h61e4f35cg35f9g5361gaa83g395c378c4c4b" version="1">혼돈의 상처: 냉기 취약</content>
   <content contentuid="h6208a824g1cb1g5297gbb0ag4fd59dd907e9" version="1">원래 대상과 가장 가까운 적이 룰렛 피해를 나눠 받습니다. 다른 적이 없으면 원래 대상이 모두 받습니다.</content>
   <content contentuid="h6212830cgb80eg5b83ga89bg653bda4345c9" version="1">혼돈의 상처: 투명</content>
@@ -199,4 +199,50 @@
   <content contentuid="hfa04251eg55e7g542dg8f68ga1c4f0426b87" version="1">1턴 동안 광휘에 취약해져 받는 광휘 피해가 2배가 됩니다.</content>
   <content contentuid="hfa735a2eg7424g5bf1g9346gce5dfab94c69" version="1">혼돈의 상처: 추가 번개 피해</content>
   <content contentuid="hfeeab437gdb16g5ae7g8b8bg4562bbae9385" version="1">혼돈의 상처: 추가 냉기 피해</content>
+  <content contentuid="h09ef30d0g8113g529egacafgc8b9394801cb" version="1">공포</content>
+  <content contentuid="h2d8cb8c6g0024g5a27gb5afg8d6551a7fff1" version="1">연소</content>
+  <content contentuid="h3361bca1gfeecg55fdga020g9bdb650d7443" version="1">서버 상태를 기다리는 중...</content>
+  <content contentuid="h34e5ef1bgfce4g5caegbd21g49f972f751fd" version="1">현재 캐릭터는 혼돈 오리진도 혼돈 종족도 아닙니다.</content>
+  <content contentuid="h38371f6dgd579g5393gbd3cgde1acfa3d726" version="1">실명</content>
+  <content contentuid="h43dfa019gbb54g59efg8812gc3481cb26ec6" version="1">광기</content>
+  <content contentuid="h4b0045f7gc2ecg5e6fgb980g48c62df96040" version="1">넘어짐</content>
+  <content contentuid="h5c5360d8g7cf2g5f47gb8a4g0480adbc6f22" version="1">침묵</content>
+  <content contentuid="h67562061ga6a9g5d25gb1b4g77a39e3e843d" version="1">추가 2d6 피해</content>
+  <content contentuid="h681d07d7ge875g5347gbdb6g126202c40257" version="1">원거리 불리점</content>
+  <content contentuid="h68d76013gcde7g55f9g8a4cgff57d90df89c" version="1">디버그 로그 출력</content>
+  <content contentuid="h77a76816g434ag5c49g8199g60ba18bd10fb" version="1">호스트만 혼돈 기원 설정을 변경할 수 있습니다.</content>
+  <content contentuid="h79d96da5g780fg5489g8e98gd7155a003f37" version="1">18개 기술 모두 숙련 및 전문화</content>
+  <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">중독</content>
+  <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">주문 불리점</content>
+  <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">출혈</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">아래 설정은 현재 조종 중인 혼돈 캐릭터에만 적용되며 저장 파일에 보관됩니다. 전투 중에는 모두 잠기며, 기능을 끄면 이 모드가 부여한 해당 능력이 즉시 제거됩니다.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">일곱 오리진 정체성 중 최대 하나를 선택하거나 모두 끌 수 있습니다. 정체성은 공식 오리진 태그와 레벨별 능력을 부여하며 스토리 판정에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.</content>
+  <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">기절</content>
+  <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">일반 설정</content>
+  <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">처치로 혼돈의 힘 획득</content>
+  <content contentuid="hc23ab5a8gd939g5c82gb186g9860d3002cd6" version="1">감속</content>
+  <content contentuid="hd401dbd8g93e4g550eg83a8g796d88425b00" version="1">근접 불리점</content>
+  <content contentuid="h09a36d7fg601fg59e4g8a03g449aa4434f76" version="1">최근 상처 결과</content>
+  <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">현재 혼돈의 방황 중첩</content>
+  <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">현재 처치 수</content>
+  <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">현재 혼돈의 힘</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">18개 기술 모두에 숙련과 전문화를 부여하며 정상 숙련 보너스에 따라 성장합니다. 고정 +5 보너스는 추가하지 않습니다.</content>
+  <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">완전 무장 훈련</content>
+  <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">경갑, 평갑, 중갑, 방패, 단순 무기, 군용 무기 및 악기 숙련을 얻습니다.</content>
+  <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">일곱 가지 시작 주문</content>
+  <content contentuid="h5e92d463ga625g4e57gd9f2gcbdbec6805ad" version="1">굉음의 칼날, 인도, 마법사의 손, 하급 환영, 깃털 낙하, 도약, 변장 주문을 얻습니다.</content>
+  <content contentuid="h61000001g0001g4001g8001g000000000001" version="1">축복</content>
+  <content contentuid="h61000002g0002g4002g8002g000000000002" version="1">가속</content>
+  <content contentuid="h61000003g0003g4003g8003g000000000003" version="1">흐릿함</content>
+  <content contentuid="h61000004g0004g4004g8004g000000000004" version="1">영웅심</content>
+  <content contentuid="h61000005g0005g4005g8005g000000000005" version="1">투명화</content>
+  <content contentuid="h61000006g0006g4006g8006g000000000006" version="1">근접 공격 이점</content>
+  <content contentuid="h61000007g0007g4007g8007g000000000007" version="1">원거리 공격 이점</content>
+  <content contentuid="h61000008g0008g4008g8008g000000000008" version="1">주문 공격 이점</content>
+  <content contentuid="h61000009g0009g4009g8009g000000000009" version="1">이번 피해 회복</content>
+  <content contentuid="h6100000ag000ag400ag800ag00000000000a" version="1">피의 갈증</content>
+  <content contentuid="h6100000bg000bg400bg800bg00000000000b" version="1">젖음</content>
+  <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">아직 발동하지 않음</content>
+  <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">조종 캐릭터가 바뀌어 설정을 적용하지 않았습니다.</content>
+  <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">전투 중에는 혼돈 설정을 변경할 수 없습니다.</content>
 </contentList>

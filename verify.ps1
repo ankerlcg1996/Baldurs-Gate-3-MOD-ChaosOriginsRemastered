@@ -84,7 +84,7 @@ Require ($passive.Contains("new entry `"COR_OriginMarker`"`ntype `"PassiveData`"
 
 $originToggleNames = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
 foreach ($name in $originToggleNames) {
-    $status = 'COR_ORIGIN_' + $name.ToUpperInvariant()
+    $status = 'COR_ORIGIN_TAG_' + $name.ToUpperInvariant()
     $block = [regex]::Match($passive,
         '(?ms)^new entry "COR_Origin_' + $name + '"\r?\n.*?(?=^new entry |\z)').Value
     Require ($block -ne '' -and $block.Contains('data "ToggleOnFunctors" "ApplyStatus(' + $status + ',100,-1)"') `
@@ -100,16 +100,21 @@ $originStatusTags = [ordered]@{
 }
 foreach ($entry in $originStatusTags.GetEnumerator()) {
     $block = [regex]::Match($statusText,
-        '(?ms)^new entry "COR_ORIGIN_' + $entry.Key + '"\r?\n.*?(?=^new entry |\z)').Value
+        '(?ms)^new entry "COR_ORIGIN_TAG_' + $entry.Key + '"\r?\n.*?(?=^new entry |\z)').Value
     Require ($block -ne '' -and $block.Contains('data "StackId" "COR_ORIGIN_IDENTITY"') `
         -and $block.Contains('data "Boosts" "Tag(' + $entry.Value + ')"')) `
         "Origin identity status is invalid: $($entry.Key)"
 }
-Require (([regex]::Matches($statusText, '^new entry "COR_ORIGIN_', 'Multiline')).Count -eq 7) `
+Require (([regex]::Matches($statusText, '^new entry "COR_ORIGIN_TAG_', 'Multiline')).Count -eq 7) `
     'Status_BOOST.txt must contain exactly seven origin identity statuses'
 
 $proficiencyBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)'
-Require ($passive.Contains("new entry `"COR_BaseProficiencies`"`ntype `"PassiveData`"`ndata `"Properties`" `"IsHidden`"`ndata `"Boosts`" `"$proficiencyBoosts`"")) `
+$proficiencyBlock = [regex]::Match($passive,
+    '(?s)new entry "COR_BaseProficiencies".*?(?=\r?\n\r?\nnew entry|\z)').Value
+Require ($proficiencyBlock -ne '' -and $proficiencyBlock.Contains('data "Properties" "IsHidden"') `
+    -and $proficiencyBlock.Contains('data "Boosts" "' + $proficiencyBoosts + '"') `
+    -and $proficiencyBlock.Contains('data "DisplayName"') `
+    -and $proficiencyBlock.Contains('data "Description"')) `
     'Base proficiency passive has invalid boosts'
 
 $skillBlockMatch = [regex]::Match($passive,
@@ -171,8 +176,10 @@ foreach ($value in @($moduleUuid, $originUuid)) {
 
 $luaRoot = Split-Path $bootstrapPath -Parent
 $expectedLuaFiles = @(
-    'BaseFeatures.lua', 'BootstrapServer.lua', 'ChaosCharacter.lua',
-    'ChaosState.lua', 'GrantLedger.lua', 'OriginFeatures.lua', 'RaceCatalog.lua', 'RaceFeatures.lua'
+    'BaseFeatures.lua', 'BootstrapClient.lua', 'BootstrapServer.lua', 'ChaosCharacter.lua',
+    'ChaosDuality.lua', 'ChaosMechanics.lua', 'ChaosNativeRoll.lua', 'ChaosState.lua',
+    'DebugLog.lua', 'GrantLedger.lua', 'MechanicsFeatures.lua', 'McmProtocol.lua', 'OriginFeatures.lua',
+    'RaceCatalog.lua', 'RaceFeatures.lua'
 ) | Sort-Object
 $actualLuaFiles = @(Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua' | ForEach-Object Name) | Sort-Object
 Require (-not (Compare-Object $actualLuaFiles $expectedLuaFiles)) 'Server Lua module list is invalid'
@@ -198,9 +205,11 @@ Require (([regex]::Matches($baseFeatures, '"(?:Target|Shout)_[A-Za-z0-9_]+"')).C
     'BaseFeatures.lua must declare exactly seven spells'
 
 $stateLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosState.lua') -Encoding UTF8
-foreach ($token in @('SCHEMA_VERSION = 3', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2', 'NativeRaceTags',
+foreach ($token in @('SCHEMA_VERSION = 4', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
+    'state.SchemaVersion == 3', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
-    'OriginGranted', 'ActiveOriginIdentity', 'owned == "adding"', 'owned == "removing"')) {
+    'OriginGranted', 'ActiveOriginIdentity', 'MechanicGranted', 'PendingDuality',
+    'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
 }
 $characterLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosCharacter.lua') -Encoding UTF8
@@ -220,6 +229,30 @@ foreach ($token in @('VERIFY_TIMEOUT_MS = 2000', 'scheduleVerification', 'GrantL
 }
 foreach ($token in @('LEVEL_12_TOTAL_EXPERIENCE = 100000', 'Osi.AddExplorationExperience')) {
     Require ($bootstrap.Contains($token)) "Level-12 test experience behavior is missing: $token"
+}
+$mechanicsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosMechanics.lua') -Encoding UTF8
+$dualityLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosDuality.lua') -Encoding UTF8
+foreach ($token in @(
+    'Ext.Events.DealDamage', 'Ext.Events.DealtDamage', 'KilledBy', 'AttackedBy', 'LeftCombat',
+    'Shout_COR_ChaosGenesis', 'COR_CHAOS_ALLIN_TOGGLE', 'WoundConsumedThisRound',
+    'LOST_CHANCES = { 5, 10, 15, 25, 35, 50, 65, 80, 90, 100 }',
+    'Duality.ResetRuntime()', 'echoPending = {}', 'processedKills = {}',
+    'GrantLedger.RemovePassive(character, saved, "COR_ChaosGenesisCharge"',
+    'GrantLedger.EnsurePassive(character, saved, "COR_ChaosGenesisCharge"'
+)) {
+    Require ($mechanicsLua.Contains($token)) "Chaos mechanic runtime is missing: $token"
+}
+foreach ($token in @('uuid(event.Caster)', 'uuid(event.Target)', 'eventKey(source, target, actionId, event.Hit)',
+    'applyingTargets[target]', 'function M.ResetRuntime()', 'function M.IsApplying')) {
+    Require ($dualityLua.Contains($token)) "Correlated Duality runtime is missing: $token"
+}
+Require (-not $dualityLua.Contains('table.remove(captured, 1)')) `
+    'Duality must not use the legacy global FIFO capture'
+Require (-not $dualityLua.Contains('table.remove(queue, 1)')) `
+    'Duality must correlate DealDamage and DealtDamage by source, target, action and hit identity'
+foreach ($luaFile in Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua') {
+    $luaContent = Get-Content -Raw -LiteralPath $luaFile.FullName -Encoding UTF8
+    Require (-not $luaContent.Contains('LOC_')) "Lua contains a legacy LOC_ identifier: $($luaFile.Name)"
 }
 Require (-not $bootstrap.Contains('StarterRewards')) `
     'Bootstrap must not load the removed Digital Deluxe reward module'
@@ -377,6 +410,11 @@ foreach ($templateId in $removedDeluxeTemplates) {
     Require ($null -eq $sourceHit) "Removed Digital Deluxe template remains in source: $templateId"
 }
 
+$localizedResourceText = @(
+    Get-ChildItem -LiteralPath $source -Recurse -File |
+        Where-Object { $_.Extension -in @('.txt', '.lsx', '.lua') } |
+        ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName -Encoding UTF8 }
+) -join "`n"
 $mechanicStats = @(
     Join-Path (Split-Path $passivePath -Parent) 'ChaosCore.txt'
     Join-Path (Split-Path $passivePath -Parent) 'ChaosRuntime.txt'
@@ -393,6 +431,18 @@ foreach ($path in @($statusPath) + $mechanicStats) {
 Require ($allStatEntries.Count -eq 235 -and
     ($allStatEntries | Select-Object -Unique).Count -eq 235) `
     'Mechanic stats must contain exactly 235 globally unique entries'
+$foldedStatEntries = @($allStatEntries | ForEach-Object { $_.ToUpperInvariant() })
+Require (($foldedStatEntries | Select-Object -Unique).Count -eq 235) `
+    'Mechanic stat entries must also be unique when case is ignored'
+$mechanicEntryCounts = @{}
+foreach ($path in $mechanicStats) {
+    $mechanicEntryCounts[[IO.Path]::GetFileName($path)] =
+        ([regex]::Matches((Get-Content -Raw -LiteralPath $path -Encoding UTF8), 'new entry "')).Count
+}
+Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
+    -and $mechanicEntryCounts['ChaosRuntime.txt'] -eq 179 `
+    -and $mechanicEntryCounts['Interrupt.txt'] -eq 1) `
+    'Mechanic stat family counts changed'
 
 $resourcePath = Join-Path $source "Public\$moduleName\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
 $iconMapPath = Join-Path $source "Public\$moduleName\GUI\Icons_ChaosOrigins.lsx"
@@ -420,23 +470,72 @@ foreach ($entry in $expectedResources.GetEnumerator()) {
         -and $actual.MaxValue -eq $entry.Value[1] -and $actual.ReplenishType -eq $entry.Value[2]) `
         "Chaos action resource is invalid: $($entry.Key)"
 }
+foreach ($legacyUuid in @(
+    '398a7f18-2242-4bd5-bdeb-bb7df05edabc',
+    '9a7afbe2-b122-4fca-b899-971cad03bce7',
+    'bc9a2dbe-14a5-4e90-b66b-94edb035c9db'
+)) {
+    Require (-not $localizedResourceText.Contains($legacyUuid)) `
+        "Legacy action-resource UUID remains: $legacyUuid"
+}
 $iconXml = [xml](Get-Content -Raw -LiteralPath $iconMapPath -Encoding UTF8)
 $iconKeys = @($iconXml.SelectNodes('//node[@id="IconUV"]/attribute[@id="MapKey"]') |
-    ForEach-Object value | Sort-Object)
-Require (-not (Compare-Object $iconKeys @(
-    'CO_AllIn', 'CO_Echo', 'CO_Finisher', 'CO_Genesis', 'CO_Identity',
-    'CO_Lost', 'CO_Power', 'CO_Status', 'CO_Strike'
-))) 'Chaos icon atlas keys are invalid'
+    ForEach-Object value)
+Require ($iconKeys.Count -eq ($iconKeys | Select-Object -Unique).Count) `
+    'Chaos icon atlas contains duplicate keys'
+$customIconReferences = @([regex]::Matches($localizedResourceText, 'data "Icon" "(CO_[^"]+)"') |
+    ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+foreach ($icon in $customIconReferences) {
+    Require ($iconKeys -contains $icon) "Chaos icon atlas omits referenced key: $icon"
+}
 
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 24 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 24) `
-    'package-files.json must contain exactly 24 unique paths'
+Require ($declaredPackageFiles.Count -eq 32 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 32) `
+    'package-files.json must contain exactly 32 unique paths'
 foreach ($luaName in $expectedLuaFiles) {
     Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
         "Package manifest omits Lua module: $luaName"
 }
+
+$mcmBlueprintPath = Join-Path $source "Mods\$moduleName\MCM_blueprint.json"
+Require (Test-Path -LiteralPath $mcmBlueprintPath -PathType Leaf) 'MCM blueprint is missing'
+Require ($declaredPackageFiles -contains 'Mods/ChaosOriginsRemastered/MCM_blueprint.json') `
+    'Package manifest omits MCM blueprint'
+$mcmBlueprint = Get-Content -Raw -LiteralPath $mcmBlueprintPath -Encoding UTF8 | ConvertFrom-Json
+Require ($mcmBlueprint.SchemaVersion -eq 1 -and $mcmBlueprint.id -eq $moduleUuid `
+    -and $mcmBlueprint.ModName -eq 'Chaos Origins Remastered') `
+    'MCM blueprint identity is invalid'
+Require ($mcmBlueprint.Tabs.Count -eq 1 -and $mcmBlueprint.Tabs[0].TabId -eq 'bootstrap' `
+    -and $mcmBlueprint.Tabs[0].Settings.Count -eq 1 `
+    -and $mcmBlueprint.Tabs[0].Settings[0].Id -eq 'bootstrap_visible' `
+    -and $mcmBlueprint.Tabs[0].Settings[0].Default -eq $false) `
+    'MCM bootstrap tab must remain hidden and contain no persisted gameplay setting'
+
+$mcmProtocol = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'McmProtocol.lua') -Encoding UTF8
+$mcmClient = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'BootstrapClient.lua') -Encoding UTF8
+foreach ($token in @('Version = 1', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
+    'WoundEffects = {')) {
+    Require ($mcmProtocol.Contains($token)) "MCM protocol is missing: $token"
+}
+foreach ($token in @('Ext.Net.IsHost()', 'uiGeneration', 'reply.Revision', 'snapshot.CharacterId',
+    'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
+    'pollSnapshot', 'InsertModMenuTab')) {
+    Require ($mcmClient.Contains($token)) "MCM client behavior is missing: $token"
+}
+foreach ($forbiddenClientToken in @('Ext.Vars', 'Osi.SetTag', 'Osi.ClearTag', 'Osi.AddPassive',
+    'Osi.RemovePassive')) {
+    Require (-not $mcmClient.Contains($forbiddenClientToken)) `
+        "MCM client must not mutate authoritative state directly: $forbiddenClientToken"
+}
+foreach ($token in @('SetRequestHandler', 'request.CharacterId ~= snapshot.CharacterId',
+    'Osi.IsInCombat', 'OriginFeatures.SetActive', 'ChaosMechanics.SetMechanic',
+    'ChaosMechanics.SetWoundEffect', 'isHostPeer(peerId)', 'ClientControl')) {
+    Require ($bootstrap.Contains($token)) "MCM server authority is missing: $token"
+}
+Require (-not $mcmClient.Contains('MCM_Window_Ready')) `
+    'MCM Ready event must not invalidate controls rendered during the same window build'
 
 $publicRoot = Join-Path $source "Public\$moduleName"
 $modsRoot = Join-Path $source "Mods\$moduleName"
@@ -464,11 +563,6 @@ foreach ($pattern in $forbiddenPatterns) {
     Require ($null -eq $hit) "Remastered source contains forbidden legacy identifier: $pattern"
 }
 
-$localizedResourceText = @(
-    Get-ChildItem -LiteralPath $source -Recurse -File |
-        Where-Object { $_.Extension -in @('.txt', '.lsx') } |
-        ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName -Encoding UTF8 }
-) -join "`n"
 $expectedHandles = @([regex]::Matches($localizedResourceText, 'h[a-z0-9]{36}') |
     ForEach-Object Value | Sort-Object -Unique)
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {

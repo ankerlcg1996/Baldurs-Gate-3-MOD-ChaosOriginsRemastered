@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">Chaos</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">A child of chaos unbound by predetermined fate, master of every arm and skill, bearing six starter spells and unique journey gifts.</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">A child of chaos unbound by predetermined fate. Master every weapon, armour, and all eighteen skills, and begin with seven spells. No Digital Deluxe items are granted.</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">Astarion Identity</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">Gale Identity</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">Lae'zel Identity</content>
@@ -88,7 +88,7 @@
   <content contentuid="h5d7268c9gdbe1g5cc0g88degf4db5f03573f" version="1">Echoes and Extremes</content>
   <content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">Tear open chaos and reshape the current turn. Fully restore Hit Points, remove harmful conditions, and recover Action, Bonus Action, and Movement. Then gain &lt;LSTag Type="Status" Tooltip="COR_CHAOS_GENESIS"&gt;Chaos Genesis&lt;/LSTag&gt; and one &lt;LSTag Type="Status" Tooltip="COR_CHAOS_KILL"&gt;Chaos Finisher&lt;/LSTag&gt;.</content>
   <content contentuid="h5f4722a1g9c8eg5e1ega61ag71b084670f0d" version="1">Twin Pulse (4%): half resolves now and half at the start of the target's next turn. Twin-Time Echo (2%): full wheel damage resolves now and again at the start of the target's next turn. Void Devouring (8%): the wheel damage vanishes. Genesis Riftstrike (2.5%): the original target takes 4 times the wheel damage.</content>
-  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">The first time each round that an enemy or ally attack or spell damages you, draw one equally likely &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;negative result&lt;/LSTag&gt;, &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;positive result&lt;/LSTag&gt;, or &lt;LSTag Type="Status" Tooltip="WET"&gt;Wet&lt;/LSTag&gt;. Only negative results caused by enemies deepen Chaos Lost and attempt to gain Chaos Power. If you are immune to the drawn condition, no replacement is drawn that round.</content>
+  <content contentuid="h619ada41ga42bg5373ga783g691fe9acbc62" version="1">From the start of one of your turns until the start of your next turn, the first enemy or ally attack or spell that damages you draws one equally likely &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_NEGATIVE"&gt;negative result&lt;/LSTag&gt;, &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_WOUND_POSITIVE"&gt;positive result&lt;/LSTag&gt;, or &lt;LSTag Type="Status" Tooltip="WET"&gt;Wet&lt;/LSTag&gt;. Only enemy-caused negative results deepen Chaos Lost and attempt to gain Chaos Power. Immunity to the drawn condition does not permit another draw during that cycle.</content>
   <content contentuid="h61e4f35cg35f9g5361gaa83g395c378c4c4b" version="1">Chaos Wound: Cold Vulnerability</content>
   <content contentuid="h6208a824g1cb1g5297gbb0ag4fd59dd907e9" version="1">The original target and nearest enemy split the wheel damage. If no other enemy exists, the original target takes it all.</content>
   <content contentuid="h6212830cgb80eg5b83ga89bg653bda4345c9" version="1">Chaos Wound: Invisibility</content>
@@ -199,4 +199,50 @@
   <content contentuid="hfa04251eg55e7g542dg8f68ga1c4f0426b87" version="1">Become Vulnerable to Radiant for 1 turn, doubling incoming Radiant damage.</content>
   <content contentuid="hfa735a2eg7424g5bf1g9346gce5dfab94c69" version="1">Chaos Wound: Extra Lightning Damage</content>
   <content contentuid="hfeeab437gdb16g5ae7g8b8bg4562bbae9385" version="1">Chaos Wound: Extra Cold Damage</content>
+  <content contentuid="h09ef30d0g8113g529egacafgc8b9394801cb" version="1">Frightened</content>
+  <content contentuid="h2d8cb8c6g0024g5a27gb5afg8d6551a7fff1" version="1">Burning</content>
+  <content contentuid="h3361bca1gfeecg55fdga020g9bdb650d7443" version="1">Waiting for server state...</content>
+  <content contentuid="h34e5ef1bgfce4g5caegbd21g49f972f751fd" version="1">The current character is neither the Chaos origin nor the Chaos race.</content>
+  <content contentuid="h38371f6dgd579g5393gbd3cgde1acfa3d726" version="1">Blinded</content>
+  <content contentuid="h43dfa019gbb54g59efg8812gc3481cb26ec6" version="1">Madness</content>
+  <content contentuid="h4b0045f7gc2ecg5e6fgb980g48c62df96040" version="1">Prone</content>
+  <content contentuid="h5c5360d8g7cf2g5f47gb8a4g0480adbc6f22" version="1">Silenced</content>
+  <content contentuid="h67562061ga6a9g5d25gb1b4g77a39e3e843d" version="1">Extra 2d6 Damage</content>
+  <content contentuid="h681d07d7ge875g5347gbdb6g126202c40257" version="1">Ranged Disadvantage</content>
+  <content contentuid="h68d76013gcde7g55f9g8a4cgff57d90df89c" version="1">Debug Console Logging</content>
+  <content contentuid="h77a76816g434ag5c49g8199g60ba18bd10fb" version="1">Only the host can change Chaos Origin settings.</content>
+  <content contentuid="h79d96da5g780fg5489g8e98gd7155a003f37" version="1">Proficiency and Expertise in All 18 Skills</content>
+  <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">Poisoned</content>
+  <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">Spell Disadvantage</content>
+  <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">Bleeding</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">These switches affect only the currently controlled Chaos character and are stored in the save. All settings are locked in combat; disabling a mechanic immediately removes the abilities granted by this mod.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">Choose at most one of seven origin identities, or leave all disabled. An identity grants its official origin tag and level-gated abilities and may alter story checks. It cannot be changed in combat.</content>
+  <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">Stunned</content>
+  <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">General Settings</content>
+  <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">Chaos Power from Kills</content>
+  <content contentuid="hc23ab5a8gd939g5c82gb186g9860d3002cd6" version="1">Slowed</content>
+  <content contentuid="hd401dbd8g93e4g550eg83a8g796d88425b00" version="1">Melee Disadvantage</content>
+  <content contentuid="h09a36d7fg601fg59e4g8a03g449aa4434f76" version="1">Latest Chaos Wound Result</content>
+  <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">Current Chaos Lost Stacks</content>
+  <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">Current Kill Count</content>
+  <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">Current Chaos Power</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">Gain proficiency and expertise in all eighteen skills, scaling with the normal proficiency bonus. No fixed +5 bonus is added.</content>
+  <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">Complete Arms Training</content>
+  <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">Gain proficiency with light, medium, and heavy armour, shields, simple and martial weapons, and musical instruments.</content>
+  <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">Seven Starter Spells</content>
+  <content contentuid="h5e92d463ga625g4e57gd9f2gcbdbec6805ad" version="1">Gain Booming Blade, Guidance, Mage Hand, Minor Illusion, Feather Fall, Jump, and Disguise Self.</content>
+  <content contentuid="h61000001g0001g4001g8001g000000000001" version="1">Bless</content>
+  <content contentuid="h61000002g0002g4002g8002g000000000002" version="1">Haste</content>
+  <content contentuid="h61000003g0003g4003g8003g000000000003" version="1">Blur</content>
+  <content contentuid="h61000004g0004g4004g8004g000000000004" version="1">Heroism</content>
+  <content contentuid="h61000005g0005g4005g8005g000000000005" version="1">Invisibility</content>
+  <content contentuid="h61000006g0006g4006g8006g000000000006" version="1">Melee Advantage</content>
+  <content contentuid="h61000007g0007g4007g8007g000000000007" version="1">Ranged Advantage</content>
+  <content contentuid="h61000008g0008g4008g8008g000000000008" version="1">Spell Advantage</content>
+  <content contentuid="h61000009g0009g4009g8009g000000000009" version="1">Restore This Damage</content>
+  <content contentuid="h6100000ag000ag400ag800ag00000000000a" version="1">Bloodlust</content>
+  <content contentuid="h6100000bg000bg400bg800bg00000000000b" version="1">Wet</content>
+  <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">Not triggered yet</content>
+  <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">The controlled character changed; the setting was not applied.</content>
+  <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">Chaos settings cannot be changed in combat.</content>
 </contentList>

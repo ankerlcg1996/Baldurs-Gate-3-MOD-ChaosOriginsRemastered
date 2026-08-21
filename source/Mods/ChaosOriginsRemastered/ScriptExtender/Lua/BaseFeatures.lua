@@ -38,8 +38,11 @@ end
 
 function M.Sync(character, record)
     validateStats()
-    for _, passive in ipairs(M.Passives) do
-        GrantLedger.EnsurePassive(character, record, passive)
+    GrantLedger.EnsurePassive(character, record, "COR_BaseProficiencies")
+    if record.Mechanics.Skills then
+        GrantLedger.EnsurePassive(character, record, "COR_AllSkillMastery")
+    elseif record.Granted.Passives.COR_AllSkillMastery ~= nil then
+        GrantLedger.RemovePassive(character, record, "COR_AllSkillMastery", record.Granted.Passives)
     end
     if next(record.Granted.Spells) ~= nil then
         -- 旧存档继续沿用已经记账的直接法术来源，只补齐新增的自我伪装。
