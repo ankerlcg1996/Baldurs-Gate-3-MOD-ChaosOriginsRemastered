@@ -125,9 +125,10 @@ local function scheduleAlignment(character, record)
 end
 
 local function desiredFeatures(record, level)
-    local passives, spells = {}, {}
+    local passives, spells, tags = {}, {}, {}
     local definition = byName[record.ActiveOriginIdentity]
     if definition ~= nil then
+        tags[definition.Tag] = true
         for _, feature in ipairs(definition.Passives) do
             if feature[2] <= level then passives[feature[1]] = true end
         end
@@ -135,7 +136,7 @@ local function desiredFeatures(record, level)
             if feature[2] <= level then spells[feature[1]] = true end
         end
     end
-    return passives, spells
+    return passives, spells, tags
 end
 
 function M.Sync(character, record)
@@ -144,7 +145,7 @@ function M.Sync(character, record)
     for _, definition in ipairs(M.Definitions) do
         GrantLedger.EnsurePassive(character, record, definition.Passive)
     end
-    local desiredPassives, desiredSpells = desiredFeatures(record, Osi.GetLevel(character))
+    local desiredPassives, desiredSpells, desiredTags = desiredFeatures(record, Osi.GetLevel(character))
     for passive in pairs(record.OriginGranted.Passives) do
         if not desiredPassives[passive] then
             GrantLedger.RemovePassive(character, record, passive, record.OriginGranted.Passives)
@@ -155,11 +156,20 @@ function M.Sync(character, record)
             GrantLedger.RemoveSpell(character, record, spell, record.OriginGranted.Spells)
         end
     end
+    for tag in pairs(record.OriginGranted.Tags) do
+        if not desiredTags[tag] then
+            GrantLedger.RemoveTag(character, record, tag, record.OriginGranted.Tags)
+        end
+    end
     for passive in pairs(desiredPassives) do
         GrantLedger.EnsurePassive(character, record, passive, record.OriginGranted.Passives)
     end
     for spell in pairs(desiredSpells) do
         GrantLedger.EnsureSpell(character, record, spell, record.OriginGranted.Spells)
+    end
+    for tag in pairs(desiredTags) do
+        -- 永久标签参与官方剧情与 Osiris 判定；账本只认领本 MOD 实际设置的标签。
+        GrantLedger.EnsureTag(character, record, tag, record.OriginGranted.Tags)
     end
     scheduleAlignment(character, record)
 end

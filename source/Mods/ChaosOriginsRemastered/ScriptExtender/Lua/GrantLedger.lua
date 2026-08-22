@@ -148,8 +148,20 @@ function M.EnsureTag(character, record, tag, ledger)
     return start(character, tag, "tag", 1,
         function(target, tagId, expected) return Osi.IsTagged(target, tagId) == expected end,
         function(target, tagId, desired)
-            assert(desired == 1, "ChaosOriginsRemastered: tag removal is not supported")
-            Osi.SetTag(target, tagId)
+            if desired == 1 then Osi.SetTag(target, tagId)
+            else Osi.ClearTag(target, tagId) end
+        end,
+        ledger, false)
+end
+
+function M.RemoveTag(character, record, tag, ledger)
+    assert(ledger[tag] == true or ledger[tag] == "adding" or ledger[tag] == "removing",
+        "ChaosOriginsRemastered: cannot remove unowned tag " .. tag)
+    return start(character, tag, "tag", 0,
+        function(target, tagId, expected) return Osi.IsTagged(target, tagId) == expected end,
+        function(target, tagId, desired)
+            if desired == 1 then Osi.SetTag(target, tagId)
+            else Osi.ClearTag(target, tagId) end
         end,
         ledger, false)
 end

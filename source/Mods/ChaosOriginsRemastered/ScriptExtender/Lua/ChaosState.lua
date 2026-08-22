@@ -3,7 +3,7 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
-local SCHEMA_VERSION = 4
+local SCHEMA_VERSION = 5
 local registered = false
 local WOUND_EFFECT_KEYS = {
     "Madness", "Frightened", "Stunned", "Silenced", "Prone", "Blinded", "Slowed",
@@ -95,9 +95,10 @@ local function validateCharacter(record, characterId)
     assert(type(record.OriginGranted) == "table",
         "ChaosOriginsRemastered: origin grant ledger must be a table " .. characterId)
     assertOnlyKeys(record.OriginGranted,
-        { Passives = true, Spells = true }, "origin grant ledger")
+        { Passives = true, Spells = true, Tags = true }, "origin grant ledger")
     validateGrantMap(record.OriginGranted.Passives, "origin passive grant ledger")
     validateGrantMap(record.OriginGranted.Spells, "origin spell grant ledger")
+    validateGrantMap(record.OriginGranted.Tags, "origin tag grant ledger")
     local validIdentity = {
         [""] = true, Astarion = true, Gale = true, Laezel = true,
         Shadowheart = true, Wyll = true, Karlach = true, DarkUrge = true
@@ -168,7 +169,7 @@ local function newCharacter()
     return {
         Granted = { Passives = {}, Spells = {} },
         RaceGranted = { Passives = {}, Spells = {}, Tags = {} },
-        OriginGranted = { Passives = {}, Spells = {} },
+        OriginGranted = { Passives = {}, Spells = {}, Tags = {} },
         ActiveOriginIdentity = "",
         MechanicGranted = { Passives = {}, Spells = {} },
         Mechanics = {
@@ -222,7 +223,7 @@ local function root()
             validateLegacyCharacter(record, characterId)
             record.RaceGranted = { Passives = {}, Spells = {}, Tags = {} }
             record.NativeRaceTags = {}
-            record.OriginGranted = { Passives = {}, Spells = {} }
+            record.OriginGranted = { Passives = {}, Spells = {}, Tags = {} }
             record.ActiveOriginIdentity = ""
         end
         state.SchemaVersion = 3
@@ -231,7 +232,7 @@ local function root()
     if state.SchemaVersion == 2 then
         -- 1.0.09 及以前没有起源身份开关；迁移后保持全部关闭，避免读档时自动触发剧情。
         for characterId, record in pairs(state.Characters) do
-            record.OriginGranted = { Passives = {}, Spells = {} }
+            record.OriginGranted = { Passives = {}, Spells = {}, Tags = {} }
             record.ActiveOriginIdentity = ""
         end
         state.SchemaVersion = 3
@@ -252,6 +253,14 @@ local function root()
             record.AllInEnabled = false
         end
         state.PendingDuality = {}
+        state.SchemaVersion = 4
+        M.MarkDirty()
+    end
+    if state.SchemaVersion == 4 then
+        -- 1.0.13 以前只用临时状态模拟起源身份，没有实际官方标签归属账本。
+        for _, record in pairs(state.Characters) do
+            record.OriginGranted.Tags = {}
+        end
         state.SchemaVersion = SCHEMA_VERSION
         M.MarkDirty()
     end

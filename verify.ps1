@@ -93,17 +93,13 @@ foreach ($name in $originToggleNames) {
 }
 
 $statusText = Get-Content -Raw -LiteralPath $statusPath -Encoding UTF8
-$originStatusTags = [ordered]@{
-    ASTARION = 'REALLY_ASTARION'; GALE = 'REALLY_GALE'; LAEZEL = 'REALLY_LAEZEL'
-    SHADOWHEART = 'REALLY_SHADOWHEART'; WYLL = 'REALLY_WYLL'; KARLACH = 'REALLY_KARLACH'
-    DARKURGE = 'REALLY_DARK_URGE'
-}
-foreach ($entry in $originStatusTags.GetEnumerator()) {
+$originStatusNames = @('ASTARION', 'GALE', 'LAEZEL', 'SHADOWHEART', 'WYLL', 'KARLACH', 'DARKURGE')
+foreach ($entry in $originStatusNames) {
     $block = [regex]::Match($statusText,
-        '(?ms)^new entry "COR_ORIGIN_TAG_' + $entry.Key + '"\r?\n.*?(?=^new entry |\z)').Value
+        '(?ms)^new entry "COR_ORIGIN_TAG_' + $entry + '"\r?\n.*?(?=^new entry |\z)').Value
     Require ($block -ne '' -and $block.Contains('data "StackId" "COR_ORIGIN_IDENTITY"') `
-        -and $block.Contains('data "Boosts" "Tag(' + $entry.Value + ')"')) `
-        "Origin identity status is invalid: $($entry.Key)"
+        -and $block.Contains('data "Boosts" ""') -and -not $block.Contains('Tag(REALLY_')) `
+        "Origin identity marker status is invalid: $entry"
 }
 Require (([regex]::Matches($statusText, '^new entry "COR_ORIGIN_TAG_', 'Multiline')).Count -eq 7) `
     'Status_BOOST.txt must contain exactly seven origin identity statuses'
@@ -205,12 +201,21 @@ Require (([regex]::Matches($baseFeatures, '"(?:Target|Shout)_[A-Za-z0-9_]+"')).C
     'BaseFeatures.lua must declare exactly seven spells'
 
 $stateLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosState.lua') -Encoding UTF8
-foreach ($token in @('SCHEMA_VERSION = 4', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
-    'state.SchemaVersion == 3', 'NativeRaceTags',
+foreach ($token in @('SCHEMA_VERSION = 5', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
+    'state.SchemaVersion == 3', 'state.SchemaVersion == 4', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
     'OriginGranted', 'ActiveOriginIdentity', 'MechanicGranted', 'PendingDuality',
     'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
+}
+$originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFeatures.lua') -Encoding UTF8
+foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
+    'GrantLedger.RemoveTag')) {
+    Require ($originFeaturesLua.Contains($token)) "Origin identity tag ownership is missing: $token"
+}
+$grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
+foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
+    Require ($grantLedgerLua.Contains($token)) "Grant ledger tag support is missing: $token"
 }
 $characterLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosCharacter.lua') -Encoding UTF8
 foreach ($token in @('Osi.IsPlayer', 'Osi.DB_Players', $originTag, 'COR_OriginMarker')) {
