@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌受创：额外火焰伤害</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌受创：额外黯蚀伤害</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌迷失：0/10。当前获得混沌之力的概率为0%；下一次抽到负面受创结果后，概率将变为5%。成功获得力量后层数归零，休息不会降低层数。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得这些种族的被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。即时能力包括阿斯代伦的吸血、威尔的边境之刃，以及卡菈克的汗液免疫与狂怒烈焰；盖尔、莱埃泽尔、影心和邪念只获得官方标签。本模组支持的剧情奖励由官方结果驱动：阿斯代伦飞升；盖尔的耐色瑞尔魔球、幽影能力与成神；威尔的两项契约奖励；卡菈克的两阶段引擎升级；邪念的杀戮者形态与律令：死亡。不复制剧情装备，剧情奖励绝不按等级发放。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得其被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。阿斯代伦、威尔和卡菈克还会同步即时能力，其余四个身份只提供标签。剧情奖励由官方结果触发，绝不按人物等级发放，也不会复制剧情装备。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌归流</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">持续1回合：对应攻击具有劣势。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">以命中为赌注，强化下一次武器或法术攻击。若仍然命中，本次最终伤害翻倍；若攻击同时暴击，这次翻倍照常叠加。命中或落空后效果结束。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;查看孤注成长&lt;/LSTag&gt;。</content>
@@ -215,7 +215,7 @@
   <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">中毒</content>
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">法术劣势</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">流血</content>
-  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下设置分别作用于当前主控混沌角色，并随存档保存；战斗中全部保持锁定。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭后也绝不会扣除经验。</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下设置分别作用于当前主控混沌角色，随存档保存，并在战斗中锁定。七个起源身份默认全部开启；开启身份会同步官方标签与即时能力，关闭则移除两者。即时能力为阿斯代伦吸血、威尔边境之刃、卡菈克汗液免疫与狂怒烈焰，其余四个身份只有标签。官方剧情结果触发本模组支持的剧情奖励：阿斯代伦飞升；盖尔的耐色瑞尔魔球、幽影能力与成神；威尔的两项契约奖励；卡菈克的两阶段引擎升级；邪念的杀戮者形态与律令：死亡。无法在此手动获得这些奖励；开启身份时会补发已经完成的结果，永久奖励在关闭身份后仍保留，且不会复制剧情装备。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭也不会扣除经验。</content>
   <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">七个起源身份默认全部开启。开启身份会同步官方标签、基础能力，并补发存档中已经完成的对应剧情奖励；关闭身份会移除标签与基础能力，但不会收回已经认领的永久剧情奖励。剧情奖励只能由官方剧情结果触发，不能在此手动解锁；战斗中不可修改。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">眩晕</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">常规设置</content>

@@ -26,7 +26,8 @@ $bootstrapPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Lua\Bootstra
 $packageFilesPath = Join-Path $ProjectRoot 'package-files.json'
 $raceCatalogPath = Join-Path $ProjectRoot 'official-data\race-catalog.json'
 $raceCatalogGeneratorPath = Join-Path $ProjectRoot 'generate-race-catalog.ps1'
-foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $textureBankPath, $configPath, $bootstrapPath, $packageFilesPath)) {
+$testChecklistPath = Join-Path $ProjectRoot 'TEST-CHECKLIST.md'
+foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $textureBankPath, $configPath, $bootstrapPath, $packageFilesPath, $testChecklistPath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Required minimal source is missing: $path"
 }
 
@@ -460,6 +461,24 @@ foreach ($token in @('VERIFY_TIMEOUT_MS = 2000', 'scheduleVerification', 'GrantL
 foreach ($token in @('LEVEL_12_TOTAL_EXPERIENCE = 100000', 'Osi.AddExplorationExperience')) {
     Require ($bootstrap.Contains($token)) "Level-12 test experience behavior is missing: $token"
 }
+$testChecklist = Get-Content -Raw -LiteralPath $testChecklistPath -Encoding UTF8
+foreach ($pattern in @(
+    '混沌起源主角进入存档后累计经验补足到',
+    '身份对应的等级能力',
+    '1\s*级获得\s*20\s*个允许的种族被动'
+)) {
+    Require (-not [regex]::IsMatch($testChecklist, $pattern)) `
+        "Test checklist contains stale player-facing claim: $pattern"
+}
+foreach ($token in @(
+    '“12级测试经验”在 MCM 中默认关闭', '关闭状态进入存档不增加任何经验',
+    '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
+    '再次关闭也不扣除已获得的经验', '官方标签与即时能力', '官方剧情 Flag',
+    '真实起源队友', '重新开启时补发', '永久剧情奖励',
+    '不授予 20 项官方种族被动', '29 项种族主动技能与法术', '隐藏 `UnlockSpell` 被动'
+)) {
+    Require ($testChecklist.Contains($token)) "Test checklist omits current behavior: $token"
+}
 $mechanicsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosMechanics.lua') -Encoding UTF8
 $dualityLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosDuality.lua') -Encoding UTF8
 foreach ($token in @(
@@ -836,6 +855,19 @@ Require ($applySnapshotBlock -ne '' -and [regex]::IsMatch($testExperienceLifecyc
     'MCM applySnapshot must own the test-experience control state'
 $renderGeneralBlock = [regex]::Match($mcmClientCode,
     '(?ms)^local\s+function\s+renderGeneral\s*\([^)]*\).*?(?=^local\s+function\s+renderOrigins)').Value
+$renderOriginsBlock = [regex]::Match($mcmClientCode,
+    '(?ms)^local\s+function\s+renderOrigins\s*\([^)]*\).*?(?=^local\s+function\s+renderWounds)').Value
+foreach ($helpContract in @(
+    @{ Block = $renderGeneralBlock; Handle = 'Help' },
+    @{ Block = $renderOriginsBlock; Handle = 'OriginHelp' }
+)) {
+    $handlePattern = [regex]::Escape($helpContract.Handle)
+    $wrappedTextPattern = '(?ms)local\s+(?<text>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*' +
+        'parent:AddText\(\s*loc\(\s*Protocol\.Text\.' + $handlePattern +
+        '\s*\)\s*\)\s*\r?\n\s*\k<text>\.TextWrapPos\s*=\s*0'
+    Require (([regex]::Matches($helpContract.Block, $wrappedTextPattern)).Count -eq 1) `
+        "MCM $($helpContract.Handle) text must retain its AddText result and enable automatic wrapping"
+}
 $testExperienceControl = [regex]::Match($renderGeneralBlock,
     '(?ms)controls\.TestExperience\s*=\s*checkbox\s*\(\s*parent\s*,.*?,\s*false\s*,\s*function\s*\([^)]*\)(?<body>.*?)\bend\s*\)').Value
 Require ($testExperienceControl -ne '' `

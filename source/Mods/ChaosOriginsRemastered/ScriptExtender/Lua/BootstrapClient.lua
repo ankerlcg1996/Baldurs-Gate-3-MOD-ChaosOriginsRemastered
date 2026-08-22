@@ -149,7 +149,9 @@ local function renderGeneral(parent)
     if rendered.General then return end
     rendered.General = true
     addStatus(parent)
-    parent:AddText(loc(Protocol.Text.Help))
+    -- 0 让说明文本按 MCM 的可用宽度自动换行。
+    local helpText = parent:AddText(loc(Protocol.Text.Help))
+    helpText.TextWrapPos = 0
     for _, definition in ipairs(Protocol.Mechanics) do
         local key, handle = definition[1], definition[2]
         controls.Mechanics[key] = checkbox(parent, loc(handle), true,
@@ -164,7 +166,9 @@ local function renderOrigins(parent)
     if rendered.Origins then return end
     rendered.Origins = true
     addStatus(parent)
-    parent:AddText(loc(Protocol.Text.OriginHelp))
+    -- 0 让说明文本按 MCM 的可用宽度自动换行。
+    local originHelpText = parent:AddText(loc(Protocol.Text.OriginHelp))
+    originHelpText.TextWrapPos = 0
     controls.OriginAll = checkbox(parent, loc(Protocol.Text.AllOrigins), true,
         function(value) request("SetAllOrigins", "", value) end)
     for _, definition in ipairs(Protocol.Origins) do
