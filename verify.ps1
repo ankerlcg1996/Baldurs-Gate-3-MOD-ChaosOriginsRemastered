@@ -475,9 +475,11 @@ Require ($powerStatusBlock.Contains('data "StackType" "Additive"') `
     'Chaos Power must use a visible frozen Additive stack like an official charge status'
 $mechanicsFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'MechanicsFeatures.lua') -Encoding UTF8
 Require ($mechanicsFeaturesLua.Contains(
-    'Osi.ApplyStatus(character, "COR_CHAOS_POWER_STACK", record.ChaosPower, 100, character)') `
+    'local displayDuration = record.ChaosPower == 0 and -1 or record.ChaosPower * 6') `
+    -and $mechanicsFeaturesLua.Contains(
+        'Osi.ApplyStatus(character, "COR_CHAOS_POWER_STACK", displayDuration, 100, character)') `
     -and -not $mechanicsFeaturesLua.Contains('for _ = 1, record.ChaosPower do')) `
-    'Chaos Power display must write its complete Additive stack count in one application'
+    'Chaos Power display must remain visible at zero and convert each point to one six-second turn'
 $allInPassiveBlock = [regex]::Match($chaosCoreText,
     '(?ms)^new entry "COR_ChaosAllIn"\r?\n.*?(?=^new entry |\z)').Value
 Require ($allInPassiveBlock.Contains('data "StatsFunctorContext" "OnCreate;OnShortRest"') `

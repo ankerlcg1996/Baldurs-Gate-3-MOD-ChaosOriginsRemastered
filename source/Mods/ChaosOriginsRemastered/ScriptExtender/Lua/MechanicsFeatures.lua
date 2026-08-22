@@ -35,10 +35,9 @@ local function syncPowerDisplay(character, record)
     removeStatus(character, "COR_CHAOS_POWER_STACK")
     removeStatus(character, "COR_CHAOS_GENESIS_READY")
     if not record.Mechanics.Power then return end
-    if record.ChaosPower > 0 then
-        -- 与原版闪电充能一致：Additive 状态的持续值就是肖像栏显示的层数。
-        Osi.ApplyStatus(character, "COR_CHAOS_POWER_STACK", record.ChaosPower, 100, character)
-    end
+    -- Osiris 时长使用秒；每层写入6秒，0层则用永久状态保留可见图标。
+    local displayDuration = record.ChaosPower == 0 and -1 or record.ChaosPower * 6
+    Osi.ApplyStatus(character, "COR_CHAOS_POWER_STACK", displayDuration, 100, character)
     if record.ChaosPower >= 3 then
         Osi.ApplyStatus(character, "COR_CHAOS_GENESIS_READY", -1, 100, character)
     end
