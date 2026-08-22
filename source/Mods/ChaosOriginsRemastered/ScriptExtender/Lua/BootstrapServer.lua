@@ -348,6 +348,46 @@ Ext.Osiris.RegisterListener("RespecCancelled", 1, "after", function(character)
     scheduleCharacter(character, 500)
 end)
 
+local function consoleTestCharacter()
+    assert(osirisReady,
+        "ChaosOriginsRemastered: load a game session before using test console commands")
+    local character = Osi.GetHostCharacter()
+    assert(character ~= nil and character ~= "",
+        "ChaosOriginsRemastered: host character is unavailable for test console command")
+    character = ChaosCharacter.CanonicalGuid(character, "test console character")
+    assert(ChaosCharacter.IsEligible(character),
+        "ChaosOriginsRemastered: host character is not the Chaos origin")
+    return character, State.GetCharacter(character)
+end
+
+-- SE 控制台输入 !cor_power <正整数>，为主控混沌角色增加并持久保存混沌之力。
+Ext.RegisterConsoleCommand("cor_power", function(_, amount, ...)
+    assert(select("#", ...) == 0 and amount ~= nil,
+        "Usage: !cor_power <positive integer>")
+    amount = tonumber(amount)
+    assert(amount ~= nil and amount > 0 and amount % 1 == 0,
+        "Usage: !cor_power <positive integer>")
+    local character, saved = consoleTestCharacter()
+    assert(saved.Mechanics.Power,
+        "ChaosOriginsRemastered: enable Chaos Power before using !cor_power")
+    saved.ChaosPower = saved.ChaosPower + amount
+    State.MarkDirty()
+    ChaosMechanics.Sync(character, saved)
+    invalidateMcm()
+    Ext.Utils.Print("ChaosOriginsRemastered: !cor_power added " .. tostring(amount)
+        .. "; current Chaos Power = " .. tostring(saved.ChaosPower))
+end)
+
+-- SE 控制台输入 !cor_allin，把当前等级的混沌孤注使用次数恢复至上限。
+Ext.RegisterConsoleCommand("cor_allin", function(_, ...)
+    assert(select("#", ...) == 0, "Usage: !cor_allin")
+    local character, saved = consoleTestCharacter()
+    assert(saved.Mechanics.AllIn,
+        "ChaosOriginsRemastered: enable Chaos All-In before using !cor_allin")
+    Osi.ApplyStatus(character, "COR_CHAOS_RESTORE_ALLIN", 0.1, 100, character)
+    Ext.Utils.Print("ChaosOriginsRemastered: !cor_allin restored Chaos All-In charges")
+end)
+
 return {
     ModuleUUID = MODULE_UUID,
     OriginUUID = ORIGIN_UUID,

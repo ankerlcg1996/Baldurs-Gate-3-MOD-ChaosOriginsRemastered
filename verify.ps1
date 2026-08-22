@@ -170,6 +170,13 @@ $bootstrap = Get-Content -Raw -LiteralPath $bootstrapPath -Encoding UTF8
 foreach ($value in @($moduleUuid, $originUuid)) {
     Require ($bootstrap.Contains($value)) "Bootstrap identity is missing: $value"
 }
+foreach ($token in @('Ext.RegisterConsoleCommand("cor_power"',
+    'Ext.RegisterConsoleCommand("cor_allin"',
+    'saved.ChaosPower = saved.ChaosPower + amount',
+    'Osi.ApplyStatus(character, "COR_CHAOS_RESTORE_ALLIN", 0.1, 100, character)',
+    'Usage: !cor_power <positive integer>', 'Usage: !cor_allin')) {
+    Require ($bootstrap.Contains($token)) "Test console command is missing: $token"
+}
 
 $luaRoot = Split-Path $bootstrapPath -Parent
 $expectedLuaFiles = @(
