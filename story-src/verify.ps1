@@ -128,4 +128,36 @@ foreach ($file in $statsFiles) {
     }
 }
 
+$configGoalPath = Join-Path $root "Mods\$module\Story\RawFiles\Goals\COS_Config.txt"
+if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
+    $configGoal = [IO.File]::ReadAllText($configGoalPath)
+    Require ([regex]::Matches($configGoal, 'DB_COS_ConfigMechanicDefault\("').Count -eq 8) '机制默认目录必须恰好为 8 项'
+    Require ([regex]::Matches($configGoal, 'DB_COS_ConfigRacialPassiveDefault\("').Count -eq 20) '种族被动默认目录必须恰好为 20 项'
+    Require ([regex]::Matches($configGoal, 'DB_COS_ConfigOriginDefault\("').Count -eq 7) '起源默认目录必须恰好为 7 项'
+    Require ([regex]::Matches($configGoal, 'DB_COS_ConfigWoundDefault\("').Count -eq 15) '受击默认目录必须恰好为 15 项'
+    foreach ($key in $mechanics) {
+        Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制默认值缺失或错误: $key"
+    }
+    foreach ($key in $origins) {
+        Require ($configGoal.Contains("DB_COS_ConfigOriginDefault(`"$key`", 1);")) "起源默认值缺失或错误: $key"
+    }
+    foreach ($key in $woundNegatives) {
+        Require ($configGoal.Contains("DB_COS_ConfigWoundDefault(`"$key`", 1);")) "受击默认值缺失或错误: $key"
+    }
+    foreach ($passive in $racialPassives) {
+        Require ($configGoal.Contains("DB_COS_ConfigRacialPassiveDefault(`"$passive`", 0);")) "种族被动默认值缺失或错误: $passive"
+    }
+    foreach ($token in @(
+        'DB_COS_ConfigMechanic(',
+        'DB_COS_ConfigRacialPassive(',
+        'DB_COS_ConfigOrigin(',
+        'DB_COS_ConfigWound(',
+        'DB_COS_ConfigBusy',
+        'PROC_COS_ConfigInitialize',
+        'PROC_COS_ConfigReset'
+    )) {
+        Require ($configGoal.Contains($token)) "配置 Story 合约缺失: $token"
+    }
+}
+
 Write-Host 'ChaosOriginsStory source verification: ok'

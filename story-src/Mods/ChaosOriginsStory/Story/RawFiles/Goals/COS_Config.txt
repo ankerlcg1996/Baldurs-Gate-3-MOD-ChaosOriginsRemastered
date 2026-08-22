@@ -1,0 +1,152 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+DB_COS_ConfigMechanicDefault("Skills", 1);
+DB_COS_ConfigMechanicDefault("Power", 1);
+DB_COS_ConfigMechanicDefault("Wound", 1);
+DB_COS_ConfigMechanicDefault("KillPower", 1);
+DB_COS_ConfigMechanicDefault("Duality", 1);
+DB_COS_ConfigMechanicDefault("AllIn", 1);
+DB_COS_ConfigMechanicDefault("Echo", 1);
+DB_COS_ConfigMechanicDefault("Strike", 1);
+
+DB_COS_ConfigRacialPassiveDefault("DeepGnome_StoneCamouflage", 0);
+DB_COS_ConfigRacialPassiveDefault("Drow_DrowWeaponTraining", 0);
+DB_COS_ConfigRacialPassiveDefault("Duergar_DuergarResilience", 0);
+DB_COS_ConfigRacialPassiveDefault("Dwarf_DwarvenCombatTraining", 0);
+DB_COS_ConfigRacialPassiveDefault("Dwarf_DwarvenResilience", 0);
+DB_COS_ConfigRacialPassiveDefault("Elf_WeaponTraining", 0);
+DB_COS_ConfigRacialPassiveDefault("FeyAncestry", 0);
+DB_COS_ConfigRacialPassiveDefault("Gith_MartialProdigy", 0);
+DB_COS_ConfigRacialPassiveDefault("Gnome_Cunning", 0);
+DB_COS_ConfigRacialPassiveDefault("Halfling_Brave", 0);
+DB_COS_ConfigRacialPassiveDefault("Halfling_LightfootStealth", 0);
+DB_COS_ConfigRacialPassiveDefault("Halfling_Lucky", 0);
+DB_COS_ConfigRacialPassiveDefault("Halfling_StoutResilience", 0);
+DB_COS_ConfigRacialPassiveDefault("HumanMilitia", 0);
+DB_COS_ConfigRacialPassiveDefault("MountainDwarf_DwarvenArmorTraining", 0);
+DB_COS_ConfigRacialPassiveDefault("RelentlessEndurance", 0);
+DB_COS_ConfigRacialPassiveDefault("RockGnome_ArtificersLore", 0);
+DB_COS_ConfigRacialPassiveDefault("SavageAttacks", 0);
+DB_COS_ConfigRacialPassiveDefault("SuperiorDarkvision", 0);
+DB_COS_ConfigRacialPassiveDefault("Tiefling_HellishResistance", 0);
+
+DB_COS_ConfigOriginDefault("Astarion", 1);
+DB_COS_ConfigOriginDefault("Gale", 1);
+DB_COS_ConfigOriginDefault("Laezel", 1);
+DB_COS_ConfigOriginDefault("Shadowheart", 1);
+DB_COS_ConfigOriginDefault("Wyll", 1);
+DB_COS_ConfigOriginDefault("Karlach", 1);
+DB_COS_ConfigOriginDefault("DarkUrge", 1);
+
+DB_COS_ConfigWoundDefault("Madness", 1);
+DB_COS_ConfigWoundDefault("Frightened", 1);
+DB_COS_ConfigWoundDefault("Stunned", 1);
+DB_COS_ConfigWoundDefault("Silenced", 1);
+DB_COS_ConfigWoundDefault("Prone", 1);
+DB_COS_ConfigWoundDefault("Blinded", 1);
+DB_COS_ConfigWoundDefault("Slowed", 1);
+DB_COS_ConfigWoundDefault("Poisoned", 1);
+DB_COS_ConfigWoundDefault("Bleeding", 1);
+DB_COS_ConfigWoundDefault("Burning", 1);
+DB_COS_ConfigWoundDefault("MeleeDisadvantage", 1);
+DB_COS_ConfigWoundDefault("RangedDisadvantage", 1);
+DB_COS_ConfigWoundDefault("SpellDisadvantage", 1);
+DB_COS_ConfigWoundDefault("RandomVulnerability", 1);
+DB_COS_ConfigWoundDefault("ExtraRandomDamage", 1);
+KBSECTION
+
+PROC
+PROC_COS_ConfigInitialize((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _Default)
+AND
+NOT DB_COS_ConfigMechanic(_Character, _Key, _)
+THEN
+DB_COS_ConfigMechanic(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigInitialize((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialPassiveDefault(_Passive, _Default)
+AND
+NOT DB_COS_ConfigRacialPassive(_Character, _Passive, _)
+THEN
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Default);
+
+PROC
+PROC_COS_ConfigInitialize((CHARACTER)_Character)
+AND
+DB_COS_ConfigOriginDefault(_Key, _Default)
+AND
+NOT DB_COS_ConfigOrigin(_Character, _Key, _)
+THEN
+DB_COS_ConfigOrigin(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigInitialize((CHARACTER)_Character)
+AND
+DB_COS_ConfigWoundDefault(_Key, _Default)
+AND
+NOT DB_COS_ConfigWound(_Character, _Key, _)
+THEN
+DB_COS_ConfigWound(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigResetMechanics((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _Default)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _Current)
+THEN
+NOT DB_COS_ConfigMechanic(_Character, _Key, _Current);
+DB_COS_ConfigMechanic(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigResetRacialPassives((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialPassiveDefault(_Passive, _Default)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Current)
+THEN
+NOT DB_COS_ConfigRacialPassive(_Character, _Passive, _Current);
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Default);
+
+PROC
+PROC_COS_ConfigResetOrigins((CHARACTER)_Character)
+AND
+DB_COS_ConfigOriginDefault(_Key, _Default)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, _Current)
+THEN
+NOT DB_COS_ConfigOrigin(_Character, _Key, _Current);
+DB_COS_ConfigOrigin(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigResetWounds((CHARACTER)_Character)
+AND
+DB_COS_ConfigWoundDefault(_Key, _Default)
+AND
+DB_COS_ConfigWound(_Character, _Key, _Current)
+THEN
+NOT DB_COS_ConfigWound(_Character, _Key, _Current);
+DB_COS_ConfigWound(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigReset((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigInitialize(_Character);
+PROC_COS_ConfigResetMechanics(_Character);
+PROC_COS_ConfigResetRacialPassives(_Character);
+PROC_COS_ConfigResetOrigins(_Character);
+PROC_COS_ConfigResetWounds(_Character);
+
+PROC
+PROC_COS_ConfigRelease((CHARACTER)_Character)
+AND
+DB_COS_ConfigBusy(_Character)
+THEN
+NOT DB_COS_ConfigBusy(_Character);
+
+EXITSECTION
+ENDEXITSECTION
