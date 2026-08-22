@@ -282,8 +282,10 @@ foreach ($token in $forbiddenOldRewards) {
 }
 $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
 $originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
-    '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=local\s+(?:function\s+)?[^\r\n]*tracked[^\r\n]*flag)')
+    '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=^local\s+trackedFlags\s*=)')
 Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
+Require ($originStoryRewardsLua.Contains('local FULL_CEREMORPH = "3797bfc4-8004-4a19-9578-61ce0714cc0b"')) `
+    'Origin story reward raw UUID constant is missing'
 $originStoryRewardsText = $originStoryRewardsLua -replace '(?m)--[^\r\n]*', ''
 $originStoryRewardLiterals = @([regex]::Matches($originStoryRewardsText, '"([^"]+)"') |
     ForEach-Object { $_.Groups[1].Value })
@@ -296,7 +298,7 @@ foreach ($token in @(
     'ORI_Gale_ShadowSpellSlots',
     'ORI_Gale_State_CraftedDarkLantern_3ddebb12-8c9f-47b4-8b6a-bb8eeac51a9b',
     'Target_ORI_Gale_ShadowSummon', 'ORI_Gale_State_IsGod_ec94f9a4-b032-ce25-f4eb-ecf4ed37d65d',
-    'EPI_GALEGOD', 'EPI_GALEGOD_MINDFLAYER', 'FULL_CEREMORPH_3797bfc4-8004-4a19-9578-61ce0714cc0b',
+    'EPI_GALEGOD', 'EPI_GALEGOD_MINDFLAYER', '3797bfc4-8004-4a19-9578-61ce0714cc0b',
     'CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23',
     'Shout_ORI_Wyll_FireShield_Warm',
     'COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8',
