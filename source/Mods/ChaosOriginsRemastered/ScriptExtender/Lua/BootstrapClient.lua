@@ -10,7 +10,9 @@ local lastRevision = -1
 local snapshot = nil
 local applying = false
 local mcmOpen = false
-local controls = { Origins = {}, OriginAll = nil, Mechanics = {}, WoundEffects = {} }
+local controls = {
+    Origins = {}, OriginAll = nil, Mechanics = {}, WoundEffects = {}, TestExperience = nil
+}
 local rendered = { General = false, Origins = false, Wounds = false }
 local statusTexts = {}
 local pollSnapshot
@@ -74,6 +76,10 @@ local function applySnapshot(code)
                 and snapshot.Mechanics[definition[1]] == true
             control.Disabled = disabled
         end
+    end
+    if controls.TestExperience ~= nil then
+        controls.TestExperience.Checked = snapshot ~= nil and snapshot.TestLevel12Experience == true
+        controls.TestExperience.Disabled = disabled
     end
     for _, definition in ipairs(Protocol.WoundEffects) do
         local control = controls.WoundEffects[definition[1]]
@@ -149,6 +155,8 @@ local function renderGeneral(parent)
         controls.Mechanics[key] = checkbox(parent, loc(handle), true,
             function(value) request("SetMechanic", key, value) end)
     end
+    controls.TestExperience = checkbox(parent, loc(Protocol.Text.TestLevel12Experience), false,
+        function(value) request("SetTestExperience", "", value) end)
     finishRender()
 end
 

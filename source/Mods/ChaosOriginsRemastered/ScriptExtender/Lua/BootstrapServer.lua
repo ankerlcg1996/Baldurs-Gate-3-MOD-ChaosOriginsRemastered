@@ -6,6 +6,7 @@ local GrantLedger = Ext.Require("GrantLedger.lua")
 local BaseFeatures = Ext.Require("BaseFeatures.lua")
 local RaceFeatures = Ext.Require("RaceFeatures.lua")
 local OriginFeatures = Ext.Require("OriginFeatures.lua")
+local OriginStoryRewards = Ext.Require("OriginStoryRewards.lua")
 local ChaosMechanics = Ext.Require("ChaosMechanics.lua")
 local McmProtocol = Ext.Require("McmProtocol.lua")
 local LEVEL_12_TOTAL_EXPERIENCE = 100000
@@ -36,6 +37,7 @@ local function syncCharacter(character)
         BaseFeatures.Sync(character, record)
         RaceFeatures.Sync(character, record)
         OriginFeatures.Sync(character, record)
+        OriginStoryRewards.Sync(character, record)
         ChaosMechanics.Sync(character, record)
     end, debug.traceback)
     syncing[character] = nil
@@ -101,13 +103,10 @@ local function scheduleAllPlayers(delay)
     end)
 end
 
-local function grantLevel12TestExperience()
-    local character = Osi.GetHostCharacter()
-    assert(character ~= nil and character ~= "",
-        "ChaosOriginsRemastered: host character is unavailable for test experience")
-    character = ChaosCharacter.CanonicalGuid(character, "test experience character")
-    if not ChaosCharacter.IsEligible(character) then return end
-
+local function grantLevel12TestExperience(character, record)
+    if not record.TestLevel12Experience then return false end
+    character = ChaosCharacter.CanonicalGuid(character, "level-12 test character")
+    if not ChaosCharacter.IsEligible(character) then return false end
     local entity = assert(Ext.Entity.Get(character),
         "ChaosOriginsRemastered: host entity is unavailable for test experience " .. character)
     local experience = assert(entity.Experience,
@@ -118,20 +117,25 @@ local function grantLevel12TestExperience()
         "ChaosOriginsRemastered: invalid total experience " .. tostring(total)
             .. " for " .. character)
 
+    if total >= LEVEL_12_TOTAL_EXPERIENCE then return false end
     local missing = LEVEL_12_TOTAL_EXPERIENCE - total
-    if missing > 0 then
-        -- 测试版本只补足经验，不直接调用升级，仍由玩家逐级确认成长界面。
-        Osi.AddExplorationExperience(character, missing)
-        Ext.Utils.Print("ChaosOriginsRemastered: granted " .. tostring(missing)
-            .. " test experience to " .. character)
-    end
+    -- 测试版本只补足经验，不直接调用升级，仍由玩家逐级确认成长界面。
+    Osi.AddExplorationExperience(character, missing)
+    Ext.Utils.Print("ChaosOriginsRemastered: granted " .. tostring(missing)
+        .. " test experience to " .. character)
+    return true
 end
 
 local function scheduleLevel12TestExperience(delay)
     local generation = sessionGeneration
     Ext.Timer.WaitFor(delay, function()
         if generation ~= sessionGeneration then return end
-        grantLevel12TestExperience()
+        local character = Osi.GetHostCharacter()
+        assert(character ~= nil and character ~= "",
+            "ChaosOriginsRemastered: host character is unavailable for test experience")
+        character = ChaosCharacter.CanonicalGuid(character, "test experience character")
+        if not ChaosCharacter.IsEligible(character) then return end
+        grantLevel12TestExperience(character, State.GetCharacter(character))
     end)
 end
 
@@ -166,6 +170,7 @@ local function hostSnapshot()
         CharacterId = host,
         IsChaos = true,
         InCombat = Osi.IsInCombat(host) ~= 0,
+        TestLevel12Experience = saved.TestLevel12Experience,
         OriginIdentities = copyBooleanMap(saved.OriginIdentities, McmProtocol.Origins),
         Mechanics = copyBooleanMap(saved.Mechanics, McmProtocol.Mechanics),
         WoundEffects = copyBooleanMap(saved.WoundEffects, McmProtocol.WoundEffects),
@@ -257,6 +262,15 @@ mcmChannel:SetRequestHandler(function(request, peerId)
         assert(type(request.Value) == "boolean",
             "ChaosOriginsRemastered: MCM origin value must be boolean")
         changed = OriginFeatures.SetEnabled(snapshot.CharacterId, saved, request.Key, request.Value)
+    elseif request.Action == "SetTestExperience" then
+        assert(type(request.Value) == "boolean",
+            "ChaosOriginsRemastered: test experience value must be boolean")
+        changed = saved.TestLevel12Experience ~= request.Value
+        if changed then
+            saved.TestLevel12Experience = request.Value
+            State.MarkDirty()
+            if request.Value then grantLevel12TestExperience(snapshot.CharacterId, saved) end
+        end
     elseif request.Action == "SetMechanic" then
         assert(protocolContains(McmProtocol.Mechanics, request.Key),
             "ChaosOriginsRemastered: invalid MCM mechanic")
@@ -287,6 +301,7 @@ Ext.Events.SessionLoaded:Subscribe(function()
     scheduled = {}
     GrantLedger.ResetRuntime()
     OriginFeatures.ResetRuntime()
+    OriginStoryRewards.ResetRuntime()
     ChaosMechanics.ResetRuntime()
     mcmRevision = mcmRevision + 1
 end)
@@ -320,6 +335,22 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function()
     invalidateMcm()
     scheduleAllPlayers(500)
     scheduleLevel12TestExperience(750)
+end)
+
+Ext.Osiris.RegisterListener("FlagSet", 3, "after", function(flag, _, _)
+    if OriginStoryRewards.IsTrackedFlag(flag) then scheduleAllPlayers(200) end
+end)
+
+Ext.Osiris.RegisterListener("FlagCleared", 3, "after", function(flag, _, _)
+    if OriginStoryRewards.IsTrackedFlag(flag) then scheduleAllPlayers(200) end
+end)
+
+Ext.Osiris.RegisterListener("CastedSpell", 5, "after", function(caster, spell, _, _, _)
+    if not ChaosCharacter.IsEligible(caster) then return end
+    local record = State.GetCharacter(caster)
+    if OriginStoryRewards.HandleCastedSpell(caster, spell, record) then
+        scheduleCharacter(caster, 200)
+    end
 end)
 
 Ext.Osiris.RegisterListener("CharacterCreationFinished", 0, "after", function()
