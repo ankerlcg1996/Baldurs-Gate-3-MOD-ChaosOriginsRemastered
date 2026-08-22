@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">威尔身份</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">卡菈克身份</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">邪念身份</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">独立切换该起源身份及当前等级已解锁的对应能力，可与其他起源身份同时启用；战斗中不能切换。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">控制该起源身份对应的官方标签和即时能力。开启时会同步两者，关闭时会移除两者；剧情成长由官方剧情结果独立触发，绝不按人物等级发放。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">目盲1回合：远程攻击范围缩短至3m，攻击具有劣势，针对自身的攻击具有优势。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">持续1回合。随机从强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣中选择一种，受到该类型伤害翻倍。该临时惩罚结束后，混沌迷失层数仍然保留。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">每次混沌受创抽到负面结果，迷失便加深1层，并尝试转化为混沌之力。成功后迷失清零；休息无法使其消退。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;查看转化概率&lt;/LSTag&gt;。</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌受创：额外火焰伤害</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌受创：额外黯蚀伤害</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌迷失：0/10。当前获得混沌之力的概率为0%；下一次抽到负面受创结果后，概率将变为5%。成功获得力量后层数归零，休息不会降低层数。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得这些种族的被动特性；29项种族主动技能与法术按原版等级解锁。混沌同时拥有七名起源角色身份，并按人物等级解锁对应能力。1级：阿斯代伦吸血、威尔边境之刃、卡菈克初始特性；3级：邪念隐匿专精、卡菈克首次升级；5级：盖尔耐色瑞尔影法术位与影召唤、卡菈克炼狱狂怒、邪念流血匕首；7级：威尔火焰护盾、卡菈克第二次升级；9级：邪念杀戮者形态；10级：阿斯代伦飞升吸血鬼；11级：威尔召唤坎比翁；12级：阿斯代伦化蝠。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得这些种族的被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。即时能力包括阿斯代伦的吸血、威尔的边境之刃，以及卡菈克的汗液免疫与狂怒烈焰；盖尔、莱埃泽尔、影心和邪念只获得官方标签。本模组支持的剧情奖励由官方结果驱动：阿斯代伦飞升；盖尔的耐色瑞尔魔球、幽影能力与成神；威尔的两项契约奖励；卡菈克的两阶段引擎升级；邪念的杀戮者形态与律令：死亡。不复制剧情装备，剧情奖励绝不按等级发放。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌归流</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">持续1回合：对应攻击具有劣势。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">以命中为赌注，强化下一次武器或法术攻击。若仍然命中，本次最终伤害翻倍；若攻击同时暴击，这次翻倍照常叠加。命中或落空后效果结束。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;查看孤注成长&lt;/LSTag&gt;。</content>
@@ -215,7 +215,7 @@
   <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">中毒</content>
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">法术劣势</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">流血</content>
-  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下开关仅作用于当前主控混沌角色，并随存档保存。战斗中全部锁定；关闭机制会立即移除由本模组授予的对应能力。</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下设置分别作用于当前主控混沌角色，并随存档保存；战斗中全部保持锁定。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭后也绝不会扣除经验。</content>
   <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">七个起源身份默认全部开启。开启身份会同步官方标签、基础能力，并补发存档中已经完成的对应剧情奖励；关闭身份会移除标签与基础能力，但不会收回已经认领的永久剧情奖励。剧情奖励只能由官方剧情结果触发，不能在此手动解锁；战斗中不可修改。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">眩晕</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">常规设置</content>

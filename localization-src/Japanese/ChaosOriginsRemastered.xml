@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">ウィルのアイデンティティ</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">カーラックのアイデンティティ</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">ダークアージのアイデンティティ</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">このオリジン識別と現在レベルで解放済みの能力を個別に切り替える。複数の識別を同時に有効化できる。戦闘中は変更できない。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">このオリジン・アイデンティティに対応する公式タグと即時能力を制御する。有効にすると両方を同期し、無効にすると両方を削除する。ストーリー上の成長は公式ストーリーの結果によって独立して発生し、キャラクターレベルでは決して付与されない。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1ターン盲目になる。遠隔攻撃の射程は3mに制限され、攻撃が不利、受ける攻撃が有利になる。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1ターン。酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴から1種をランダムに選び、そのダメージを2倍受ける。一時的なペナルティ終了後も混沌の迷走層は残る。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">混沌の受創で負の結果が出るたび、迷走が1深まり、混沌の力への変換を試みる。成功すると迷走は0に戻り、休憩では減少しない。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;変換確率を見る&lt;/LSTag&gt;。</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌の受創：追加火ダメージ</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌の受創：追加死霊ダメージ</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌の迷走：0/10。現在の混沌の力の獲得率は0%。次に負の受創結果が出ると5%になる。獲得成功時に0へ戻り、休憩では減少しない。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの種族の追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。さらに7人すべてのオリジン識別を持ち、キャラクターレベルに応じて能力を解放する。Lv1：アスタリオンの吸血、ウィルの辺境の刃、カーラック初期特性。Lv3：ダークアージの隠密習熟強化、カーラック第1強化。Lv5：ゲイルの影の呪文スロットと召喚、カーラックの地獄の激怒、ダークアージの出血短剣。Lv7：ウィルの炎の盾、カーラック第2強化。Lv9：殺戮者形態。Lv10：吸血鬼の支配者。Lv11：カンビオン召喚。Lv12：コウモリ形態。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの種族の追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。7つのオリジン・アイデンティティは初期状態ですべて有効。即時能力はアスタリオンの吸血、ウィルの辺境の刃、カーラックの発汗無効と激怒の炎で、ゲイル、レイゼル、シャドウハート、ダークアージには公式タグのみが付与される。対応するストーリー報酬は公式の結果に従う：アスタリオンの吸血鬼アセンダント化、ゲイルのネザリル・オーブと影の力と神格化、ウィルの2つの契約報酬、カーラックのエンジン2段階強化、ダークアージのスレイヤー形態とパワー・ワード・キル。ストーリー装備は複製されず、ストーリー報酬がレベルによって付与されることはない。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌回帰</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1ターン、対応する攻撃が不利になる。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">命中を賭けて、次の武器攻撃または呪文攻撃を強化する。それでも命中すれば最終ダメージは2倍になり、クリティカルとも重複する。命中またはミス後に終了。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;大勝負の成長を見る&lt;/LSTag&gt;。</content>
@@ -215,7 +215,7 @@
   <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">毒</content>
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">呪文不利</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">出血</content>
-  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下のスイッチは現在操作中の混沌キャラクターだけに適用され、セーブに保存される。戦闘中は変更不可。機構を無効にすると、このMODが付与した対応能力は直ちに削除される。</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下の設定は現在操作中の混沌キャラクターごとに適用され、セーブに保存される。戦闘中はすべてロックされる。「レベル12テスト経験値」は初期状態でOFF。有効にすると累積経験値が100000に達するまで不足分だけを追加し、直接レベルアップは行わない。無効にしても経験値が減ることはない。</content>
   <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7つのオリジンアイデンティティは初期状態ですべて有効です。有効にすると公式タグと基本能力を同期し、セーブ内ですでに完了している対応するストーリー報酬を補完します。無効にするとタグと基本能力は削除されますが、すでに獲得した恒久的なストーリー報酬は回収されません。ストーリー報酬は公式ストーリーの結果でのみ発生し、ここで手動解除することはできません。戦闘中は変更できません。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">朦朧</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">一般設定</content>

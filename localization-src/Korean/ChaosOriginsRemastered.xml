@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">윌 정체성</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">카를라크 정체성</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">다크 어지 정체성</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">해당 오리진 정체성과 현재 레벨에 해금된 능력을 개별적으로 전환합니다. 여러 정체성을 동시에 활성화할 수 있습니다. 전투 중에는 변경할 수 없습니다.</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">이 오리진 정체성에 해당하는 공식 태그와 즉시 능력을 제어합니다. 활성화하면 둘 다 동기화하고 비활성화하면 둘 다 제거합니다. 스토리 성장은 공식 스토리 결과에 따라 독립적으로 발동하며 캐릭터 레벨로는 절대 부여되지 않습니다.</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1턴 동안 실명하여 원거리 공격 범위가 3m로 제한되고 공격에 불리점을 받으며 자신을 향한 공격에 이점이 적용됩니다.</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1턴 동안 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 중 하나를 무작위로 선택해 해당 피해를 2배로 받습니다. 임시 불이익이 끝나도 혼돈의 방황 중첩은 남습니다.</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">혼돈의 상처에서 부정 결과가 나올 때마다 방황이 1 깊어지고 혼돈의 힘으로 전환을 시도합니다. 성공하면 방황은 0으로 초기화되며 휴식으로 줄어들지 않습니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;전환 확률 보기&lt;/LSTag&gt;.</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">혼돈의 상처: 추가 화염 피해</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">혼돈의 상처: 추가 사령 피해</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">혼돈의 방황: 0/10. 현재 혼돈의 힘 획득 확률은 0%이며, 다음 부정적인 상처 결과 후에는 5%가 됩니다. 성공하면 0으로 초기화되고 휴식으로는 감소하지 않습니다.</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 해당 종족의 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 또한 일곱 오리진의 정체성을 모두 가지며 캐릭터 레벨에 따라 능력을 해금합니다. 1레벨: 아스타리온 흡혈, 윌 변경의 검, 카를라크 시작 특성. 3레벨: 다크 어지 은신 전문화와 카를라크 1차 강화. 5레벨: 게일의 그림자 주문 슬롯과 소환, 카를라크 지옥의 격노, 다크 어지 출혈 단검. 7레벨: 윌 화염 방패와 카를라크 2차 강화. 9레벨: 살육자 형상. 10레벨: 아스타리온 승천 흡혈귀. 11레벨: 윌 캠비온 소환. 12레벨: 박쥐 변신.</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 해당 종족의 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 즉시 능력은 아스타리온의 흡혈, 윌의 변경의 검, 카를라크의 땀 면역과 분노의 불꽃이며, 게일, 레이젤, 섀도하트, 다크 어지는 공식 태그만 얻습니다. 지원되는 스토리 보상은 공식 결과에 따라 부여됩니다: 아스타리온의 승천, 게일의 네더릴 오브와 그림자 능력 및 신격화, 윌의 계약 보상 2개, 카를라크의 엔진 2단계 강화, 다크 어지의 살육자 형상과 권능어: 죽음. 스토리 장비는 복사하지 않으며 스토리 보상은 레벨에 따라 부여되지 않습니다.</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">혼돈 회귀</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1턴 동안 해당 공격에 불리점을 받습니다.</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">명중을 걸고 다음 무기 또는 주문 공격을 강화합니다. 그래도 명중하면 최종 피해가 2배가 되며 치명타와도 중첩됩니다. 명중하거나 빗나가면 효과가 끝납니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;승부수 성장 보기&lt;/LSTag&gt;.</content>
@@ -215,7 +215,7 @@
   <content contentuid="h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" version="1">중독</content>
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">주문 불리점</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">출혈</content>
-  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">아래 설정은 현재 조종 중인 혼돈 캐릭터에만 적용되며 저장 파일에 보관됩니다. 전투 중에는 모두 잠기며, 기능을 끄면 이 모드가 부여한 해당 능력이 즉시 제거됩니다.</content>
+  <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">아래 설정은 현재 조종 중인 혼돈 캐릭터별로 적용되며 저장 파일에 보관됩니다. 전투 중에는 모든 설정이 잠깁니다. '12레벨 테스트 경험치'는 기본적으로 꺼져 있습니다. 활성화하면 누적 경험치가 100000이 될 때까지 부족한 만큼만 추가하고 직접 레벨을 올리지 않으며, 비활성화해도 경험치는 절대 감소하지 않습니다.</content>
   <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 기본 능력을 동기화하고, 저장 데이터에서 이미 완료된 공식 스토리 결과의 보상을 소급 지급합니다. 비활성화하면 태그와 기본 능력은 제거되지만 이미 획득한 영구 스토리 보상은 회수되지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 해제할 수 없습니다. 전투 중에는 변경할 수 없습니다.</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">기절</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">일반 설정</content>
