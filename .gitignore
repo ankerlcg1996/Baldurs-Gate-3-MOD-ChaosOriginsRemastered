@@ -1,6 +1,7 @@
 /work/
 /backups/
 /dist/
+/.worktrees/
 .vs/
 .vscode/
 .idea/
