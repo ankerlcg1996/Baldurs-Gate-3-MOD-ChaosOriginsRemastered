@@ -71,10 +71,10 @@ git commit -m "balance: remove extra racial passives"
 **Files:**
 - Modify: `README.md`
 - Modify: `source/Mods/ChaosOriginsRemastered/meta.lsx`
-- Modify: `source/Mods/ChaosOriginsRemastered/Localization/Chinese/ChaosOriginsRemastered_Chinese.xml`
-- Modify: `source/Mods/ChaosOriginsRemastered/Localization/English/ChaosOriginsRemastered_English.xml`
-- Modify: `source/Mods/ChaosOriginsRemastered/Localization/Japanese/ChaosOriginsRemastered_Japanese.xml`
-- Modify: `source/Mods/ChaosOriginsRemastered/Localization/Korean/ChaosOriginsRemastered_Korean.xml`
+- Modify: `localization-src/Chinese/ChaosOriginsRemastered.xml`
+- Modify: `localization-src/English/ChaosOriginsRemastered.xml`
+- Modify: `localization-src/Japanese/ChaosOriginsRemastered.xml`
+- Modify: `localization-src/Korean/ChaosOriginsRemastered.xml`
 
 **Step 1: 更新功能说明**
 
@@ -89,7 +89,7 @@ Expected: PASS。
 **Step 3: 提交说明修改**
 
 ```powershell
-git add README.md source/Mods/ChaosOriginsRemastered/meta.lsx source/Mods/ChaosOriginsRemastered/Localization
+git add README.md source/Mods/ChaosOriginsRemastered/meta.lsx localization-src
 git commit -m "docs: describe racial identities and skills only"
 ```
 
