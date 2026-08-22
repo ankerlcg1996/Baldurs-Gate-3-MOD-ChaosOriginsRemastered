@@ -195,8 +195,23 @@ $expectedLuaFiles = @(
     'OriginStoryRewards.lua',
     'RaceCatalog.lua', 'RaceFeatures.lua'
 ) | Sort-Object
+$packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
+Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
+$declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
+Require ($declaredPackageFiles.Count -eq 34 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 34) `
+    'package-files.json must contain exactly 34 unique paths'
+Require ($declaredPackageFiles -contains 'Public/ChaosOriginsRemastered/Content/UI/[PAK]_ChaosOriginsRemastered/_merged.lsf') `
+    'Package manifest omits the custom icon TextureBank resource'
+foreach ($luaName in $expectedLuaFiles) {
+    Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
+        "Package manifest omits Lua module: $luaName"
+}
 $actualLuaFiles = @(Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua' | ForEach-Object Name) | Sort-Object
-Require (-not (Compare-Object $actualLuaFiles $expectedLuaFiles)) 'Server Lua module list is invalid'
+$luaInventoryDifference = @(Compare-Object -ReferenceObject $expectedLuaFiles -DifferenceObject $actualLuaFiles)
+$luaInventoryDetail = @($luaInventoryDifference | ForEach-Object {
+    if ($_.SideIndicator -eq '<=') { "missing $($_.InputObject)" } else { "unexpected $($_.InputObject)" }
+}) -join '; '
+Require ($luaInventoryDifference.Count -eq 0) "Server Lua module list is invalid: $luaInventoryDetail"
 foreach ($luaFile in Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua') {
     $luaContent = Get-Content -Raw -LiteralPath $luaFile.FullName -Encoding UTF8
     Require ($luaContent -match '--[^\r\n]*[一-龥]') "Lua module lacks a Chinese comment: $($luaFile.Name)"
@@ -248,7 +263,30 @@ foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger
     Require ($originFeaturesLua.Contains($token)) "Origin identity tag ownership is missing: $token"
 }
 Require (-not $originFeaturesLua.Contains('Osi.GetLevel')) 'OriginFeatures.lua must not grant abilities by level'
+Require (-not [regex]::IsMatch($originFeaturesLua, '\{\s*"[^"]+"\s*,\s*\d+\s*\}')) `
+    'OriginFeatures.lua must not contain level-gated ability tuples'
+$originDefinitionsMatch = [regex]::Match($originFeaturesLua,
+    '(?ms)^M\.Definitions\s*=\s*\{(?<definitions>.*?)^}\r?\n\r?\n(?=local byStatus)')
+Require ($originDefinitionsMatch.Success) 'OriginFeatures.lua definitions block is missing'
+$originDefinitionText = $originDefinitionsMatch.Groups['definitions'].Value -replace '(?m)--[^\r\n]*', ''
+$originDefinitionLiterals = @([regex]::Matches($originDefinitionText, '"([^"]+)"') |
+    ForEach-Object { $_.Groups[1].Value })
+foreach ($token in @('Target_VampireBite_Astarion', 'BladeOfFrontiers',
+    'ORI_Karlach_SweatImmune', 'ORI_Karlach_Rage_Flames')) {
+    Require ($originDefinitionLiterals -contains $token) "OriginFeatures.lua immediate ability is missing: $token"
+}
+$forbiddenOldRewards = @('UNI_DarkUrge_Stealth_Expertise_Passive',
+    'UNI_DarkUrge_Bleeding_Dagger_Passive', 'Karlach_Infernal_Fury')
+foreach ($token in $forbiddenOldRewards) {
+    Require (-not ($originDefinitionLiterals -contains $token)) "OriginFeatures.lua contains forbidden old reward: $token"
+}
 $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
+$originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
+    '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=local\s+(?:function\s+)?[^\r\n]*tracked[^\r\n]*flag)')
+Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
+$originStoryRulesText = $originStoryRulesMatch.Groups['rules'].Value -replace '(?m)--[^\r\n]*', ''
+$originStoryRuleLiterals = @([regex]::Matches($originStoryRulesText, '"([^"]+)"') |
+    ForEach-Object { $_.Groups[1].Value })
 foreach ($token in @(
     'ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e',
     'LOW_Astarion_VampireAscendant', 'Shout_EPI_Astarion_TurnIntoBat',
@@ -272,11 +310,10 @@ foreach ($token in @(
     'ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86',
     'Target_LOW_DarkUrge_PowerWordKill'
 )) {
-    Require ($originStoryRewardsLua.Contains($token)) "Origin story reward catalog is missing: $token"
+    Require ($originStoryRuleLiterals -contains $token) "Origin story reward catalog is missing: $token"
 }
-foreach ($token in @('UNI_DarkUrge_Stealth_Expertise_Passive',
-    'UNI_DarkUrge_Bleeding_Dagger_Passive', 'Karlach_Infernal_Fury')) {
-    Require (-not $originStoryRewardsLua.Contains($token)) "Origin story reward catalog contains forbidden old reward: $token"
+foreach ($token in $forbiddenOldRewards) {
+    Require (-not ($originStoryRuleLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
 foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
@@ -656,18 +693,6 @@ $customIconReferences = @([regex]::Matches($localizedResourceText, 'data "Icon" 
     ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
 foreach ($icon in $customIconReferences) {
     Require ($iconKeys -contains $icon) "Chaos icon atlas omits referenced key: $icon"
-}
-
-$packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
-Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
-$declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 34 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 34) `
-    'package-files.json must contain exactly 34 unique paths'
-Require ($declaredPackageFiles -contains 'Public/ChaosOriginsRemastered/Content/UI/[PAK]_ChaosOriginsRemastered/_merged.lsf') `
-    'Package manifest omits the custom icon TextureBank resource'
-foreach ($luaName in $expectedLuaFiles) {
-    Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
-        "Package manifest omits Lua module: $luaName"
 }
 
 $mcmBlueprintPath = Join-Path $source "Mods\$moduleName\MCM_blueprint.json"
