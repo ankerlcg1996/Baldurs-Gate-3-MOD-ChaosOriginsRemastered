@@ -238,7 +238,7 @@ foreach ($token in @('LEVEL_12_TOTAL_EXPERIENCE = 100000', 'Osi.AddExplorationEx
 $mechanicsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosMechanics.lua') -Encoding UTF8
 $dualityLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosDuality.lua') -Encoding UTF8
 foreach ($token in @(
-    'Ext.Events.DealDamage', 'Ext.Events.DealtDamage', 'KilledBy', 'AttackedBy', 'LeftCombat',
+    'Ext.Events.BeforeDealDamage', 'Ext.Events.DealtDamage', 'KilledBy', 'AttackedBy', 'LeftCombat',
     'Shout_COR_ChaosGenesis', 'COR_CHAOS_ALLIN_TOGGLE', 'WoundConsumedThisRound',
     'LOST_CHANCES = { 5, 10, 15, 25, 35, 50, 65, 80, 90, 100 }',
     'Duality.ResetRuntime()', 'echoPending = {}', 'processedKills = {}',
@@ -247,7 +247,7 @@ foreach ($token in @(
 )) {
     Require ($mechanicsLua.Contains($token)) "Chaos mechanic runtime is missing: $token"
 }
-foreach ($token in @('uuid(event.Caster)', 'uuid(event.Target)', 'eventKey(source, target, actionId, event.Hit)',
+foreach ($token in @('function M.CaptureBeforeDamage', 'event.Hit.InflicterOwner', 'uuid(event.Target)',
     'applyingTargets[target]', 'function M.ResetRuntime()', 'function M.IsApplying',
     'source = assert(uuid(source)', 'character = assert(uuid(character)')) {
     Require ($dualityLua.Contains($token)) "Correlated Duality runtime is missing: $token"
@@ -255,7 +255,9 @@ foreach ($token in @('uuid(event.Caster)', 'uuid(event.Target)', 'eventKey(sourc
 Require (-not $dualityLua.Contains('table.remove(captured, 1)')) `
     'Duality must not use the legacy global FIFO capture'
 Require (-not $dualityLua.Contains('table.remove(queue, 1)')) `
-    'Duality must correlate DealDamage and DealtDamage by source, target, action and hit identity'
+    'Duality must correlate BeforeDealDamage and DealtDamage without a global FIFO'
+Require (-not $mechanicsLua.Contains('QRY_IgnoreDamageSource')) `
+    'Attack and wound wheels must not suppress valid AttackedBy events through story filters'
 foreach ($luaFile in Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua') {
     $luaContent = Get-Content -Raw -LiteralPath $luaFile.FullName -Encoding UTF8
     Require (-not $luaContent.Contains('LOC_')) "Lua contains a legacy LOC_ identifier: $($luaFile.Name)"

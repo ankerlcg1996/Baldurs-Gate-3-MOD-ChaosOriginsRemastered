@@ -237,7 +237,7 @@ local function registerEcho(target, attackOwner, attacker, damageAmount, damageC
     if echoApplying[target] or Duality.IsApplying(attackOwner, target) or damageAmount <= 0
         or attackOwner ~= attacker or not eligible(attackOwner) then return end
     local saved = record(attackOwner)
-    if not saved.Mechanics.Echo or Osi.QRY_IgnoreDamageSource(damageCause) == 1 then return end
+    if not saved.Mechanics.Echo then return end
     local key = tostring(attackOwner) .. ":" .. tostring(storyActionId) .. ":" .. tostring(target)
     if echoPending[key] == nil then
         echoPending[key] = { Source = attackOwner, Target = target, Damage = 0 }
@@ -350,7 +350,7 @@ Ext.Osiris.RegisterListener("AttackedBy", 7, "after",
         registerEcho(target, attackOwner, attacker, damageAmount, damageCause, storyActionId)
         if eligible(target) and Osi.IsInCombat(target) ~= 0 and damageAmount > 0
             and not (attackOwner == target and attacker == target)
-            and Osi.QRY_IgnoreDamageSource(damageCause) == 0 then
+            and not Duality.IsApplying(attackOwner, target) then
             local saved = record(target)
             if saved.Mechanics.Wound and not saved.WoundConsumedThisRound then
                 saved.WoundConsumedThisRound = true
@@ -382,9 +382,9 @@ Ext.Osiris.RegisterListener("TurnEnded", 1, "after", function(character)
 end)
 
 Ext.Events.DealtDamage:Subscribe(Duality.HandleDealtDamage)
-Ext.Events.DealDamage:Subscribe(function(event)
-    if event.Hit == nil or event.Caster == nil then return end
-    local entity = Ext.Entity.Get(event.Caster)
+Ext.Events.BeforeDealDamage:Subscribe(function(event)
+    if event.Hit == nil or event.Hit.InflicterOwner == nil then return end
+    local entity = Ext.Entity.Get(event.Hit.InflicterOwner)
     if entity == nil or entity.Uuid == nil then return end
     local source = tostring(entity.Uuid.EntityUuid)
     local allIn = (Osi.HasActiveStatus(source, "COR_CHAOS_ALLIN_L1") == 1
@@ -393,7 +393,7 @@ Ext.Events.DealDamage:Subscribe(function(event)
         and tostring(event.Hit.AttackRollAbility) ~= "None"
     local strike = Osi.HasActiveStatus(source, "COR_CHAOS_STRIKE_ACTIVE") == 1
     local finisher = Osi.HasActiveStatus(source, "COR_CHAOS_KILL") == 1
-    Duality.CaptureDealDamage(event,
+    Duality.CaptureBeforeDamage(event,
         (allIn and 2 or 1) * (strike and 2 or 1) * (finisher and 2 or 1))
 end)
 

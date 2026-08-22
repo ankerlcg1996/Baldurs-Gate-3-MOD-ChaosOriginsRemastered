@@ -300,19 +300,14 @@ local function writeDamageList(damageList, damages)
     end
 end
 
-local function eventKey(source, target, actionId, hit)
-    return source .. ":" .. target .. ":" .. tostring(actionId) .. ":" .. tostring(hit)
-end
-
-function M.CaptureDealDamage(event, multiplier)
+function M.CaptureBeforeDamage(event, multiplier)
     assert(options ~= nil, "ChaosOriginsRemastered: Chaos Duality is not configured")
     assert(type(multiplier) == "number" and multiplier % 1 == 0 and multiplier >= 1,
         "ChaosOriginsRemastered: invalid pre-damage multiplier")
     if event.Hit == nil or event.Hit.DamageList == nil then return end
-    local source, target = uuid(event.Caster), uuid(event.Target)
-    if source == nil or target == nil then return end
+    local source = uuid(event.Hit.InflicterOwner)
     if source == nil or not options.IsChaos(source) or applyingSources[source] then return end
-    local actionId = tonumber(event.StoryActionId or 0) or 0
+    local actionId = tonumber(event.Hit.StoryActionId or 0) or 0
     local damages, eventTotal = {}, 0
     local damageList = event.Hit.DamageList
     for index = 1, #damageList do
@@ -334,36 +329,41 @@ function M.CaptureDealDamage(event, multiplier)
     DebugLog.Print(string.format(
         "[混沌起源][攻击轮盘] 已捕获伤害：施法者=%s，动作=%d，原始=%d，倍率后=%d，固定部分=%d，随机部分=%d",
         source, actionId, eventTotal, expandedTotal, total(fixed), total(random)))
-    local captureKey = eventKey(source, target, actionId, event.Hit)
-    assert(captured[captureKey] == nil,
-        "ChaosOriginsRemastered: duplicate Duality deal-damage capture " .. captureKey)
-    local entry = { Source = source, Target = target, Action = actionId, Random = random }
-    captured[captureKey] = entry
+    local entry = { Source = source, Action = actionId, Random = random }
+    captured[#captured + 1] = entry
     local capturedGeneration = generation
     Ext.Timer.WaitFor(2000, function()
         if capturedGeneration ~= generation then return end
-        if captured[captureKey] == entry then
-            captured[captureKey] = nil
-            DebugLog.Print(string.format(
-                "[混沌起源][攻击轮盘] 已取消未结算捕获：施法者=%s，目标=%s，动作=%d，随机伤害=%d",
-                source, target, actionId, total(random)))
+        for index, candidate in ipairs(captured) do
+            if candidate == entry then
+                table.remove(captured, index)
+                DebugLog.Print(string.format(
+                    "[混沌起源][攻击轮盘] 已取消未结算捕获：施法者=%s，动作=%d，随机伤害=%d",
+                    source, actionId, total(random)))
+                break
+            end
         end
     end)
 end
 
 function M.HandleDealtDamage(event)
     assert(options ~= nil, "ChaosOriginsRemastered: Chaos Duality is not configured")
+    if event.Hit == nil then return end
     local target = uuid(event.Target)
-    local source = uuid(event.Caster)
+    local source = uuid(event.Hit.InflicterOwner)
     if target == nil or source == nil then return end
     if applyingTargets[target] then return end
-    local actionId = tonumber(event.StoryActionId or 0) or 0
-    local captureKey = eventKey(source, target, actionId, event.Hit)
-    local entry = captured[captureKey]
+    local actionId = tonumber(event.Hit.StoryActionId or event.StoryActionId or 0) or 0
+    local entry, captureIndex = nil, nil
+    for index, candidate in ipairs(captured) do
+        if candidate.Source == source and candidate.Action == actionId then
+            entry = candidate
+            captureIndex = index
+            break
+        end
+    end
     if entry == nil then return end
-    captured[captureKey] = nil
-    assert(entry.Source == source and entry.Target == target,
-        "ChaosOriginsRemastered: Duality capture identity changed during settlement")
+    table.remove(captured, captureIndex)
     local random = entry.Random
     DebugLog.Print(string.format(
         "[混沌起源][攻击轮盘] 已锁定结算目标：施法者=%s，目标=%s，动作=%d，随机伤害=%d",
@@ -407,8 +407,8 @@ end
 function M.ClearForSource(source)
     source = assert(uuid(source),
         "ChaosOriginsRemastered: Duality source is unavailable while clearing")
-    for key, entry in pairs(captured) do
-        if entry.Source == source then captured[key] = nil end
+    for index = #captured, 1, -1 do
+        if captured[index].Source == source then table.remove(captured, index) end
     end
     for key, envelope in pairs(pending) do
         if envelope.Source == source then pending[key] = nil end
