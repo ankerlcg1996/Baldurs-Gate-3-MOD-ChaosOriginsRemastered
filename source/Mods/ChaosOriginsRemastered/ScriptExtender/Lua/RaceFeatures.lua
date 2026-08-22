@@ -119,9 +119,8 @@ function M.Sync(character, record)
     local desiredPassives = {}
     for _, unlockLevel in ipairs(Catalog.FeatureLevels) do
         if unlockLevel <= level then
-            local features = Catalog.FeaturesByLevel[unlockLevel]
-            for _, passive in ipairs(features.Passives) do desiredPassives[passive] = true end
-            -- 隐藏被动用官方 UnlockSpell 语义保留种族施法属性与长休次数。
+            -- 仅保留解锁主动种族技能的隐藏被动；官方种族被动清单只用于审核和旧账本清理。
+            -- 隐藏被动使用官方 UnlockSpell 语义保留施法属性与长休次数。
             desiredPassives[Catalog.RacialSpellPassives[unlockLevel]] = true
         end
     end
