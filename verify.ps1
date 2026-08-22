@@ -216,6 +216,11 @@ foreach ($token in @('SCHEMA_VERSION = 6', 'state.SchemaVersion == 1', 'state.Sc
     'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
 }
+Require ($stateLua.Contains(
+    'assertOnlyKeys(record.OriginIdentities, ORIGIN_IDENTITY_FIELDS, "origin identities")') `
+    -and -not $stateLua.Contains(
+        'assertOnlyKeys(record.OriginIdentities, expectedIdentities, "origin identities")')) `
+    'Origin identity validation must use a true-valued field whitelist, not false defaults'
 $originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFeatures.lua') -Encoding UTF8
 foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
     'GrantLedger.RemoveTag', 'record.OriginIdentities[definition.Name]', 'function M.SetEnabled')) {

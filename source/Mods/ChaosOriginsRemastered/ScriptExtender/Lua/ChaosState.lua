@@ -8,6 +8,8 @@ local registered = false
 local ORIGIN_IDENTITY_KEYS = {
     "Astarion", "Gale", "Laezel", "Shadowheart", "Wyll", "Karlach", "DarkUrge"
 }
+local ORIGIN_IDENTITY_FIELDS = {}
+for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do ORIGIN_IDENTITY_FIELDS[key] = true end
 local WOUND_EFFECT_KEYS = {
     "Madness", "Frightened", "Stunned", "Silenced", "Prone", "Blinded", "Slowed",
     "Poisoned", "Bleeding", "Burning", "MeleeDisadvantage", "RangedDisadvantage",
@@ -110,8 +112,7 @@ local function validateCharacter(record, characterId)
     validateGrantMap(record.OriginGranted.Tags, "origin tag grant ledger")
     assert(type(record.OriginIdentities) == "table",
         "ChaosOriginsRemastered: origin identities must be a table " .. characterId)
-    local expectedIdentities = defaultOriginIdentities()
-    assertOnlyKeys(record.OriginIdentities, expectedIdentities, "origin identities")
+    assertOnlyKeys(record.OriginIdentities, ORIGIN_IDENTITY_FIELDS, "origin identities")
     local identityCount = 0
     for key, enabled in pairs(record.OriginIdentities) do
         assert(type(enabled) == "boolean",
@@ -279,11 +280,10 @@ local function root()
     end
     if state.SchemaVersion == 5 then
         -- 旧版起源身份是单选字符串；迁移后保留原选项并改为七个独立开关。
-        local validIdentity = { [""] = true }
-        for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do validIdentity[key] = true end
         for characterId, record in pairs(state.Characters) do
             assert(type(record.ActiveOriginIdentity) == "string"
-                and validIdentity[record.ActiveOriginIdentity] == true,
+                and (record.ActiveOriginIdentity == ""
+                    or ORIGIN_IDENTITY_FIELDS[record.ActiveOriginIdentity] == true),
                 "ChaosOriginsRemastered: invalid legacy origin identity "
                     .. tostring(record.ActiveOriginIdentity) .. " for " .. characterId)
             record.OriginIdentities = defaultOriginIdentities()
