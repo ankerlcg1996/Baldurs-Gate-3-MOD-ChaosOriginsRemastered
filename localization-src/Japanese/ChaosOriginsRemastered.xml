@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">呪文不利</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">出血</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下のスイッチは現在操作中の混沌キャラクターだけに適用され、セーブに保存される。戦闘中は変更不可。機構を無効にすると、このMODが付与した対応能力は直ちに削除される。</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7つのオリジン識別は個別に切り替えられ、複数を同時に有効化できる。識別は公式オリジンタグとレベル別能力を付与し、物語判定に影響する場合がある。戦闘中は変更不可。</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">新規キャラクターでは7つのオリジン識別がすべて有効になる。全体スイッチまたは個別スイッチで調整できる。識別は公式オリジンタグとレベル別能力を付与し、物語判定に影響する場合がある。識別スイッチはキャラクターのパッシブ欄に表示され、内部マーカーはBUFF欄に表示されない。戦闘中は変更不可。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">朦朧</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">一般設定</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">撃破による混沌の力</content>
@@ -247,4 +247,5 @@
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">戦闘中は混沌設定を変更できない。</content>
   <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">オリジン識別</content>
   <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">被傷結果</content>
+  <content contentuid="h65000001g0001g4001g8001g000000000001" version="1">すべてのオリジン識別</content>
 </contentList>

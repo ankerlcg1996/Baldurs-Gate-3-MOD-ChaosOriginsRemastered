@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">Spell Disadvantage</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">Bleeding</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">These switches affect only the currently controlled Chaos character and are stored in the save. All settings are locked in combat; disabling a mechanic immediately removes the abilities granted by this mod.</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">Each of the seven origin identities can be toggled independently, and multiple identities may be enabled together. Each grants its official origin tag and level-gated abilities and may alter story checks. They cannot be changed in combat.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">New characters begin with all seven origin identities enabled. Use the master switch or adjust each identity independently. Each grants its official origin tag and level-gated abilities and may alter story checks. Identity toggles appear in the character passive panel, while their internal markers stay out of the BUFF bar. They cannot be changed in combat.</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">Stunned</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">General Settings</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">Chaos Power from Kills</content>
@@ -247,4 +247,5 @@
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">Chaos settings cannot be changed in combat.</content>
   <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">Origin Identities</content>
   <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">Wound Outcomes</content>
+  <content contentuid="h65000001g0001g4001g8001g000000000001" version="1">All Origin Identities</content>
 </contentList>

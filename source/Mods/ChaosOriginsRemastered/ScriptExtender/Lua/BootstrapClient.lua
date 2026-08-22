@@ -10,7 +10,7 @@ local lastRevision = -1
 local snapshot = nil
 local applying = false
 local mcmOpen = false
-local controls = { Origins = {}, Mechanics = {}, WoundEffects = {} }
+local controls = { Origins = {}, OriginAll = nil, Mechanics = {}, WoundEffects = {} }
 local rendered = { General = false, Origins = false, Wounds = false }
 local statusTexts = {}
 local pollSnapshot
@@ -52,13 +52,20 @@ local function applySnapshot(code)
     applying = true
     local disabled = not Ext.Net.IsHost() or snapshot == nil or not snapshot.Ready
         or not snapshot.IsChaos or snapshot.InCombat
+    local allOriginsEnabled = snapshot ~= nil and snapshot.OriginIdentities ~= nil
     for _, definition in ipairs(Protocol.Origins) do
+        allOriginsEnabled = allOriginsEnabled
+            and snapshot.OriginIdentities[definition[1]] == true
         local control = controls.Origins[definition[1]]
         if control ~= nil then
             control.Checked = snapshot ~= nil and snapshot.OriginIdentities ~= nil
                 and snapshot.OriginIdentities[definition[1]] == true
             control.Disabled = disabled
         end
+    end
+    if controls.OriginAll ~= nil then
+        controls.OriginAll.Checked = allOriginsEnabled
+        controls.OriginAll.Disabled = disabled
     end
     for _, definition in ipairs(Protocol.Mechanics) do
         local control = controls.Mechanics[definition[1]]
@@ -150,9 +157,11 @@ local function renderOrigins(parent)
     rendered.Origins = true
     addStatus(parent)
     parent:AddText(loc(Protocol.Text.OriginHelp))
+    controls.OriginAll = checkbox(parent, loc(Protocol.Text.AllOrigins), true,
+        function(value) request("SetAllOrigins", "", value) end)
     for _, definition in ipairs(Protocol.Origins) do
         local key, handle = definition[1], definition[2]
-        controls.Origins[key] = checkbox(parent, loc(handle), false,
+        controls.Origins[key] = checkbox(parent, loc(handle), true,
             function(value) request("SetOrigin", key, value) end)
     end
     finishRender()

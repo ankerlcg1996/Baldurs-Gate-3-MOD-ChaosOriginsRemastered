@@ -24,7 +24,7 @@ end
 
 local function defaultOriginIdentities()
     local result = {}
-    for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do result[key] = false end
+    for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do result[key] = true end
     return result
 end
 

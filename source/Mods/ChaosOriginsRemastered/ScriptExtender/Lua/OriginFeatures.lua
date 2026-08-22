@@ -214,6 +214,22 @@ function M.SetEnabled(character, record, identity, enabled)
     return true
 end
 
+function M.SetAllEnabled(character, record, enabled)
+    assert(type(enabled) == "boolean",
+        "ChaosOriginsRemastered: all origin identities value must be boolean")
+    assert(Osi.IsInCombat(character) == 0,
+        "ChaosOriginsRemastered: origin identities cannot change in combat")
+    local changed = false
+    for _, definition in ipairs(M.Definitions) do
+        if record.OriginIdentities[definition.Name] ~= enabled then
+            record.OriginIdentities[definition.Name] = enabled
+            changed = true
+        end
+    end
+    if changed then State.MarkDirty() end
+    return changed
+end
+
 function M.ResetRuntime()
     alignment = {}
     guardedStatus = {}

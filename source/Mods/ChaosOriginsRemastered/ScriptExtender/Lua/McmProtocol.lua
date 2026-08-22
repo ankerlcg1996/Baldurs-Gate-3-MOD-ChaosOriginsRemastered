@@ -1,5 +1,5 @@
 local M = {
-    Version = 2,
+    Version = 3,
     Channel = "MCM",
     Origins = {
         { "Astarion", "hfa05cce9gef4dg570bgbc1fg7187d154129d" },
@@ -79,6 +79,7 @@ local M = {
         WoundTab = "h64000002g0002g4002g8002g000000000002",
         Help = "h9bc9d749g7b27g5828g8eb4g37f198ae10b5",
         OriginHelp = "ha4779903g3937g5f9bg9576g88cdb2406df1",
+        AllOrigins = "h65000001g0001g4001g8001g000000000001",
         HostOnly = "h77a76816g434ag5c49g8199g60ba18bd10fb",
         Waiting = "h3361bca1gfeecg55fdga020g9bdb650d7443",
         NotChaos = "h34e5ef1bgfce4g5caegbd21g49f972f751fd",

@@ -230,6 +230,8 @@ Require ($stateLua.Contains(
     -and -not $stateLua.Contains(
         'assertOnlyKeys(record.OriginIdentities, expectedIdentities, "origin identities")')) `
     'Origin identity validation must use a true-valued field whitelist, not false defaults'
+Require ($stateLua.Contains('for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do result[key] = true end')) `
+    'New Chaos characters must enable all seven origin identities by default'
 $originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFeatures.lua') -Encoding UTF8
 foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
     'GrantLedger.RemoveTag', 'record.OriginIdentities[definition.Name]', 'function M.SetEnabled')) {
@@ -611,14 +613,14 @@ Require ($mcmBlueprint.Tabs.Count -eq 1 -and $mcmBlueprint.Tabs[0].TabId -eq 'bo
 
 $mcmProtocol = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'McmProtocol.lua') -Encoding UTF8
 $mcmClient = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'BootstrapClient.lua') -Encoding UTF8
-foreach ($token in @('Version = 2', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
+foreach ($token in @('Version = 3', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
     'WoundEffects = {')) {
     Require ($mcmProtocol.Contains($token)) "MCM protocol is missing: $token"
 }
 foreach ($token in @('Ext.Net.IsHost()', 'uiGeneration', 'reply.Revision', 'snapshot.CharacterId',
-    'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
+    'SetAllOrigins', 'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
     'pollSnapshot', 'InsertModMenuTab', 'renderGeneral', 'renderOrigins', 'renderWounds',
-    'Protocol.Text.OriginTab', 'Protocol.Text.WoundTab')) {
+    'Protocol.Text.OriginTab', 'Protocol.Text.AllOrigins', 'Protocol.Text.WoundTab')) {
     Require ($mcmClient.Contains($token)) "MCM client behavior is missing: $token"
 }
 Require (([regex]::Matches($mcmClient, 'MCM\.InsertModMenuTab\(')).Count -eq 3) `
@@ -629,7 +631,7 @@ foreach ($forbiddenClientToken in @('Ext.Vars', 'Osi.SetTag', 'Osi.ClearTag', 'O
         "MCM client must not mutate authoritative state directly: $forbiddenClientToken"
 }
 foreach ($token in @('SetRequestHandler', 'request.CharacterId ~= snapshot.CharacterId',
-    'Osi.IsInCombat', 'OriginFeatures.SetEnabled', 'ChaosMechanics.SetMechanic',
+    'Osi.IsInCombat', 'OriginFeatures.SetAllEnabled', 'OriginFeatures.SetEnabled', 'ChaosMechanics.SetMechanic',
     'ChaosMechanics.SetWoundEffect', 'isHostPeer(peerId)', 'ClientControl',
     'local osirisReady = false', 'if not osirisReady then', 'osirisReady = true')) {
     Require ($bootstrap.Contains($token)) "MCM server authority is missing: $token"

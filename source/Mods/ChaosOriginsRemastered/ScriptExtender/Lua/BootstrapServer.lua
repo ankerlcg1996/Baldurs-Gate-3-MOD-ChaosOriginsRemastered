@@ -246,7 +246,11 @@ mcmChannel:SetRequestHandler(function(request, peerId)
     if snapshot.InCombat then return mcmReply(request.RequestId, false, "IN_COMBAT") end
     local saved = State.GetCharacter(snapshot.CharacterId)
     local changed = false
-    if request.Action == "SetOrigin" then
+    if request.Action == "SetAllOrigins" then
+        assert(type(request.Value) == "boolean",
+            "ChaosOriginsRemastered: MCM all origins value must be boolean")
+        changed = OriginFeatures.SetAllEnabled(snapshot.CharacterId, saved, request.Value)
+    elseif request.Action == "SetOrigin" then
         assert(type(request.Key) == "string"
             and protocolContains(McmProtocol.Origins, request.Key),
             "ChaosOriginsRemastered: invalid MCM origin")
