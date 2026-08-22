@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌受创：额外火焰伤害</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌受创：额外黯蚀伤害</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌迷失：0/10。当前获得混沌之力的概率为0%；下一次抽到负面受创结果后，概率将变为5%。成功获得力量后层数归零，休息不会降低层数。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌拥有全部官方可选种族与七名起源角色的身份标签，并按人物等级解锁对应能力。1级：阿斯代伦吸血、威尔边境之刃、卡菈克初始特性；3级：邪念隐匿专精、卡菈克首次升级；5级：盖尔耐色瑞尔影法术位与影召唤、卡菈克炼狱狂怒、邪念流血匕首；7级：威尔火焰护盾、卡菈克第二次升级；9级：邪念杀戮者形态；10级：阿斯代伦飞升吸血鬼；11级：威尔召唤坎比翁；12级：阿斯代伦化蝠。种族法术按原版等级解锁。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得这些种族的被动特性；29项种族主动技能与法术按原版等级解锁。混沌同时拥有七名起源角色身份，并按人物等级解锁对应能力。1级：阿斯代伦吸血、威尔边境之刃、卡菈克初始特性；3级：邪念隐匿专精、卡菈克首次升级；5级：盖尔耐色瑞尔影法术位与影召唤、卡菈克炼狱狂怒、邪念流血匕首；7级：威尔火焰护盾、卡菈克第二次升级；9级：邪念杀戮者形态；10级：阿斯代伦飞升吸血鬼；11级：威尔召唤坎比翁；12级：阿斯代伦化蝠。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌归流</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">持续1回合：对应攻击具有劣势。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">以命中为赌注，强化下一次武器或法术攻击。若仍然命中，本次最终伤害翻倍；若攻击同时暴击，这次翻倍照常叠加。命中或落空后效果结束。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;查看孤注成长&lt;/LSTag&gt;。</content>

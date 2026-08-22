@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">혼돈의 상처: 추가 화염 피해</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">혼돈의 상처: 추가 사령 피해</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">혼돈의 방황: 0/10. 현재 혼돈의 힘 획득 확률은 0%이며, 다음 부정적인 상처 결과 후에는 5%가 됩니다. 성공하면 0으로 초기화되고 휴식으로는 감소하지 않습니다.</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">혼돈은 모든 공식 플레이 가능 종족과 일곱 오리진의 정체성 태그를 얻고 캐릭터 레벨에 따라 능력을 해금합니다. 1레벨: 아스타리온 흡혈, 윌 변경의 검, 카를라크 시작 특성. 3레벨: 다크 어지 은신 전문화와 카를라크 1차 강화. 5레벨: 게일의 그림자 주문 슬롯과 소환, 카를라크 지옥의 격노, 다크 어지 출혈 단검. 7레벨: 윌 화염 방패와 카를라크 2차 강화. 9레벨: 살육자 형상. 10레벨: 아스타리온 승천 흡혈귀. 11레벨: 윌 캠비온 소환. 12레벨: 박쥐 변신. 종족 주문은 원본 레벨에 해금됩니다.</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 해당 종족의 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 또한 일곱 오리진의 정체성을 모두 가지며 캐릭터 레벨에 따라 능력을 해금합니다. 1레벨: 아스타리온 흡혈, 윌 변경의 검, 카를라크 시작 특성. 3레벨: 다크 어지 은신 전문화와 카를라크 1차 강화. 5레벨: 게일의 그림자 주문 슬롯과 소환, 카를라크 지옥의 격노, 다크 어지 출혈 단검. 7레벨: 윌 화염 방패와 카를라크 2차 강화. 9레벨: 살육자 형상. 10레벨: 아스타리온 승천 흡혈귀. 11레벨: 윌 캠비온 소환. 12레벨: 박쥐 변신.</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">혼돈 회귀</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1턴 동안 해당 공격에 불리점을 받습니다.</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">명중을 걸고 다음 무기 또는 주문 공격을 강화합니다. 그래도 명중하면 최종 피해가 2배가 되며 치명타와도 중첩됩니다. 명중하거나 빗나가면 효과가 끝납니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;승부수 성장 보기&lt;/LSTag&gt;.</content>

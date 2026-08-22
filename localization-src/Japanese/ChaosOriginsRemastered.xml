@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌の受創：追加火ダメージ</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌の受創：追加死霊ダメージ</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌の迷走：0/10。現在の混沌の力の獲得率は0%。次に負の受創結果が出ると5%になる。獲得成功時に0へ戻り、休憩では減少しない。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌は公式の全プレイアブル種族と7人のオリジンの識別タグを得て、キャラクターレベルに応じて能力を解放する。Lv1：アスタリオンの吸血、ウィルの辺境の刃、カーラック初期特性。Lv3：ダークアージの隠密習熟強化、カーラック第1強化。Lv5：ゲイルの影の呪文スロットと召喚、カーラックの地獄の激怒、ダークアージの出血短剣。Lv7：ウィルの炎の盾、カーラック第2強化。Lv9：殺戮者形態。Lv10：吸血鬼の支配者。Lv11：カンビオン召喚。Lv12：コウモリ形態。種族呪文は原作と同じレベルで解放される。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの種族の追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。さらに7人すべてのオリジン識別を持ち、キャラクターレベルに応じて能力を解放する。Lv1：アスタリオンの吸血、ウィルの辺境の刃、カーラック初期特性。Lv3：ダークアージの隠密習熟強化、カーラック第1強化。Lv5：ゲイルの影の呪文スロットと召喚、カーラックの地獄の激怒、ダークアージの出血短剣。Lv7：ウィルの炎の盾、カーラック第2強化。Lv9：殺戮者形態。Lv10：吸血鬼の支配者。Lv11：カンビオン召喚。Lv12：コウモリ形態。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌回帰</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1ターン、対応する攻撃が不利になる。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">命中を賭けて、次の武器攻撃または呪文攻撃を強化する。それでも命中すれば最終ダメージは2倍になり、クリティカルとも重複する。命中またはミス後に終了。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;大勝負の成長を見る&lt;/LSTag&gt;。</content>
