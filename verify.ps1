@@ -281,19 +281,73 @@ foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originDefinitionLiterals -contains $token)) "OriginFeatures.lua contains forbidden old reward: $token"
 }
 $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
+$bootstrapCode = $bootstrap -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 foreach ($token in @('OriginStoryRewards.Sync', 'OriginStoryRewards.ResetRuntime',
     'OriginStoryRewards.IsTrackedFlag', 'OriginStoryRewards.HandleCastedSpell',
-    'RegisterListener("FlagSet", 3', 'RegisterListener("FlagCleared", 3',
-    'RegisterListener("CastedSpell", 5', 'SetTestExperience',
-    'TestLevel12Experience', 'scheduleLevel12TestExperience')) {
-    Require ($bootstrap.Contains($token)) "Story reward server wiring is missing: $token"
+    'SetTestExperience', 'TestLevel12Experience', 'scheduleLevel12TestExperience')) {
+    Require ($bootstrapCode.Contains($token)) "Story reward server wiring is missing: $token"
 }
-$bootstrapCode = $bootstrap -replace '(?m)--[^\r\n]*', ''
-foreach ($listener in @(@('FlagSet', 3), @('FlagCleared', 3), @('CastedSpell', 5))) {
-    Require ([regex]::IsMatch($bootstrapCode,
-        'RegisterListener\(\s*"' + $listener[0] + '"\s*,\s*' + $listener[1] + '\s*[,)]')) `
-        "Story reward listener wiring is missing: $($listener[0])/$($listener[1])"
+$syncCharacterBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^local\s+function\s+syncCharacter\s*\([^)]*\).*?(?=^local\s+function\s+queueCharacter)').Value
+Require ($syncCharacterBlock -ne '') 'Story reward sync function is missing'
+$originSync = $syncCharacterBlock.IndexOf('OriginFeatures.Sync')
+$storySync = $syncCharacterBlock.IndexOf('OriginStoryRewards.Sync')
+$mechanicsSync = $syncCharacterBlock.IndexOf('ChaosMechanics.Sync')
+Require ($originSync -ge 0 -and $originSync -lt $storySync -and $storySync -lt $mechanicsSync) `
+    'Story reward sync must run after origin sync and before mechanic sync'
+$sessionLoadedBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^Ext\.Events\.SessionLoaded:Subscribe\(function\(\).*?(?=^local\s+function\s+handleOriginStatus)').Value
+Require ($sessionLoadedBlock.Contains('OriginStoryRewards.ResetRuntime')) `
+    'Story reward runtime reset is missing from SessionLoaded'
+foreach ($eventName in @('FlagSet', 'FlagCleared')) {
+    $listener = [regex]::Match($bootstrapCode,
+        '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"' + $eventName + '"\s*,\s*3\s*,.*?function\s*\([^)]*\)(?<body>.*?)\bend\s*\)')
+    Require ($listener.Success -and [regex]::IsMatch($listener.Groups['body'].Value,
+        '(?s)if\s+OriginStoryRewards\.IsTrackedFlag\s*\(\s*flag\s*\)\s+then\s+scheduleAllPlayers\s*\(\s*200\s*\)')) `
+        "Story reward listener behavior is missing: $eventName/3"
 }
+$castedSpellListener = [regex]::Match($bootstrapCode,
+    '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"CastedSpell"\s*,\s*5\s*,.*?function\s*\([^)]*\)(?<body>.*?)\bend\s*\)')
+$castedSpellBody = $castedSpellListener.Groups['body'].Value
+Require ($castedSpellListener.Success -and $castedSpellBody.Contains('ChaosCharacter.IsEligible(caster)') `
+    -and $castedSpellBody.Contains('State.GetCharacter(caster)') `
+    -and [regex]::IsMatch($castedSpellBody,
+        '(?s)if\s+OriginStoryRewards\.HandleCastedSpell\s*\(\s*caster\s*,\s*spell\s*,\s*record\s*\)\s+then\s+scheduleCharacter\s*\(\s*caster\s*,\s*200\s*\)')) `
+    'Story reward listener behavior is missing: CastedSpell/5'
+$grantLevel12TestExperienceBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^local\s+function\s+grantLevel12TestExperience\s*\(\s*character\s*,\s*record\s*\).*?(?=^local\s+function\s+scheduleLevel12TestExperience)').Value
+Require ($grantLevel12TestExperienceBlock -ne '' -and [regex]::IsMatch($grantLevel12TestExperienceBlock,
+    '(?ms)^local\s+function\s+grantLevel12TestExperience\s*\(\s*character\s*,\s*record\s*\)\s*if\s+not\s+record\.TestLevel12Experience\s+then\s+return\s+false\s+end')) `
+    'Level-12 test experience must be explicitly default-off'
+Require (-not [regex]::IsMatch($bootstrapCode, 'grantLevel12TestExperience\s*\(\s*\)')) `
+    'Level-12 test experience must not use a zero-argument grant call'
+$scheduleLevel12TestExperienceBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^local\s+function\s+scheduleLevel12TestExperience\s*\([^)]*\).*?(?=^local\s+function\s+copyBooleanMap)').Value
+$schedulerPassesRecord = [regex]::IsMatch($scheduleLevel12TestExperienceBlock,
+    '(?s)grantLevel12TestExperience\s*\(\s*character\s*,\s*State\.GetCharacter\s*\(\s*character\s*\)\s*\)') `
+    -or [regex]::IsMatch($scheduleLevel12TestExperienceBlock,
+        '(?s)local\s+(?<record>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*State\.GetCharacter\s*\(\s*character\s*\).*?grantLevel12TestExperience\s*\(\s*character\s*,\s*\k<record>\s*\)')
+Require ($scheduleLevel12TestExperienceBlock.Contains('Osi.GetHostCharacter()') `
+    -and $scheduleLevel12TestExperienceBlock.Contains('ChaosCharacter.CanonicalGuid') `
+    -and $scheduleLevel12TestExperienceBlock.Contains('ChaosCharacter.IsEligible(character)') `
+    -and $scheduleLevel12TestExperienceBlock.Contains('State.GetCharacter(character)') `
+    -and $schedulerPassesRecord) 'Level-12 test experience scheduler is not host-safe'
+$hostSnapshotBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^local\s+function\s+hostSnapshot\s*\(\).*?(?=^local\s+function\s+mcmReply)').Value
+Require ($hostSnapshotBlock.Contains('TestLevel12Experience = saved.TestLevel12Experience')) `
+    'MCM server snapshot omits test-experience state'
+$setTestExperienceBlock = [regex]::Match($bootstrapCode,
+    '(?ms)^\s*(?:elseif|if)\s+request\.Action\s*==\s*"SetTestExperience"\s+then(?<body>.*?)(?=^\s*(?:elseif|else)\b)').Value
+$setTestExperienceEnableBlock = [regex]::Match($setTestExperienceBlock,
+    '(?ms)\bif\s+request\.Value\s+then(?<body>.*?)(?=^\s*end\b)').Groups['body'].Value
+Require ($setTestExperienceBlock -ne '' -and [regex]::IsMatch($setTestExperienceBlock,
+    'assert\s*\(\s*type\s*\(\s*request\.Value\s*\)\s*==\s*"boolean"') `
+    -and $setTestExperienceBlock.Contains('saved.TestLevel12Experience = request.Value') `
+    -and $setTestExperienceBlock.Contains('State.MarkDirty') `
+    -and $setTestExperienceEnableBlock.Contains('grantLevel12TestExperience') `
+    -and -not [regex]::IsMatch($setTestExperienceBlock,
+        'Osi\.(?:Remove|Subtract)[A-Za-z]*Experience|Osi\.\w*Experience\s*\([^)]*,\s*-')) `
+    'MCM SetTestExperience server behavior is invalid'
 $originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
     '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=^local\s+trackedFlags\s*=)')
 Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
@@ -753,13 +807,25 @@ Require ($mcmBlueprint.Tabs.Count -eq 1 -and $mcmBlueprint.Tabs[0].TabId -eq 'bo
 
 $mcmProtocol = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'McmProtocol.lua') -Encoding UTF8
 $mcmClient = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'BootstrapClient.lua') -Encoding UTF8
+$mcmProtocolCode = $mcmProtocol -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
+$mcmClientCode = $mcmClient -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 foreach ($token in @('Version = 4', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
     'WoundEffects = {')) {
     Require ($mcmProtocol.Contains($token)) "MCM protocol is missing: $token"
 }
-foreach ($token in @('Version = 4', 'TestLevel12Experience', 'SetTestExperience')) {
-    Require (($mcmProtocol + $mcmClient).Contains($token)) "MCM test-experience wiring is missing: $token"
-}
+$mcmTextBlock = [regex]::Match($mcmProtocolCode,
+    '(?ms)^\s*Text\s*=\s*\{(?<body>.*?)^\s*}').Groups['body'].Value
+Require ([regex]::IsMatch($mcmProtocolCode, '(?m)^\s*Version\s*=\s*4\s*,') `
+    -and $mcmTextBlock.Contains('TestLevel12Experience = "h68000001g0001g4001g8001g000000000001"')) `
+    'MCM protocol test-experience contract is missing'
+$testExperienceControl = [regex]::Match($mcmClientCode,
+    '(?ms)controls\.TestExperience\s*=\s*checkbox\s*\(\s*parent\s*,.*?,\s*false\s*,\s*function\s*\([^)]*\)(?<body>.*?)\bend\s*\)').Value
+Require ($testExperienceControl -ne '' `
+    -and [regex]::IsMatch($mcmClientCode,
+        '(?s)controls\.TestExperience\.Checked\s*=.*?snapshot\.TestLevel12Experience') `
+    -and [regex]::IsMatch($testExperienceControl,
+        'request\s*\(\s*"SetTestExperience"')) `
+    'MCM client test-experience wiring is missing'
 foreach ($token in @('Ext.Net.IsHost()', 'uiGeneration', 'reply.Revision', 'snapshot.CharacterId',
     'SetAllOrigins', 'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
     'pollSnapshot', 'InsertModMenuTab', 'renderGeneral', 'renderOrigins', 'renderWounds',
