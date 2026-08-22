@@ -1,8 +1,12 @@
 # 混沌起源：重制版
 
+![混沌起源：重制版海报](assets/branding/chaos-origins-remastered-poster.png)
+
 挣脱既定命运，成为游离于所有身份之外的混沌之子。
 
-“混沌起源：重制版”加入了一名全新的可玩起源角色。你将同时拥有多种种族力量与起源身份，在战斗中承受不可预测的混沌变化，并通过冒险中的剧情选择获得其他起源角色的命运奖励。
+“混沌起源：重制版”加入了一名全新的可玩起源角色。这个起源将所有官方起源角色身份与所有官方可选种族身份汇聚于一身。你不是在他们之间选择，而是同时成为他们。
+
+你可以用一个角色进入不同起源人物与种族对应的剧情和对话，在冒险中承受不可预测的混沌变化，并通过真实的剧情选择获得不同命运带来的能力。
 
 ## 核心设计：拥抱随机
 
@@ -22,13 +26,17 @@
 
 > 混沌不保证胜利。混沌只保证下一刻绝不会平凡。
 
-## 角色能力
+## 所有角色，所有种族，一个起源
+
+混沌既是阿斯代伦、盖尔、莱埃泽尔、影心、威尔、卡菈克与邪念，也是所有官方可选种族。不同身份不再彼此排斥，而是共同构成这个角色的完整存在。
+
+这意味着你可以用同一个角色体验不同身份对应的剧情判定、特殊对话与命运选择。角色拥有所有种族的身份，但不会简单堆叠全部种族被动；本起源的重点是汇聚身份、拓展剧情可能，并用随机性重新塑造战斗。
+
+## 基础能力
 
 - 熟练所有简易武器、军用武器、护甲、盾牌与乐器。
 - 十八项技能全部获得熟练与精通，并按正常熟练加值成长。
-- 开局掌握轰雷剑、神导术、法师之手、次级幻影、羽落术、跳跃术与自我伪装。
 - 保留所有官方可选种族的身份判定。
-- 随等级解锁来自不同种族的29项主动技能与法术，但不会同时获得全部种族被动。
 
 ## 七种起源身份
 
@@ -96,7 +104,9 @@
 
 Break free from predetermined fate and become a child of chaos beyond every fixed identity.
 
-Chaos Origins: Remastered adds a new playable Origin character who carries multiple racial powers and Origin identities. Endure unpredictable shifts in battle, gather Chaos Power, and claim the rewards of other Origin destinies through the choices you make during the story.
+Chaos Origins: Remastered adds a new playable Origin character who unites every official Origin character identity and every official playable race in one body. You do not choose between them. You are all of them.
+
+With one character, you can enter story paths and conversations tied to different Origins and races, endure unpredictable shifts of chaos, and gain powers from the destinies you choose to fulfil.
 
 ## Core Design: Embrace Randomness
 
@@ -116,13 +126,17 @@ You cannot fully control chaos, but you can learn to exploit it. Every attack, w
 
 > Chaos does not promise victory. It only promises that the next moment will never be ordinary.
 
-## Character Abilities
+## Every Character, Every Race, One Origin
+
+Chaos is Astarion, Gale, Lae'zel, Shadowheart, Wyll, Karlach, and the Dark Urge. Chaos is also every official playable race. These identities no longer exclude one another; together, they form a single Origin.
+
+One character can experience story checks, special dialogue, and defining choices associated with many identities. The character carries every racial identity without simply stacking every racial passive. The design focuses on united identities, expanded story possibilities, and combat reshaped by randomness.
+
+## Core Abilities
 
 - Gain proficiency with all simple and martial weapons, armour, shields, and musical instruments.
 - Gain proficiency and expertise in all eighteen skills, scaling with the normal proficiency bonus.
-- Begin with Booming Blade, Guidance, Mage Hand, Minor Illusion, Feather Fall, Enhance Leap, and Disguise Self.
 - Retain the identity checks of every official playable race.
-- Unlock 29 active racial skills and spells at their original levels without receiving every racial passive trait.
 
 ## Seven Origin Identities
 
