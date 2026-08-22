@@ -40,6 +40,7 @@ function Relative-Path([string]$Root, [string]$Child) {
     return $childFull.Substring($rootFull.Length)
 }
 
+& (Join-Path $projectRoot 'rebuild-icon-atlas.ps1')
 & (Join-Path $projectRoot 'verify.ps1') -ProjectRoot $projectRoot
 Require (-not [string]::IsNullOrWhiteSpace($LslibPath)) `
     'Pass -LslibPath or set BG3_LSLIB_PATH to LSLib.dll'

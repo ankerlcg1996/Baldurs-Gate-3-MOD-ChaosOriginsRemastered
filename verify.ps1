@@ -448,9 +448,18 @@ Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
 $resourcePath = Join-Path $source "Public\$moduleName\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
 $iconMapPath = Join-Path $source "Public\$moduleName\GUI\Icons_ChaosOrigins.lsx"
 $iconTexturePath = Join-Path $source "Public\$moduleName\Assets\Textures\Icons\Icons_ChaosOrigins.dds"
+$iconSourcePath = Join-Path $ProjectRoot 'icon-src\Icons_ChaosOrigins.png'
 foreach ($path in @($resourcePath, $iconMapPath, $iconTexturePath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Mechanic resource is missing: $path"
 }
+Require (Test-Path -LiteralPath $iconSourcePath -PathType Leaf) `
+    "Reviewable icon atlas source is missing: $iconSourcePath"
+$iconSourceBytes = [IO.File]::ReadAllBytes($iconSourcePath)
+Require ($iconSourceBytes.Length -gt 24 `
+    -and [BitConverter]::ToString($iconSourceBytes, 0, 8) -eq '89-50-4E-47-0D-0A-1A-0A' `
+    -and [BitConverter]::ToString($iconSourceBytes, 16, 4) -eq '00-00-02-00' `
+    -and [BitConverter]::ToString($iconSourceBytes, 20, 4) -eq '00-00-02-00') `
+    'Reviewable icon atlas source must remain a 512 x 512 PNG'
 $iconTextureBytes = [IO.File]::ReadAllBytes($iconTexturePath)
 Require ($iconTextureBytes.Length -eq 349680 `
     -and [Text.Encoding]::ASCII.GetString($iconTextureBytes, 0, 4) -eq 'DDS ' `
