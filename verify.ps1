@@ -317,6 +317,33 @@ foreach ($token in @(
 foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originStoryRewardLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
+foreach ($token in @('ORI_KARLACH_FIRSTUPGRADE', 'ORI_KARLACH_SECONDUPGRADE')) {
+    $quotedStageStatus = '"' + [regex]::Escape($token) + '"'
+    Require (([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
+        $quotedStageStatus)).Count -eq 1 `
+        -and ([regex]::Matches($originStoryRewardsText, $quotedStageStatus)).Count -eq 1) `
+        "Karlach stage status must only be declared once in M.Rules: $token"
+}
+Require ([regex]::IsMatch($originStoryRewardsLua,
+    '(?s)local selectedStageRule = nil.*?if rule\.Mode == "Stage" then\s+if selectedStageRule == nil or rule\.Stage > selectedStageRule\.Stage then\s+selectedStageRule = rule\s+end.*?if selectedStageRule ~= nil then\s+collect\(statuses, selectedStageRule\.Statuses\)\s+end')) `
+    'Origin story stage selection must collect statuses from the highest matched rule'
+foreach ($token in @(
+    'local claimableKeys = {}', 'local oneShotKeys = {}',
+    'claimableKeys[rule.Key] = true', 'oneShotKeys[rule.Key] = true',
+    'local function validateSavedRewards(record)', 'claimableKeys[key] == true',
+    'oneShotKeys[key] == true', 'rewards.Claimed[key] == true'
+)) {
+    Require ($originStoryRewardsLua.Contains($token)) "Origin story saved-key validation is missing: $token"
+}
+Require ([regex]::IsMatch($originStoryRewardsLua,
+    '(?s)if rule\.Mode == "Permanent" or rule\.Mode == "OneShot" then\s+claimableKeys\[rule\.Key\] = true\s+end')) `
+    'Only permanent and one-shot rules may populate claimable origin story keys'
+Require ([regex]::IsMatch($originStoryRewardsLua,
+    '(?s)if rule\.Mode == "OneShot" then oneShotKeys\[rule\.Key\] = true end')) `
+    'Only one-shot rules may populate consumable origin story keys'
+Require (([regex]::Matches($originStoryRewardsLua,
+    '(?m)^    validateSavedRewards\(record\)$')).Count -eq 2) `
+    'Saved origin story reward keys must be validated in sync and cast handling'
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
 foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
     Require ($grantLedgerLua.Contains($token)) "Grant ledger tag support is missing: $token"

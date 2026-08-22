@@ -10,8 +10,6 @@ local ORB_SPELL = "Target_END_Gale_ActivateNethereseOrb"
 local POWER_WORD_KILL = "Target_LOW_DarkUrge_PowerWordKill"
 local GALE_GOD = "EPI_GALEGOD"
 local GALE_GOD_MINDFLAYER = "EPI_GALEGOD_MINDFLAYER"
-local KARLACH_FIRST_UPGRADE = "ORI_KARLACH_FIRSTUPGRADE"
-local KARLACH_SECOND_UPGRADE = "ORI_KARLACH_SECONDUPGRADE"
 
 M.Rules = {
     { Key = "AstarionAscended", Identity = "Astarion", Scope = "Global",
@@ -38,10 +36,10 @@ M.Rules = {
         Mode = "Permanent", Spells = { "Target_ORI_Wyll_SummonCambion" } },
     { Key = "KarlachFirstUpgrade", Identity = "Karlach", Scope = "Global",
         Flag = "GLO_ForgingOfTheHeart_State_KarlachUpgraded_a818e2f5-9e0c-4ab3-8c1e-00765d3b892f",
-        Mode = "Stage", Stage = 1, Statuses = { KARLACH_FIRST_UPGRADE } },
+        Mode = "Stage", Stage = 1, Statuses = { "ORI_KARLACH_FIRSTUPGRADE" } },
     { Key = "KarlachSecondUpgrade", Identity = "Karlach", Scope = "Global",
         Flag = "GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c",
-        Mode = "Stage", Stage = 2, Statuses = { KARLACH_SECOND_UPGRADE } },
+        Mode = "Stage", Stage = 2, Statuses = { "ORI_KARLACH_SECONDUPGRADE" } },
     { Key = "DarkUrgeSlayer", Identity = "DarkUrge", Scope = "Global",
         Flag = "ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3",
         Mode = "Revocable", Spells = { "Shout_DarkUrge_Slayer" } },
@@ -51,6 +49,8 @@ M.Rules = {
 }
 
 local trackedFlags = {}
+local claimableKeys = {}
+local oneShotKeys = {}
 local supportedIdentities = {
     Astarion = true, Gale = true, Laezel = true, Shadowheart = true,
     Wyll = true, Karlach = true, DarkUrge = true
@@ -121,6 +121,10 @@ for index, rule in pairs(M.Rules) do
     end
     ruleKeys[rule.Key] = true
     trackedFlags[rule.Flag] = true
+    if rule.Mode == "Permanent" or rule.Mode == "OneShot" then
+        claimableKeys[rule.Key] = true
+    end
+    if rule.Mode == "OneShot" then oneShotKeys[rule.Key] = true end
 end
 assert(ruleCount == maximumRuleIndex and ruleCount == 11,
     "ChaosOriginsRemastered: origin story rules must be a dense eleven-rule catalog")
@@ -174,6 +178,21 @@ local function shouldOwn(rule, character, record)
     error("ChaosOriginsRemastered: unknown origin story mode " .. tostring(rule.Mode))
 end
 
+local function validateSavedRewards(record)
+    local rewards = assert(record.OriginStoryRewards,
+        "ChaosOriginsRemastered: origin story rewards are unavailable")
+    assert(type(rewards.Claimed) == "table" and type(rewards.Consumed) == "table",
+        "ChaosOriginsRemastered: origin story reward maps are invalid")
+    for key, claimed in pairs(rewards.Claimed) do
+        assert(claimed == true and claimableKeys[key] == true,
+            "ChaosOriginsRemastered: invalid claimed origin story reward " .. tostring(key))
+    end
+    for key, consumed in pairs(rewards.Consumed) do
+        assert(consumed == true and oneShotKeys[key] == true and rewards.Claimed[key] == true,
+            "ChaosOriginsRemastered: invalid consumed origin story reward " .. tostring(key))
+    end
+end
+
 local function collect(target, values)
     for _, value in ipairs(values or {}) do target[value] = true end
 end
@@ -181,12 +200,15 @@ end
 function M.Sync(character, record)
     validateCatalog()
     character = ChaosCharacter.CanonicalGuid(character, "origin story character")
+    validateSavedRewards(record)
     local passives, spells, statuses = {}, {}, {}
-    local karlachStage = 0
+    local selectedStageRule = nil
     for _, rule in ipairs(M.Rules) do
         if shouldOwn(rule, character, record) then
             if rule.Mode == "Stage" then
-                if rule.Stage > karlachStage then karlachStage = rule.Stage end
+                if selectedStageRule == nil or rule.Stage > selectedStageRule.Stage then
+                    selectedStageRule = rule
+                end
             else
                 collect(passives, rule.Passives)
                 collect(spells, rule.Spells)
@@ -201,8 +223,9 @@ function M.Sync(character, record)
             end
         end
     end
-    if karlachStage == 1 then statuses[KARLACH_FIRST_UPGRADE] = true end
-    if karlachStage == 2 then statuses[KARLACH_SECOND_UPGRADE] = true end
+    if selectedStageRule ~= nil then
+        collect(statuses, selectedStageRule.Statuses)
+    end
 
     local ledger = record.OriginStoryGranted
     for passive in pairs(ledger.Passives) do
@@ -237,6 +260,7 @@ end
 
 function M.HandleCastedSpell(character, spell, record)
     character = ChaosCharacter.CanonicalGuid(character, "origin story caster")
+    validateSavedRewards(record)
     local rewards = record.OriginStoryRewards
     local ledger = record.OriginStoryGranted.Spells
     if spell == ORB_SPELL then
