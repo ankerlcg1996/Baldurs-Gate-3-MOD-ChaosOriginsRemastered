@@ -192,6 +192,7 @@ $expectedLuaFiles = @(
     'BaseFeatures.lua', 'BootstrapClient.lua', 'BootstrapServer.lua', 'ChaosCharacter.lua',
     'ChaosDuality.lua', 'ChaosMechanics.lua', 'ChaosNativeRoll.lua', 'ChaosState.lua',
     'DebugLog.lua', 'GrantLedger.lua', 'MechanicsFeatures.lua', 'McmProtocol.lua', 'OriginFeatures.lua',
+    'OriginStoryRewards.lua',
     'RaceCatalog.lua', 'RaceFeatures.lua'
 ) | Sort-Object
 $actualLuaFiles = @(Get-ChildItem -LiteralPath $luaRoot -File -Filter '*.lua' | ForEach-Object Name) | Sort-Object
@@ -245,6 +246,37 @@ $originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFe
 foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
     'GrantLedger.RemoveTag', 'record.OriginIdentities[definition.Name]', 'function M.SetEnabled')) {
     Require ($originFeaturesLua.Contains($token)) "Origin identity tag ownership is missing: $token"
+}
+Require (-not $originFeaturesLua.Contains('Osi.GetLevel')) 'OriginFeatures.lua must not grant abilities by level'
+$originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
+foreach ($token in @(
+    'ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e',
+    'LOW_Astarion_VampireAscendant', 'Shout_EPI_Astarion_TurnIntoBat',
+    'ORI_Gale_Event_BombDisarmed_3d014e79-5595-9365-87bb-5cbb1f87fe5c',
+    'Target_END_Gale_ActivateNethereseOrb',
+    'ORI_Gale_State_AbsorbedTWNBossPower_7d08986a-5410-ccdf-fe70-aaec379a1962',
+    'ORI_Gale_ShadowSpellSlots',
+    'ORI_Gale_State_CraftedDarkLantern_3ddebb12-8c9f-47b4-8b6a-bb8eeac51a9b',
+    'Target_ORI_Gale_ShadowSummon', 'ORI_Gale_State_IsGod_ec94f9a4-b032-ce25-f4eb-ecf4ed37d65d',
+    'EPI_GALEGOD', 'EPI_GALEGOD_MINDFLAYER', 'FULL_CEREMORPH_3797bfc4-8004-4a19-9578-61ce0714cc0b',
+    'CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23',
+    'Shout_ORI_Wyll_FireShield_Warm',
+    'COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8',
+    'Target_ORI_Wyll_SummonCambion', 'c774d764-4a17-48dc-b470-32ace9ce447d',
+    'GLO_ForgingOfTheHeart_State_KarlachUpgraded_a818e2f5-9e0c-4ab3-8c1e-00765d3b892f',
+    'ORI_KARLACH_FIRSTUPGRADE',
+    'GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c',
+    'ORI_KARLACH_SECONDUPGRADE',
+    'ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3',
+    'Shout_DarkUrge_Slayer',
+    'ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86',
+    'Target_LOW_DarkUrge_PowerWordKill'
+)) {
+    Require ($originStoryRewardsLua.Contains($token)) "Origin story reward catalog is missing: $token"
+}
+foreach ($token in @('UNI_DarkUrge_Stealth_Expertise_Passive',
+    'UNI_DarkUrge_Bleeding_Dagger_Passive', 'Karlach_Infernal_Fury')) {
+    Require (-not $originStoryRewardsLua.Contains($token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
 foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
@@ -629,8 +661,8 @@ foreach ($icon in $customIconReferences) {
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 33 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 33) `
-    'package-files.json must contain exactly 33 unique paths'
+Require ($declaredPackageFiles.Count -eq 34 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 34) `
+    'package-files.json must contain exactly 34 unique paths'
 Require ($declaredPackageFiles -contains 'Public/ChaosOriginsRemastered/Content/UI/[PAK]_ChaosOriginsRemastered/_merged.lsf') `
     'Package manifest omits the custom icon TextureBank resource'
 foreach ($luaName in $expectedLuaFiles) {

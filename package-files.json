@@ -23,6 +23,7 @@
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/DebugLog.lua",
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/GrantLedger.lua",
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/OriginFeatures.lua",
+    "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/OriginStoryRewards.lua",
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/MechanicsFeatures.lua",
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/McmProtocol.lua",
     "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/RaceCatalog.lua",
