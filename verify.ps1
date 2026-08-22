@@ -296,9 +296,9 @@ Require ($originDefinitionEntries.Count -eq 7) `
 foreach ($entry in $originDefinitionEntries) {
     foreach ($field in @('passives', 'spells')) {
         $arrayBody = $entry.Groups[$field].Value
-        $arrayRemainder = [regex]::Replace($arrayBody, '"[^"\r\n]*"', '') -replace '[\s,]', ''
-        Require ($arrayRemainder -eq '') `
-            "OriginFeatures.lua $field arrays must contain only string literals"
+        Require ([regex]::IsMatch($arrayBody,
+            '^\s*(?:"[^"\r\n]*"(?:\s*,\s*"[^"\r\n]*")*)?\s*$')) `
+            "OriginFeatures.lua $field arrays must use comma-separated string literals without a trailing comma"
         $immediateOriginAbilities += @([regex]::Matches($arrayBody, '"([^"]+)"') |
             ForEach-Object { $_.Groups[1].Value })
     }
@@ -420,18 +420,63 @@ foreach ($token in $forbiddenOldRewards) {
 }
 $storyRuleEntries = @([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
     '(?ms)^[ \t]*\{\s*Key\s*=\s*"(?<key>[^"]+)"(?<body>.*?)(?=^[ \t]*\{\s*Key\s*=|\z)'))
+$ruleConstantContracts = @(
+    @{ Name = 'ORB_SPELL'; Value = 'Target_END_Gale_ActivateNethereseOrb' },
+    @{ Name = 'POWER_WORD_KILL'; Value = 'Target_LOW_DarkUrge_PowerWordKill' }
+)
+foreach ($constant in $ruleConstantContracts) {
+    $declarations = @([regex]::Matches($originStoryRewardsCode,
+        '(?m)^local\s+' + [regex]::Escape($constant.Name) + '\s*=\s*"([^"]+)"\s*$'))
+    Require ($declarations.Count -eq 1 `
+        -and [string]::Equals($declarations[0].Groups[1].Value, $constant.Value,
+            [System.StringComparison]::Ordinal)) `
+        "Origin story rule constant differs: $($constant.Name)"
+}
 $expectedRuleContracts = @(
-    @{ Key = 'AstarionAscended'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'GaleOrb'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'GaleShadowSlots'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'GaleShadowSummon'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'GaleGod'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'WyllFireShield'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'WyllCambion'; Mode = 'Permanent'; Stage = $null },
-    @{ Key = 'KarlachFirstUpgrade'; Mode = 'Stage'; Stage = 1 },
-    @{ Key = 'KarlachSecondUpgrade'; Mode = 'Stage'; Stage = 2 },
-    @{ Key = 'DarkUrgeSlayer'; Mode = 'Revocable'; Stage = $null },
-    @{ Key = 'DarkUrgePowerWordKill'; Mode = 'OneShot'; Stage = $null }
+    @{ Key = 'AstarionAscended'; Identity = 'Astarion'; Scope = 'Global';
+        Flag = 'ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = @('LOW_Astarion_VampireAscendant'); Spells = @('Shout_EPI_Astarion_TurnIntoBat'); Statuses = $null },
+    @{ Key = 'GaleOrb'; Identity = 'Gale'; Scope = 'Global';
+        Flag = 'ORI_Gale_Event_BombDisarmed_3d014e79-5595-9365-87bb-5cbb1f87fe5c';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Target_END_Gale_ActivateNethereseOrb'); Statuses = $null },
+    @{ Key = 'GaleShadowSlots'; Identity = 'Gale'; Scope = 'Global';
+        Flag = 'ORI_Gale_State_AbsorbedTWNBossPower_7d08986a-5410-ccdf-fe70-aaec379a1962';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = @('ORI_Gale_ShadowSpellSlots'); Spells = $null; Statuses = $null },
+    @{ Key = 'GaleShadowSummon'; Identity = 'Gale'; Scope = 'Global';
+        Flag = 'ORI_Gale_State_CraftedDarkLantern_3ddebb12-8c9f-47b4-8b6a-bb8eeac51a9b';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Target_ORI_Gale_ShadowSummon'); Statuses = $null },
+    @{ Key = 'GaleGod'; Identity = 'Gale'; Scope = 'Global';
+        Flag = 'ORI_Gale_State_IsGod_ec94f9a4-b032-ce25-f4eb-ecf4ed37d65d';
+        Mode = 'Permanent'; Stage = $null; God = $true;
+        Passives = $null; Spells = $null; Statuses = $null },
+    @{ Key = 'WyllFireShield'; Identity = 'Wyll'; Scope = 'CharacterEither';
+        Flag = 'CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Shout_ORI_Wyll_FireShield_Warm'); Statuses = $null },
+    @{ Key = 'WyllCambion'; Identity = 'Wyll'; Scope = 'CharacterEither';
+        Flag = 'COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8';
+        Mode = 'Permanent'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Target_ORI_Wyll_SummonCambion'); Statuses = $null },
+    @{ Key = 'KarlachFirstUpgrade'; Identity = 'Karlach'; Scope = 'Global';
+        Flag = 'GLO_ForgingOfTheHeart_State_KarlachUpgraded_a818e2f5-9e0c-4ab3-8c1e-00765d3b892f';
+        Mode = 'Stage'; Stage = 1; God = $false;
+        Passives = $null; Spells = $null; Statuses = @('ORI_KARLACH_FIRSTUPGRADE') },
+    @{ Key = 'KarlachSecondUpgrade'; Identity = 'Karlach'; Scope = 'Global';
+        Flag = 'GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c';
+        Mode = 'Stage'; Stage = 2; God = $false;
+        Passives = $null; Spells = $null; Statuses = @('ORI_KARLACH_SECONDUPGRADE') },
+    @{ Key = 'DarkUrgeSlayer'; Identity = 'DarkUrge'; Scope = 'Global';
+        Flag = 'ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3';
+        Mode = 'Revocable'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Shout_DarkUrge_Slayer'); Statuses = $null },
+    @{ Key = 'DarkUrgePowerWordKill'; Identity = 'DarkUrge'; Scope = 'Global';
+        Flag = 'ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86';
+        Mode = 'OneShot'; Stage = $null; God = $false;
+        Passives = $null; Spells = @('Target_LOW_DarkUrge_PowerWordKill'); Statuses = $null }
 )
 Require ($storyRuleEntries.Count -eq $expectedRuleContracts.Count) `
     'Origin story rule count differs from the exact eleven-rule catalog'
@@ -441,17 +486,68 @@ foreach ($contract in $expectedRuleContracts) {
     })
     Require ($matchingEntries.Count -eq 1) "Origin story rule key differs: $($contract.Key)"
     $entry = $matchingEntries[0]
-    $modeMatches = @([regex]::Matches($entry.Groups['body'].Value, '\bMode\s*=\s*"([^"]+)"'))
-    Require ($modeMatches.Count -eq 1 `
-        -and [string]::Equals($modeMatches[0].Groups[1].Value, $contract.Mode,
-            [System.StringComparison]::Ordinal)) `
-        "Origin story rule has the wrong Key-to-Mode mapping: $($contract.Key)"
+    $ruleBody = $entry.Groups['body'].Value
+    foreach ($field in @('Identity', 'Scope', 'Flag', 'Mode')) {
+        $fieldMatches = @([regex]::Matches($ruleBody,
+            '\b' + $field + '\s*=\s*"([^"]+)"'))
+        Require ($fieldMatches.Count -eq 1 `
+            -and [string]::Equals($fieldMatches[0].Groups[1].Value, $contract[$field],
+                [System.StringComparison]::Ordinal)) `
+            "Origin story rule has the wrong Key-to-$field mapping: $($contract.Key)"
+    }
+    $stageAssignments = @([regex]::Matches($ruleBody, '\bStage\s*='))
     $stageMatches = @([regex]::Matches($entry.Groups['body'].Value, '\bStage\s*=\s*(\d+)'))
     if ($null -eq $contract.Stage) {
-        Require ($stageMatches.Count -eq 0) "Non-stage origin story rule declares Stage: $($contract.Key)"
+        Require ($stageAssignments.Count -eq 0) "Non-stage origin story rule declares Stage: $($contract.Key)"
     } else {
-        Require ($stageMatches.Count -eq 1 -and [int]$stageMatches[0].Groups[1].Value -eq $contract.Stage) `
+        Require ($stageAssignments.Count -eq 1 -and $stageMatches.Count -eq 1 `
+            -and [int]$stageMatches[0].Groups[1].Value -eq $contract.Stage) `
             "Origin story rule has the wrong Karlach Key-to-Stage mapping: $($contract.Key)"
+    }
+    $godAssignments = @([regex]::Matches($ruleBody, '\bGod\s*='))
+    $godTrue = @([regex]::Matches($ruleBody, '\bGod\s*=\s*true\b'))
+    if ($contract.God) {
+        Require ($godAssignments.Count -eq 1 -and $godTrue.Count -eq 1) `
+            "GaleGod must be the only rule with God = true: $($contract.Key)"
+    } else {
+        Require ($godAssignments.Count -eq 0) "Non-GaleGod rule declares God: $($contract.Key)"
+    }
+    foreach ($field in @('Passives', 'Spells', 'Statuses')) {
+        $expectedValues = $contract[$field]
+        $fieldAssignments = @([regex]::Matches($ruleBody, '\b' + $field + '\s*='))
+        if ($null -eq $expectedValues) {
+            Require ($fieldAssignments.Count -eq 0) `
+                "Origin story rule unexpectedly declares $field`: $($contract.Key)"
+            continue
+        }
+        $arrayMatches = @([regex]::Matches($ruleBody,
+            '\b' + $field + '\s*=\s*\{(?<array>[^{}]*)\}'))
+        Require ($fieldAssignments.Count -eq 1 -and $arrayMatches.Count -eq 1) `
+            "Origin story rule has invalid $field array syntax: $($contract.Key)"
+        $arrayBody = $arrayMatches[0].Groups['array'].Value
+        Require ([regex]::IsMatch($arrayBody,
+            '^\s*(?:(?:"[^"\r\n]*"|ORB_SPELL|POWER_WORD_KILL)(?:\s*,\s*(?:"[^"\r\n]*"|ORB_SPELL|POWER_WORD_KILL))*)?\s*$')) `
+            "Origin story rule $field must contain only approved comma-separated literals: $($contract.Key)"
+        $actualValues = @()
+        foreach ($item in [regex]::Matches($arrayBody, '"([^"\r\n]*)"|\b(ORB_SPELL|POWER_WORD_KILL)\b')) {
+            if ($item.Groups[1].Success) {
+                $actualValues += $item.Groups[1].Value
+            } else {
+                $constantName = $item.Groups[2].Value
+                $constant = @($ruleConstantContracts | Where-Object {
+                    [string]::Equals($_.Name, $constantName, [System.StringComparison]::Ordinal)
+                })
+                Require ($constant.Count -eq 1) "Unknown origin story rule constant: $constantName"
+                $actualValues += $constant[0].Value
+            }
+        }
+        Require ($actualValues.Count -eq $expectedValues.Count) `
+            "Origin story rule $field count differs: $($contract.Key)"
+        for ($index = 0; $index -lt $expectedValues.Count; $index++) {
+            Require ([string]::Equals($actualValues[$index], $expectedValues[$index],
+                [System.StringComparison]::Ordinal)) `
+                "Origin story rule $field value differs at index $index`: $($contract.Key)"
+        }
     }
 }
 $storyRewardAbilities = @(
@@ -506,14 +602,26 @@ Require ($shouldOwnBlock -ne '' `
 $storySyncBlock = [regex]::Match($originStoryRewardsCode,
     '(?ms)^function\s+M\.Sync\s*\([^)]*\).*?(?=^function\s+M\.IsTrackedFlag)').Value
 Require ($storySyncBlock -ne '' `
-    -and $storySyncBlock.Contains('local ledger = record.OriginStoryGranted')) `
+    -and $storySyncBlock.Contains('local ledger = record.OriginStoryGranted') `
+    -and -not [regex]::IsMatch($storySyncBlock, '\brecord\.OriginGranted\b')) `
     'OriginStoryRewards.Sync must bind the character story-grant ledger'
 Require ([regex]::IsMatch($storySyncBlock,
     '(?s)local selectedStageRule = nil.*?if rule\.Mode == "Stage" then\s+if selectedStageRule == nil or rule\.Stage > selectedStageRule\.Stage then\s+selectedStageRule = rule\s+end.*?if selectedStageRule ~= nil then\s+collect\(statuses, selectedStageRule\.Statuses\)\s+end')) `
     'Origin story stage selection must derive the highest stage status from its declared Statuses'
-foreach ($token in @('GrantLedger.RemoveStatus(character, record, status, ledger.Statuses)',
-    'GrantLedger.EnsureStatus(character, record, status, ledger.Statuses)')) {
-    Require ($storySyncBlock.Contains($token)) "Origin story status ownership is missing: $token"
+$storyLedgerCalls = @(
+    'GrantLedger.RemovePassive(character, record, passive, ledger.Passives)',
+    'GrantLedger.RemoveSpell(character, record, spell, ledger.Spells)',
+    'GrantLedger.RemoveStatus(character, record, status, ledger.Statuses)',
+    'GrantLedger.EnsurePassive(character, record, passive, ledger.Passives)',
+    'GrantLedger.EnsureSpell(character, record, spell, ledger.Spells)',
+    'GrantLedger.EnsureStatus(character, record, status, ledger.Statuses)'
+)
+Require (([regex]::Matches($storySyncBlock,
+    'GrantLedger\.(?:Remove|Ensure)(?:Passive|Spell|Status)\s*\(')).Count -eq $storyLedgerCalls.Count) `
+    'OriginStoryRewards.Sync must contain exactly the six approved grant-ledger calls'
+foreach ($call in $storyLedgerCalls) {
+    Require (([regex]::Matches($storySyncBlock, [regex]::Escape($call))).Count -eq 1) `
+        "Origin story grant-ledger call has the wrong item or subledger: $call"
 }
 $galeGodBranch = [regex]::Match($storySyncBlock,
     '(?ms)^(?<indent>[ \t]*)if\s+rule\.God\s+then\s*\r?\n(?<body>.*?)(?=^\k<indent>end\s*$)^\k<indent>end\s*$')
@@ -559,11 +667,17 @@ foreach ($contract in @(
     Require ($contract.Block -ne '' -and $contract.Block.Contains('Osi.HasActiveStatus') `
         -and $contract.Block.Contains('Osi.ApplyStatus') -and $contract.Block.Contains('Osi.RemoveStatus')) `
         "GrantLedger.$($contract.Name) must verify, apply, and remove statuses in its function body"
-    $startPattern = '(?s)return\s+start\(\s*character\s*,\s*status\s*,\s*"status"\s*,\s*' +
-        $contract.Desired + '\s*,.*?,\s*ledger\s*,\s*true\s*\)'
+    $statusMutationPattern = 'function\s*\(\s*target\s*,\s*statId\s*,\s*desired\s*\)\s*' +
+        'if\s+desired\s*==\s*1\s+then\s+Osi\.ApplyStatus\(\s*target\s*,\s*statId\s*,\s*-1\.0\s*,\s*100\s*,\s*target\s*\)\s*' +
+        'else\s+Osi\.RemoveStatus\(\s*target\s*,\s*statId\s*,\s*target\s*\)\s+end\s+end'
+    $semanticStartPattern = '(?s)return\s+start\(\s*character\s*,\s*status\s*,\s*"status"\s*,\s*' +
+        $contract.Desired + '\s*,\s*' +
+        'function\s*\(\s*target\s*,\s*statId\s*,\s*expected\s*\)\s*' +
+        'return\s+Osi\.HasActiveStatus\(\s*target\s*,\s*statId\s*\)\s*==\s*expected\s+end\s*,\s*' +
+        $statusMutationPattern + '\s*,\s*ledger\s*,\s*true\s*\)'
     Require (([regex]::Matches($contract.Block, 'return\s+start\s*\(')).Count -eq 1 `
-        -and [regex]::IsMatch($contract.Block, $startPattern)) `
-        "GrantLedger.$($contract.Name) must call start with status, the correct desired value, ledger, and owned key"
+        -and ([regex]::Matches($contract.Block, $semanticStartPattern)).Count -eq 1) `
+        "GrantLedger.$($contract.Name) must bind the correct desired value and status callbacks inside its start call"
 }
 foreach ($token in @('ReleasedLedgers = {}', 'transferPendingOwnership',
     'operation.ReleasedLedgers[operation.Ledger] = true', 'ledger[operation.StatId] = "adding"',
