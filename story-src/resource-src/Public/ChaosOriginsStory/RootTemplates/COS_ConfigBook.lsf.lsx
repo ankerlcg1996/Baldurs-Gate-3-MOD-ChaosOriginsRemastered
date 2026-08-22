@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+  <version major="4" minor="7" revision="1" build="3" />
+  <region id="Templates">
+    <node id="Templates">
+      <children>
+        <node id="GameObjects">
+          <attribute id="AiHint" type="guid" value="00000000-0000-0000-0000-000000000000" />
+          <attribute id="Archetype" type="FixedString" value="base" />
+          <attribute id="AttackableWhenClickThrough" type="bool" value="False" />
+          <attribute id="BloodSurfaceType" type="FixedString" value="SurfaceNone" />
+          <attribute id="CanBeMoved" type="bool" value="True" />
+          <attribute id="CanBePickedUp" type="bool" value="True" />
+          <attribute id="CanShootThrough" type="bool" value="True" />
+          <attribute id="CoverAmount" type="uint8" value="0" />
+          <attribute id="DisplayName" type="TranslatedString" handle="hc05fb001g0000g4000g8000g000000000001" version="1" />
+          <attribute id="Faction" type="guid" value="376e33c4-dd15-4c46-a586-87d8b421a0c7" />
+          <attribute id="Fadeable" type="bool" value="True" />
+          <attribute id="HasGameplayValue" type="bool" value="False" />
+          <attribute id="HierarchyOnlyFade" type="bool" value="True" />
+          <attribute id="Icon" type="FixedString" value="Item_BOOK_GEN_Book_Rich_B" />
+          <attribute id="IsInspector" type="bool" value="True" />
+          <attribute id="MapKey" type="FixedString" value="c05fb001-0000-4000-8000-00000000b001" />
+          <attribute id="Name" type="LSString" value="COS_ConfigHandbook" />
+          <attribute id="OnUseDescription" type="TranslatedString" handle="hc05fb001g0000g4000g8000g000000000002" version="1" />
+          <attribute id="ParentTemplateId" type="FixedString" value="" />
+          <attribute id="PhysicsTemplate" type="FixedString" value="b609038c-2746-b083-ec90-710f80a2a712" />
+          <attribute id="Stats" type="FixedString" value="OBJ_Book" />
+          <attribute id="Tooltip" type="uint8" value="2" />
+          <attribute id="Type" type="FixedString" value="item" />
+          <attribute id="VisualTemplate" type="FixedString" value="49a88ee9-36d3-7286-57f0-33ac48cd6f74" />
+          <attribute id="WadableSurfaceType" type="FixedString" value="SurfaceDeepWater" />
+          <attribute id="WalkThrough" type="bool" value="True" />
+          <attribute id="_OriginalFileVersion_" type="int64" value="144115207403209026" />
+          <attribute id="maxStackAmount" type="int32" value="1" />
+          <children>
+            <node id="Bounds">
+              <children>
+                <node id="Bound">
+                  <attribute id="Height" type="float" value="0.191031" />
+                  <attribute id="Max" type="fvec3" value="0.10181563 0.13876978 0.10837388" />
+                  <attribute id="Min" type="fvec3" value="-0.10191838 -0.013120107 -0.10837388" />
+                  <attribute id="Radius" type="float" value="0.1077465" />
+                  <attribute id="Shape" type="uint8" value="1" />
+                  <attribute id="Type" type="uint8" value="0" />
+                </node>
+              </children>
+            </node>
+            <node id="InventoryList">
+              <children>
+                <node id="InventoryItem">
+                  <attribute id="Object" type="FixedString" value="Empty" />
+                </node>
+              </children>
+            </node>
+            <node id="OnUsePeaceActions">
+              <children>
+                <node id="Action">
+                  <attribute id="ActionType" type="int32" value="12" />
+                  <children>
+                    <node id="Attributes">
+                      <attribute id="Animation" type="FixedString" value="" />
+                      <attribute id="Conditions" type="LSString" value="" />
+                      <attribute id="Consume" type="bool" value="False" />
+                      <attribute id="SkillID" type="FixedString" value="Shout_COS_ConfigRoot" />
+                    </node>
+                  </children>
+                </node>
+              </children>
+            </node>
+          </children>
+        </node>
+      </children>
+    </node>
+  </region>
+</save>

@@ -297,6 +297,7 @@ PROC_COS_ConfigEnableEvents(_Character);
 PROC_COS_ConfigSyncAccess(_Character);
 PROC_COS_ConfigSyncMirrors(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
+PROC_COS_ConfigEnsureBook(_Character);
 PROC_COS_StarterRewards(_Character);
 PROC_COS_GrantTags(_Character);
 PROC_COS_GrantFeatures(_Character, _Level);

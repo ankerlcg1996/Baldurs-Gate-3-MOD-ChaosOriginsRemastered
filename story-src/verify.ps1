@@ -166,6 +166,10 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialOrigin\(\(TUTORIALEVENT\)').Count -eq 14) '起源 TutorialEvent 映射必须恰好为 14 项'
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialWound\(\(TUTORIALEVENT\)').Count -eq 30) '受击 TutorialEvent 映射必须恰好为 30 项'
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigEvent\(\(TUTORIALEVENT\)').Count -eq 106) '启用的 TutorialEvent 必须恰好为 106 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookMechanic\("').Count -eq 16) '手册机制操作映射必须恰好为 16 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookRacialPassive\("').Count -eq 40) '手册种族操作映射必须恰好为 40 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookOrigin\("').Count -eq 14) '手册起源操作映射必须恰好为 14 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookWound\("').Count -eq 30) '手册受击操作映射必须恰好为 30 项'
     foreach ($key in $mechanics) {
         Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制默认值缺失或错误: $key"
     }
@@ -191,7 +195,10 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
         'PROC_COS_ConfigRecordRacialGrant',
         'PROC_COS_ConfigSetRacialPassive',
         'PROC_COS_ConfigSetAllRacialPassives',
-        'PROC_COS_ConfigSyncRacialPassives'
+        'PROC_COS_ConfigSyncRacialPassives',
+        'PROC_COS_ConfigEnsureBook',
+        'TemplateIsInInventory((ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Character, 0)',
+        'TemplateAddTo((ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Character, 1, 1)'
     )) {
         Require ($configGoal.Contains($token)) "配置 Story 合约缺失: $token"
     }
@@ -293,6 +300,7 @@ Require (-not $mainGoal.Contains('Random(26, _WoundRoll)')) '受击轮盘仍使�
 foreach ($token in @('PROC_COS_ConfigEnableEvents(_Character)', 'PROC_COS_ConfigSyncMirrors(_Character)')) {
     Require ($mainGoal.Contains($token)) "角色同步未接入原生设置协议: $token"
 }
+Require ($mainGoal.Contains('PROC_COS_ConfigEnsureBook(_Character)')) '角色同步未接入设置手册唯一发放'
 
 $configStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosConfig.txt"
 Require (Test-Path -LiteralPath $configStatsPath -PathType Leaf) '缺少设置回显 Stats'
@@ -300,6 +308,25 @@ $configStats = [IO.File]::ReadAllText($configStatsPath)
 $configEntries = @([regex]::Matches($configStats, '^new entry "(COS_CFG_[^"]+)"', 'Multiline') | ForEach-Object { $_.Groups[1].Value })
 Require-Unique '设置回显被动' $configEntries 50
 Require (-not $configStats.Contains('data "Boosts"')) '设置回显被动不得产生玩法 Boost'
+$handbookEntries = @([regex]::Matches($configStats, '^new entry "(Shout_COS_Config[^\"]+)"', 'Multiline') | ForEach-Object { $_.Groups[1].Value })
+Require-Unique '设置手册技能' $handbookEntries 110
+foreach ($container in @('Shout_COS_ConfigRoot', 'Shout_COS_ConfigMechanics', 'Shout_COS_ConfigRacialPassives', 'Shout_COS_ConfigOrigins', 'Shout_COS_ConfigWounds')) {
+    Require ($handbookEntries -contains $container) "设置手册缺少容器: $container"
+}
+Require ([regex]::Matches($configStats, '^new entry "Shout_COS_Config(?:Mechanic|RacialPassive|Origin|Wound)_[^\"]+_(?:On|Off)"', 'Multiline').Count -eq 100) '设置手册逐项操作必须恰好为 100 项'
+Require (-not ($configStats -match '(?s)new entry "Shout_COS_Config[^\"]+".*?data "SpellProperties"')) '设置手册技能不得产生状态、伤害或其他 SpellProperties'
+Require (-not ($configStats -match 'data "UseCosts" "[^\"]+"')) '设置手册技能不得消耗资源'
+
+$bookSourcePath = Join-Path $root "resource-src\Public\$module\RootTemplates\COS_ConfigBook.lsf.lsx"
+Require (Test-Path -LiteralPath $bookSourcePath -PathType Leaf) '缺少设置手册 RootTemplate 源'
+[xml]$bookDocument = Get-Content -LiteralPath $bookSourcePath -Raw
+$bookMapKeys = @($bookDocument.SelectNodes('//attribute[@id="MapKey"]') | ForEach-Object { [string]$_.value })
+Require-Unique '设置手册 RootTemplate MapKey' $bookMapKeys 1
+Require ($bookMapKeys[0] -eq 'c05fb001-0000-4000-8000-00000000b001') '设置手册 RootTemplate UUID 错误'
+$bookSkill = @($bookDocument.SelectNodes('//attribute[@id="SkillID"]') | ForEach-Object { [string]$_.value })
+Require-Unique '设置手册使用技能' $bookSkill 1
+Require ($bookSkill[0] -eq 'Shout_COS_ConfigRoot') '设置手册没有打开根 SpellContainer'
+Require ($manifest -contains "Public/$module/RootTemplates/COS_ConfigBook.lsf") '设置手册 RootTemplate 未进入打包清单'
 
 $tutorialPath = Join-Path $root "Public\$module\Tutorials\TutorialEvents.lsx"
 Require (Test-Path -LiteralPath $tutorialPath -PathType Leaf) '缺少 TutorialEvents.lsx'
