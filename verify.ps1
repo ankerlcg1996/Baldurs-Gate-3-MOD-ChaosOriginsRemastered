@@ -295,7 +295,11 @@ Require ($originDefinitionEntries.Count -eq 7) `
     'OriginFeatures.lua must contain exactly seven parseable identity definitions'
 foreach ($entry in $originDefinitionEntries) {
     foreach ($field in @('passives', 'spells')) {
-        $immediateOriginAbilities += @([regex]::Matches($entry.Groups[$field].Value, '"([^"]+)"') |
+        $arrayBody = $entry.Groups[$field].Value
+        $arrayRemainder = [regex]::Replace($arrayBody, '"[^"\r\n]*"', '') -replace '[\s,]', ''
+        Require ($arrayRemainder -eq '') `
+            "OriginFeatures.lua $field arrays must contain only string literals"
+        $immediateOriginAbilities += @([regex]::Matches($arrayBody, '"([^"]+)"') |
             ForEach-Object { $_.Groups[1].Value })
     }
 }
@@ -414,13 +418,41 @@ foreach ($token in @(
 foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originStoryRewardLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
-$ruleModes = @([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
-    '\bMode\s*=\s*"(Permanent|Revocable|Stage|OneShot)"') | ForEach-Object { $_.Groups[1].Value })
-$expectedRuleModeCounts = @{ Permanent = 7; Revocable = 1; Stage = 2; OneShot = 1 }
-Require ($ruleModes.Count -eq 11) 'Every origin story rule must declare one approved Mode'
-foreach ($mode in $expectedRuleModeCounts.Keys) {
-    Require (@($ruleModes | Where-Object { $_ -ceq $mode }).Count -eq $expectedRuleModeCounts[$mode]) `
-        "Origin story rule Mode count differs: $mode"
+$storyRuleEntries = @([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
+    '(?ms)^[ \t]*\{\s*Key\s*=\s*"(?<key>[^"]+)"(?<body>.*?)(?=^[ \t]*\{\s*Key\s*=|\z)'))
+$expectedRuleContracts = @(
+    @{ Key = 'AstarionAscended'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'GaleOrb'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'GaleShadowSlots'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'GaleShadowSummon'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'GaleGod'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'WyllFireShield'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'WyllCambion'; Mode = 'Permanent'; Stage = $null },
+    @{ Key = 'KarlachFirstUpgrade'; Mode = 'Stage'; Stage = 1 },
+    @{ Key = 'KarlachSecondUpgrade'; Mode = 'Stage'; Stage = 2 },
+    @{ Key = 'DarkUrgeSlayer'; Mode = 'Revocable'; Stage = $null },
+    @{ Key = 'DarkUrgePowerWordKill'; Mode = 'OneShot'; Stage = $null }
+)
+Require ($storyRuleEntries.Count -eq $expectedRuleContracts.Count) `
+    'Origin story rule count differs from the exact eleven-rule catalog'
+foreach ($contract in $expectedRuleContracts) {
+    $matchingEntries = @($storyRuleEntries | Where-Object {
+        [string]::Equals($_.Groups['key'].Value, $contract.Key, [System.StringComparison]::Ordinal)
+    })
+    Require ($matchingEntries.Count -eq 1) "Origin story rule key differs: $($contract.Key)"
+    $entry = $matchingEntries[0]
+    $modeMatches = @([regex]::Matches($entry.Groups['body'].Value, '\bMode\s*=\s*"([^"]+)"'))
+    Require ($modeMatches.Count -eq 1 `
+        -and [string]::Equals($modeMatches[0].Groups[1].Value, $contract.Mode,
+            [System.StringComparison]::Ordinal)) `
+        "Origin story rule has the wrong Key-to-Mode mapping: $($contract.Key)"
+    $stageMatches = @([regex]::Matches($entry.Groups['body'].Value, '\bStage\s*=\s*(\d+)'))
+    if ($null -eq $contract.Stage) {
+        Require ($stageMatches.Count -eq 0) "Non-stage origin story rule declares Stage: $($contract.Key)"
+    } else {
+        Require ($stageMatches.Count -eq 1 -and [int]$stageMatches[0].Groups[1].Value -eq $contract.Stage) `
+            "Origin story rule has the wrong Karlach Key-to-Stage mapping: $($contract.Key)"
+    }
 }
 $storyRewardAbilities = @(
     'LOW_Astarion_VampireAscendant', 'Shout_EPI_Astarion_TurnIntoBat',
@@ -433,6 +465,8 @@ $storyRewardAbilities = @(
 foreach ($token in $storyRewardAbilities) {
     Require (-not ($originDefinitionLiterals -contains $token)) `
         "Story reward leaked into OriginFeatures.lua: $token"
+    Require (-not $originFeaturesCode.Contains($token)) `
+        "Story reward identifier exists anywhere in OriginFeatures.lua: $token"
 }
 foreach ($token in @('ORI_KARLACH_FIRSTUPGRADE', 'ORI_KARLACH_SECONDUPGRADE')) {
     $quotedStageStatus = '"' + [regex]::Escape($token) + '"'
@@ -461,6 +495,7 @@ Require (([regex]::Matches($originStoryRewardsCode,
 $shouldOwnBlock = [regex]::Match($originStoryRewardsCode,
     '(?ms)^local\s+function\s+shouldOwn\s*\([^)]*\).*?(?=^local\s+function\s+validateSavedRewards)').Value
 Require ($shouldOwnBlock -ne '' `
+    -and $shouldOwnBlock.Contains('local rewards = record.OriginStoryRewards') `
     -and [regex]::IsMatch($shouldOwnBlock,
         '(?s)if rule\.Mode == "Permanent" then.*?enabled and flagIsSet\(rule, character\).*?rewards\.Claimed\[rule\.Key\] = true.*?return rewards\.Claimed\[rule\.Key\] == true') `
     -and [regex]::IsMatch($shouldOwnBlock,
@@ -470,7 +505,9 @@ Require ($shouldOwnBlock -ne '' `
     'Origin story ownership modes must preserve permanent claims and one-shot consumption'
 $storySyncBlock = [regex]::Match($originStoryRewardsCode,
     '(?ms)^function\s+M\.Sync\s*\([^)]*\).*?(?=^function\s+M\.IsTrackedFlag)').Value
-Require ($storySyncBlock -ne '') 'OriginStoryRewards.Sync could not be isolated'
+Require ($storySyncBlock -ne '' `
+    -and $storySyncBlock.Contains('local ledger = record.OriginStoryGranted')) `
+    'OriginStoryRewards.Sync must bind the character story-grant ledger'
 Require ([regex]::IsMatch($storySyncBlock,
     '(?s)local selectedStageRule = nil.*?if rule\.Mode == "Stage" then\s+if selectedStageRule == nil or rule\.Stage > selectedStageRule\.Stage then\s+selectedStageRule = rule\s+end.*?if selectedStageRule ~= nil then\s+collect\(statuses, selectedStageRule\.Statuses\)\s+end')) `
     'Origin story stage selection must derive the highest stage status from its declared Statuses'
@@ -478,12 +515,21 @@ foreach ($token in @('GrantLedger.RemoveStatus(character, record, status, ledger
     'GrantLedger.EnsureStatus(character, record, status, ledger.Statuses)')) {
     Require ($storySyncBlock.Contains($token)) "Origin story status ownership is missing: $token"
 }
-Require ([regex]::IsMatch($storySyncBlock,
-    '(?s)if rule\.God then.*?Osi\.SetImmortal\(character, 1\).*?Osi\.PROC_SetInvulnerable\(character, 1\)')) `
-    'Gale godhood must set immortality and invulnerability inside the God rule branch'
+$galeGodBranch = [regex]::Match($storySyncBlock,
+    '(?ms)^(?<indent>[ \t]*)if\s+rule\.God\s+then\s*\r?\n(?<body>.*?)(?=^\k<indent>end\s*$)^\k<indent>end\s*$')
+$galeGodBody = $galeGodBranch.Groups['body'].Value
+Require ($galeGodBranch.Success `
+    -and $galeGodBody.Contains('Osi.SetImmortal(character, 1)') `
+    -and $galeGodBody.Contains('Osi.PROC_SetInvulnerable(character, 1)') `
+    -and ([regex]::Matches($storySyncBlock, 'Osi\.SetImmortal\s*\(')).Count -eq 1 `
+    -and ([regex]::Matches($storySyncBlock, 'Osi\.PROC_SetInvulnerable\s*\(')).Count -eq 1) `
+    'Gale godhood must set immortality and invulnerability only inside the God rule branch'
 $castHandlerBlock = [regex]::Match($originStoryRewardsCode,
     '(?ms)^function\s+M\.HandleCastedSpell\s*\([^)]*\).*?(?=^function\s+M\.ResetRuntime)').Value
-Require ($castHandlerBlock -ne '' -and [regex]::IsMatch($castHandlerBlock,
+Require ($castHandlerBlock -ne '' `
+    -and $castHandlerBlock.Contains('local rewards = record.OriginStoryRewards') `
+    -and $castHandlerBlock.Contains('local ledger = record.OriginStoryGranted.Spells') `
+    -and [regex]::IsMatch($castHandlerBlock,
     '(?s)if spell == ORB_SPELL then.*?rewards\.Claimed\.GaleOrb == true.*?ledger\[ORB_SPELL\] ~= nil.*?Osi\.ShowGameOverMenu\("GameOver_Default"\)')) `
     'The claimed MOD-owned Gale orb must show the default game-over menu'
 Require ([regex]::IsMatch($castHandlerBlock,
@@ -507,12 +553,17 @@ $ensureStatusBlock = [regex]::Match($grantLedgerCode,
 $removeStatusBlock = [regex]::Match($grantLedgerCode,
     '(?ms)^function\s+M\.RemoveStatus\s*\([^)]*\).*?(?=^function\s+M\.ResetRuntime)').Value
 foreach ($contract in @(
-    @{ Name = 'EnsureStatus'; Block = $ensureStatusBlock },
-    @{ Name = 'RemoveStatus'; Block = $removeStatusBlock }
+    @{ Name = 'EnsureStatus'; Block = $ensureStatusBlock; Desired = 1 },
+    @{ Name = 'RemoveStatus'; Block = $removeStatusBlock; Desired = 0 }
 )) {
     Require ($contract.Block -ne '' -and $contract.Block.Contains('Osi.HasActiveStatus') `
         -and $contract.Block.Contains('Osi.ApplyStatus') -and $contract.Block.Contains('Osi.RemoveStatus')) `
         "GrantLedger.$($contract.Name) must verify, apply, and remove statuses in its function body"
+    $startPattern = '(?s)return\s+start\(\s*character\s*,\s*status\s*,\s*"status"\s*,\s*' +
+        $contract.Desired + '\s*,.*?,\s*ledger\s*,\s*true\s*\)'
+    Require (([regex]::Matches($contract.Block, 'return\s+start\s*\(')).Count -eq 1 `
+        -and [regex]::IsMatch($contract.Block, $startPattern)) `
+        "GrantLedger.$($contract.Name) must call start with status, the correct desired value, ledger, and owned key"
 }
 foreach ($token in @('ReleasedLedgers = {}', 'transferPendingOwnership',
     'operation.ReleasedLedgers[operation.Ledger] = true', 'ledger[operation.StatId] = "adding"',
@@ -1082,12 +1133,14 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     foreach ($content in $contents) { Require (-not [string]::IsNullOrWhiteSpace($content.'#text')) "Localization is empty: $language" }
     $originHelp = @($contents | Where-Object contentuid -eq $originHelpHandle)
     Require ($originHelp.Count -eq 1 -and $originHelp[0].version -eq '1' `
-        -and [string]$originHelp[0].'#text' -ceq $originHelpByLanguage[$language]) `
+        -and [string]::Equals([string]$originHelp[0].'#text', $originHelpByLanguage[$language],
+            [System.StringComparison]::Ordinal)) `
         "OriginHelp localization contract differs: $language"
     foreach ($contract in $task8ExplanationByHandle.GetEnumerator()) {
         $explanation = @($contents | Where-Object contentuid -eq $contract.Key)
         Require ($explanation.Count -eq 1 -and $explanation[0].version -eq '1' `
-            -and [string]$explanation[0].'#text' -ceq $contract.Value[$language]) `
+            -and [string]::Equals([string]$explanation[0].'#text', $contract.Value[$language],
+                [System.StringComparison]::Ordinal)) `
             "Task 8 explanation localization contract differs: $language/$($contract.Key)"
     }
 }
