@@ -84,6 +84,11 @@ Require ($passive.Contains("new entry `"COR_OriginMarker`"`ntype `"PassiveData`"
     'Origin marker must remain a hidden no-effect passive'
 
 $originToggleNames = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
+$originToggleBase = [regex]::Match($passive,
+    '(?ms)^new entry "COR_Origin_Astarion"\r?\n.*?(?=^new entry |\z)').Value
+Require ($originToggleBase.Contains('data "Properties" "IsToggled"') `
+    -and -not $originToggleBase.Contains('IsHidden')) `
+    'Origin identity toggles must remain visible in the character passive panel'
 foreach ($name in $originToggleNames) {
     $status = 'COR_ORIGIN_TAG_' + $name.ToUpperInvariant()
     $block = [regex]::Match($passive,
@@ -104,6 +109,10 @@ foreach ($entry in $originStatusNames) {
 }
 Require (([regex]::Matches($statusText, '^new entry "COR_ORIGIN_TAG_', 'Multiline')).Count -eq 7) `
     'Status_BOOST.txt must contain exactly seven origin identity statuses'
+$originStatusBase = [regex]::Match($statusText,
+    '(?ms)^new entry "COR_ORIGIN_TAG_ASTARION"\r?\n.*?(?=^new entry |\z)').Value
+Require ($originStatusBase.Contains('DisablePortraitIndicator')) `
+    'Origin identity marker statuses must stay out of the portrait BUFF bar'
 
 $proficiencyBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)'
 $proficiencyBlock = [regex]::Match($passive,
