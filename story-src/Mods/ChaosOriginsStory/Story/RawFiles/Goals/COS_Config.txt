@@ -51,6 +51,18 @@ DB_COS_ConfigOriginDefault("Wyll", 1);
 DB_COS_ConfigOriginDefault("Karlach", 1);
 DB_COS_ConfigOriginDefault("DarkUrge", 1);
 
+DB_COS_ConfigOriginTag("Astarion", (TAG)ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3);
+DB_COS_ConfigOriginTag("Gale", (TAG)9b0354c0-56d9-4723-8034-918ac9abab19);
+DB_COS_ConfigOriginTag("Laezel", (TAG)b5682d1d-c395-489c-9675-1f9b0c328ea5);
+DB_COS_ConfigOriginTag("Shadowheart", (TAG)642d2aee-e3df-47e3-9f47-bbcd441bb9e0);
+DB_COS_ConfigOriginTag("Wyll", (TAG)5f40def5-d3ec-4698-a367-01a339888956);
+DB_COS_ConfigOriginTag("Karlach", (TAG)1a2f70d6-8ead-4eb5-a824-79ee1971764a);
+DB_COS_ConfigOriginTag("DarkUrge", (TAG)cd611d7d-b67d-42b4-a75c-a0c6091ef8a2);
+DB_COS_ConfigOriginPassive("Wyll", "BladeOfFrontiers");
+DB_COS_ConfigOriginPassive("Karlach", "ORI_Karlach_SweatImmune");
+DB_COS_ConfigOriginPassive("Karlach", "ORI_Karlach_Rage_Flames");
+DB_COS_ConfigOriginSpell("Astarion", "Target_VampireBite_Astarion");
+
 DB_COS_ConfigWoundDefault("Madness", 1);
 DB_COS_ConfigWoundDefault("Frightened", 1);
 DB_COS_ConfigWoundDefault("Stunned", 1);
@@ -307,6 +319,132 @@ PROC_COS_ConfigCleanupMechanic(_Character, _Key);
 PROC_COS_ConfigRefreshMechanic(_Character, _Key);
 
 PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 1)
+AND
+DB_COS_ConfigOriginTag(_Key, _Tag)
+AND
+IsTagged(_Character, _Tag, 0)
+THEN
+SetTag(_Character, _Tag);
+
+PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 0)
+AND
+DB_COS_ConfigOriginTag(_Key, _Tag)
+AND
+IsTagged(_Character, _Tag, 1)
+THEN
+ClearTag(_Character, _Tag);
+
+PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 1)
+AND
+DB_COS_ConfigOriginPassive(_Key, _Passive)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 0)
+AND
+DB_COS_ConfigOriginPassive(_Key, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 1)
+AND
+DB_COS_ConfigOriginSpell(_Key, _Spell)
+AND
+HasSpell(_Character, _Spell, 0)
+THEN
+AddSpell(_Character, _Spell, 1, 1);
+
+PROC
+PROC_COS_ConfigApplyOrigin((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, 0)
+AND
+DB_COS_ConfigOriginSpell(_Key, _Spell)
+AND
+HasSpell(_Character, _Spell, 1)
+THEN
+RemoveSpell(_Character, _Spell, 1);
+
+PROC
+PROC_COS_ConfigCleanupOriginRewards((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "Karlach"
+AND
+DB_COS_ConfigOrigin(_Character, "Karlach", 0)
+THEN
+RemoveStatus(_Character, "ORI_KARLACH_FIRSTUPGRADE", _Character);
+RemoveStatus(_Character, "ORI_KARLACH_SECONDUPGRADE", _Character);
+
+PROC
+PROC_COS_ConfigCleanupOriginRewards((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "DarkUrge"
+AND
+DB_COS_ConfigOrigin(_Character, "DarkUrge", 0)
+THEN
+RemoveSpell(_Character, "Shout_DarkUrge_Slayer", 1);
+
+PROC
+PROC_COS_ConfigSetOrigin((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigOriginDefault(_Key, _)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, _Current)
+AND
+_Current != _Enabled
+THEN
+NOT DB_COS_ConfigOrigin(_Character, _Key, _Current);
+DB_COS_ConfigOrigin(_Character, _Key, _Enabled);
+PROC_COS_ConfigApplyOrigin(_Character, _Key);
+PROC_COS_ConfigCleanupOriginRewards(_Character, _Key);
+PROC_COS_SyncStoryRewards(_Character);
+
+PROC
+PROC_COS_ConfigSetOrigin((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigOriginDefault(_Key, _)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, _Enabled)
+THEN
+PROC_COS_ConfigApplyOrigin(_Character, _Key);
+PROC_COS_ConfigCleanupOriginRewards(_Character, _Key);
+PROC_COS_SyncStoryRewards(_Character);
+
+PROC
+PROC_COS_ConfigSetAllOrigins((CHARACTER)_Character, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigOriginDefault(_Key, _)
+THEN
+PROC_COS_ConfigSetOrigin(_Character, _Key, _Enabled);
+
+PROC
+PROC_COS_ConfigSyncOrigins((CHARACTER)_Character)
+AND
+DB_COS_ConfigOrigin(_Character, _Key, _)
+THEN
+PROC_COS_ConfigApplyOrigin(_Character, _Key);
+PROC_COS_ConfigCleanupOriginRewards(_Character, _Key);
+
+PROC
 PROC_COS_ConfigResetMechanics((CHARACTER)_Character)
 AND
 DB_COS_ConfigMechanicDefault(_Key, _Default)
@@ -355,6 +493,9 @@ PROC_COS_ConfigResetMechanics(_Character);
 PROC_COS_ConfigResetRacialPassives(_Character);
 PROC_COS_ConfigResetOrigins(_Character);
 PROC_COS_ConfigResetWounds(_Character);
+PROC_COS_ConfigSyncMechanics(_Character);
+PROC_COS_ConfigSyncOrigins(_Character);
+PROC_COS_SyncStoryRewards(_Character);
 
 PROC
 PROC_COS_ConfigRelease((CHARACTER)_Character)

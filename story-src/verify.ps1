@@ -20,6 +20,15 @@ function Require-Unique([string]$Name, [string[]]$Values, [int]$ExpectedCount) {
 
 $mechanics = @('Skills', 'Power', 'Wound', 'KillPower', 'Duality', 'AllIn', 'Echo', 'Strike')
 $origins = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
+$originTags = @(
+    'ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3',
+    '9b0354c0-56d9-4723-8034-918ac9abab19',
+    'b5682d1d-c395-489c-9675-1f9b0c328ea5',
+    '642d2aee-e3df-47e3-9f47-bbcd441bb9e0',
+    '5f40def5-d3ec-4698-a367-01a339888956',
+    '1a2f70d6-8ead-4eb5-a824-79ee1971764a',
+    'cd611d7d-b67d-42b4-a75c-a0c6091ef8a2'
+)
 $woundNegatives = @(
     'Madness', 'Frightened', 'Stunned', 'Silenced', 'Prone', 'Blinded', 'Slowed',
     'Poisoned', 'Bleeding', 'Burning', 'MeleeDisadvantage', 'RangedDisadvantage',
@@ -60,6 +69,7 @@ $forbiddenPassives = @(
 
 Require-Unique '机制目录' $mechanics 8
 Require-Unique '起源目录' $origins 7
+Require-Unique '起源标签目录' $originTags 7
 Require-Unique '受击负面目录' $woundNegatives 15
 Require-Unique '种族被动目录' $racialPassives 20
 Require (@(Compare-Object $racialPassives $forbiddenPassives -IncludeEqual -ExcludeDifferent).Count -eq 0) '种族被动目录与禁用被动清单重叠'
@@ -189,6 +199,20 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     )) {
         Require ($configGoal.Contains($token)) "机制设置合约缺失: $token"
     }
+    foreach ($token in @(
+        'DB_COS_ConfigOriginTag("Astarion", (TAG)ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3)',
+        'DB_COS_ConfigOriginPassive("Wyll", "BladeOfFrontiers")',
+        'DB_COS_ConfigOriginPassive("Karlach", "ORI_Karlach_SweatImmune")',
+        'DB_COS_ConfigOriginPassive("Karlach", "ORI_Karlach_Rage_Flames")',
+        'DB_COS_ConfigOriginSpell("Astarion", "Target_VampireBite_Astarion")',
+        'PROC_COS_ConfigApplyOrigin',
+        'PROC_COS_ConfigCleanupOriginRewards',
+        'PROC_COS_ConfigSetOrigin',
+        'PROC_COS_ConfigSetAllOrigins',
+        'PROC_COS_ConfigSyncOrigins'
+    )) {
+        Require ($configGoal.Contains($token)) "起源设置合约缺失: $token"
+    }
     Require ($configGoal.Contains('HasPassive(_Character, _Passive, 0)')) '种族被动开启前必须检查现有同 ID 被动'
     Require ($configGoal.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动必须写入授予账本'
     Require ($configGoal.Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动关闭必须清除授予账本'
@@ -212,5 +236,21 @@ foreach ($passive in @('COS_ChaosAllIn', 'COS_ChaosWound', 'COS_ChaosDuality', '
     Require (-not ($mainGoal -match ('DB_COS_Passive\(\d+,\s*"' + [regex]::Escape($passive) + '"\);'))) "可配置被动仍在无条件授予目录: $passive"
 }
 Require (-not $mainGoal.Contains('DB_COS_Spell(1, "Shout_COS_ChaosGenesis");')) '开天辟地仍在无条件法术目录'
+foreach ($tag in $originTags) {
+    Require (-not $mainGoal.Contains("DB_COS_Tag((TAG)$tag);")) "起源标签仍在无条件授予目录: $tag"
+}
+foreach ($token in @(
+    'DB_COS_Passive(1, "BladeOfFrontiers");',
+    'DB_COS_Passive(1, "ORI_Karlach_Rage_Flames");',
+    'DB_COS_Passive(1, "ORI_Karlach_SweatImmune");',
+    'DB_COS_Spell(1, "Target_VampireBite_Astarion");'
+)) {
+    Require (-not $mainGoal.Contains($token)) "起源即时能力仍在无条件授予目录: $token"
+}
+Require ([regex]::Matches($mainGoal, 'DB_COS_Tag\(\(TAG\)').Count -eq 32) '种族身份标签目录必须恰好保留 32 项'
+foreach ($key in @('Astarion', 'Gale', 'Wyll', 'Karlach', 'DarkUrge')) {
+    Require ($mainGoal.Contains("DB_COS_ConfigOrigin(_Character, `"$key`", 1)")) "剧情奖励未接入起源设置: $key"
+}
+Require ($mainGoal.Contains('PROC_COS_ConfigSyncOrigins(_Character)')) '角色同步未接入起源设置'
 
 Write-Host 'ChaosOriginsStory source verification: ok'
