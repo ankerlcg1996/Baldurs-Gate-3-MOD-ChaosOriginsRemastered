@@ -731,6 +731,7 @@ foreach ($pattern in @(
 }
 foreach ($token in @(
     '新建混沌起源角色默认背景显示为“骗子”',
+    '混沌受创说明在同一页列出 15 项负面与 11 项正面结果，每项均可按 `T` 展开独立状态详情',
     '“12级测试经验”在 MCM 中默认关闭', '关闭状态进入存档不增加任何经验',
     '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
     '再次关闭也不扣除已获得的经验', '官方标签与身份即时能力', '官方剧情 Flag',
@@ -980,22 +981,59 @@ foreach ($path in @($statusPath) + $mechanicStats) {
     $allStatEntries += @([regex]::Matches($content, 'new entry "([^"]+)"') |
         ForEach-Object { $_.Groups[1].Value })
 }
-Require ($allStatEntries.Count -eq 235 -and
-    ($allStatEntries | Select-Object -Unique).Count -eq 235) `
-    'Mechanic stats must contain exactly 235 globally unique entries'
+Require ($allStatEntries.Count -eq 237 -and
+    ($allStatEntries | Select-Object -Unique).Count -eq 237) `
+    'Mechanic stats must contain exactly 237 globally unique entries'
 $foldedStatEntries = @($allStatEntries | ForEach-Object { $_.ToUpperInvariant() })
-Require (($foldedStatEntries | Select-Object -Unique).Count -eq 235) `
+Require (($foldedStatEntries | Select-Object -Unique).Count -eq 237) `
     'Mechanic stat entries must also be unique when case is ignored'
 $mechanicEntryCounts = @{}
 foreach ($path in $mechanicStats) {
     $mechanicEntryCounts[[IO.Path]::GetFileName($path)] =
         ([regex]::Matches((Get-Content -Raw -LiteralPath $path -Encoding UTF8), 'new entry "')).Count
 }
-Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
+Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 36 `
     -and $mechanicEntryCounts['ChaosRuntime.txt'] -eq 179 `
     -and $mechanicEntryCounts['Interrupt.txt'] -eq 1) `
     'Mechanic stat family counts changed'
 $chaosCoreText = Get-Content -Raw -LiteralPath $mechanicStats[0] -Encoding UTF8
+$chaosRuntimeText = Get-Content -Raw -LiteralPath $mechanicStats[1] -Encoding UTF8
+$woundResultTooltipStatuses = @(
+    'COR_CHAOS_WOUND_LOG_MADNESS', 'COR_CHAOS_WOUND_LOG_FRIGHTENED',
+    'COR_CHAOS_WOUND_LOG_STUNNED', 'COR_CHAOS_WOUND_LOG_SILENCED',
+    'COR_CHAOS_WOUND_LOG_PRONE', 'COR_CHAOS_WOUND_LOG_BLINDED',
+    'COR_CHAOS_WOUND_LOG_SLOWED', 'COR_CHAOS_WOUND_LOG_POISONED',
+    'COR_CHAOS_WOUND_LOG_BLEEDING', 'COR_CHAOS_WOUND_LOG_BURNING',
+    'COR_CHAOS_WOUND_LOG_MELEEDISADVANTAGE', 'COR_CHAOS_WOUND_LOG_RANGEDDISADVANTAGE',
+    'COR_CHAOS_WOUND_LOG_SPELLDISADVANTAGE', 'COR_CHAOS_WOUND_RESULT_VULNERABILITY',
+    'COR_CHAOS_WOUND_RESULT_EXTRA_DAMAGE', 'COR_CHAOS_WOUND_LOG_BLESS',
+    'COR_CHAOS_WOUND_LOG_HASTE', 'COR_CHAOS_WOUND_LOG_BLUR',
+    'COR_CHAOS_WOUND_LOG_HEROISM', 'COR_CHAOS_WOUND_LOG_INVISIBILITY',
+    'COR_CHAOS_WOUND_LOG_MELEEADVANTAGE', 'COR_CHAOS_WOUND_LOG_RANGEDADVANTAGE',
+    'COR_CHAOS_WOUND_LOG_SPELLADVANTAGE', 'COR_CHAOS_WOUND_LOG_RESTOREDAMAGE',
+    'COR_CHAOS_WOUND_LOG_BLOODLUST', 'COR_CHAOS_WOUND_LOG_WET'
+)
+Require ($woundResultTooltipStatuses.Count -eq 26 `
+    -and ($woundResultTooltipStatuses | Select-Object -Unique).Count -eq 26) `
+    'Chaos Wound must expose exactly 26 unique result tooltips'
+$woundStatusText = $chaosCoreText + "`n" + $chaosRuntimeText
+foreach ($status in $woundResultTooltipStatuses) {
+    $statusBlock = [regex]::Match($woundStatusText,
+        '(?ms)^new entry "' + [regex]::Escape($status) + '"\r?\n.*?(?=^new entry |\z)').Value
+    Require (-not [string]::IsNullOrWhiteSpace($statusBlock) `
+        -and $statusBlock.Contains('type "StatusData"') `
+        -and $statusBlock.Contains('data "DisplayName"') `
+        -and $statusBlock.Contains('data "Description"')) `
+        "Chaos Wound result is not a complete StatusData tooltip: $status"
+}
+$vulnerabilityResultBlock = [regex]::Match($chaosCoreText,
+    '(?ms)^new entry "COR_CHAOS_WOUND_RESULT_VULNERABILITY"\r?\n.*?(?=^new entry |\z)').Value
+Require ($vulnerabilityResultBlock.Contains('data "Description" "h0250e836g9c8fg56a3ga0d7g03e4a8b50514;1"')) `
+    'Random Vulnerability result tooltip is invalid'
+$extraDamageResultBlock = [regex]::Match($chaosCoreText,
+    '(?ms)^new entry "COR_CHAOS_WOUND_RESULT_EXTRA_DAMAGE"\r?\n.*?(?=^new entry |\z)').Value
+Require ($extraDamageResultBlock.Contains('data "Description" "h53e7a357g18a8g5ac5g900fg44c134118411;1"')) `
+    'Random Extra Damage result tooltip is invalid'
 $genesisStatusBlock = [regex]::Match($chaosCoreText,
     '(?ms)^new entry "COR_CHAOS_GENESIS"\r?\n.*?(?=^new entry |\z)').Value
 $genesisDamageTypes = @(
@@ -1278,6 +1316,19 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $handles = @($contents | ForEach-Object contentuid) | Sort-Object
     Require (-not (Compare-Object $handles $expectedHandles)) "Localization handles differ: $language"
     foreach ($content in $contents) { Require (-not [string]::IsNullOrWhiteSpace($content.'#text')) "Localization is empty: $language" }
+    $woundDescription = @($contents | Where-Object contentuid -eq 'h619ada41ga42bg5373ga783g691fe9acbc62')
+    Require ($woundDescription.Count -eq 1 -and $woundDescription[0].version -eq '1') `
+        "Chaos Wound description is missing: $language"
+    $woundDescriptionText = [string]$woundDescription[0].'#text'
+    $woundTooltipMatches = @([regex]::Matches($woundDescriptionText, 'Tooltip="([^"]+)"'))
+    $woundTooltipIds = @($woundTooltipMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object)
+    Require ($woundTooltipMatches.Count -eq 26 `
+        -and -not (Compare-Object $woundTooltipIds ($woundResultTooltipStatuses | Sort-Object))) `
+        "Chaos Wound description must expose all 26 result statuses: $language"
+    Require ($woundDescriptionText.Contains('T') `
+        -and -not $woundDescriptionText.Contains('COR_CHAOS_RULE_WOUND_NEGATIVE') `
+        -and -not $woundDescriptionText.Contains('COR_CHAOS_RULE_WOUND_POSITIVE')) `
+        "Chaos Wound description must use one T-pinnable result list: $language"
     $originHelp = @($contents | Where-Object contentuid -eq $originHelpHandle)
     Require ($originHelp.Count -eq 1 -and $originHelp[0].version -eq '1' `
         -and [string]::Equals([string]$originHelp[0].'#text', $originHelpByLanguage[$language],
