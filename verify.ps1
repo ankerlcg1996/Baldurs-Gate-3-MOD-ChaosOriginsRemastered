@@ -732,6 +732,7 @@ foreach ($pattern in @(
 foreach ($token in @(
     '新建混沌起源角色默认背景显示为“骗子”',
     '混沌受创说明在同一页列出 15 项负面与 11 项正面结果，每项均可按 `T` 展开独立状态详情',
+    '正确授予额外 1 次行动的一回合强化',
     '“12级测试经验”在 MCM 中默认关闭', '关闭状态进入存档不增加任何经验',
     '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
     '再次关闭也不扣除已获得的经验', '官方标签与身份即时能力', '官方剧情 Flag',
@@ -1047,6 +1048,9 @@ foreach ($damageType in $genesisDamageTypes) {
     Require ($genesisStatusBlock.Contains($highToken)) "Genesis level 6-12 damage is invalid: $damageType"
 }
 Require (([regex]::Matches($genesisStatusBlock, 'DamageBonus\(')).Count -eq 20 -and -not $genesisStatusBlock.Contains('IF(IsMeleeAttack()):DamageBonus')) 'Genesis must contain only ten low-level d3 and ten high-level d6 damage rolls'
+Require ($genesisStatusBlock.Contains('ActionResource(ActionPoint,1,0)') `
+    -and -not $genesisStatusBlock.Contains('ActionResource(ActionPoint,2,0)')) `
+    'Genesis must grant exactly one additional Action'
 $powerStatusBlock = [regex]::Match($chaosCoreText,
     '(?ms)^new entry "COR_CHAOS_POWER_STACK"\r?\n.*?(?=^new entry |\z)').Value
 Require ($powerStatusBlock.Contains('data "StackType" "Additive"') `
@@ -1294,6 +1298,12 @@ $gameplayDescriptionByHandle = @{
         English = "Gain proficiency and expertise in all eighteen skills; skill checks scale with the normal proficiency bonus."
         Japanese = "全18技能に習熟と専門化を得る。技能判定のボーナスは通常の習熟ボーナスに従って成長する。"
         Korean = "18개 기술 모두에 숙련과 전문화를 얻습니다. 기술 판정 보너스는 정상 숙련 보너스에 따라 성장합니다."
+    }
+    'hf641666bgd4b7g51d2g9c2egf4740ef3f82b' = @{
+        Chinese = "持续1回合：额外获得1次行动；法术位与契术法术位不消耗；解锁飞行；免疫借机攻击、倒伏和困难地形；移动力不会被消耗。每次近战攻击分别附加强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣伤害：1–5级各1d3，共10d3；6–12级各1d6，共10d6。"
+        English = "For 1 turn: gain 1 additional Action; spell slots and Warlock spell slots are not spent; unlock Flight; ignore opportunity attacks; become immune to Prone and difficult terrain; Movement is not reduced. Each melee attack deals additional Acid, Cold, Fire, Force, Lightning, Necrotic, Poison, Psychic, Radiant, and Thunder damage: 1d3 of each at levels 1–5, for 10d3 total; 1d6 of each at levels 6–12, for 10d6 total."
+        Japanese = "1ターン：追加アクションを1回得る。呪文スロットとウォーロック呪文スロットを消費しない。飛行を解放し、機会攻撃、伏せ、困難地形を無効化する。移動力を消費しない。近接攻撃ごとに酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴を、レベル1～5では各1d3（合計10d3）、レベル6～12では各1d6（合計10d6）追加する。"
+        Korean = "1턴 동안 추가 행동 1회를 얻고 주문 슬롯과 워락 주문 슬롯을 소모하지 않습니다. 비행을 해금하고 기회 공격, 넘어짐과 험난한 지형에 면역이 되며 이동력을 소모하지 않습니다. 각 근접 공격에 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 피해를 1–5레벨에는 각각 1d3(총 10d3), 6–12레벨에는 각각 1d6(총 10d6) 추가합니다."
     }
     'h9bc9d749g7b27g5828g8eb4g37f198ae10b5' = @{
         Chinese = '以下设置分别作用于当前主控混沌角色，并随存档保存；战斗中全部锁定。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭也不会扣除经验。'

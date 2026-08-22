@@ -191,7 +191,7 @@
   <content contentuid="hf30cbf80g64eag5fdbgae4agb948f0bc8baf" version="1">混沌回响追加了力场伤害。</content>
   <content contentuid="hf50b6b72g01a9g5ee7ga4e8g30624a1fb917" version="1">持续1回合：对应攻击获得优势。</content>
   <content contentuid="hf51978cdg1d05g5fd0ga467g067bfd190455" version="1">立即额外受到2d6光耀伤害。</content>
-  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">持续1回合：额外获得2次行动；法术位与契术法术位不消耗；解锁飞行；免疫借机攻击、倒伏和困难地形；移动力不会被消耗。每次近战攻击分别附加强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣伤害：1–5级各1d3，共10d3；6–12级各1d6，共10d6。</content>
+  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">持续1回合：额外获得1次行动；法术位与契术法术位不消耗；解锁飞行；免疫借机攻击、倒伏和困难地形；移动力不会被消耗。每次近战攻击分别附加强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣伤害：1–5级各1d3，共10d3；6–12级各1d6，共10d6。</content>
   <content contentuid="hf6c28172g8f04g557egad7fg47e96978a267" version="1">1–5级：10%触发，追加最终伤害10%的力场伤害，或治疗5%。6–9级：30%触发，追加20%，或治疗10%。10级起：50%触发，追加30%，或治疗20%。两种结果等概率；追加伤害不会再次触发混沌回响。</content>
   <content contentuid="hf73655a8ga74fg53c5gbf3cge9448320f7dd" version="1">混沌受创：额外毒素伤害</content>
   <content contentuid="hf73afe2bgbce7g5cdfg9c27gb9a4cd667992" version="1">立即额外受到2d6寒冷伤害。</content>
