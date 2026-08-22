@@ -585,8 +585,12 @@ Require ([regex]::IsMatch($originStoryRewardsCode,
 Require ([regex]::IsMatch($originStoryRewardsCode,
     '(?s)if rule\.Mode == "OneShot" then oneShotKeys\[rule\.Key\] = true end')) `
     'Only one-shot rules may populate consumable origin story keys'
+$savedRewardValidationPattern = '(?m)^    validateSavedRewards\(record\)\r?$'
+Require (([regex]::Matches("    validateSavedRewards(record)`n    validateSavedRewards(record)`r`n",
+    $savedRewardValidationPattern)).Count -eq 2) `
+    'Saved origin story reward validation pattern must accept LF and CRLF equally'
 Require (([regex]::Matches($originStoryRewardsCode,
-    '(?m)^    validateSavedRewards\(record\)$')).Count -eq 2) `
+    $savedRewardValidationPattern)).Count -eq 2) `
     'Saved origin story reward keys must be validated in sync and cast handling'
 $shouldOwnBlock = [regex]::Match($originStoryRewardsCode,
     '(?ms)^local\s+function\s+shouldOwn\s*\([^)]*\).*?(?=^local\s+function\s+validateSavedRewards)').Value
