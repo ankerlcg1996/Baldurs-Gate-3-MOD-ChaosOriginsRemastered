@@ -175,9 +175,42 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     )) {
         Require ($configGoal.Contains($token)) "配置 Story 合约缺失: $token"
     }
+    foreach ($key in $mechanics) {
+        Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制配置目录缺失: $key"
+    }
+    foreach ($token in @(
+        'DB_COS_ConfigMechanicPassive("Skills", 1, "COS_ChaosStatus")',
+        'DB_COS_ConfigMechanicSpell("Power", 1, "Shout_COS_ChaosGenesis")',
+        'PROC_COS_ConfigApplyMechanic',
+        'PROC_COS_ConfigCleanupMechanic',
+        'PROC_COS_ConfigRefreshMechanic',
+        'PROC_COS_ConfigSetMechanic',
+        'PROC_COS_ConfigSyncMechanics'
+    )) {
+        Require ($configGoal.Contains($token)) "机制设置合约缺失: $token"
+    }
     Require ($configGoal.Contains('HasPassive(_Character, _Passive, 0)')) '种族被动开启前必须检查现有同 ID 被动'
     Require ($configGoal.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动必须写入授予账本'
     Require ($configGoal.Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动关闭必须清除授予账本'
 }
+
+$mainGoalPath = Join-Path $root "Mods\$module\Story\RawFiles\Goals\COS_ChaosOrigins.txt"
+$mainGoal = [IO.File]::ReadAllText($mainGoalPath)
+foreach ($token in @(
+    'DB_COS_ConfigMechanic(_Character, "Power", 1)',
+    'DB_COS_ConfigMechanic(_Character, "KillPower", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Echo", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_Target, "Wound", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)',
+    'PROC_COS_ConfigSyncMechanics(_Character)'
+)) {
+    Require ($mainGoal.Contains($token)) "玩法机制未接入配置: $token"
+}
+foreach ($passive in @('COS_ChaosAllIn', 'COS_ChaosWound', 'COS_ChaosDuality', 'COS_ChaosEcho', 'COS_ChaosLost', 'COS_ChaosPower', 'COS_ChaosStatus', 'COS_ChaosStrike')) {
+    Require (-not ($mainGoal -match ('DB_COS_Passive\(\d+,\s*"' + [regex]::Escape($passive) + '"\);'))) "可配置被动仍在无条件授予目录: $passive"
+}
+Require (-not $mainGoal.Contains('DB_COS_Spell(1, "Shout_COS_ChaosGenesis");')) '开天辟地仍在无条件法术目录'
 
 Write-Host 'ChaosOriginsStory source verification: ok'

@@ -10,6 +10,18 @@ DB_COS_ConfigMechanicDefault("AllIn", 1);
 DB_COS_ConfigMechanicDefault("Echo", 1);
 DB_COS_ConfigMechanicDefault("Strike", 1);
 
+DB_COS_ConfigMechanicPassive("Skills", 1, "COS_ChaosStatus");
+DB_COS_ConfigMechanicPassive("Power", 1, "COS_ChaosPower");
+DB_COS_ConfigMechanicPassive("Power", 1, "COS_ChaosLost");
+DB_COS_ConfigMechanicPassive("Wound", 1, "COS_ChaosWound");
+DB_COS_ConfigMechanicPassive("Duality", 1, "COS_ChaosDuality");
+DB_COS_ConfigMechanicPassive("AllIn", 1, "COS_ChaosAllIn");
+DB_COS_ConfigMechanicPassive("AllIn", 5, "COS_ChaosAllInUseL5");
+DB_COS_ConfigMechanicPassive("AllIn", 9, "COS_ChaosAllInUseL9");
+DB_COS_ConfigMechanicPassive("Echo", 1, "COS_ChaosEcho");
+DB_COS_ConfigMechanicPassive("Strike", 12, "COS_ChaosStrike");
+DB_COS_ConfigMechanicSpell("Power", 1, "Shout_COS_ChaosGenesis");
+
 DB_COS_ConfigRacialPassiveDefault("DeepGnome_StoneCamouflage", 0);
 DB_COS_ConfigRacialPassiveDefault("Drow_DrowWeaponTraining", 0);
 DB_COS_ConfigRacialPassiveDefault("Duergar_DuergarResilience", 0);
@@ -156,6 +168,143 @@ AND
 DB_COS_ConfigRacialPassive(_Character, _Passive, _)
 THEN
 PROC_COS_ConfigApplyRacialPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 1)
+AND
+DB_COS_ConfigMechanicPassive(_Key, _RequiredLevel, _Passive)
+AND
+GetLevel(_Character, _Level)
+AND
+_Level >= _RequiredLevel
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+AND
+DB_COS_ConfigMechanicPassive(_Key, _, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 1)
+AND
+DB_COS_ConfigMechanicSpell(_Key, _RequiredLevel, _Spell)
+AND
+GetLevel(_Character, _Level)
+AND
+_Level >= _RequiredLevel
+AND
+HasSpell(_Character, _Spell, 0)
+THEN
+AddSpell(_Character, _Spell, 1, 1);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+AND
+DB_COS_ConfigMechanicSpell(_Key, _, _Spell)
+AND
+HasSpell(_Character, _Spell, 1)
+THEN
+RemoveSpell(_Character, _Spell, 1);
+
+PROC
+PROC_COS_ConfigRefreshMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "Power"
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+THEN
+PROC_COS_SyncPowerFromDatabase(_Character);
+PROC_COS_SyncLostFromDatabase(_Character);
+
+PROC
+PROC_COS_ConfigCleanupMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "Power"
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 0)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+PROC_COS_ClearLostDisplay(_Character);
+
+PROC
+PROC_COS_ConfigCleanupMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "Wound"
+AND
+DB_COS_ConfigMechanic(_Character, "Wound", 0)
+AND
+DB_COS_WoundConsumed(_Character)
+THEN
+NOT DB_COS_WoundConsumed(_Character);
+
+PROC
+PROC_COS_ConfigCleanupMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "AllIn"
+AND
+DB_COS_ConfigMechanic(_Character, "AllIn", 0)
+THEN
+PROC_COS_ClearAllIn(_Character);
+
+PROC
+PROC_COS_ConfigCleanupMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+_Key == "Strike"
+AND
+DB_COS_ConfigMechanic(_Character, "Strike", 0)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", _Character);
+
+PROC
+PROC_COS_ConfigSetMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _Current)
+AND
+_Current != _Enabled
+THEN
+NOT DB_COS_ConfigMechanic(_Character, _Key, _Current);
+DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
+PROC_COS_ConfigApplyMechanic(_Character, _Key);
+PROC_COS_ConfigCleanupMechanic(_Character, _Key);
+PROC_COS_ConfigRefreshMechanic(_Character, _Key);
+
+PROC
+PROC_COS_ConfigSetMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _Enabled)
+THEN
+PROC_COS_ConfigApplyMechanic(_Character, _Key);
+PROC_COS_ConfigCleanupMechanic(_Character, _Key);
+PROC_COS_ConfigRefreshMechanic(_Character, _Key);
+
+PROC
+PROC_COS_ConfigSyncMechanics((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _)
+THEN
+PROC_COS_ConfigApplyMechanic(_Character, _Key);
+PROC_COS_ConfigCleanupMechanic(_Character, _Key);
+PROC_COS_ConfigRefreshMechanic(_Character, _Key);
 
 PROC
 PROC_COS_ConfigResetMechanics((CHARACTER)_Character)
