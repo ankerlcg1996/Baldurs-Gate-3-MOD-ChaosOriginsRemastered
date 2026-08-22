@@ -27,7 +27,8 @@ $packageFilesPath = Join-Path $ProjectRoot 'package-files.json'
 $raceCatalogPath = Join-Path $ProjectRoot 'official-data\race-catalog.json'
 $raceCatalogGeneratorPath = Join-Path $ProjectRoot 'generate-race-catalog.ps1'
 $testChecklistPath = Join-Path $ProjectRoot 'TEST-CHECKLIST.md'
-foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $textureBankPath, $configPath, $bootstrapPath, $packageFilesPath, $testChecklistPath)) {
+$readmePath = Join-Path $ProjectRoot 'README.md'
+foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $textureBankPath, $configPath, $bootstrapPath, $packageFilesPath, $testChecklistPath, $readmePath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Required minimal source is missing: $path"
 }
 
@@ -164,6 +165,8 @@ Require ($moduleAttributes.UUID -eq $moduleUuid) 'Module UUID is invalid'
 Require ($moduleAttributes.Folder -eq $moduleName) 'Module folder is invalid'
 Require ($moduleAttributes.Name -eq 'Chaos Origins Remastered') 'Module name is invalid'
 Require ($moduleAttributes.Type -eq 'Add-on') 'Module type is invalid'
+Require ($moduleAttributes.Description -ceq 'Chaos origin with playable racial identities and active racial skills, complete proficiencies, all-skill expertise, story-driven origin rewards, and per-character MCM configuration.') `
+    'meta.lsx description must describe story-driven rewards without obsolete unlock claims'
 $dependencyUuids = @($metaXml.SelectNodes('//node[@id="Dependencies"]//node[@id="ModuleShortDesc"]/attribute[@id="UUID"]') | ForEach-Object value)
 foreach ($dependencyUuid in @(
     '28ac9ce2-2aba-8cda-b3b5-6e922f71b6b8',
@@ -267,6 +270,7 @@ Require ($stateLua.Contains(
 Require ($stateLua.Contains('for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do result[key] = true end')) `
     'New Chaos characters must enable all seven origin identities by default'
 $originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFeatures.lua') -Encoding UTF8
+$originFeaturesCode = $originFeaturesLua -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
     'GrantLedger.RemoveTag', 'record.OriginIdentities[definition.Name]', 'function M.SetEnabled')) {
     Require ($originFeaturesLua.Contains($token)) "Origin identity tag ownership is missing: $token"
@@ -274,7 +278,7 @@ foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger
 Require (-not $originFeaturesLua.Contains('Osi.GetLevel')) 'OriginFeatures.lua must not grant abilities by level'
 Require (-not [regex]::IsMatch($originFeaturesLua, '\{\s*"[^"]+"\s*,\s*\d+\s*\}')) `
     'OriginFeatures.lua must not contain level-gated ability tuples'
-$originDefinitionsMatch = [regex]::Match($originFeaturesLua,
+$originDefinitionsMatch = [regex]::Match($originFeaturesCode,
     '(?ms)^M\.Definitions\s*=\s*\{(?<definitions>.*?)^}\r?\n\r?\n(?=local byStatus)')
 Require ($originDefinitionsMatch.Success) 'OriginFeatures.lua definitions block is missing'
 $originDefinitionText = $originDefinitionsMatch.Groups['definitions'].Value -replace '(?m)--[^\r\n]*', ''
@@ -284,12 +288,29 @@ foreach ($token in @('Target_VampireBite_Astarion', 'BladeOfFrontiers',
     'ORI_Karlach_SweatImmune', 'ORI_Karlach_Rage_Flames')) {
     Require ($originDefinitionLiterals -contains $token) "OriginFeatures.lua immediate ability is missing: $token"
 }
+$immediateOriginAbilities = @()
+$originDefinitionEntries = @([regex]::Matches($originDefinitionText,
+    '(?s)\{\s*Name\s*=\s*"[^"]+".*?Passives\s*=\s*\{(?<passives>.*?)\}\s*,\s*Spells\s*=\s*\{(?<spells>.*?)\}\s*\}'))
+Require ($originDefinitionEntries.Count -eq 7) `
+    'OriginFeatures.lua must contain exactly seven parseable identity definitions'
+foreach ($entry in $originDefinitionEntries) {
+    foreach ($field in @('passives', 'spells')) {
+        $immediateOriginAbilities += @([regex]::Matches($entry.Groups[$field].Value, '"([^"]+)"') |
+            ForEach-Object { $_.Groups[1].Value })
+    }
+}
+$expectedImmediateOriginAbilities = @('Target_VampireBite_Astarion', 'BladeOfFrontiers',
+    'ORI_Karlach_SweatImmune', 'ORI_Karlach_Rage_Flames') | Sort-Object
+Require ($immediateOriginAbilities.Count -eq 4 `
+    -and -not (Compare-Object ($immediateOriginAbilities | Sort-Object) $expectedImmediateOriginAbilities)) `
+    'OriginFeatures.lua immediate abilities differ from the approved four-entry whitelist'
 $forbiddenOldRewards = @('UNI_DarkUrge_Stealth_Expertise_Passive',
     'UNI_DarkUrge_Bleeding_Dagger_Passive', 'Karlach_Infernal_Fury')
 foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originDefinitionLiterals -contains $token)) "OriginFeatures.lua contains forbidden old reward: $token"
 }
 $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
+$originStoryRewardsCode = $originStoryRewardsLua -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 $bootstrapCode = $bootstrap -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 foreach ($token in @('OriginStoryRewards.Sync', 'OriginStoryRewards.ResetRuntime',
     'OriginStoryRewards.IsTrackedFlag', 'OriginStoryRewards.HandleCastedSpell',
@@ -357,12 +378,12 @@ Require ($setTestExperienceBlock -ne '' -and [regex]::IsMatch($setTestExperience
     -and -not [regex]::IsMatch($setTestExperienceBlock,
         'Osi\.(?:Remove|Subtract)[A-Za-z]*Experience|Osi\.\w*Experience\s*\([^)]*,\s*-')) `
     'MCM SetTestExperience server behavior is invalid'
-$originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
+$originStoryRulesMatch = [regex]::Match($originStoryRewardsCode,
     '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=^local\s+trackedFlags\s*=)')
 Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
 Require ($originStoryRewardsLua.Contains('local FULL_CEREMORPH = "3797bfc4-8004-4a19-9578-61ce0714cc0b"')) `
     'Origin story reward raw UUID constant is missing'
-$originStoryRewardsText = $originStoryRewardsLua -replace '(?m)--[^\r\n]*', ''
+$originStoryRewardsText = $originStoryRewardsCode
 $originStoryRewardLiterals = @([regex]::Matches($originStoryRewardsText, '"([^"]+)"') |
     ForEach-Object { $_.Groups[1].Value })
 foreach ($token in @(
@@ -393,6 +414,26 @@ foreach ($token in @(
 foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originStoryRewardLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
+$ruleModes = @([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
+    '\bMode\s*=\s*"(Permanent|Revocable|Stage|OneShot)"') | ForEach-Object { $_.Groups[1].Value })
+$expectedRuleModeCounts = @{ Permanent = 7; Revocable = 1; Stage = 2; OneShot = 1 }
+Require ($ruleModes.Count -eq 11) 'Every origin story rule must declare one approved Mode'
+foreach ($mode in $expectedRuleModeCounts.Keys) {
+    Require (@($ruleModes | Where-Object { $_ -ceq $mode }).Count -eq $expectedRuleModeCounts[$mode]) `
+        "Origin story rule Mode count differs: $mode"
+}
+$storyRewardAbilities = @(
+    'LOW_Astarion_VampireAscendant', 'Shout_EPI_Astarion_TurnIntoBat',
+    'Target_END_Gale_ActivateNethereseOrb', 'ORI_Gale_ShadowSpellSlots',
+    'Target_ORI_Gale_ShadowSummon', 'EPI_GALEGOD', 'EPI_GALEGOD_MINDFLAYER',
+    'Shout_ORI_Wyll_FireShield_Warm', 'Target_ORI_Wyll_SummonCambion',
+    'ORI_KARLACH_FIRSTUPGRADE', 'ORI_KARLACH_SECONDUPGRADE',
+    'Shout_DarkUrge_Slayer', 'Target_LOW_DarkUrge_PowerWordKill'
+)
+foreach ($token in $storyRewardAbilities) {
+    Require (-not ($originDefinitionLiterals -contains $token)) `
+        "Story reward leaked into OriginFeatures.lua: $token"
+}
 foreach ($token in @('ORI_KARLACH_FIRSTUPGRADE', 'ORI_KARLACH_SECONDUPGRADE')) {
     $quotedStageStatus = '"' + [regex]::Escape($token) + '"'
     Require (([regex]::Matches($originStoryRulesMatch.Groups['rules'].Value,
@@ -400,9 +441,6 @@ foreach ($token in @('ORI_KARLACH_FIRSTUPGRADE', 'ORI_KARLACH_SECONDUPGRADE')) {
         -and ([regex]::Matches($originStoryRewardsText, $quotedStageStatus)).Count -eq 1) `
         "Karlach stage status must only be declared once in M.Rules: $token"
 }
-Require ([regex]::IsMatch($originStoryRewardsLua,
-    '(?s)local selectedStageRule = nil.*?if rule\.Mode == "Stage" then\s+if selectedStageRule == nil or rule\.Stage > selectedStageRule\.Stage then\s+selectedStageRule = rule\s+end.*?if selectedStageRule ~= nil then\s+collect\(statuses, selectedStageRule\.Statuses\)\s+end')) `
-    'Origin story stage selection must collect statuses from the highest matched rule'
 foreach ($token in @(
     'local claimableKeys = {}', 'local oneShotKeys = {}',
     'claimableKeys[rule.Key] = true', 'oneShotKeys[rule.Key] = true',
@@ -411,22 +449,70 @@ foreach ($token in @(
 )) {
     Require ($originStoryRewardsLua.Contains($token)) "Origin story saved-key validation is missing: $token"
 }
-Require ([regex]::IsMatch($originStoryRewardsLua,
+Require ([regex]::IsMatch($originStoryRewardsCode,
     '(?s)if rule\.Mode == "Permanent" or rule\.Mode == "OneShot" then\s+claimableKeys\[rule\.Key\] = true\s+end')) `
     'Only permanent and one-shot rules may populate claimable origin story keys'
-Require ([regex]::IsMatch($originStoryRewardsLua,
+Require ([regex]::IsMatch($originStoryRewardsCode,
     '(?s)if rule\.Mode == "OneShot" then oneShotKeys\[rule\.Key\] = true end')) `
     'Only one-shot rules may populate consumable origin story keys'
-Require (([regex]::Matches($originStoryRewardsLua,
+Require (([regex]::Matches($originStoryRewardsCode,
     '(?m)^    validateSavedRewards\(record\)$')).Count -eq 2) `
     'Saved origin story reward keys must be validated in sync and cast handling'
+$shouldOwnBlock = [regex]::Match($originStoryRewardsCode,
+    '(?ms)^local\s+function\s+shouldOwn\s*\([^)]*\).*?(?=^local\s+function\s+validateSavedRewards)').Value
+Require ($shouldOwnBlock -ne '' `
+    -and [regex]::IsMatch($shouldOwnBlock,
+        '(?s)if rule\.Mode == "Permanent" then.*?enabled and flagIsSet\(rule, character\).*?rewards\.Claimed\[rule\.Key\] = true.*?return rewards\.Claimed\[rule\.Key\] == true') `
+    -and [regex]::IsMatch($shouldOwnBlock,
+        '(?s)if rule\.Mode == "Revocable" or rule\.Mode == "Stage" then\s+return enabled and flagIsSet\(rule, character\)') `
+    -and [regex]::IsMatch($shouldOwnBlock,
+        '(?s)if rule\.Mode == "OneShot" then.*?rewards\.Claimed\[rule\.Key\] = true.*?return rewards\.Claimed\[rule\.Key\] == true and rewards\.Consumed\[rule\.Key\] ~= true')) `
+    'Origin story ownership modes must preserve permanent claims and one-shot consumption'
+$storySyncBlock = [regex]::Match($originStoryRewardsCode,
+    '(?ms)^function\s+M\.Sync\s*\([^)]*\).*?(?=^function\s+M\.IsTrackedFlag)').Value
+Require ($storySyncBlock -ne '') 'OriginStoryRewards.Sync could not be isolated'
+Require ([regex]::IsMatch($storySyncBlock,
+    '(?s)local selectedStageRule = nil.*?if rule\.Mode == "Stage" then\s+if selectedStageRule == nil or rule\.Stage > selectedStageRule\.Stage then\s+selectedStageRule = rule\s+end.*?if selectedStageRule ~= nil then\s+collect\(statuses, selectedStageRule\.Statuses\)\s+end')) `
+    'Origin story stage selection must derive the highest stage status from its declared Statuses'
+foreach ($token in @('GrantLedger.RemoveStatus(character, record, status, ledger.Statuses)',
+    'GrantLedger.EnsureStatus(character, record, status, ledger.Statuses)')) {
+    Require ($storySyncBlock.Contains($token)) "Origin story status ownership is missing: $token"
+}
+Require ([regex]::IsMatch($storySyncBlock,
+    '(?s)if rule\.God then.*?Osi\.SetImmortal\(character, 1\).*?Osi\.PROC_SetInvulnerable\(character, 1\)')) `
+    'Gale godhood must set immortality and invulnerability inside the God rule branch'
+$castHandlerBlock = [regex]::Match($originStoryRewardsCode,
+    '(?ms)^function\s+M\.HandleCastedSpell\s*\([^)]*\).*?(?=^function\s+M\.ResetRuntime)').Value
+Require ($castHandlerBlock -ne '' -and [regex]::IsMatch($castHandlerBlock,
+    '(?s)if spell == ORB_SPELL then.*?rewards\.Claimed\.GaleOrb == true.*?ledger\[ORB_SPELL\] ~= nil.*?Osi\.ShowGameOverMenu\("GameOver_Default"\)')) `
+    'The claimed MOD-owned Gale orb must show the default game-over menu'
+Require ([regex]::IsMatch($castHandlerBlock,
+    '(?s)if spell == POWER_WORD_KILL then.*?rewards\.Consumed\.DarkUrgePowerWordKill = true.*?State\.MarkDirty\(\).*?GrantLedger\.RemoveSpell\(character, record, POWER_WORD_KILL, ledger\)')) `
+    'Power Word Kill consumption must persist and remove the MOD-owned spell'
+Require (-not $originStoryRewardsCode.Contains('PROC_ORI_Gale_Explosion')) `
+    'Chaos Gale orb must not call the real-Gale explosion procedure'
+Require (-not [regex]::IsMatch($originStoryRewardsCode, '\b(?:Osi\.)?SetLevel\s*\(')) `
+    'Gale godhood must not change the Chaos character level'
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
+$grantLedgerCode = $grantLedgerLua -replace '(?s)--\[\[.*?\]\]', '' -replace '(?m)--[^\r\n]*', ''
 foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
     Require ($grantLedgerLua.Contains($token)) "Grant ledger tag support is missing: $token"
 }
 foreach ($token in @('function M.EnsureStatus', 'function M.RemoveStatus',
     'Osi.HasActiveStatus', 'Osi.ApplyStatus', 'Osi.RemoveStatus')) {
     Require ($grantLedgerLua.Contains($token)) "Grant ledger status support is missing: $token"
+}
+$ensureStatusBlock = [regex]::Match($grantLedgerCode,
+    '(?ms)^function\s+M\.EnsureStatus\s*\([^)]*\).*?(?=^function\s+M\.RemoveStatus)').Value
+$removeStatusBlock = [regex]::Match($grantLedgerCode,
+    '(?ms)^function\s+M\.RemoveStatus\s*\([^)]*\).*?(?=^function\s+M\.ResetRuntime)').Value
+foreach ($contract in @(
+    @{ Name = 'EnsureStatus'; Block = $ensureStatusBlock },
+    @{ Name = 'RemoveStatus'; Block = $removeStatusBlock }
+)) {
+    Require ($contract.Block -ne '' -and $contract.Block.Contains('Osi.HasActiveStatus') `
+        -and $contract.Block.Contains('Osi.ApplyStatus') -and $contract.Block.Contains('Osi.RemoveStatus')) `
+        "GrantLedger.$($contract.Name) must verify, apply, and remove statuses in its function body"
 }
 foreach ($token in @('ReleasedLedgers = {}', 'transferPendingOwnership',
     'operation.ReleasedLedgers[operation.Ledger] = true', 'ledger[operation.StatId] = "adding"',
@@ -475,11 +561,34 @@ foreach ($token in @(
     '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
     '再次关闭也不扣除已获得的经验', '官方标签与身份即时能力', '官方剧情 Flag',
     '真实起源队友', '重新开启时补发',
+    '读档、升级、洗点、切换地图及相关官方剧情 Flag 变化后',
+    '可撤销奖励跟随官方 Flag，一次性奖励消耗后不会因读档、洗点或重开身份恢复',
     '关闭身份会移除本 MOD 授予的官方标签、身份即时能力及当前有效的可撤销/阶段性剧情奖励',
     '已认领的永久剧情奖励仍保留', '角色原生或其他 MOD 的同名官方标签不受影响',
-    '不授予 20 项官方种族被动', '29 项种族主动技能与法术', '隐藏 `UnlockSpell` 被动'
+    '18 项技能界面与掷骰明细同时显示熟练和精通，但不再出现额外固定 `+5`',
+    '不授予 20 项官方种族被动',
+    '29 项种族主动技能与法术通过隐藏 `UnlockSpell` 被动按原版等级同步',
+    '1 级 18 项、3 级新增 6 项、5 级再新增 5 项'
 )) {
     Require ($testChecklist.Contains($token)) "Test checklist omits current behavior: $token"
+}
+$readme = Get-Content -Raw -LiteralPath $readmePath -Encoding UTF8
+foreach ($token in @(
+    '“12级测试经验”保留在 MCM 中但默认关闭',
+    '均由对应官方剧情结果触发，绝不按等级发放',
+    '本 MOD 不复制炼狱长袍、炼狱刺剑、幽影提灯等剧情装备',
+    '盖尔成神会保留混沌角色当前等级，不会将其设为 20 级',
+    '上述新剧情奖励行为尚未完成游戏内验收'
+)) {
+    Require ($readme.Contains($token)) "README omits current behavior boundary: $token"
+}
+foreach ($pattern in @(
+    '混沌起源主角进入存档后会补足到累计',
+    '七项起源身份会授予对应官方起源标签与等级能力',
+    '(?<!不)(?<!不会)复制[^\r\n]*(?:剧情装备|炼狱长袍|炼狱刺剑|幽影提灯)',
+    '(?<!不)(?<!不会)(?:把|将)[^\r\n]*?(?:设为|提升至)\s*20\s*级'
+)) {
+    Require (-not [regex]::IsMatch($readme, $pattern)) "README contains obsolete claim: $pattern"
 }
 $mechanicsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosMechanics.lua') -Encoding UTF8
 $dualityLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosDuality.lua') -Encoding UTF8
@@ -943,6 +1052,26 @@ $originHelpByLanguage = @{
     Japanese = '7つのオリジンアイデンティティは初期状態ですべて有効です。有効にすると公式タグとアイデンティティの即時能力を同期し、セーブ内ですでに完了している公式結果に対応するストーリー報酬を補完します。無効にすると本MODが付与したタグ、アイデンティティの即時能力、現在有効な撤回可能または段階式のストーリー報酬は削除されますが、獲得済みの恒久的なストーリー報酬は回収されません。ストーリー報酬は公式ストーリーの結果でのみ発生し、ここで手動で獲得することはできません。公式オリジンタグはストーリー判定や会話に影響する可能性があります。戦闘中は変更できません。'
     Korean = '7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 정체성의 즉시 능력을 동기화하고 저장 데이터에서 이미 완료된 공식 결과에 해당하는 스토리 보상을 소급 지급합니다. 비활성화하면 이 모드가 부여한 태그, 정체성의 즉시 능력, 현재 활성화된 취소 가능 또는 단계형 스토리 보상을 제거하지만 이미 획득한 영구 스토리 보상은 회수하지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 획득할 수 없습니다. 공식 오리진 태그는 스토리 판정과 대화에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.'
 }
+$task8ExplanationByHandle = @{
+    'h049bbad7g2b78g5bedg831dga2a983c40cda' = @{
+        Chinese = "控制该起源身份对应的官方标签和即时能力。开启时会同步两者，关闭时会移除两者；剧情成长由官方剧情结果独立触发，绝不按人物等级发放。"
+        English = "Controls this origin identity's corresponding official tag and immediate abilities. Enabling it synchronizes both; disabling it removes both. Story growth is triggered independently by official story outcomes, never by character level."
+        Japanese = "このオリジン・アイデンティティに対応する公式タグと即時能力を制御する。有効にすると両方を同期し、無効にすると両方を削除する。ストーリー上の成長は公式ストーリーの結果によって独立して発生し、キャラクターレベルでは決して付与されない。"
+        Korean = "이 오리진 정체성에 해당하는 공식 태그와 즉시 능력을 제어합니다. 활성화하면 둘 다 동기화하고 비활성화하면 둘 다 제거합니다. 스토리 성장은 공식 스토리 결과에 따라 독립적으로 발동하며 캐릭터 레벨로는 절대 부여되지 않습니다."
+    }
+    'h903c567eg472ag5c11g8a75g1b8a2e298137' = @{
+        Chinese = "混沌保留全部官方可选种族的身份标签，但不会额外获得其被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。阿斯代伦、威尔和卡菈克还会同步即时能力，其余四个身份只提供标签。剧情奖励由官方结果触发，绝不按人物等级发放，也不会复制剧情装备。"
+        English = "Chaos retains every official playable race's identity tags but none of their additional passive traits; 29 active racial skills and spells unlock at their original levels. All seven origin identities are enabled by default. Astarion, Wyll, and Karlach also synchronize immediate abilities; the other four identities provide tags only. Story rewards follow official outcomes, never character level, and no story equipment is copied."
+        Japanese = "混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。7つのオリジン・アイデンティティは初期状態ですべて有効。アスタリオン、ウィル、カーラックは即時能力も同期し、残る4つのアイデンティティはタグのみを付与する。ストーリー報酬は公式の結果によって発生し、キャラクターレベルでは決して付与されず、ストーリー装備も複製されない。"
+        Korean = "혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 아스타리온, 윌, 카를라크는 즉시 능력도 동기화하며 나머지 4개 정체성은 태그만 제공합니다. 스토리 보상은 공식 결과에 따라 발동하며 캐릭터 레벨로는 절대 부여되지 않고 스토리 장비도 복사하지 않습니다."
+    }
+    'h9bc9d749g7b27g5828g8eb4g37f198ae10b5' = @{
+        Chinese = '以下设置分别作用于当前主控混沌角色，并随存档保存；战斗中全部锁定。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭也不会扣除经验。'
+        English = "These settings apply separately to the currently controlled Chaos character and are stored in the save. All settings remain locked in combat. Level 12 Test XP is off by default; enabling it adds only the missing cumulative XP needed to reach 100000 without directly levelling up, and disabling it never removes XP."
+        Japanese = "以下の設定は現在操作中の混沌キャラクターごとに適用され、セーブに保存される。戦闘中はすべてロックされる。「レベル12テスト経験値」は初期状態でOFF。有効にすると累積経験値が100000に達するまで不足分だけを追加し、直接レベルアップは行わない。無効にしても経験値は減らない。"
+        Korean = "아래 설정은 현재 조종 중인 혼돈 캐릭터별로 적용되며 저장 파일에 보관됩니다. 전투 중에는 모든 설정이 잠깁니다. '12레벨 테스트 경험치'는 기본적으로 꺼져 있습니다. 활성화하면 누적 경험치가 100000이 될 때까지 부족한 만큼만 추가하고 직접 레벨을 올리지 않으며 비활성화해도 경험치는 줄지 않습니다."
+    }
+}
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $ProjectRoot "localization-src\$language\ChaosOriginsRemastered.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Localization is missing: $language"
@@ -955,6 +1084,12 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     Require ($originHelp.Count -eq 1 -and $originHelp[0].version -eq '1' `
         -and [string]$originHelp[0].'#text' -ceq $originHelpByLanguage[$language]) `
         "OriginHelp localization contract differs: $language"
+    foreach ($contract in $task8ExplanationByHandle.GetEnumerator()) {
+        $explanation = @($contents | Where-Object contentuid -eq $contract.Key)
+        Require ($explanation.Count -eq 1 -and $explanation[0].version -eq '1' `
+            -and [string]$explanation[0].'#text' -ceq $contract.Value[$language]) `
+            "Task 8 explanation localization contract differs: $language/$($contract.Key)"
+    }
 }
 
 Write-Host 'ChaosOriginsRemastered source verification: ok'
