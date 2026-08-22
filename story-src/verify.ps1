@@ -157,6 +157,15 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigOriginDefault\("').Count -eq 7) '起源默认目录必须恰好为 7 项'
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigWoundDefault\("').Count -eq 15) '受击默认目录必须恰好为 15 项'
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigWoundOutcome\("').Count -eq 15) '受击负面结果映射必须恰好为 15 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigMirrorMechanic\("').Count -eq 8) '机制回显目录必须恰好为 8 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigMirrorRacialPassive\("').Count -eq 20) '种族被动回显目录必须恰好为 20 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigMirrorOrigin\("').Count -eq 7) '起源回显目录必须恰好为 7 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigMirrorWound\("').Count -eq 15) '受击回显目录必须恰好为 15 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialMechanic\(\(TUTORIALEVENT\)').Count -eq 16) '机制 TutorialEvent 映射必须恰好为 16 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialRacialPassive\(\(TUTORIALEVENT\)').Count -eq 40) '种族被动 TutorialEvent 映射必须恰好为 40 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialOrigin\(\(TUTORIALEVENT\)').Count -eq 14) '起源 TutorialEvent 映射必须恰好为 14 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialWound\(\(TUTORIALEVENT\)').Count -eq 30) '受击 TutorialEvent 映射必须恰好为 30 项'
+    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigEvent\(\(TUTORIALEVENT\)').Count -eq 106) '启用的 TutorialEvent 必须恰好为 106 项'
     foreach ($key in $mechanics) {
         Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制默认值缺失或错误: $key"
     }
@@ -217,6 +226,17 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     foreach ($token in @('DB_COS_ConfigWoundOutcome(', 'PROC_COS_ConfigSetWound')) {
         Require ($configGoal.Contains($token)) "受击设置合约缺失: $token"
     }
+    foreach ($token in @(
+        'PROC_COS_ConfigEnableEvents',
+        'PROC_COS_ConfigSyncMirrors',
+        'GetReservedUserID(_Character, _TargetUser)',
+        'GetReservedUserID(_Host, _HostUser)',
+        '_TargetUser == _HostUser',
+        'IsInCombat(_Character, 0)',
+        'NOT DB_COS_ConfigBusy(_Character)'
+    )) {
+        Require ($configGoal.Contains($token)) "原生事件权限合约缺失: $token"
+    }
     Require ($configGoal.Contains('HasPassive(_Character, _Passive, 0)')) '种族被动开启前必须检查现有同 ID 被动'
     Require ($configGoal.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动必须写入授予账本'
     Require ($configGoal.Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动关闭必须清除授予账本'
@@ -270,5 +290,26 @@ foreach ($token in @(
     Require ($mainGoal.Contains($token)) "动态受击池合约缺失: $token"
 }
 Require (-not $mainGoal.Contains('Random(26, _WoundRoll)')) '受击轮盘仍使用固定 26 项随机上界'
+foreach ($token in @('PROC_COS_ConfigEnableEvents(_Character)', 'PROC_COS_ConfigSyncMirrors(_Character)')) {
+    Require ($mainGoal.Contains($token)) "角色同步未接入原生设置协议: $token"
+}
+
+$configStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosConfig.txt"
+Require (Test-Path -LiteralPath $configStatsPath -PathType Leaf) '缺少设置回显 Stats'
+$configStats = [IO.File]::ReadAllText($configStatsPath)
+$configEntries = @([regex]::Matches($configStats, '^new entry "(COS_CFG_[^"]+)"', 'Multiline') | ForEach-Object { $_.Groups[1].Value })
+Require-Unique '设置回显被动' $configEntries 50
+Require (-not $configStats.Contains('data "Boosts"')) '设置回显被动不得产生玩法 Boost'
+
+$tutorialPath = Join-Path $root "Public\$module\Tutorials\TutorialEvents.lsx"
+Require (Test-Path -LiteralPath $tutorialPath -PathType Leaf) '缺少 TutorialEvents.lsx'
+[xml]$tutorialDocument = Get-Content -LiteralPath $tutorialPath -Raw
+$tutorialNodes = @($tutorialDocument.SelectNodes('//node[@id="TutorialEvent"]'))
+Require ($tutorialNodes.Count -eq 106) "TutorialEvent 数量错误: $($tutorialNodes.Count)"
+$tutorialUuids = @($tutorialNodes | ForEach-Object { [string]($_.attribute | Where-Object id -eq 'UUID').value })
+$tutorialNames = @($tutorialNodes | ForEach-Object { [string]($_.attribute | Where-Object id -eq 'Name').value })
+Require-Unique 'TutorialEvent UUID' $tutorialUuids 106
+Require-Unique 'TutorialEvent 名称' $tutorialNames 106
+Require (@($tutorialNodes | Where-Object { [string]($_.attribute | Where-Object id -eq 'EventType').value -ne '8' }).Count -eq 0) '所有设置 TutorialEvent 必须为 EventType 8'
 
 Write-Host 'ChaosOriginsStory source verification: ok'
