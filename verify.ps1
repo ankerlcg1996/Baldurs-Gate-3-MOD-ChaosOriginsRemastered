@@ -284,8 +284,8 @@ $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'Orig
 $originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
     '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=local\s+(?:function\s+)?[^\r\n]*tracked[^\r\n]*flag)')
 Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
-$originStoryRulesText = $originStoryRulesMatch.Groups['rules'].Value -replace '(?m)--[^\r\n]*', ''
-$originStoryRuleLiterals = @([regex]::Matches($originStoryRulesText, '"([^"]+)"') |
+$originStoryRewardsText = $originStoryRewardsLua -replace '(?m)--[^\r\n]*', ''
+$originStoryRewardLiterals = @([regex]::Matches($originStoryRewardsText, '"([^"]+)"') |
     ForEach-Object { $_.Groups[1].Value })
 foreach ($token in @(
     'ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e',
@@ -310,10 +310,10 @@ foreach ($token in @(
     'ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86',
     'Target_LOW_DarkUrge_PowerWordKill'
 )) {
-    Require ($originStoryRuleLiterals -contains $token) "Origin story reward catalog is missing: $token"
+    Require ($originStoryRewardLiterals -contains $token) "Origin story reward catalog is missing: $token"
 }
 foreach ($token in $forbiddenOldRewards) {
-    Require (-not ($originStoryRuleLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
+    Require (-not ($originStoryRewardLiterals -contains $token)) "Origin story reward catalog contains forbidden old reward: $token"
 }
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
 foreach ($token in @('function M.RemoveTag', 'Osi.SetTag', 'Osi.ClearTag')) {
