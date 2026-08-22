@@ -451,6 +451,19 @@ $iconTexturePath = Join-Path $source "Public\$moduleName\Assets\Textures\Icons\I
 foreach ($path in @($resourcePath, $iconMapPath, $iconTexturePath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Mechanic resource is missing: $path"
 }
+$iconTextureBytes = [IO.File]::ReadAllBytes($iconTexturePath)
+Require ($iconTextureBytes.Length -eq 349680 `
+    -and [Text.Encoding]::ASCII.GetString($iconTextureBytes, 0, 4) -eq 'DDS ' `
+    -and [BitConverter]::ToInt32($iconTextureBytes, 12) -eq 512 `
+    -and [BitConverter]::ToInt32($iconTextureBytes, 16) -eq 512 `
+    -and [BitConverter]::ToInt32($iconTextureBytes, 24) -eq 1 `
+    -and [BitConverter]::ToInt32($iconTextureBytes, 28) -eq 10 `
+    -and [Text.Encoding]::ASCII.GetString($iconTextureBytes, 84, 4) -eq 'DXT5') `
+    'Chaos icon atlas must use the BG3-compatible 512x512 DXT5 DDS header'
+for ($index = 32; $index -le 75; $index++) {
+    Require ($iconTextureBytes[$index] -eq 0) `
+        'Chaos icon atlas DDS reserved header must remain empty'
+}
 $resourceXml = [xml](Get-Content -Raw -LiteralPath $resourcePath -Encoding UTF8)
 $resources = @($resourceXml.save.region.node.children.node)
 Require ($resources.Count -eq 3) 'Exactly three Chaos action resources are required'
