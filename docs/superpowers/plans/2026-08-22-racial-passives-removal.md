@@ -22,8 +22,8 @@
 ```powershell
 $raceSyncBlock = [regex]::Match(
     $raceFeaturesLua,
-    '(?ms)^function M\.Sync\(character, record\).*?^end'
-).Value
+    '(?ms)^function M\.Sync\(character, record\)(.*?)^end\r?\n\r?\nreturn M'
+).Groups[1].Value
 Require ($raceSyncBlock.Contains(
     'desiredPassives[Catalog.RacialSpellPassives[unlockLevel]] = true'
 )) 'RaceFeatures.Sync no longer grants racial spell unlock passives.'
