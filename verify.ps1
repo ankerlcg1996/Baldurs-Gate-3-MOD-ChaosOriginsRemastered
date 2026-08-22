@@ -218,17 +218,21 @@ Require (([regex]::Matches($baseFeatures, '"(?:Target|Shout)_[A-Za-z0-9_]+"')).C
     'BaseFeatures.lua must declare exactly seven spells'
 
 $stateLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosState.lua') -Encoding UTF8
-foreach ($token in @('SCHEMA_VERSION = 7', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
+foreach ($token in @('SCHEMA_VERSION = 7', 'state.SchemaVersion == 6',
+    'OriginStoryRewards', 'Claimed', 'Consumed', 'OriginStoryGranted',
+    'Statuses', 'TestLevel12Experience = false')) {
+    Require ($stateLua.Contains($token)) "Story reward state contract is missing: $token"
+}
+Require ($stateLua.Contains('OriginStoryRewards = { Claimed = {}, Consumed = {} }')) `
+    'Story reward state contract is missing the OriginStoryRewards table shape'
+Require ($stateLua.Contains('OriginStoryGranted = { Passives = {}, Spells = {}, Statuses = {} }')) `
+    'Story reward state contract is missing the OriginStoryGranted table shape'
+foreach ($token in @('state.SchemaVersion == 1', 'state.SchemaVersion == 2',
     'state.SchemaVersion == 3', 'state.SchemaVersion == 4', 'state.SchemaVersion == 5', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
     'OriginGranted', 'OriginIdentities', 'MechanicGranted', 'PendingDuality',
     'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
-}
-foreach ($token in @('SCHEMA_VERSION = 7', 'state.SchemaVersion == 6',
-    'OriginStoryRewards', 'Claimed', 'Consumed', 'OriginStoryGranted',
-    'Statuses', 'TestLevel12Experience = false')) {
-    Require ($stateLua.Contains($token)) "Story reward state contract is missing: $token"
 }
 Require ($stateLua.Contains(
     'assertOnlyKeys(record.OriginIdentities, ORIGIN_IDENTITY_FIELDS, "origin identities")') `
