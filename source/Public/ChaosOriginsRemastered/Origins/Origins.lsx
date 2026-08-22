@@ -7,7 +7,7 @@
                 <node id="Origin">
                     <attribute id="AppearanceLocked" type="bool" value="false" />
                     <attribute id="AvailableInCharacterCreation" type="uint8" value="1" />
-                    <attribute id="BackgroundUUID" type="guid" value="20d865ea-03bd-47bf-97d3-777e1b36b073" />
+                    <attribute id="BackgroundUUID" type="guid" value="76925f0b-3ec8-4f42-86a9-cd4f745af2ac" />
                     <attribute id="BodyShape" type="uint8" value="0" />
                     <attribute id="BodyType" type="uint8" value="0" />
                     <attribute id="ClassUUID" type="guid" value="784001e2-c96d-4153-beb6-2adbef5abc92" />

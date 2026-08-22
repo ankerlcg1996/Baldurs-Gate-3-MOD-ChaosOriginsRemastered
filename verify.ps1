@@ -7,6 +7,8 @@ $moduleName = 'ChaosOriginsRemastered'
 $moduleUuid = '9112dfde-d843-408f-b59b-9c893f5f7d92'
 $originUuid = '37914c47-d2f2-433d-9635-3e3040a4663f'
 $originTag = '7bb4d001-3c7e-445d-b52b-db0507db38d4'
+$charlatanBackgroundUuid = '76925f0b-3ec8-4f42-86a9-cd4f745af2ac'
+$hauntedOneBackgroundUuid = '20d865ea-03bd-47bf-97d3-777e1b36b073'
 $displayHandle = 'h92f8d008g9421g40ebgbaeege5d2e79a239c'
 $descriptionHandle = 'hc58ffe61g93ccg4b17g9265g676021109983'
 
@@ -41,7 +43,7 @@ foreach ($attribute in $origin.attribute) { $attributes[$attribute.id] = $attrib
 $required = @{
     AppearanceLocked = 'false'
     AvailableInCharacterCreation = '1'
-    BackgroundUUID = '20d865ea-03bd-47bf-97d3-777e1b36b073'
+    BackgroundUUID = $charlatanBackgroundUuid
     BodyShape = '0'
     BodyType = '0'
     ClassUUID = '784001e2-c96d-4153-beb6-2adbef5abc92'
@@ -62,6 +64,8 @@ foreach ($entry in $required.GetEnumerator()) {
     Require ($attributes.ContainsKey($entry.Key) -and $attributes[$entry.Key].value -eq $entry.Value) `
         "Origin has invalid $($entry.Key)"
 }
+Require ($attributes.BackgroundUUID.value -ne $hauntedOneBackgroundUuid) `
+    'Origin must not use the legacy Haunted One background'
 Require ($attributes.DisplayName.handle -eq $displayHandle) 'Origin display-name handle is invalid'
 Require ($attributes.Description.handle -eq $descriptionHandle) 'Origin description handle is invalid'
 foreach ($forbidden in @('GlobalTemplate', 'Identity', 'IsHenchman', 'ProgressionTableUUID', 'Unique')) {
@@ -726,6 +730,7 @@ foreach ($pattern in @(
         "Test checklist contains stale player-facing claim: $pattern"
 }
 foreach ($token in @(
+    '新建混沌起源角色默认背景显示为“骗子”',
     '“12级测试经验”在 MCM 中默认关闭', '关闭状态进入存档不增加任何经验',
     '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
     '再次关闭也不扣除已获得的经验', '官方标签与身份即时能力', '官方剧情 Flag',
