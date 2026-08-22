@@ -243,6 +243,8 @@ foreach ($token in @(
     'Shout_COR_ChaosGenesis', 'COR_CHAOS_ALLIN_TOGGLE', 'WoundConsumedThisRound',
     'LOST_CHANCES = { 5, 10, 15, 25, 35, 50, 65, 80, 90, 100 }',
     'Duality.ResetRuntime()', 'echoPending = {}', 'processedKills = {}',
+    'woundInitialized = {}', 'local function handleWoundDamage(event)',
+    'Ext.Events.DealtDamage:Subscribe(function(event)', 'event.Hit.InflicterOwner',
     'GrantLedger.RemovePassive(character, saved, "COR_ChaosGenesisCharge"',
     'GrantLedger.EnsurePassive(character, saved, "COR_ChaosGenesisCharge"'
 )) {

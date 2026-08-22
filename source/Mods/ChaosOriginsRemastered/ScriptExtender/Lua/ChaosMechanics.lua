@@ -13,6 +13,7 @@ local echoPending = {}
 local echoApplying = {}
 local consumedActions = {}
 local processedKills = {}
+local woundInitialized = {}
 
 local DAMAGE_TYPES = {
     "Acid", "Cold", "Fire", "Force", "Lightning",
@@ -53,6 +54,22 @@ end
 
 local function record(character)
     return State.GetCharacter(character)
+end
+
+local function eventCharacter(handle)
+    local entity = Ext.Entity.Get(handle)
+    if entity == nil or entity.Uuid == nil then return nil end
+    return tostring(entity.Uuid.EntityUuid)
+end
+
+local function hitDamageTotal(hit)
+    if hit == nil or hit.DamageList == nil then return 0 end
+    local amount = 0
+    for index = 1, #hit.DamageList do
+        local damage = hit.DamageList[index]
+        if damage.Amount > 0 then amount = amount + damage.Amount end
+    end
+    return amount
 end
 
 local function dirtyAndDisplay(character, saved)
@@ -262,6 +279,15 @@ Duality.Configure({
 })
 
 function M.Sync(character, saved)
+    character = ChaosCharacter.CanonicalGuid(character, "mechanic sync character")
+    if not woundInitialized[character] then
+        -- 本轮锁只属于当前运行会话；读档后必须从未消耗状态重新开始。
+        woundInitialized[character] = true
+        if saved.WoundConsumedThisRound then
+            saved.WoundConsumedThisRound = false
+            State.MarkDirty()
+        end
+    end
     if character == Osi.GetHostCharacter() then DebugLog.SetEnabled(saved.Mechanics.DebugLogging) end
     Features.Sync(character, saved)
 end
@@ -305,6 +331,7 @@ function M.ResetRuntime()
     echoApplying = {}
     consumedActions = {}
     processedKills = {}
+    woundInitialized = {}
     Duality.ResetRuntime()
 end
 
@@ -348,17 +375,6 @@ Ext.Osiris.RegisterListener("KilledBy", 4, "after", processKill)
 Ext.Osiris.RegisterListener("AttackedBy", 7, "after",
     function(target, attackOwner, attacker, _, damageAmount, damageCause, storyActionId)
         registerEcho(target, attackOwner, attacker, damageAmount, damageCause, storyActionId)
-        if eligible(target) and Osi.IsInCombat(target) ~= 0 and damageAmount > 0
-            and not (attackOwner == target and attacker == target)
-            and not Duality.IsApplying(attackOwner, target) then
-            local saved = record(target)
-            if saved.Mechanics.Wound and not saved.WoundConsumedThisRound then
-                saved.WoundConsumedThisRound = true
-                State.MarkDirty()
-                local hostile = Osi.IsEnemy(target, attackOwner) == 1 or Osi.IsEnemy(target, attacker) == 1
-                applyWound(target, damageAmount, hostile)
-            end
-        end
         scheduleAttackConsumption(attackOwner, storyActionId)
     end)
 
@@ -381,7 +397,28 @@ Ext.Osiris.RegisterListener("TurnEnded", 1, "after", function(character)
     Osi.RemoveStatus(character, "COR_CHAOS_GENESIS")
 end)
 
-Ext.Events.DealtDamage:Subscribe(Duality.HandleDealtDamage)
+local function handleWoundDamage(event)
+    if event.Hit == nil then return end
+    local target = eventCharacter(event.Target)
+    local source = eventCharacter(event.Hit.InflicterOwner)
+    if target == nil or source == nil or target == source or not eligible(target)
+        or Osi.IsInCombat(target) == 0 or Duality.IsApplying(source, target) then return end
+    local damageAmount = hitDamageTotal(event.Hit)
+    if damageAmount <= 0 then return end
+    local saved = record(target)
+    if not saved.Mechanics.Wound or saved.WoundConsumedThisRound then return end
+    saved.WoundConsumedThisRound = true
+    State.MarkDirty()
+    DebugLog.Print(string.format(
+        "[混沌起源][受击轮盘] 已捕获伤害：受击者=%s，攻击者=%s，伤害=%d",
+        target, source, damageAmount))
+    applyWound(target, damageAmount, Osi.IsEnemy(target, source) == 1)
+end
+
+Ext.Events.DealtDamage:Subscribe(function(event)
+    Duality.HandleDealtDamage(event)
+    handleWoundDamage(event)
+end)
 Ext.Events.BeforeDealDamage:Subscribe(function(event)
     if event.Hit == nil or event.Hit.InflicterOwner == nil then return end
     local entity = Ext.Entity.Get(event.Hit.InflicterOwner)
@@ -405,6 +442,15 @@ Ext.Osiris.RegisterListener("LeftCombat", 2, "after", function(character)
         State.MarkDirty()
     end
     Duality.ClearForSource(character)
+end)
+
+Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(character)
+    if not eligible(character) then return end
+    local saved = record(character)
+    if saved.WoundConsumedThisRound then
+        saved.WoundConsumedThisRound = false
+        State.MarkDirty()
+    end
 end)
 
 return M
