@@ -473,8 +473,10 @@ foreach ($pattern in @(
 foreach ($token in @(
     '“12级测试经验”在 MCM 中默认关闭', '关闭状态进入存档不增加任何经验',
     '启用后只补足当前累计经验与 `100000` 的差额', '不直接执行升级',
-    '再次关闭也不扣除已获得的经验', '官方标签与即时能力', '官方剧情 Flag',
-    '真实起源队友', '重新开启时补发', '永久剧情奖励',
+    '再次关闭也不扣除已获得的经验', '官方标签与身份即时能力', '官方剧情 Flag',
+    '真实起源队友', '重新开启时补发',
+    '关闭身份会移除本 MOD 授予的官方标签、身份即时能力及当前有效的可撤销/阶段性剧情奖励',
+    '已认领的永久剧情奖励仍保留', '角色原生或其他 MOD 的同名官方标签不受影响',
     '不授予 20 项官方种族被动', '29 项种族主动技能与法术', '隐藏 `UnlockSpell` 被动'
 )) {
     Require ($testChecklist.Contains($token)) "Test checklist omits current behavior: $token"
@@ -936,10 +938,10 @@ $expectedHandles = @([regex]::Matches($localizedResourceText, 'h[a-z0-9]{36}') |
     ForEach-Object Value | Sort-Object -Unique)
 $originHelpHandle = 'ha4779903g3937g5f9bg9576g88cdb2406df1'
 $originHelpByLanguage = @{
-    Chinese = '七个起源身份默认全部开启。开启身份会同步官方标签、基础能力，并补发存档中已经完成的对应剧情奖励；关闭身份会移除标签与基础能力，但不会收回已经认领的永久剧情奖励。剧情奖励只能由官方剧情结果触发，不能在此手动解锁；战斗中不可修改。'
-    English = 'All seven origin identities are enabled by default. Enabling an identity synchronizes its official tag and base ability, and backfills corresponding story rewards whose official outcomes are already complete in the save. Disabling it removes the tag and base ability, but does not revoke permanently claimed story rewards. Story rewards are triggered only by official story outcomes and cannot be unlocked manually here. Identities cannot be changed in combat.'
-    Japanese = '7つのオリジンアイデンティティは初期状態ですべて有効です。有効にすると公式タグと基本能力を同期し、セーブ内ですでに完了している対応するストーリー報酬を補完します。無効にするとタグと基本能力は削除されますが、すでに獲得した恒久的なストーリー報酬は回収されません。ストーリー報酬は公式ストーリーの結果でのみ発生し、ここで手動解除することはできません。戦闘中は変更できません。'
-    Korean = '7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 기본 능력을 동기화하고, 저장 데이터에서 이미 완료된 공식 스토리 결과의 보상을 소급 지급합니다. 비활성화하면 태그와 기본 능력은 제거되지만 이미 획득한 영구 스토리 보상은 회수되지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 해제할 수 없습니다. 전투 중에는 변경할 수 없습니다.'
+    Chinese = '七个起源身份默认全部开启。开启身份会同步官方标签与身份即时能力，并补发存档中已完成结果对应的剧情奖励；关闭身份会移除本 MOD 授予的标签、身份即时能力，以及当前有效的可撤销/阶段性剧情奖励，但不会收回已认领的永久剧情奖励。剧情奖励只能由官方剧情结果触发，不能在此手动获得。官方起源标签可能影响剧情判定与对话；战斗中不可修改。'
+    English = 'All seven origin identities are enabled by default. Enabling an identity synchronizes its official tag and immediate identity abilities, and backfills story rewards for official outcomes already completed in the save. Disabling it removes the mod-owned tag, immediate identity abilities, and active revocable or staged story rewards, but does not revoke permanently claimed story rewards. Story rewards are triggered only by official story outcomes and cannot be obtained manually here. Official origin tags may affect story checks and dialogue. Identities cannot be changed in combat.'
+    Japanese = '7つのオリジンアイデンティティは初期状態ですべて有効です。有効にすると公式タグとアイデンティティの即時能力を同期し、セーブ内ですでに完了している公式結果に対応するストーリー報酬を補完します。無効にすると本MODが付与したタグ、アイデンティティの即時能力、現在有効な撤回可能または段階式のストーリー報酬は削除されますが、獲得済みの恒久的なストーリー報酬は回収されません。ストーリー報酬は公式ストーリーの結果でのみ発生し、ここで手動で獲得することはできません。公式オリジンタグはストーリー判定や会話に影響する可能性があります。戦闘中は変更できません。'
+    Korean = '7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 정체성의 즉시 능력을 동기화하고 저장 데이터에서 이미 완료된 공식 결과에 해당하는 스토리 보상을 소급 지급합니다. 비활성화하면 이 모드가 부여한 태그, 정체성의 즉시 능력, 현재 활성화된 취소 가능 또는 단계형 스토리 보상을 제거하지만 이미 획득한 영구 스토리 보상은 회수하지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 획득할 수 없습니다. 공식 오리진 태그는 스토리 판정과 대화에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.'
 }
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $ProjectRoot "localization-src\$language\ChaosOriginsRemastered.xml"
