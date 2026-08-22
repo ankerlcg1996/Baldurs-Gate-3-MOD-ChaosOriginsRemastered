@@ -467,6 +467,19 @@ Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
     -and $mechanicEntryCounts['Interrupt.txt'] -eq 1) `
     'Mechanic stat family counts changed'
 $chaosCoreText = Get-Content -Raw -LiteralPath $mechanicStats[0] -Encoding UTF8
+$genesisStatusBlock = [regex]::Match($chaosCoreText,
+    '(?ms)^new entry "COR_CHAOS_GENESIS"\r?\n.*?(?=^new entry |\z)').Value
+$genesisDamageTypes = @(
+    'Acid', 'Cold', 'Fire', 'Force', 'Lightning',
+    'Necrotic', 'Poison', 'Psychic', 'Radiant', 'Thunder'
+)
+foreach ($damageType in $genesisDamageTypes) {
+    $lowToken = 'IF(IsMeleeAttack() and not CharacterLevelGreaterThan(5)):DamageBonus(1d3,' + $damageType + ')'
+    $highToken = 'IF(IsMeleeAttack() and CharacterLevelGreaterThan(5)):DamageBonus(1d6,' + $damageType + ')'
+    Require ($genesisStatusBlock.Contains($lowToken)) "Genesis level 1-5 damage is invalid: $damageType"
+    Require ($genesisStatusBlock.Contains($highToken)) "Genesis level 6-12 damage is invalid: $damageType"
+}
+Require (([regex]::Matches($genesisStatusBlock, 'DamageBonus\(')).Count -eq 20 -and -not $genesisStatusBlock.Contains('IF(IsMeleeAttack()):DamageBonus')) 'Genesis must contain only ten low-level d3 and ten high-level d6 damage rolls'
 $powerStatusBlock = [regex]::Match($chaosCoreText,
     '(?ms)^new entry "COR_CHAOS_POWER_STACK"\r?\n.*?(?=^new entry |\z)').Value
 Require ($powerStatusBlock.Contains('data "StackType" "Additive"') `

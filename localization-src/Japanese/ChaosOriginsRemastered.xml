@@ -191,7 +191,7 @@
   <content contentuid="hf30cbf80g64eag5fdbgae4agb948f0bc8baf" version="1">混沌の残響が追加の力場ダメージを与えた。</content>
   <content contentuid="hf50b6b72g01a9g5ee7ga4e8g30624a1fb917" version="1">1ターン、対応する攻撃が有利になる。</content>
   <content contentuid="hf51978cdg1d05g5fd0ga467g067bfd190455" version="1">即座に追加2d6光輝ダメージを受ける。</content>
-  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1ターン：追加アクションを2回得る。呪文スロットとウォーロック呪文スロットを消費しない。飛行を解放し、機会攻撃、伏せ、困難地形を無効化する。移動力を消費しない。近接攻撃ごとに酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴を各1d6、合計10d6追加する。</content>
+  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1ターン：追加アクションを2回得る。呪文スロットとウォーロック呪文スロットを消費しない。飛行を解放し、機会攻撃、伏せ、困難地形を無効化する。移動力を消費しない。近接攻撃ごとに酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴を、レベル1～5では各1d3（合計10d3）、レベル6～12では各1d6（合計10d6）追加する。</content>
   <content contentuid="hf6c28172g8f04g557egad7fg47e96978a267" version="1">Lv1–5：発動10%、最終ダメージの10%を力場ダメージとして追加、または5%回復。Lv6–9：発動30%、追加20%または回復10%。Lv10以降：発動50%、追加30%または回復20%。2つの結果は同確率で、追加ダメージは混沌の残響を再発動しない。</content>
   <content contentuid="hf73655a8ga74fg53c5gbf3cge9448320f7dd" version="1">混沌の受創：追加毒ダメージ</content>
   <content contentuid="hf73afe2bgbce7g5cdfg9c27gb9a4cd667992" version="1">即座に追加2d6冷気ダメージを受ける。</content>

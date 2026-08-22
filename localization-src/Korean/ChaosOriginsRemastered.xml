@@ -191,7 +191,7 @@
   <content contentuid="hf30cbf80g64eag5fdbgae4agb948f0bc8baf" version="1">혼돈의 메아리가 추가 역장 피해를 입혔습니다.</content>
   <content contentuid="hf50b6b72g01a9g5ee7ga4e8g30624a1fb917" version="1">1턴 동안 해당 공격에 이점을 얻습니다.</content>
   <content contentuid="hf51978cdg1d05g5fd0ga467g067bfd190455" version="1">즉시 추가 2d6 광휘 피해를 받습니다.</content>
-  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1턴 동안 추가 행동 2회를 얻고 주문 슬롯과 워락 주문 슬롯을 소모하지 않습니다. 비행을 해금하고 기회 공격, 넘어짐과 험난한 지형에 면역이 되며 이동력을 소모하지 않습니다. 각 근접 공격에 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 피해를 각각 1d6, 총 10d6 추가합니다.</content>
+  <content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1턴 동안 추가 행동 2회를 얻고 주문 슬롯과 워락 주문 슬롯을 소모하지 않습니다. 비행을 해금하고 기회 공격, 넘어짐과 험난한 지형에 면역이 되며 이동력을 소모하지 않습니다. 각 근접 공격에 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 피해를 1–5레벨에는 각각 1d3(총 10d3), 6–12레벨에는 각각 1d6(총 10d6) 추가합니다.</content>
   <content contentuid="hf6c28172g8f04g557egad7fg47e96978a267" version="1">1–5레벨: 10% 발동, 최종 피해의 10%를 역장 피해로 추가하거나 5% 치유. 6–9레벨: 30% 발동, 20% 추가 피해 또는 10% 치유. 10레벨부터: 50% 발동, 30% 추가 피해 또는 20% 치유. 두 결과는 같은 확률이며 추가 피해는 혼돈의 메아리를 다시 발동시키지 않습니다.</content>
   <content contentuid="hf73655a8ga74fg53c5gbf3cge9448320f7dd" version="1">혼돈의 상처: 추가 독 피해</content>
   <content contentuid="hf73afe2bgbce7g5cdfg9c27gb9a4cd667992" version="1">즉시 추가 2d6 냉기 피해를 받습니다.</content>
