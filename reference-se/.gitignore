@@ -1,0 +1,14 @@
+/work/
+/backups/
+/dist/
+/.worktrees/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini

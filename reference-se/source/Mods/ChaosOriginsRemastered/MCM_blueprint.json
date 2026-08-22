@@ -1,0 +1,33 @@
+{
+  "SchemaVersion": 1,
+  "id": "9112dfde-d843-408f-b59b-9c893f5f7d92",
+  "ModName": "Chaos Origins Remastered",
+  "ModDescription": "Configure Chaos mechanics, origin identity and wound outcomes.",
+  "Handles": {
+    "NameHandle": "h92f8d008g9421g40ebgbaeege5d2e79a239c",
+    "DescriptionHandle": "hc58ffe61g93ccg4b17g9265g676021109983"
+  },
+  "Tabs": [
+    {
+      "TabName": "Bootstrap",
+      "TabId": "bootstrap",
+      "VisibleIf": {
+        "Conditions": [
+          {
+            "SettingId": "bootstrap_visible",
+            "Operator": "==",
+            "ExpectedValue": true
+          }
+        ]
+      },
+      "Settings": [
+        {
+          "Id": "bootstrap_visible",
+          "Name": "Bootstrap",
+          "Type": "checkbox",
+          "Default": false
+        }
+      ]
+    }
+  ]
+}

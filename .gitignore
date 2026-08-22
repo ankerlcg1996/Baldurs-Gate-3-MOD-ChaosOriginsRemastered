@@ -1,0 +1,20 @@
+# Story 工程生成物
+dist/
+work/
+build/
+*.pak
+*.zip
+
+# 本地工具、缓存与编辑器文件
+.worktrees/
+.idea/
+.vscode/
+*.user
+*.tmp
+*.log
+
+# reference-se 是固定参考快照，不应产生构建输出
+reference-se/dist/
+reference-se/work/
+reference-se/backups/
+

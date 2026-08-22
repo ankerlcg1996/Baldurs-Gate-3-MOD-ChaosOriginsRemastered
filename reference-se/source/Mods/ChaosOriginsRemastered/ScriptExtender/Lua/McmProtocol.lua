@@ -1,0 +1,96 @@
+local M = {
+    Version = 4,
+    Channel = "MCM",
+    Origins = {
+        { "Astarion", "hfa05cce9gef4dg570bgbc1fg7187d154129d" },
+        { "Gale", "h4bf4229cg4ca7g5b86ga678g71397f548bd6" },
+        { "Laezel", "hc53c9c68g2e77g5942gb976gef3da865ae2f" },
+        { "Shadowheart", "h8e938e08g4ff5g5681gab82gc0174825c89b" },
+        { "Wyll", "hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" },
+        { "Karlach", "hcf23c2c6ga9a3g55bega9c4g60781e86156a" },
+        { "DarkUrge", "h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" }
+    },
+    Mechanics = {
+        { "Skills", "h79d96da5g780fg5489g8e98gd7155a003f37" },
+        { "Power", "hc076f0ddg33c0g56c1gb0cdg5f1b3ebd2a63" },
+        { "Wound", "h1d8d1f96gc1b7g5fe5g93f1gde33221b96b4" },
+        { "KillPower", "hba36bcaeg6611g5c19g837ag5d9b77eb2d47" },
+        { "Duality", "h1fa01105g35bbg5a46g8c92g9e98608d3805" },
+        { "AllIn", "h498c41f7gdfecg5a0egb088ge188838ae651" },
+        { "Echo", "hf7628214g44c2g56ebgaca2g29ada91fd2bf" },
+        { "Strike", "haa27e5f3g7d69g50feg9ebeg30c66b4b7b0d" },
+        { "DebugLogging", "h68d76013gcde7g55f9g8a4cgff57d90df89c" }
+    },
+    WoundEffects = {
+        { "Madness", "h43dfa019gbb54g59efg8812gc3481cb26ec6" },
+        { "Frightened", "h09ef30d0g8113g529egacafgc8b9394801cb" },
+        { "Stunned", "ha987abd6gbef6g5dc7gb3feg61a6692afb86" },
+        { "Silenced", "h5c5360d8g7cf2g5f47gb8a4g0480adbc6f22" },
+        { "Prone", "h4b0045f7gc2ecg5e6fgb980g48c62df96040" },
+        { "Blinded", "h38371f6dgd579g5393gbd3cgde1acfa3d726" },
+        { "Slowed", "hc23ab5a8gd939g5c82gb186g9860d3002cd6" },
+        { "Poisoned", "h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9" },
+        { "Bleeding", "h914c9e58ge9f5g55efg8120g6926a10fc847" },
+        { "Burning", "h2d8cb8c6g0024g5a27gb5afg8d6551a7fff1" },
+        { "MeleeDisadvantage", "hd401dbd8g93e4g550eg83a8g796d88425b00" },
+        { "RangedDisadvantage", "h681d07d7ge875g5347gbdb6g126202c40257" },
+        { "SpellDisadvantage", "h900b5e21g0e62g50f9g97e5g9fe353e044d3" },
+        { "Vulnerability", "he22898f3ge812g522dg9c1ag1c6d8ffc760f" },
+        { "ExtraDamage", "h67562061ga6a9g5d25gb1b4g77a39e3e843d" }
+    },
+    WoundOutcomes = {
+        Madness = "h43dfa019gbb54g59efg8812gc3481cb26ec6",
+        Frightened = "h09ef30d0g8113g529egacafgc8b9394801cb",
+        Stunned = "ha987abd6gbef6g5dc7gb3feg61a6692afb86",
+        Silenced = "h5c5360d8g7cf2g5f47gb8a4g0480adbc6f22",
+        Prone = "h4b0045f7gc2ecg5e6fgb980g48c62df96040",
+        Blinded = "h38371f6dgd579g5393gbd3cgde1acfa3d726",
+        Slowed = "hc23ab5a8gd939g5c82gb186g9860d3002cd6",
+        Poisoned = "h8fa15b5bg32b3g505bgb3d4gfc7f64f23cd9",
+        Bleeding = "h914c9e58ge9f5g55efg8120g6926a10fc847",
+        Burning = "h2d8cb8c6g0024g5a27gb5afg8d6551a7fff1",
+        MeleeDisadvantage = "hd401dbd8g93e4g550eg83a8g796d88425b00",
+        RangedDisadvantage = "h681d07d7ge875g5347gbdb6g126202c40257",
+        SpellDisadvantage = "h900b5e21g0e62g50f9g97e5g9fe353e044d3",
+        Vulnerability = "he22898f3ge812g522dg9c1ag1c6d8ffc760f",
+        ExtraDamage = "h67562061ga6a9g5d25gb1b4g77a39e3e843d",
+        Bless = "h61000001g0001g4001g8001g000000000001",
+        Haste = "h61000002g0002g4002g8002g000000000002",
+        Blur = "h61000003g0003g4003g8003g000000000003",
+        Heroism = "h61000004g0004g4004g8004g000000000004",
+        Invisibility = "h61000005g0005g4005g8005g000000000005",
+        MeleeAdvantage = "h61000006g0006g4006g8006g000000000006",
+        RangedAdvantage = "h61000007g0007g4007g8007g000000000007",
+        SpellAdvantage = "h61000008g0008g4008g8008g000000000008",
+        RestoreDamage = "h61000009g0009g4009g8009g000000000009",
+        Bloodlust = "h6100000ag000ag400ag800ag00000000000a",
+        Wet = "h6100000bg000bg400bg800bg00000000000b"
+    },
+    Errors = {
+        NOT_HOST = "h77a76816g434ag5c49g8199g60ba18bd10fb",
+        HOST_NOT_READY = "h3361bca1gfeecg55fdga020g9bdb650d7443",
+        NOT_CHAOS = "h34e5ef1bgfce4g5caegbd21g49f972f751fd",
+        CHARACTER_CHANGED = "h63000001g0001g4001g8001g000000000001",
+        IN_COMBAT = "h63000002g0002g4002g8002g000000000002"
+    },
+    Text = {
+        Tab = "haca7c5c3g2473g5302gba14g21d3c3556514",
+        OriginTab = "h64000001g0001g4001g8001g000000000001",
+        WoundTab = "h64000002g0002g4002g8002g000000000002",
+        Help = "h9bc9d749g7b27g5828g8eb4g37f198ae10b5",
+        OriginHelp = "ha4779903g3937g5f9bg9576g88cdb2406df1",
+        AllOrigins = "h65000001g0001g4001g8001g000000000001",
+        TestLevel12Experience = "h68000001g0001g4001g8001g000000000001",
+        HostOnly = "h77a76816g434ag5c49g8199g60ba18bd10fb",
+        Waiting = "h3361bca1gfeecg55fdga020g9bdb650d7443",
+        NotChaos = "h34e5ef1bgfce4g5caegbd21g49f972f751fd",
+        CurrentLost = "h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb",
+        CurrentPower = "hc10788f6g049eg55e2gb532g3615142ded11",
+        KillCount = "h9df69254g049ag5715g8deeg2259877a7c98",
+        LastWound = "h09a36d7fg601fg59e4g8a03g449aa4434f76",
+        NoWound = "h62000001g0001g4001g8001g000000000001"
+    }
+}
+
+-- 双端共享顺序与白名单，协议升级时只改这一处。
+return M
