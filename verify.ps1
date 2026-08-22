@@ -243,6 +243,14 @@ Require ($stateLua.Contains('OriginStoryRewards = { Claimed = {}, Consumed = {} 
     'Story reward state contract is missing the OriginStoryRewards table shape'
 Require ($stateLua.Contains('OriginStoryGranted = { Passives = {}, Spells = {}, Statuses = {} }')) `
     'Story reward state contract is missing the OriginStoryGranted table shape'
+$newCharacterBlock = [regex]::Match($stateLua,
+    '(?ms)^local\s+function\s+newCharacter\s*\(\).*?(?=^function\s+M\.Register)').Value
+Require ($newCharacterBlock.Contains('TestLevel12Experience = false')) `
+    'New Chaos characters must default test experience to false'
+$schema6MigrationBlock = [regex]::Match($stateLua,
+    '(?ms)^[ \t]*if\s+state\.SchemaVersion\s*==\s*6\s+then(?<body>.*?^[ \t]*state\.SchemaVersion\s*=\s*SCHEMA_VERSION\s*\r?\n[ \t]*M\.MarkDirty\s*\(\)\s*\r?\n[ \t]*end)').Value
+Require ($schema6MigrationBlock.Contains('record.TestLevel12Experience = false')) `
+    'Schema-6 migration must default test experience to false'
 foreach ($token in @('state.SchemaVersion == 1', 'state.SchemaVersion == 2',
     'state.SchemaVersion == 3', 'state.SchemaVersion == 4', 'state.SchemaVersion == 5', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
@@ -301,13 +309,13 @@ Require ($sessionLoadedBlock.Contains('OriginStoryRewards.ResetRuntime')) `
     'Story reward runtime reset is missing from SessionLoaded'
 foreach ($eventName in @('FlagSet', 'FlagCleared')) {
     $listener = [regex]::Match($bootstrapCode,
-        '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"' + $eventName + '"\s*,\s*3\s*,.*?function\s*\([^)]*\)(?<body>.*?)\bend\s*\)')
+        '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"' + $eventName + '"\s*,\s*3\s*,\s*"after"\s*,\s*function\s*\(\s*flag(?:\s*,[^)]*)?\)(?<body>.*?)\bend\s*\)')
     Require ($listener.Success -and [regex]::IsMatch($listener.Groups['body'].Value,
         '(?s)if\s+OriginStoryRewards\.IsTrackedFlag\s*\(\s*flag\s*\)\s+then\s+scheduleAllPlayers\s*\(\s*200\s*\)')) `
         "Story reward listener behavior is missing: $eventName/3"
 }
 $castedSpellListener = [regex]::Match($bootstrapCode,
-    '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"CastedSpell"\s*,\s*5\s*,.*?function\s*\([^)]*\)(?<body>.*?)\bend\s*\)')
+    '(?ms)Ext\.Osiris\.RegisterListener\s*\(\s*"CastedSpell"\s*,\s*5\s*,\s*"after"\s*,\s*function\s*\(\s*caster\s*,\s*spell(?:\s*,[^)]*)?\)(?<body>.*?)\bend\s*\)')
 $castedSpellBody = $castedSpellListener.Groups['body'].Value
 Require ($castedSpellListener.Success -and $castedSpellBody.Contains('ChaosCharacter.IsEligible(caster)') `
     -and $castedSpellBody.Contains('State.GetCharacter(caster)') `
@@ -818,11 +826,17 @@ $mcmTextBlock = [regex]::Match($mcmProtocolCode,
 Require ([regex]::IsMatch($mcmProtocolCode, '(?m)^\s*Version\s*=\s*4\s*,') `
     -and $mcmTextBlock.Contains('TestLevel12Experience = "h68000001g0001g4001g8001g000000000001"')) `
     'MCM protocol test-experience contract is missing'
-$testExperienceControl = [regex]::Match($mcmClientCode,
+$applySnapshotBlock = [regex]::Match($mcmClientCode,
+    '(?ms)^local\s+function\s+applySnapshot\s*\([^)]*\).*?(?=^local\s+function\s+receive)').Value
+Require ($applySnapshotBlock -ne '' -and [regex]::IsMatch($applySnapshotBlock,
+    '(?s)controls\.TestExperience\.Checked\s*=.*?snapshot\.TestLevel12Experience') `
+    -and $applySnapshotBlock.Contains('controls.TestExperience.Disabled = disabled')) `
+    'MCM applySnapshot must own the test-experience control state'
+$renderGeneralBlock = [regex]::Match($mcmClientCode,
+    '(?ms)^local\s+function\s+renderGeneral\s*\([^)]*\).*?(?=^local\s+function\s+renderOrigins)').Value
+$testExperienceControl = [regex]::Match($renderGeneralBlock,
     '(?ms)controls\.TestExperience\s*=\s*checkbox\s*\(\s*parent\s*,.*?,\s*false\s*,\s*function\s*\([^)]*\)(?<body>.*?)\bend\s*\)').Value
 Require ($testExperienceControl -ne '' `
-    -and [regex]::IsMatch($mcmClientCode,
-        '(?s)controls\.TestExperience\.Checked\s*=.*?snapshot\.TestLevel12Experience') `
     -and [regex]::IsMatch($testExperienceControl,
         'request\s*\(\s*"SetTestExperience"')) `
     'MCM client test-experience wiring is missing'
