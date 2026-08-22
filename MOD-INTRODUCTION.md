@@ -58,7 +58,9 @@
 
 已经获得的永久剧情奖励会继续保留。本MOD只赋予相应能力，不会复制剧情装备，也不会因为盖尔成神而把角色直接提升到20级。
 
-## 混沌受创
+## 混沌受创——主要被动能力
+
+“混沌受创”是混沌起源的主要被动能力之一，始终伴随角色生效，无法关闭。
 
 从你的一个回合开始到下个回合开始之间，第一次受到攻击或法术伤害时，将随机出现一种结果：
 
@@ -80,7 +82,9 @@
 
 未使用的混沌之力会持续保留，等待最关键的时刻。
 
-## 混沌两仪
+## 混沌两仪——主要被动能力
+
+“混沌两仪”是混沌起源的另一项主要被动能力，决定了角色最核心的攻击方式，始终生效，无法关闭。
 
 你的直接伤害会被分成两部分：
 
@@ -94,7 +98,7 @@
 - **混沌孤注：**牺牲命中率强化下一次攻击；只要命中，最终伤害翻倍。
 - **混沌回响：**直接伤害可能追加力场伤害，也可能治疗仍然存活的目标。
 - **混沌强袭：**12级解锁，每次短休一次，让关键攻势必然成功并大幅强化伤害。
-- **自由设置：**可以分别开启或关闭混沌受创、混沌轮盘、混沌之力、混沌孤注、混沌回响及其他主要机制。
+- **自由设置：**可以调整混沌之力、混沌孤注、混沌回响及其他辅助机制；混沌受创与混沌两仪始终启用。
 
 混沌既是力量，也是代价。你永远无法预知下一次攻击会毁灭敌人、拯救敌人，还是彻底改写战场。
 
@@ -158,7 +162,9 @@ Story powers are earned through actual story outcomes rather than character leve
 
 Permanently claimed story rewards remain yours. The mod grants the listed powers without copying story equipment, and Gale's godhood does not raise the character directly to level 20.
 
-## Chaos Wound
+## Chaos Wound—Core Passive
+
+Chaos Wound is one of the Origin's two core passive abilities. It remains active at all times and cannot be disabled.
 
 Between the start of one of your turns and the start of the next, the first attack or spell that damages you draws a random result:
 
@@ -180,7 +186,9 @@ Spend 3 Chaos Power to unleash Chaos Genesis:
 
 Unused Chaos Power remains until you choose the right moment to spend it.
 
-## Chaos Duality
+## Chaos Duality—Core Passive
+
+Chaos Duality is the Origin's other core passive ability. It defines the character's central offensive style, remains active at all times, and cannot be disabled.
 
 Your direct damage is divided into two parts:
 
@@ -194,6 +202,6 @@ The roulette may change the damage type, delay the damage, redirect it, divide i
 - **Chaos All-In:** Sacrifice accuracy on the next attack; if it still hits, its final damage is doubled.
 - **Chaos Echo:** Direct damage may deal bonus Force damage or heal the surviving target.
 - **Chaos Assault:** Unlocked at level 12 and usable once per Short Rest, it forces a decisive attack toward success and greatly increases its damage.
-- **Custom Settings:** Enable or disable Chaos Wound, Chaos Roulette, Chaos Power, Chaos All-In, Chaos Echo, and other major mechanics separately.
+- **Custom Settings:** Adjust Chaos Power, Chaos All-In, Chaos Echo, and other supporting mechanics. Chaos Wound and Chaos Duality always remain active.
 
 Chaos is both power and consequence. Your next attack may destroy an enemy, save one, or rewrite the entire battlefield.
