@@ -156,6 +156,7 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigRacialPassiveDefault\("').Count -eq 20) '种族被动默认目录必须恰好为 20 项'
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigOriginDefault\("').Count -eq 7) '起源默认目录必须恰好为 7 项'
     Require ([regex]::Matches($configGoal, 'DB_COS_ConfigWoundDefault\("').Count -eq 15) '受击默认目录必须恰好为 15 项'
+    Require ([regex]::Matches($configGoal, 'DB_COS_ConfigWoundOutcome\("').Count -eq 15) '受击负面结果映射必须恰好为 15 项'
     foreach ($key in $mechanics) {
         Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制默认值缺失或错误: $key"
     }
@@ -213,6 +214,9 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     )) {
         Require ($configGoal.Contains($token)) "起源设置合约缺失: $token"
     }
+    foreach ($token in @('DB_COS_ConfigWoundOutcome(', 'PROC_COS_ConfigSetWound')) {
+        Require ($configGoal.Contains($token)) "受击设置合约缺失: $token"
+    }
     Require ($configGoal.Contains('HasPassive(_Character, _Passive, 0)')) '种族被动开启前必须检查现有同 ID 被动'
     Require ($configGoal.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动必须写入授予账本'
     Require ($configGoal.Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动关闭必须清除授予账本'
@@ -252,5 +256,19 @@ foreach ($key in @('Astarion', 'Gale', 'Wyll', 'Karlach', 'DarkUrge')) {
     Require ($mainGoal.Contains("DB_COS_ConfigOrigin(_Character, `"$key`", 1)")) "剧情奖励未接入起源设置: $key"
 }
 Require ($mainGoal.Contains('PROC_COS_ConfigSyncOrigins(_Character)')) '角色同步未接入起源设置'
+Require ([regex]::Matches($mainGoal, 'DB_COS_WoundPositive\(\d+\);').Count -eq 11) '受击固定非负面结果必须恰好为 11 项'
+foreach ($token in @(
+    'PROC_COS_ClearWoundPool',
+    'PROC_COS_AppendWoundCandidate',
+    'PROC_COS_AddPositiveWoundCandidates',
+    'PROC_COS_AddEnabledWoundCandidates',
+    'PROC_COS_RebuildWoundPool',
+    'PROC_COS_CommitWoundRoll',
+    'PROC_COS_RollWound',
+    'Random(_Count, _Slot)'
+)) {
+    Require ($mainGoal.Contains($token)) "动态受击池合约缺失: $token"
+}
+Require (-not $mainGoal.Contains('Random(26, _WoundRoll)')) '受击轮盘仍使用固定 26 项随机上界'
 
 Write-Host 'ChaosOriginsStory source verification: ok'

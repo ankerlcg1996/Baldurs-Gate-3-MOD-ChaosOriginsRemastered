@@ -78,6 +78,22 @@ DB_COS_ConfigWoundDefault("RangedDisadvantage", 1);
 DB_COS_ConfigWoundDefault("SpellDisadvantage", 1);
 DB_COS_ConfigWoundDefault("RandomVulnerability", 1);
 DB_COS_ConfigWoundDefault("ExtraRandomDamage", 1);
+
+DB_COS_ConfigWoundOutcome("Madness", 0);
+DB_COS_ConfigWoundOutcome("Frightened", 1);
+DB_COS_ConfigWoundOutcome("Stunned", 2);
+DB_COS_ConfigWoundOutcome("Silenced", 3);
+DB_COS_ConfigWoundOutcome("Prone", 4);
+DB_COS_ConfigWoundOutcome("Blinded", 5);
+DB_COS_ConfigWoundOutcome("Slowed", 6);
+DB_COS_ConfigWoundOutcome("Poisoned", 7);
+DB_COS_ConfigWoundOutcome("Bleeding", 8);
+DB_COS_ConfigWoundOutcome("Burning", 9);
+DB_COS_ConfigWoundOutcome("MeleeDisadvantage", 10);
+DB_COS_ConfigWoundOutcome("RangedDisadvantage", 11);
+DB_COS_ConfigWoundOutcome("SpellDisadvantage", 12);
+DB_COS_ConfigWoundOutcome("RandomVulnerability", 23);
+DB_COS_ConfigWoundOutcome("ExtraRandomDamage", 24);
 KBSECTION
 
 PROC
@@ -443,6 +459,18 @@ DB_COS_ConfigOrigin(_Character, _Key, _)
 THEN
 PROC_COS_ConfigApplyOrigin(_Character, _Key);
 PROC_COS_ConfigCleanupOriginRewards(_Character, _Key);
+
+PROC
+PROC_COS_ConfigSetWound((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigWoundDefault(_Key, _)
+AND
+DB_COS_ConfigWound(_Character, _Key, _Current)
+AND
+_Current != _Enabled
+THEN
+NOT DB_COS_ConfigWound(_Character, _Key, _Current);
+DB_COS_ConfigWound(_Character, _Key, _Enabled);
 
 PROC
 PROC_COS_ConfigResetMechanics((CHARACTER)_Character)

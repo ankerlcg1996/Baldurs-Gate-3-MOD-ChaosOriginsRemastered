@@ -90,6 +90,17 @@ DB_COS_WoundStatus(18, "COS_CHAOS_WOUND_MELEE_ADVANTAGE", 0);
 DB_COS_WoundStatus(19, "COS_CHAOS_WOUND_RANGED_ADVANTAGE", 0);
 DB_COS_WoundStatus(20, "COS_CHAOS_WOUND_SPELL_ADVANTAGE", 0);
 DB_COS_WoundStatus(25, "COS_CHAOS_WOUND_BLOODLUST", 0);
+DB_COS_WoundPositive(13);
+DB_COS_WoundPositive(14);
+DB_COS_WoundPositive(15);
+DB_COS_WoundPositive(16);
+DB_COS_WoundPositive(17);
+DB_COS_WoundPositive(18);
+DB_COS_WoundPositive(19);
+DB_COS_WoundPositive(20);
+DB_COS_WoundPositive(21);
+DB_COS_WoundPositive(22);
+DB_COS_WoundPositive(25);
 DB_COS_WoundDamageType(0, "Acid", "COS_CHAOS_WOUND_VULNERABILITY_ACID");
 DB_COS_WoundDamageType(1, "Cold", "COS_CHAOS_WOUND_VULNERABILITY_COLD");
 DB_COS_WoundDamageType(2, "Fire", "COS_CHAOS_WOUND_VULNERABILITY_FIRE");
@@ -674,6 +685,75 @@ THEN
 PROC_COS_AddLost(_Character);
 
 PROC
+PROC_COS_ClearWoundPool((CHARACTER)_Character)
+AND
+DB_COS_WoundCandidate(_Character, _Slot, _Outcome)
+THEN
+NOT DB_COS_WoundCandidate(_Character, _Slot, _Outcome);
+
+PROC
+PROC_COS_ClearWoundPool((CHARACTER)_Character)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+THEN
+NOT DB_COS_WoundPoolCount(_Character, _Count);
+
+PROC
+PROC_COS_AppendWoundCandidate((CHARACTER)_Character, (INTEGER)_Outcome)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+AND
+IntegerSum(_Count, 1, _Next)
+THEN
+DB_COS_WoundCandidate(_Character, _Count, _Outcome);
+NOT DB_COS_WoundPoolCount(_Character, _Count);
+DB_COS_WoundPoolCount(_Character, _Next);
+
+PROC
+PROC_COS_AddPositiveWoundCandidates((CHARACTER)_Character)
+AND
+DB_COS_WoundPositive(_Outcome)
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_AddEnabledWoundCandidates((CHARACTER)_Character)
+AND
+DB_COS_ConfigWound(_Character, _Key, 1)
+AND
+DB_COS_ConfigWoundOutcome(_Key, _Outcome)
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_RebuildWoundPool((CHARACTER)_Character)
+THEN
+PROC_COS_ClearWoundPool(_Character);
+DB_COS_WoundPoolCount(_Character, 0);
+PROC_COS_AddPositiveWoundCandidates(_Character);
+PROC_COS_AddEnabledWoundCandidates(_Character);
+
+PROC
+PROC_COS_CommitWoundRoll((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+AND
+_Count > 0
+AND
+Random(_Count, _Slot)
+AND
+DB_COS_WoundCandidate(_Character, _Slot, _Outcome)
+THEN
+PROC_COS_ResolveWound(_Character, _Damage, _Outcome, _PowerEligible);
+PROC_COS_ClearWoundPool(_Character);
+
+PROC
+PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+THEN
+PROC_COS_RebuildWoundPool(_Character);
+PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
+
+PROC
 PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
 AND
 DB_COS_WoundStatus(_Roll, _Status, _Negative)
@@ -1050,11 +1130,9 @@ AND
 NOT DB_COS_WoundConsumed((CHARACTER)_Target)
 AND
 IsEnemy((CHARACTER)_Target, (CHARACTER)_AttackOwner, _PowerEligible)
-AND
-Random(26, _WoundRoll)
 THEN
 DB_COS_WoundConsumed((CHARACTER)_Target);
-PROC_COS_ResolveWound((CHARACTER)_Target, _Damage, _WoundRoll, _PowerEligible);
+PROC_COS_RollWound((CHARACTER)_Target, _Damage, _PowerEligible);
 
 IF
 AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
