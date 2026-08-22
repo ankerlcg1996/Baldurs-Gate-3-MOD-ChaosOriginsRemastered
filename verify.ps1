@@ -383,6 +383,16 @@ foreach ($token in @('optionalRaceGuid', 'Catalog.RacialSpellPassives',
     '官方 UnlockSpell 语义')) {
     Require ($raceFeaturesLua.Contains($token)) "Racial runtime behavior is missing: $token"
 }
+$raceSyncBlock = [regex]::Match(
+    $raceFeaturesLua,
+    '(?ms)^function M\.Sync\(character, record\)(.*?)^end\r?\n\r?\nreturn M'
+).Groups[1].Value
+Require ($raceSyncBlock -ne '') 'RaceFeatures.Sync could not be isolated for policy verification'
+Require ($raceSyncBlock.Contains(
+    'desiredPassives[Catalog.RacialSpellPassives[unlockLevel]] = true'
+)) 'RaceFeatures.Sync no longer grants racial spell unlock passives'
+Require (-not $raceSyncBlock.Contains('features.Passives')) `
+    'RaceFeatures.Sync still grants audited racial passives'
 Require (-not $raceFeaturesLua.Contains('.ResourceUUID')) `
     'CharacterCreationStats race fields are GUID values, not static resource objects'
 Require (-not $raceFeaturesLua.Contains('GrantLedger.EnsureSpell')) `
