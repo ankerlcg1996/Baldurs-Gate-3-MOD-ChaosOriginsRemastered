@@ -102,6 +102,10 @@
 
 混沌既是力量，也是代价。你永远无法预知下一次攻击会毁灭敌人、拯救敌人，还是彻底改写战场。
 
+## 制作与测试声明
+
+本MOD由AI设计与制作。当前测试尚未发现影响正常游玩的严重问题，但仍可能存在未被发现的BUG。建议在体验前备份重要存档；如果遇到问题，欢迎反馈具体的触发条件与游戏表现。
+
 ---
 
 # Chaos Origins: Remastered
@@ -205,3 +209,7 @@ The roulette may change the damage type, delay the damage, redirect it, divide i
 - **Custom Settings:** Adjust Chaos Power, Chaos All-In, Chaos Echo, and other supporting mechanics. Chaos Wound and Chaos Duality always remain active.
 
 Chaos is both power and consequence. Your next attack may destroy an enemy, save one, or rewrite the entire battlefield.
+
+## Creation and Testing Notice
+
+This mod was designed and created by AI. Current testing has found no major issues that prevent normal play, but undiscovered bugs may still remain. Back up important saves before playing, and report the conditions and in-game behaviour if you encounter a problem.
