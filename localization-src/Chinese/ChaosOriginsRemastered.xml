@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">混沌</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">挣脱既定命运的混沌之子。掌握全部武器、护甲与十八项技能，并拥有七种初始法术；不发放任何豪华版物品。</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">同时拥有全部可选种族与七名起源角色的身份判定。每轮首次受创会抽取随机结果；造成的直接伤害有一半进入混沌轮盘。</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">阿斯代伦身份</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">盖尔身份</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">莱埃泽尔身份</content>
@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">威尔身份</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">卡菈克身份</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">邪念身份</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">控制该起源身份对应的官方标签和即时能力。开启时会同步两者，关闭时会移除两者；剧情成长由官方剧情结果独立触发，绝不按人物等级发放。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">启用后获得该起源身份的剧情与对话判定，以及对应的即时能力。关闭后移除其即时能力、可撤销奖励与阶段性奖励；已获得的永久剧情奖励保留。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">目盲1回合：远程攻击范围缩短至3m，攻击具有劣势，针对自身的攻击具有优势。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">持续1回合。随机从强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣中选择一种，受到该类型伤害翻倍。该临时惩罚结束后，混沌迷失层数仍然保留。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">每次混沌受创抽到负面结果，迷失便加深1层，并尝试转化为混沌之力。成功后迷失清零；休息无法使其消退。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;查看转化概率&lt;/LSTag&gt;。</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌受创：额外火焰伤害</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌受创：额外黯蚀伤害</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌迷失：0/10。当前获得混沌之力的概率为0%；下一次抽到负面受创结果后，概率将变为5%。成功获得力量后层数归零，休息不会降低层数。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌保留全部官方可选种族的身份标签，但不会额外获得其被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。阿斯代伦、威尔和卡菈克还会同步即时能力，其余四个身份只提供标签。剧情奖励由官方结果触发，绝不按人物等级发放，也不会复制剧情装备。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">拥有全部可选种族与七名起源角色的身份判定。阿斯代伦身份赋予吸血，威尔身份赋予边境之刃，卡菈克身份赋予汗液免疫与狂怒烈焰；其余身份影响对应剧情与对话。剧情抉择可解锁相应起源能力。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌归流</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">持续1回合：对应攻击具有劣势。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">以命中为赌注，强化下一次武器或法术攻击。若仍然命中，本次最终伤害翻倍；若攻击同时暴击，这次翻倍照常叠加。命中或落空后效果结束。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;查看孤注成长&lt;/LSTag&gt;。</content>
@@ -182,7 +182,7 @@
   <content contentuid="he13400aegc1afg5f42ga64bg33c426455e73" version="1">持续1回合：移动力+9m、护甲等级+2、获得1次额外行动且敏捷豁免具有优势；结束后不会陷入倦怠。</content>
   <content contentuid="he19107a8g98fcg5a5bgadefg03a5a65007b1" version="1">原目标承受4倍轮盘伤害。</content>
   <content contentuid="he22898f3ge812g522dg9c1ag1c6d8ffc760f" version="1">随机易伤</content>
-  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">汇聚所有官方种族身份与种族能力，并承受不可预测的混沌变化。</content>
+  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">拥有所有可选种族的身份判定，并承受混沌受创与混沌二象带来的随机变化。</content>
   <content contentuid="he674d915g7868g545egba6cg92cb159f6c80" version="1">人物7–12级：下一次攻击掷骰−4；若仍然命中，则本次最终伤害翻倍。命中或落空后移除。</content>
   <content contentuid="he81de6f2g1c5dg5b20gae98g4854874da852" version="1">持续1回合：对应攻击获得优势。</content>
   <content contentuid="he9eedf2eg2da5g555eg9c26gfa9711d05443" version="1">混沌受创：英勇</content>
@@ -226,7 +226,7 @@
   <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">当前迷失层数</content>
   <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">当前击杀计数</content>
   <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">当前混沌之力</content>
-  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">全部十八项技能获得熟练与精通，按正常熟练加值成长；不再提供固定+5加值。</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">全部十八项技能获得熟练与精通；检定加值随熟练加值成长。</content>
   <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">全武装训练</content>
   <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">获得轻甲、中甲、重甲、盾牌、简易武器、军用武器与乐器熟练。</content>
   <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">七种初始法术</content>

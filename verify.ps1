@@ -1226,18 +1226,36 @@ $originHelpByLanguage = @{
     Japanese = '7つのオリジンアイデンティティは初期状態ですべて有効です。有効にすると公式タグとアイデンティティの即時能力を同期し、セーブ内ですでに完了している公式結果に対応するストーリー報酬を補完します。無効にすると本MODが付与したタグ、アイデンティティの即時能力、現在有効な撤回可能または段階式のストーリー報酬は削除されますが、獲得済みの恒久的なストーリー報酬は回収されません。ストーリー報酬は公式ストーリーの結果でのみ発生し、ここで手動で獲得することはできません。公式オリジンタグはストーリー判定や会話に影響する可能性があります。戦闘中は変更できません。'
     Korean = '7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 정체성의 즉시 능력을 동기화하고 저장 데이터에서 이미 완료된 공식 결과에 해당하는 스토리 보상을 소급 지급합니다. 비활성화하면 이 모드가 부여한 태그, 정체성의 즉시 능력, 현재 활성화된 취소 가능 또는 단계형 스토리 보상을 제거하지만 이미 획득한 영구 스토리 보상은 회수하지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 획득할 수 없습니다. 공식 오리진 태그는 스토리 판정과 대화에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.'
 }
-$task8ExplanationByHandle = @{
+$gameplayDescriptionByHandle = @{
+    'hc58ffe61g93ccg4b17g9265g676021109983' = @{
+        Chinese = "同时拥有全部可选种族与七名起源角色的身份判定。每轮首次受创会抽取随机结果；造成的直接伤害有一半进入混沌轮盘。"
+        English = "Carries the identity checks of every playable race and all seven origin characters. The first hit taken each round draws a random result; half of direct damage dealt enters the Chaos Wheel."
+        Japanese = "すべてのプレイアブル種族と7人のオリジンキャラクターとして判定される。各ラウンドで最初にダメージを受けるとランダムな結果を1つ引き、与える直接ダメージの半分は混沌の輪に入る。"
+        Korean = "모든 플레이 가능 종족과 7명의 오리진 캐릭터로 판정됩니다. 매 라운드 처음 피해를 받으면 무작위 결과 하나를 뽑고, 자신이 주는 직접 피해의 절반은 혼돈의 룰렛에 들어갑니다."
+    }
     'h049bbad7g2b78g5bedg831dga2a983c40cda' = @{
-        Chinese = "控制该起源身份对应的官方标签和即时能力。开启时会同步两者，关闭时会移除两者；剧情成长由官方剧情结果独立触发，绝不按人物等级发放。"
-        English = "Controls this origin identity's corresponding official tag and immediate abilities. Enabling it synchronizes both; disabling it removes both. Story growth is triggered independently by official story outcomes, never by character level."
-        Japanese = "このオリジン・アイデンティティに対応する公式タグと即時能力を制御する。有効にすると両方を同期し、無効にすると両方を削除する。ストーリー上の成長は公式ストーリーの結果によって独立して発生し、キャラクターレベルでは決して付与されない。"
-        Korean = "이 오리진 정체성에 해당하는 공식 태그와 즉시 능력을 제어합니다. 활성화하면 둘 다 동기화하고 비활성화하면 둘 다 제거합니다. 스토리 성장은 공식 스토리 결과에 따라 독립적으로 발동하며 캐릭터 레벨로는 절대 부여되지 않습니다."
+        Chinese = "启用后获得该起源身份的剧情与对话判定，以及对应的即时能力。关闭后移除其即时能力、可撤销奖励与阶段性奖励；已获得的永久剧情奖励保留。"
+        English = "Enabling this identity grants its story and dialogue checks together with its immediate abilities. Disabling it removes those abilities and any active revocable or staged rewards; permanent story rewards already gained remain."
+        Japanese = "有効にすると、そのオリジンに対応するストーリー・会話判定と即時能力を得る。無効にすると即時能力、撤回可能な報酬、段階式報酬を失うが、獲得済みの恒久的なストーリー報酬は残る。"
+        Korean = "활성화하면 해당 오리진의 스토리 및 대화 판정과 즉시 능력을 얻습니다. 비활성화하면 즉시 능력, 취소 가능한 보상, 단계형 보상을 제거하지만 이미 획득한 영구 스토리 보상은 유지됩니다."
     }
     'h903c567eg472ag5c11g8a75g1b8a2e298137' = @{
-        Chinese = "混沌保留全部官方可选种族的身份标签，但不会额外获得其被动特性；29项种族主动技能与法术按原版等级解锁。七个起源身份默认全部开启。阿斯代伦、威尔和卡菈克还会同步即时能力，其余四个身份只提供标签。剧情奖励由官方结果触发，绝不按人物等级发放，也不会复制剧情装备。"
-        English = "Chaos retains every official playable race's identity tags but none of their additional passive traits; 29 active racial skills and spells unlock at their original levels. All seven origin identities are enabled by default. Astarion, Wyll, and Karlach also synchronize immediate abilities; the other four identities provide tags only. Story rewards follow official outcomes, never character level, and no story equipment is copied."
-        Japanese = "混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。7つのオリジン・アイデンティティは初期状態ですべて有効。アスタリオン、ウィル、カーラックは即時能力も同期し、残る4つのアイデンティティはタグのみを付与する。ストーリー報酬は公式の結果によって発生し、キャラクターレベルでは決して付与されず、ストーリー装備も複製されない。"
-        Korean = "혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 아스타리온, 윌, 카를라크는 즉시 능력도 동기화하며 나머지 4개 정체성은 태그만 제공합니다. 스토리 보상은 공식 결과에 따라 발동하며 캐릭터 레벨로는 절대 부여되지 않고 스토리 장비도 복사하지 않습니다."
+        Chinese = "拥有全部可选种族与七名起源角色的身份判定。阿斯代伦身份赋予吸血，威尔身份赋予边境之刃，卡菈克身份赋予汗液免疫与狂怒烈焰；其余身份影响对应剧情与对话。剧情抉择可解锁相应起源能力。"
+        English = "Carries the identity checks of every playable race and all seven origin characters. Astarion grants Vampire Bite, Wyll grants Blade of Frontiers, and Karlach grants Sweat Immunity and Rage Flames; the remaining identities affect their related story and dialogue. Story choices can unlock the corresponding origin powers."
+        Japanese = "すべてのプレイアブル種族と7人のオリジンキャラクターとして判定される。アスタリオンは吸血、ウィルは辺境の刃、カーラックは発汗無効と怒りの炎を与え、残るアイデンティティは対応するストーリーと会話に影響する。ストーリー上の選択によって対応するオリジン能力を解放できる。"
+        Korean = "모든 플레이 가능 종족과 7명의 오리진 캐릭터로 판정됩니다. 아스타리온은 흡혈, 윌은 변경의 검, 카를라크는 땀 면역과 분노의 불꽃을 부여하며 나머지 정체성은 해당 스토리와 대화에 영향을 줍니다. 스토리 선택으로 해당 오리진 능력을 해금할 수 있습니다."
+    }
+    'he4d96fdegf56cg55b1gb05bgdfd968ba2b17' = @{
+        Chinese = "拥有所有可选种族的身份判定，并承受混沌受创与混沌二象带来的随机变化。"
+        English = "Carries every playable racial identity and endures the random effects of Chaos Wound and Chaos Duality."
+        Japanese = "すべてのプレイアブル種族として判定され、混沌の傷と混沌の二象によるランダムな変化を受ける。"
+        Korean = "모든 플레이 가능 종족으로 판정되며 혼돈의 상처와 혼돈의 이중성이 일으키는 무작위 변화를 겪습니다."
+    }
+    'h1a5fe029g62e1g4a13g95beg8f7a82461d90' = @{
+        Chinese = "全部十八项技能获得熟练与精通；检定加值随熟练加值成长。"
+        English = "Gain proficiency and expertise in all eighteen skills; skill checks scale with the normal proficiency bonus."
+        Japanese = "全18技能に習熟と専門化を得る。技能判定のボーナスは通常の習熟ボーナスに従って成長する。"
+        Korean = "18개 기술 모두에 숙련과 전문화를 얻습니다. 기술 판정 보너스는 정상 숙련 보너스에 따라 성장합니다."
     }
     'h9bc9d749g7b27g5828g8eb4g37f198ae10b5' = @{
         Chinese = '以下设置分别作用于当前主控混沌角色，并随存档保存；战斗中全部锁定。“12级测试经验”默认关闭；开启后只补足累计经验达到100000所缺的部分，不会直接升级，关闭也不会扣除经验。'
@@ -1245,6 +1263,12 @@ $task8ExplanationByHandle = @{
         Japanese = "以下の設定は現在操作中の混沌キャラクターごとに適用され、セーブに保存される。戦闘中はすべてロックされる。「レベル12テスト経験値」は初期状態でOFF。有効にすると累積経験値が100000に達するまで不足分だけを追加し、直接レベルアップは行わない。無効にしても経験値は減らない。"
         Korean = "아래 설정은 현재 조종 중인 혼돈 캐릭터별로 적용되며 저장 파일에 보관됩니다. 전투 중에는 모든 설정이 잠깁니다. '12레벨 테스트 경험치'는 기본적으로 꺼져 있습니다. 활성화하면 누적 경험치가 100000이 될 때까지 부족한 만큼만 추가하고 직접 레벨을 올리지 않으며 비활성화해도 경험치는 줄지 않습니다."
     }
+}
+$playerFacingMetaTermsByLanguage = @{
+    Chinese = @('本 MOD', '豪华版', '官方', '原版', '同步', '复制剧情装备', '固定+5')
+    English = @('mod-owned', 'Digital Deluxe', 'official', 'synchroniz', 'copied', 'fixed +5')
+    Japanese = @('本MOD', 'デジタルデラックス', '公式', '同期', '複製', '固定+5')
+    Korean = @('이 모드', '디지털 디럭스', '공식', '동기화', '복사', '고정 +5')
 }
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $ProjectRoot "localization-src\$language\ChaosOriginsRemastered.xml"
@@ -1259,12 +1283,16 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         -and [string]::Equals([string]$originHelp[0].'#text', $originHelpByLanguage[$language],
             [System.StringComparison]::Ordinal)) `
         "OriginHelp localization contract differs: $language"
-    foreach ($contract in $task8ExplanationByHandle.GetEnumerator()) {
+    foreach ($contract in $gameplayDescriptionByHandle.GetEnumerator()) {
         $explanation = @($contents | Where-Object contentuid -eq $contract.Key)
         Require ($explanation.Count -eq 1 -and $explanation[0].version -eq '1' `
             -and [string]::Equals([string]$explanation[0].'#text', $contract.Value[$language],
                 [System.StringComparison]::Ordinal)) `
-            "Task 8 explanation localization contract differs: $language/$($contract.Key)"
+            "Gameplay description localization contract differs: $language/$($contract.Key)"
+        foreach ($term in $playerFacingMetaTermsByLanguage[$language]) {
+            Require (-not ([string]$explanation[0].'#text').Contains($term)) `
+                "Gameplay description contains meta copy: $language/$($contract.Key)/$term"
+        }
     }
 }
 

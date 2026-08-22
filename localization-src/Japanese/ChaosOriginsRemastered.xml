@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">カオス</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">定められた運命から解き放たれた混沌の子。すべての武器、防具、18技能を修め、7つの初期呪文を得る。デジタルデラックス版アイテムは付与されない。</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">すべてのプレイアブル種族と7人のオリジンキャラクターとして判定される。各ラウンドで最初にダメージを受けるとランダムな結果を1つ引き、与える直接ダメージの半分は混沌の輪に入る。</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">アスタリオンのアイデンティティ</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">ゲイルのアイデンティティ</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">レイゼルのアイデンティティ</content>
@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">ウィルのアイデンティティ</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">カーラックのアイデンティティ</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">ダークアージのアイデンティティ</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">このオリジン・アイデンティティに対応する公式タグと即時能力を制御する。有効にすると両方を同期し、無効にすると両方を削除する。ストーリー上の成長は公式ストーリーの結果によって独立して発生し、キャラクターレベルでは決して付与されない。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">有効にすると、そのオリジンに対応するストーリー・会話判定と即時能力を得る。無効にすると即時能力、撤回可能な報酬、段階式報酬を失うが、獲得済みの恒久的なストーリー報酬は残る。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1ターン盲目になる。遠隔攻撃の射程は3mに制限され、攻撃が不利、受ける攻撃が有利になる。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1ターン。酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴から1種をランダムに選び、そのダメージを2倍受ける。一時的なペナルティ終了後も混沌の迷走層は残る。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">混沌の受創で負の結果が出るたび、迷走が1深まり、混沌の力への変換を試みる。成功すると迷走は0に戻り、休憩では減少しない。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;変換確率を見る&lt;/LSTag&gt;。</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">混沌の受創：追加火ダメージ</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">混沌の受創：追加死霊ダメージ</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">混沌の迷走：0/10。現在の混沌の力の獲得率は0%。次に負の受創結果が出ると5%になる。獲得成功時に0へ戻り、休憩では減少しない。</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">混沌は公式の全プレイアブル種族の識別タグを保持するが、それらの追加パッシブ特性は得ない。29個の種族アクティブ技能と呪文は原作と同じレベルで解放される。7つのオリジン・アイデンティティは初期状態ですべて有効。アスタリオン、ウィル、カーラックは即時能力も同期し、残る4つのアイデンティティはタグのみを付与する。ストーリー報酬は公式の結果によって発生し、キャラクターレベルでは決して付与されず、ストーリー装備も複製されない。</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">すべてのプレイアブル種族と7人のオリジンキャラクターとして判定される。アスタリオンは吸血、ウィルは辺境の刃、カーラックは発汗無効と怒りの炎を与え、残るアイデンティティは対応するストーリーと会話に影響する。ストーリー上の選択によって対応するオリジン能力を解放できる。</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">混沌回帰</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1ターン、対応する攻撃が不利になる。</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">命中を賭けて、次の武器攻撃または呪文攻撃を強化する。それでも命中すれば最終ダメージは2倍になり、クリティカルとも重複する。命中またはミス後に終了。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;大勝負の成長を見る&lt;/LSTag&gt;。</content>
@@ -182,7 +182,7 @@
   <content contentuid="he13400aegc1afg5f42ga64bg33c426455e73" version="1">1ターン：移動+9m、AC+2、追加アクション1回、敏捷セーヴ有利。終了時に倦怠しない。</content>
   <content contentuid="he19107a8g98fcg5a5bgadefg03a5a65007b1" version="1">元の対象が輪の4倍ダメージを受ける。</content>
   <content contentuid="he22898f3ge812g522dg9c1ag1c6d8ffc760f" version="1">ランダム脆弱</content>
-  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">すべての公式種族の識別と能力を併せ持ち、予測不能な混沌の変化を受ける。</content>
+  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">すべてのプレイアブル種族として判定され、混沌の傷と混沌の二象によるランダムな変化を受ける。</content>
   <content contentuid="he674d915g7868g545egba6cg92cb159f6c80" version="1">キャラクターLv7–12：次の攻撃ロールに−4。命中した場合は最終ダメージが2倍になる。命中またはミス後に解除。</content>
   <content contentuid="he81de6f2g1c5dg5b20gae98g4854874da852" version="1">1ターン、対応する攻撃が有利になる。</content>
   <content contentuid="he9eedf2eg2da5g555eg9c26gfa9711d05443" version="1">混沌の受創：英雄譚</content>
@@ -226,7 +226,7 @@
   <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">現在の混沌の迷走</content>
   <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">現在の撃破数</content>
   <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">現在の混沌の力</content>
-  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">全18技能に習熟と専門化を与え、通常の習熟ボーナスに従って成長する。固定+5ボーナスは付与しない。</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">全18技能に習熟と専門化を得る。技能判定のボーナスは通常の習熟ボーナスに従って成長する。</content>
   <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">完全武装訓練</content>
   <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">軽装鎧、中装鎧、重装鎧、盾、単純武器、軍用武器、楽器の習熟を得る。</content>
   <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">7つの初期呪文</content>

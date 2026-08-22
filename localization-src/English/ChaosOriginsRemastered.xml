@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">Chaos</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">A child of chaos unbound by predetermined fate. Master every weapon, armour, and all eighteen skills, and begin with seven spells. No Digital Deluxe items are granted.</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">Carries the identity checks of every playable race and all seven origin characters. The first hit taken each round draws a random result; half of direct damage dealt enters the Chaos Wheel.</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">Astarion Identity</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">Gale Identity</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">Lae'zel Identity</content>
@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">Wyll Identity</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">Karlach Identity</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">Dark Urge Identity</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">Controls this origin identity's corresponding official tag and immediate abilities. Enabling it synchronizes both; disabling it removes both. Story growth is triggered independently by official story outcomes, never by character level.</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">Enabling this identity grants its story and dialogue checks together with its immediate abilities. Disabling it removes those abilities and any active revocable or staged rewards; permanent story rewards already gained remain.</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">Become Blinded for 1 turn: ranged attacks are limited to 3 m, attacks have Disadvantage, and attacks against it have Advantage.</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">Lasts 1 turn. Randomly selects Acid, Cold, Fire, Force, Lightning, Necrotic, Poison, Psychic, Radiant, or Thunder; damage of that type is doubled. The Chaos Lost stack remains after this temporary penalty ends.</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">Each negative Chaos Wound result deepens Chaos Lost by 1 and attempts to turn it into Chaos Power. A success resets Lost to 0; resting cannot reduce it. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;View conversion chances&lt;/LSTag&gt;.</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">Chaos Wound: Extra Fire Damage</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">Chaos Wound: Extra Necrotic Damage</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">Chaos Lost: 0/10. The current chance to gain Chaos Power is 0%; after the next negative Chaos Wound result it becomes 5%. A success resets the count to 0, and resting does not reduce it.</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">Chaos retains every official playable race's identity tags but none of their additional passive traits; 29 active racial skills and spells unlock at their original levels. All seven origin identities are enabled by default. Astarion, Wyll, and Karlach also synchronize immediate abilities; the other four identities provide tags only. Story rewards follow official outcomes, never character level, and no story equipment is copied.</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">Carries the identity checks of every playable race and all seven origin characters. Astarion grants Vampire Bite, Wyll grants Blade of Frontiers, and Karlach grants Sweat Immunity and Rage Flames; the remaining identities affect their related story and dialogue. Story choices can unlock the corresponding origin powers.</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">Chaos Return</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">For 1 turn, the corresponding attacks have Disadvantage.</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">Stake accuracy on the next weapon or spell attack. If it still hits, its final damage is doubled; a critical hit stacks with this multiplier. The effect ends after the attack hits or misses. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;View All-In progression&lt;/LSTag&gt;.</content>
@@ -182,7 +182,7 @@
   <content contentuid="he13400aegc1afg5f42ga64bg33c426455e73" version="1">For 1 turn: +9 m Movement, +2 Armour Class, 1 additional Action, and Advantage on Dexterity saves. It causes no Lethargy when it ends.</content>
   <content contentuid="he19107a8g98fcg5a5bgadefg03a5a65007b1" version="1">The original target takes 4 times the wheel damage.</content>
   <content contentuid="he22898f3ge812g522dg9c1ag1c6d8ffc760f" version="1">Random Vulnerability</content>
-  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">Unites every official racial identity and racial power while enduring unpredictable shifts of chaos.</content>
+  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">Carries every playable racial identity and endures the random effects of Chaos Wound and Chaos Duality.</content>
   <content contentuid="he674d915g7868g545egba6cg92cb159f6c80" version="1">Character levels 7–12: the next attack roll takes a −4 penalty; if it still hits, its final damage is doubled. Removed after a hit or miss.</content>
   <content contentuid="he81de6f2g1c5dg5b20gae98g4854874da852" version="1">For 1 turn, the corresponding attacks have Advantage.</content>
   <content contentuid="he9eedf2eg2da5g555eg9c26gfa9711d05443" version="1">Chaos Wound: Heroism</content>
@@ -226,7 +226,7 @@
   <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">Current Chaos Lost Stacks</content>
   <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">Current Kill Count</content>
   <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">Current Chaos Power</content>
-  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">Gain proficiency and expertise in all eighteen skills, scaling with the normal proficiency bonus. No fixed +5 bonus is added.</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">Gain proficiency and expertise in all eighteen skills; skill checks scale with the normal proficiency bonus.</content>
   <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">Complete Arms Training</content>
   <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">Gain proficiency with light, medium, and heavy armour, shields, simple and martial weapons, and musical instruments.</content>
   <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">Seven Starter Spells</content>

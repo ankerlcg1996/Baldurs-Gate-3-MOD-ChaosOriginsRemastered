@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
   <content contentuid="h92f8d008g9421g40ebgbaeege5d2e79a239c" version="1">혼돈</content>
-  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">정해진 운명에서 벗어난 혼돈의 아이입니다. 모든 무기와 방어구, 18개 기술을 익히고 일곱 가지 시작 주문을 얻습니다. 디지털 디럭스 아이템은 지급하지 않습니다.</content>
+  <content contentuid="hc58ffe61g93ccg4b17g9265g676021109983" version="1">모든 플레이 가능 종족과 7명의 오리진 캐릭터로 판정됩니다. 매 라운드 처음 피해를 받으면 무작위 결과 하나를 뽑고, 자신이 주는 직접 피해의 절반은 혼돈의 룰렛에 들어갑니다.</content>
   <content contentuid="hfa05cce9gef4dg570bgbc1fg7187d154129d" version="1">아스타리온 정체성</content>
   <content contentuid="h4bf4229cg4ca7g5b86ga678g71397f548bd6" version="1">게일 정체성</content>
   <content contentuid="hc53c9c68g2e77g5942gb976gef3da865ae2f" version="1">레이젤 정체성</content>
@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">윌 정체성</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">카를라크 정체성</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">다크 어지 정체성</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">이 오리진 정체성에 해당하는 공식 태그와 즉시 능력을 제어합니다. 활성화하면 둘 다 동기화하고 비활성화하면 둘 다 제거합니다. 스토리 성장은 공식 스토리 결과에 따라 독립적으로 발동하며 캐릭터 레벨로는 절대 부여되지 않습니다.</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">활성화하면 해당 오리진의 스토리 및 대화 판정과 즉시 능력을 얻습니다. 비활성화하면 즉시 능력, 취소 가능한 보상, 단계형 보상을 제거하지만 이미 획득한 영구 스토리 보상은 유지됩니다.</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1턴 동안 실명하여 원거리 공격 범위가 3m로 제한되고 공격에 불리점을 받으며 자신을 향한 공격에 이점이 적용됩니다.</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1턴 동안 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 중 하나를 무작위로 선택해 해당 피해를 2배로 받습니다. 임시 불이익이 끝나도 혼돈의 방황 중첩은 남습니다.</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">혼돈의 상처에서 부정 결과가 나올 때마다 방황이 1 깊어지고 혼돈의 힘으로 전환을 시도합니다. 성공하면 방황은 0으로 초기화되며 휴식으로 줄어들지 않습니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;전환 확률 보기&lt;/LSTag&gt;.</content>
@@ -116,7 +116,7 @@
   <content contentuid="h8b677514gf9a7g59efg90ffgf1803f96de21" version="1">혼돈의 상처: 추가 화염 피해</content>
   <content contentuid="h8e00e026ga3bbg5d87ga36cg07bc381abcd2" version="1">혼돈의 상처: 추가 사령 피해</content>
   <content contentuid="h8f55e092g65d6g590fg8f90g2689984ad55e" version="1">혼돈의 방황: 0/10. 현재 혼돈의 힘 획득 확률은 0%이며, 다음 부정적인 상처 결과 후에는 5%가 됩니다. 성공하면 0으로 초기화되고 휴식으로는 감소하지 않습니다.</content>
-  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">혼돈은 모든 공식 플레이 가능 종족의 정체성 태그를 유지하지만 추가 패시브 특성은 얻지 않습니다. 29개의 종족 액티브 기술과 주문은 원본 레벨에 해금됩니다. 7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 아스타리온, 윌, 카를라크는 즉시 능력도 동기화하며 나머지 4개 정체성은 태그만 제공합니다. 스토리 보상은 공식 결과에 따라 발동하며 캐릭터 레벨로는 절대 부여되지 않고 스토리 장비도 복사하지 않습니다.</content>
+  <content contentuid="h903c567eg472ag5c11g8a75g1b8a2e298137" version="1">모든 플레이 가능 종족과 7명의 오리진 캐릭터로 판정됩니다. 아스타리온은 흡혈, 윌은 변경의 검, 카를라크는 땀 면역과 분노의 불꽃을 부여하며 나머지 정체성은 해당 스토리와 대화에 영향을 줍니다. 스토리 선택으로 해당 오리진 능력을 해금할 수 있습니다.</content>
   <content contentuid="h9148be6fg8936g5d1fga498g134b07a0414f" version="1">혼돈 회귀</content>
   <content contentuid="h9212c680g62f3g5988gab08g6282c8cb18ad" version="1">1턴 동안 해당 공격에 불리점을 받습니다.</content>
   <content contentuid="h92566fedgf73eg51degac36gf3f14d17c6da" version="1">명중을 걸고 다음 무기 또는 주문 공격을 강화합니다. 그래도 명중하면 최종 피해가 2배가 되며 치명타와도 중첩됩니다. 명중하거나 빗나가면 효과가 끝납니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_ALLIN"&gt;승부수 성장 보기&lt;/LSTag&gt;.</content>
@@ -182,7 +182,7 @@
   <content contentuid="he13400aegc1afg5f42ga64bg33c426455e73" version="1">1턴 동안 이동 +9m, 방어도 +2, 추가 행동 1회, 민첩 내성 이점을 얻고 종료 시 무기력에 빠지지 않습니다.</content>
   <content contentuid="he19107a8g98fcg5a5bgadefg03a5a65007b1" version="1">원래 대상이 룰렛 피해의 4배를 받습니다.</content>
   <content contentuid="he22898f3ge812g522dg9c1ag1c6d8ffc760f" version="1">무작위 취약</content>
-  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">모든 공식 종족 정체성과 능력을 지니는 대신 예측할 수 없는 혼돈의 변화를 겪습니다.</content>
+  <content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">모든 플레이 가능 종족으로 판정되며 혼돈의 상처와 혼돈의 이중성이 일으키는 무작위 변화를 겪습니다.</content>
   <content contentuid="he674d915g7868g545egba6cg92cb159f6c80" version="1">캐릭터 7–12레벨: 다음 명중 굴림에 −4. 그래도 명중하면 최종 피해가 2배가 되며 명중 또는 빗나감 후 제거됩니다.</content>
   <content contentuid="he81de6f2g1c5dg5b20gae98g4854874da852" version="1">1턴 동안 해당 공격에 이점을 얻습니다.</content>
   <content contentuid="he9eedf2eg2da5g555eg9c26gfa9711d05443" version="1">혼돈의 상처: 영웅심</content>
@@ -226,7 +226,7 @@
   <content contentuid="h6c4ac7a6gc34ag53c2g9491ga0115dd54aeb" version="1">현재 혼돈의 방황 중첩</content>
   <content contentuid="h9df69254g049ag5715g8deeg2259877a7c98" version="1">현재 처치 수</content>
   <content contentuid="hc10788f6g049eg55e2gb532g3615142ded11" version="1">현재 혼돈의 힘</content>
-  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">18개 기술 모두에 숙련과 전문화를 부여하며 정상 숙련 보너스에 따라 성장합니다. 고정 +5 보너스는 추가하지 않습니다.</content>
+  <content contentuid="h1a5fe029g62e1g4a13g95beg8f7a82461d90" version="1">18개 기술 모두에 숙련과 전문화를 얻습니다. 기술 판정 보너스는 정상 숙련 보너스에 따라 성장합니다.</content>
   <content contentuid="h2b6fa130g73f2g4b24ga6cfg9a8b93572ea1" version="1">완전 무장 훈련</content>
   <content contentuid="h3c70b241g8403g4c35gb7d0ga9b9ca4683fb" version="1">경갑, 평갑, 중갑, 방패, 단순 무기, 군용 무기 및 악기 숙련을 얻습니다.</content>
   <content contentuid="h4d81c352g9514g4d46gc8e1gbacadb5794fc" version="1">일곱 가지 시작 주문</content>
