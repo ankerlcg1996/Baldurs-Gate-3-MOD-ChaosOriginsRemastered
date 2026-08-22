@@ -11,30 +11,21 @@ local guardedStatus = {}
 M.Definitions = {
     { Name = "Astarion", Passive = "COR_Origin_Astarion", Status = "COR_ORIGIN_TAG_ASTARION",
         Tag = "ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3",
-        Passives = { { "LOW_Astarion_VampireAscendant", 10 } },
-        Spells = { { "Target_VampireBite_Astarion", 1 }, { "Shout_EPI_Astarion_TurnIntoBat", 12 } } },
+        Passives = {}, Spells = { "Target_VampireBite_Astarion" } },
     { Name = "Gale", Passive = "COR_Origin_Gale", Status = "COR_ORIGIN_TAG_GALE",
-        Tag = "9b0354c0-56d9-4723-8034-918ac9abab19",
-        Passives = { { "ORI_Gale_ShadowSpellSlots", 5 } },
-        Spells = { { "Target_ORI_Gale_ShadowSummon", 5 } } },
+        Tag = "9b0354c0-56d9-4723-8034-918ac9abab19", Passives = {}, Spells = {} },
     { Name = "Laezel", Passive = "COR_Origin_Laezel", Status = "COR_ORIGIN_TAG_LAEZEL",
         Tag = "b5682d1d-c395-489c-9675-1f9b0c328ea5", Passives = {}, Spells = {} },
     { Name = "Shadowheart", Passive = "COR_Origin_Shadowheart", Status = "COR_ORIGIN_TAG_SHADOWHEART",
         Tag = "642d2aee-e3df-47e3-9f47-bbcd441bb9e0", Passives = {}, Spells = {} },
     { Name = "Wyll", Passive = "COR_Origin_Wyll", Status = "COR_ORIGIN_TAG_WYLL",
         Tag = "5f40def5-d3ec-4698-a367-01a339888956",
-        Passives = { { "BladeOfFrontiers", 1 } },
-        Spells = { { "Shout_ORI_Wyll_FireShield_Warm", 7 }, { "Target_ORI_Wyll_SummonCambion", 11 } } },
+        Passives = { "BladeOfFrontiers" }, Spells = {} },
     { Name = "Karlach", Passive = "COR_Origin_Karlach", Status = "COR_ORIGIN_TAG_KARLACH",
         Tag = "1a2f70d6-8ead-4eb5-a824-79ee1971764a",
-        Passives = { { "ORI_Karlach_SweatImmune", 1 }, { "ORI_Karlach_Rage_Flames", 1 },
-            { "ORI_Karlach_FirstUpgrade", 3 }, { "Karlach_Infernal_Fury", 5 },
-            { "ORI_Karlach_SecondUpgrade", 7 } }, Spells = {} },
+        Passives = { "ORI_Karlach_SweatImmune", "ORI_Karlach_Rage_Flames" }, Spells = {} },
     { Name = "DarkUrge", Passive = "COR_Origin_DarkUrge", Status = "COR_ORIGIN_TAG_DARKURGE",
-        Tag = "cd611d7d-b67d-42b4-a75c-a0c6091ef8a2",
-        Passives = { { "UNI_DarkUrge_Stealth_Expertise_Passive", 3 },
-            { "UNI_DarkUrge_Bleeding_Dagger_Passive", 5 } },
-        Spells = { { "Shout_DarkUrge_Slayer", 9 } } }
+        Tag = "cd611d7d-b67d-42b4-a75c-a0c6091ef8a2", Passives = {}, Spells = {} }
 }
 
 local byStatus = {}
@@ -55,12 +46,12 @@ local function validateStats()
         assert(Ext.Stats.Get(definition.Status) ~= nil,
             "ChaosOriginsRemastered: missing origin identity status " .. definition.Status)
         for _, feature in ipairs(definition.Passives) do
-            assert(Ext.Stats.Get(feature[1]) ~= nil,
-                "ChaosOriginsRemastered: missing origin passive " .. feature[1])
+            assert(Ext.Stats.Get(feature) ~= nil,
+                "ChaosOriginsRemastered: missing origin passive " .. feature)
         end
         for _, feature in ipairs(definition.Spells) do
-            assert(Ext.Stats.Get(feature[1]) ~= nil,
-                "ChaosOriginsRemastered: missing origin spell " .. feature[1])
+            assert(Ext.Stats.Get(feature) ~= nil,
+                "ChaosOriginsRemastered: missing origin spell " .. feature)
         end
     end
     validated = true
@@ -124,16 +115,16 @@ local function scheduleAlignment(character, record)
     verify()
 end
 
-local function desiredFeatures(record, level)
+local function desiredFeatures(record)
     local passives, spells, tags = {}, {}, {}
     for _, definition in ipairs(M.Definitions) do
         if record.OriginIdentities[definition.Name] then
             tags[definition.Tag] = true
             for _, feature in ipairs(definition.Passives) do
-                if feature[2] <= level then passives[feature[1]] = true end
+                passives[feature] = true
             end
             for _, feature in ipairs(definition.Spells) do
-                if feature[2] <= level then spells[feature[1]] = true end
+                spells[feature] = true
             end
         end
     end
@@ -146,7 +137,7 @@ function M.Sync(character, record)
     for _, definition in ipairs(M.Definitions) do
         GrantLedger.EnsurePassive(character, record, definition.Passive)
     end
-    local desiredPassives, desiredSpells, desiredTags = desiredFeatures(record, Osi.GetLevel(character))
+    local desiredPassives, desiredSpells, desiredTags = desiredFeatures(record)
     for passive in pairs(record.OriginGranted.Passives) do
         if not desiredPassives[passive] then
             GrantLedger.RemovePassive(character, record, passive, record.OriginGranted.Passives)
