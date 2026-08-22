@@ -281,6 +281,19 @@ foreach ($token in $forbiddenOldRewards) {
     Require (-not ($originDefinitionLiterals -contains $token)) "OriginFeatures.lua contains forbidden old reward: $token"
 }
 $originStoryRewardsLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginStoryRewards.lua') -Encoding UTF8
+foreach ($token in @('OriginStoryRewards.Sync', 'OriginStoryRewards.ResetRuntime',
+    'OriginStoryRewards.IsTrackedFlag', 'OriginStoryRewards.HandleCastedSpell',
+    'RegisterListener("FlagSet", 3', 'RegisterListener("FlagCleared", 3',
+    'RegisterListener("CastedSpell", 5', 'SetTestExperience',
+    'TestLevel12Experience', 'scheduleLevel12TestExperience')) {
+    Require ($bootstrap.Contains($token)) "Story reward server wiring is missing: $token"
+}
+$bootstrapCode = $bootstrap -replace '(?m)--[^\r\n]*', ''
+foreach ($listener in @(@('FlagSet', 3), @('FlagCleared', 3), @('CastedSpell', 5))) {
+    Require ([regex]::IsMatch($bootstrapCode,
+        'RegisterListener\(\s*"' + $listener[0] + '"\s*,\s*' + $listener[1] + '\s*[,)]')) `
+        "Story reward listener wiring is missing: $($listener[0])/$($listener[1])"
+}
 $originStoryRulesMatch = [regex]::Match($originStoryRewardsLua,
     '(?ms)^M\.Rules\s*=\s*\{(?<rules>.*?)^}\r?\n\r?\n(?=^local\s+trackedFlags\s*=)')
 Require ($originStoryRulesMatch.Success) 'Origin story reward rules block is missing'
@@ -740,9 +753,12 @@ Require ($mcmBlueprint.Tabs.Count -eq 1 -and $mcmBlueprint.Tabs[0].TabId -eq 'bo
 
 $mcmProtocol = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'McmProtocol.lua') -Encoding UTF8
 $mcmClient = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'BootstrapClient.lua') -Encoding UTF8
-foreach ($token in @('Version = 3', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
+foreach ($token in @('Version = 4', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
     'WoundEffects = {')) {
     Require ($mcmProtocol.Contains($token)) "MCM protocol is missing: $token"
+}
+foreach ($token in @('Version = 4', 'TestLevel12Experience', 'SetTestExperience')) {
+    Require (($mcmProtocol + $mcmClient).Contains($token)) "MCM test-experience wiring is missing: $token"
 }
 foreach ($token in @('Ext.Net.IsHost()', 'uiGeneration', 'reply.Revision', 'snapshot.CharacterId',
     'SetAllOrigins', 'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
