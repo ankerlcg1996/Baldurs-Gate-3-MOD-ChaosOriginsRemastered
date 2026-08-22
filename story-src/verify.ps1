@@ -111,8 +111,13 @@ foreach ($path in $languagePaths) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少本地化源: $path"
     [xml]$document = Get-Content -LiteralPath $path -Raw
     $handles = @($document.contentList.content | ForEach-Object { [string]$_.contentuid } | Sort-Object)
-    Require ($handles.Count -gt 0) "本地化没有 handle: $path"
+    Require ($handles.Count -eq 591) "本地化 handle 数量错误: $path expected=591 actual=$($handles.Count)"
     Require (@($handles | Sort-Object -Unique).Count -eq $handles.Count) "本地化 handle 重复: $path"
+    foreach ($content in @($document.contentList.content)) {
+        $value = [string]$content.InnerText
+        Require (-not [string]::IsNullOrWhiteSpace($value)) "本地化包含空文本: $path"
+        Require (-not ($value -match '(?i)\bTODO\b|\bTBD\b')) "本地化包含占位文本: $path"
+    }
     $handleSets += ,$handles
 }
 for ($index = 1; $index -lt $handleSets.Count; $index++) {
@@ -328,6 +333,11 @@ Require-Unique '设置手册使用技能' $bookSkill 1
 Require ($bookSkill[0] -eq 'Shout_COS_ConfigRoot') '设置手册没有打开根 SpellContainer'
 Require ($manifest -contains "Public/$module/RootTemplates/COS_ConfigBook.lsf") '设置手册 RootTemplate 未进入打包清单'
 
+$configLocalizationHandles = @([regex]::Matches($configStats, '"(hc05fc[0-9a-f]{3}g0000g4000g8000g000000000000);1"') | ForEach-Object { $_.Groups[1].Value })
+Require-Unique '设置手册 Stats 本地化引用' $configLocalizationHandles 220
+$bookLocalizationHandles = @($bookDocument.SelectNodes('//attribute[@type="TranslatedString"]') | ForEach-Object { [string]$_.handle })
+Require-Unique '设置手册物品本地化引用' $bookLocalizationHandles 2
+
 $tutorialPath = Join-Path $root "Public\$module\Tutorials\TutorialEvents.lsx"
 Require (Test-Path -LiteralPath $tutorialPath -PathType Leaf) '缺少 TutorialEvents.lsx'
 [xml]$tutorialDocument = Get-Content -LiteralPath $tutorialPath -Raw
@@ -353,6 +363,18 @@ foreach ($relative in $guiRelativePaths) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少原生 GUI 文件: $relative"
     try { [xml](Get-Content -LiteralPath $path -Raw) | Out-Null } catch { throw "GUI XML 无效: $relative :: $($_.Exception.Message)" }
     Require ($manifest -contains "Mods/$module/GUI/$relative") "GUI 文件未进入打包清单: $relative"
+    $visibleText = [IO.File]::ReadAllText($path)
+    Require (-not ($visibleText -match '(?:Text|Content|Tag)="(?!\{Binding)[^\"]+"')) "原生 GUI 仍包含未本地化的玩家可见文本: $relative"
+}
+$guiLocalizationHandles = @($guiRelativePaths | ForEach-Object {
+    $pageText = [IO.File]::ReadAllText((Join-Path $guiRoot $_))
+    [regex]::Matches($pageText, "Source='(hc05fd[0-9a-f]{3}g0000g4000g8000g000000000000)'") | ForEach-Object { $_.Groups[1].Value }
+} | Sort-Object -Unique)
+Require-Unique '原生页面本地化引用' $guiLocalizationHandles 66
+$requiredConfigHandles = @($configLocalizationHandles + $bookLocalizationHandles + $guiLocalizationHandles | Sort-Object -Unique)
+Require-Unique '原生设置本地化引用总集' $requiredConfigHandles 288
+foreach ($handle in $requiredConfigHandles) {
+    Require ($handleSets[0] -contains $handle) "原生设置引用了缺失的本地化 handle: $handle"
 }
 $keyboardState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Keyboard.xaml'))
 $controllerState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Controller.xaml'))
