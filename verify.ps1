@@ -80,7 +80,7 @@ Require (-not (Compare-Object ($passiveEntries | Sort-Object) @(
     'COR_Origin_Astarion', 'COR_Origin_DarkUrge', 'COR_Origin_Gale',
     'COR_Origin_Karlach', 'COR_Origin_Laezel', 'COR_Origin_Shadowheart', 'COR_Origin_Wyll'
 ))) 'Passive.txt must contain exactly the marker, base features, three racial-spell passives, and seven origin toggles'
-Require ($passive.Contains("new entry `"COR_OriginMarker`"`ntype `"PassiveData`"`ndata `"Properties`" `"IsHidden`"")) `
+Require ([regex]::IsMatch($passive, 'new entry "COR_OriginMarker"\r?\ntype "PassiveData"\r?\ndata "Properties" "IsHidden"')) `
     'Origin marker must remain a hidden no-effect passive'
 
 $originToggleNames = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
