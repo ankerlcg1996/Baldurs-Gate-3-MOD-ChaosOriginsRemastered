@@ -294,6 +294,7 @@ THEN
 PROC_COS_Register(_Character);
 PROC_COS_ConfigInitialize(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
+PROC_COS_ConfigSyncAccess(_Character);
 PROC_COS_ConfigSyncMirrors(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
 PROC_COS_StarterRewards(_Character);

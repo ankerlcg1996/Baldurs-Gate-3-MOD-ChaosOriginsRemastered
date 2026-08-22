@@ -1,0 +1,1016 @@
+<ls:UIWidget x:Name="COSConfigMenu"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:ls="clr-namespace:ls;assembly=Code"
+ xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+ mc:Ignorable="d" ls:UIWidget.ContextName="GameMenu" d:DesignWidth="3840" d:DesignHeight="2160">
+ <ls:UIWidget.Template><ControlTemplate><Grid>
+  <b:Interaction.Triggers><b:EventTrigger EventName="Loaded"><ls:LSPlaySound Sound="UI_HUD_NewGameSettings_Open"/><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f006a-0000-4000-8000-00000000006a"/></b:EventTrigger></b:Interaction.Triggers>
+  <Image Source="{StaticResource OptionsBackground}" Stretch="UniformToFill"/>
+  <ls:LSInputBinding PlayerId="{Binding CurrentPlayer.PlayerId}" BoundEvent="UICancel" Command="{Binding CustomEvent}" CommandParameter="CloseWidget"/>
+  <Grid Margin="180,90"><Grid.RowDefinitions><RowDefinition Height="{StaticResource PageHeaderHeight}"/><RowDefinition/><RowDefinition Height="150"/></Grid.RowDefinitions>
+   <Control Grid.Row="0" Template="{StaticResource PageHeader}" Tag="混沌起源设置"/>
+   <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="{StaticResource ScaledLargeFontSize}" Foreground="{StaticResource LS_baseTxtColor}" TextWrapping="Wrap" TextAlignment="Center" Text="仅主机当前控制的混沌角色可修改；战斗中只读。"/>
+   <ItemsControl Grid.Row="1" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}">
+    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+    <ItemsControl.ItemTemplate><DataTemplate><Grid x:Name="AccessPanel" Visibility="Collapsed" Background="#FF100C0C">
+      <Grid.RowDefinitions><RowDefinition Height="110"/><RowDefinition/></Grid.RowDefinitions>
+      <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ls:LSRadioButton x:Name="TabMECH" GroupName="COSConfigTabs" IsChecked="True" Content="常规机制" Template="{StaticResource LabeledRadioButtonTemplate}"/>
+            <ls:LSRadioButton x:Name="TabRACE" GroupName="COSConfigTabs"  Content="种族被动" Template="{StaticResource LabeledRadioButtonTemplate}"/>
+            <ls:LSRadioButton x:Name="TabORIGIN" GroupName="COSConfigTabs"  Content="七起源身份" Template="{StaticResource LabeledRadioButtonTemplate}"/>
+            <ls:LSRadioButton x:Name="TabWOUND" GroupName="COSConfigTabs"  Content="受击轮盘结果" Template="{StaticResource LabeledRadioButtonTemplate}"/>
+      </StackPanel>
+          <Grid Grid.Row="1" Visibility="{Binding IsChecked, ElementName=TabMECH, Converter={StaticResource BoolToVisibleConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Width="2700">
+              
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="技能专精"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_SKILLS"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0001-0000-4000-8000-000000000001"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0002-0000-4000-8000-000000000002"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌之力"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0003-0000-4000-8000-000000000003"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0004-0000-4000-8000-000000000004"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌受创"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_WOUND"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0005-0000-4000-8000-000000000005"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0006-0000-4000-8000-000000000006"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="击杀之力"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_KILL_POWER"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0007-0000-4000-8000-000000000007"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0008-0000-4000-8000-000000000008"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌两仪"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_DUALITY"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0009-0000-4000-8000-000000000009"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000a-0000-4000-8000-00000000000a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌孤注"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_ALL_IN"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000b-0000-4000-8000-00000000000b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000c-0000-4000-8000-00000000000c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌回响"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_ECHO"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000d-0000-4000-8000-00000000000d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000e-0000-4000-8000-00000000000e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="混沌强袭"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_STRIKE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f000f-0000-4000-8000-00000000000f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0010-0000-4000-8000-000000000010"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+            </StackPanel></ScrollViewer>
+          </Grid>
+          <Grid Grid.Row="1" Visibility="{Binding IsChecked, ElementName=TabRACE, Converter={StaticResource BoolToVisibleConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Width="2700">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,18"><ls:LSButton Width="190" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="一键全选" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0066-0000-4000-8000-000000000066"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton><ls:LSButton Width="190" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="一键取消" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0067-0000-4000-8000-000000000067"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton></StackPanel>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="DeepGnome_StoneCamouflage"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_DEEP_GNOME_STONE_CAMOUFLAGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0011-0000-4000-8000-000000000011"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0012-0000-4000-8000-000000000012"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Drow_DrowWeaponTraining"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_DROW_DROW_WEAPON_TRAINING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0013-0000-4000-8000-000000000013"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0014-0000-4000-8000-000000000014"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Duergar_DuergarResilience"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_DUERGAR_DUERGAR_RESILIENCE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0015-0000-4000-8000-000000000015"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0016-0000-4000-8000-000000000016"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Dwarf_DwarvenCombatTraining"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_DWARF_DWARVEN_COMBAT_TRAINING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0017-0000-4000-8000-000000000017"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0018-0000-4000-8000-000000000018"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Dwarf_DwarvenResilience"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_DWARF_DWARVEN_RESILIENCE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0019-0000-4000-8000-000000000019"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001a-0000-4000-8000-00000000001a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Elf_WeaponTraining"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_ELF_WEAPON_TRAINING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001b-0000-4000-8000-00000000001b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001c-0000-4000-8000-00000000001c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="FeyAncestry"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_FEY_ANCESTRY"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001d-0000-4000-8000-00000000001d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001e-0000-4000-8000-00000000001e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Gith_MartialProdigy"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_GITH_MARTIAL_PRODIGY"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f001f-0000-4000-8000-00000000001f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0020-0000-4000-8000-000000000020"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Gnome_Cunning"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_GNOME_CUNNING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0021-0000-4000-8000-000000000021"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0022-0000-4000-8000-000000000022"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Halfling_Brave"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_HALFLING_BRAVE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0023-0000-4000-8000-000000000023"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0024-0000-4000-8000-000000000024"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Halfling_LightfootStealth"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_HALFLING_LIGHTFOOT_STEALTH"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0025-0000-4000-8000-000000000025"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0026-0000-4000-8000-000000000026"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Halfling_Lucky"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_HALFLING_LUCKY"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0027-0000-4000-8000-000000000027"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0028-0000-4000-8000-000000000028"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Halfling_StoutResilience"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_HALFLING_STOUT_RESILIENCE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0029-0000-4000-8000-000000000029"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002a-0000-4000-8000-00000000002a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="HumanMilitia"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_HUMAN_MILITIA"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002b-0000-4000-8000-00000000002b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002c-0000-4000-8000-00000000002c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="MountainDwarf_DwarvenArmorTraining"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_MOUNTAIN_DWARF_DWARVEN_ARMOR_TRAINING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002d-0000-4000-8000-00000000002d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002e-0000-4000-8000-00000000002e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="RelentlessEndurance"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_RELENTLESS_ENDURANCE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f002f-0000-4000-8000-00000000002f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0030-0000-4000-8000-000000000030"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="RockGnome_ArtificersLore"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_ROCK_GNOME_ARTIFICERS_LORE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0031-0000-4000-8000-000000000031"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0032-0000-4000-8000-000000000032"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="SavageAttacks"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_SAVAGE_ATTACKS"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0033-0000-4000-8000-000000000033"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0034-0000-4000-8000-000000000034"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="SuperiorDarkvision"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_SUPERIOR_DARKVISION"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0035-0000-4000-8000-000000000035"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0036-0000-4000-8000-000000000036"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="Tiefling_HellishResistance"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_RACE_TIEFLING_HELLISH_RESISTANCE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0037-0000-4000-8000-000000000037"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0038-0000-4000-8000-000000000038"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+            </StackPanel></ScrollViewer>
+          </Grid>
+          <Grid Grid.Row="1" Visibility="{Binding IsChecked, ElementName=TabORIGIN, Converter={StaticResource BoolToVisibleConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Width="2700">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,18"><ls:LSButton Width="190" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="全部开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0068-0000-4000-8000-000000000068"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton><ls:LSButton Width="190" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="全部关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0069-0000-4000-8000-000000000069"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton></StackPanel>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="阿斯代伦"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_ASTARION"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0039-0000-4000-8000-000000000039"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003a-0000-4000-8000-00000000003a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="盖尔"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_GALE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003b-0000-4000-8000-00000000003b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003c-0000-4000-8000-00000000003c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="莱埃泽尔"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_LAEZEL"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003d-0000-4000-8000-00000000003d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003e-0000-4000-8000-00000000003e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="影心"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_SHADOWHEART"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f003f-0000-4000-8000-00000000003f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0040-0000-4000-8000-000000000040"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="威尔"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_WYLL"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0041-0000-4000-8000-000000000041"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0042-0000-4000-8000-000000000042"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="卡菈克"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_KARLACH"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0043-0000-4000-8000-000000000043"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0044-0000-4000-8000-000000000044"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="邪念"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_ORIGIN_DARK_URGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0045-0000-4000-8000-000000000045"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0046-0000-4000-8000-000000000046"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+            </StackPanel></ScrollViewer>
+          </Grid>
+          <Grid Grid.Row="1" Visibility="{Binding IsChecked, ElementName=TabWOUND, Converter={StaticResource BoolToVisibleConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Width="2700">
+              
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="疯狂"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_MADNESS"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0047-0000-4000-8000-000000000047"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0048-0000-4000-8000-000000000048"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="恐慌"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_FRIGHTENED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0049-0000-4000-8000-000000000049"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004a-0000-4000-8000-00000000004a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="眩晕"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_STUNNED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004b-0000-4000-8000-00000000004b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004c-0000-4000-8000-00000000004c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="沉默"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_SILENCED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004d-0000-4000-8000-00000000004d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004e-0000-4000-8000-00000000004e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="倒伏"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_PRONE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f004f-0000-4000-8000-00000000004f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0050-0000-4000-8000-000000000050"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="目盲"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_BLINDED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0051-0000-4000-8000-000000000051"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0052-0000-4000-8000-000000000052"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="减速"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_SLOWED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0053-0000-4000-8000-000000000053"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0054-0000-4000-8000-000000000054"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="中毒"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_POISONED"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0055-0000-4000-8000-000000000055"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0056-0000-4000-8000-000000000056"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="流血"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_BLEEDING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0057-0000-4000-8000-000000000057"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0058-0000-4000-8000-000000000058"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="燃烧"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_BURNING"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0059-0000-4000-8000-000000000059"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005a-0000-4000-8000-00000000005a"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="近战劣势"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_MELEE_DISADVANTAGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005b-0000-4000-8000-00000000005b"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005c-0000-4000-8000-00000000005c"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="远程劣势"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_RANGED_DISADVANTAGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005d-0000-4000-8000-00000000005d"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005e-0000-4000-8000-00000000005e"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="法术劣势"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_SPELL_DISADVANTAGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f005f-0000-4000-8000-00000000005f"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0060-0000-4000-8000-000000000060"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="随机易伤"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_RANDOM_VULNERABILITY"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0061-0000-4000-8000-000000000061"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0062-0000-4000-8000-000000000062"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+              <Grid Height="64" Margin="20,4" Background="#80201818">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Margin="24,0" VerticalAlignment="Center" FontSize="{StaticResource ScaledDefaultFontSize}" Foreground="{StaticResource LS_baseTxtColor}" Text="额外随机伤害"/>
+                <Grid Grid.Column="1">
+                  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FFD28A8A" Text="已关闭"/>
+                  <ItemsControl ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}" IsHitTestVisible="False">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Grid/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock x:Name="EnabledState" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF88D49A" Text="已开启" Visibility="Collapsed"/><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_WOUND_EXTRA_RANDOM_DAMAGE"><Setter TargetName="EnabledState" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="开启" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0063-0000-4000-8000-000000000063"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                  <ls:LSButton Width="130" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="关闭" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0064-0000-4000-8000-000000000064"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+                </StackPanel>
+              </Grid>
+            </StackPanel></ScrollViewer>
+          </Grid>
+    </Grid>
+    <DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_UI_ACCESS_OK"><Setter TargetName="AccessPanel" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers>
+    </DataTemplate></ItemsControl.ItemTemplate>
+   </ItemsControl>
+   <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <ls:LSButton Width="220" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="恢复默认" SoundID="UI_HUD_Options_ToggleButton">
+                    <b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="c05f0065-0000-4000-8000-000000000065"/></b:EventTrigger></b:Interaction.Triggers>
+                  </ls:LSButton>
+    <ls:LSButton Width="220" Margin="8,0" Style="{StaticResource BrownButtonStyle}" Content="返回" SoundID="UI_HUD_Options_Close" Command="{Binding CustomEvent}" CommandParameter="CloseWidget"/>
+   </StackPanel>
+  </Grid>
+ </Grid></ControlTemplate></ls:UIWidget.Template>
+</ls:UIWidget>

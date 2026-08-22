@@ -248,4 +248,7 @@ type "PassiveData"
 data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
-
+new entry "COS_UI_ACCESS_OK"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Icon" "PassiveFeature_Generic_Threat"

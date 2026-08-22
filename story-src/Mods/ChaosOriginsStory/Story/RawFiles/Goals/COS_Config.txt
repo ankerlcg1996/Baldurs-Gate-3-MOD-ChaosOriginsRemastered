@@ -798,6 +798,38 @@ THEN
 EnableTutorialEvent(_Character, _Event);
 
 PROC
+PROC_COS_ConfigClearAccess((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_UI_ACCESS_OK", 1)
+THEN
+RemovePassive(_Character, "COS_UI_ACCESS_OK");
+
+PROC
+PROC_COS_ConfigApplyAccess((CHARACTER)_Character)
+AND
+DB_COS_Character(_Character)
+AND
+GetHostCharacter(_Host)
+AND
+GetReservedUserID(_Character, _TargetUser)
+AND
+GetReservedUserID(_Host, _HostUser)
+AND
+_TargetUser == _HostUser
+AND
+IsInCombat(_Character, 0)
+AND
+HasPassive(_Character, "COS_UI_ACCESS_OK", 0)
+THEN
+AddPassive(_Character, "COS_UI_ACCESS_OK");
+
+PROC
+PROC_COS_ConfigSyncAccess((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigClearAccess(_Character);
+PROC_COS_ConfigApplyAccess(_Character);
+
+PROC
 PROC_COS_ConfigSyncMirrors((CHARACTER)_Character)
 AND
 DB_COS_ConfigMirrorMechanic(_Key, _Passive)
@@ -1096,19 +1128,12 @@ TutorialEvent(_Character, COS_CFG_UI_OPEN_c05f006a-0000-4000-8000-00000000006a)
 AND
 DB_COS_Character(_Character)
 AND
-GetHostCharacter(_Host)
-AND
-GetReservedUserID(_Character, _TargetUser)
-AND
-GetReservedUserID(_Host, _HostUser)
-AND
-_TargetUser == _HostUser
-AND
 NOT DB_COS_ConfigBusy(_Character)
 THEN
 DB_COS_ConfigBusy(_Character);
 PROC_COS_ConfigInitialize(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
+PROC_COS_ConfigSyncAccess(_Character);
 PROC_COS_ConfigSyncMirrors(_Character);
 PROC_COS_ConfigRelease(_Character);
 
