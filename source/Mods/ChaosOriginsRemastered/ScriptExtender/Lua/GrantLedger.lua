@@ -195,6 +195,30 @@ function M.RemoveSpell(character, record, spell, ledger)
         ledger, true)
 end
 
+function M.EnsureStatus(character, record, status, ledger)
+    assert(type(ledger) == "table", "ChaosOriginsRemastered: status ledger is unavailable")
+    return start(character, status, "status", 1,
+        function(target, statId, expected) return Osi.HasActiveStatus(target, statId) == expected end,
+        function(target, statId, desired)
+            if desired == 1 then Osi.ApplyStatus(target, statId, -1.0, 100, target)
+            else Osi.RemoveStatus(target, statId, target) end
+        end,
+        ledger, true)
+end
+
+function M.RemoveStatus(character, record, status, ledger)
+    assert(ledger[status] == true or ledger[status] == "adding"
+        or ledger[status] == "removing",
+        "ChaosOriginsRemastered: cannot remove unowned status " .. status)
+    return start(character, status, "status", 0,
+        function(target, statId, expected) return Osi.HasActiveStatus(target, statId) == expected end,
+        function(target, statId, desired)
+            if desired == 1 then Osi.ApplyStatus(target, statId, -1.0, 100, target)
+            else Osi.RemoveStatus(target, statId, target) end
+        end,
+        ledger, true)
+end
+
 function M.ResetRuntime()
     -- 切换存档后旧会话的延时确认失效，新会话会重新检查实际能力状态。
     pending = {}

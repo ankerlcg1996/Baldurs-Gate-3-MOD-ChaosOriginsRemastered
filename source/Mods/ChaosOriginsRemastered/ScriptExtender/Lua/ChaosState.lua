@@ -3,7 +3,7 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
-local SCHEMA_VERSION = 6
+local SCHEMA_VERSION = 7
 local registered = false
 local ORIGIN_IDENTITY_KEYS = {
     "Astarion", "Gale", "Laezel", "Shadowheart", "Wyll", "Karlach", "DarkUrge"
@@ -44,6 +44,14 @@ local function validateGrantMap(value, label)
     end
 end
 
+local function validateBooleanMap(value, label)
+    assert(type(value) == "table", "ChaosOriginsRemastered: " .. label .. " must be a table")
+    for key, enabled in pairs(value) do
+        assert(type(key) == "string" and enabled == true,
+            "ChaosOriginsRemastered: invalid " .. label .. " entry " .. tostring(key))
+    end
+end
+
 local function validateLegacyFields(record, characterId)
     assert(type(record.Granted) == "table",
         "ChaosOriginsRemastered: grant ledger must be a table " .. characterId)
@@ -79,6 +87,9 @@ local function validateCharacter(record, characterId)
         Granted = true,
         RaceGranted = true,
         OriginGranted = true,
+        OriginStoryRewards = true,
+        OriginStoryGranted = true,
+        TestLevel12Experience = true,
         OriginIdentities = true,
         MechanicGranted = true,
         Mechanics = true,
@@ -110,6 +121,22 @@ local function validateCharacter(record, characterId)
     validateGrantMap(record.OriginGranted.Passives, "origin passive grant ledger")
     validateGrantMap(record.OriginGranted.Spells, "origin spell grant ledger")
     validateGrantMap(record.OriginGranted.Tags, "origin tag grant ledger")
+
+    assert(type(record.OriginStoryRewards) == "table",
+        "ChaosOriginsRemastered: origin story rewards must be a table " .. characterId)
+    assertOnlyKeys(record.OriginStoryRewards, { Claimed = true, Consumed = true },
+        "origin story rewards")
+    validateBooleanMap(record.OriginStoryRewards.Claimed, "claimed origin story reward")
+    validateBooleanMap(record.OriginStoryRewards.Consumed, "consumed origin story reward")
+    assert(type(record.OriginStoryGranted) == "table",
+        "ChaosOriginsRemastered: origin story grant ledger must be a table " .. characterId)
+    assertOnlyKeys(record.OriginStoryGranted,
+        { Passives = true, Spells = true, Statuses = true }, "origin story grant ledger")
+    validateGrantMap(record.OriginStoryGranted.Passives, "origin story passive grant ledger")
+    validateGrantMap(record.OriginStoryGranted.Spells, "origin story spell grant ledger")
+    validateGrantMap(record.OriginStoryGranted.Statuses, "origin story status grant ledger")
+    assert(type(record.TestLevel12Experience) == "boolean",
+        "ChaosOriginsRemastered: TestLevel12Experience must be boolean")
     assert(type(record.OriginIdentities) == "table",
         "ChaosOriginsRemastered: origin identities must be a table " .. characterId)
     assertOnlyKeys(record.OriginIdentities, ORIGIN_IDENTITY_FIELDS, "origin identities")
@@ -184,6 +211,9 @@ local function newCharacter()
         Granted = { Passives = {}, Spells = {} },
         RaceGranted = { Passives = {}, Spells = {}, Tags = {} },
         OriginGranted = { Passives = {}, Spells = {}, Tags = {} },
+        OriginStoryRewards = { Claimed = {}, Consumed = {} },
+        OriginStoryGranted = { Passives = {}, Spells = {}, Statuses = {} },
+        TestLevel12Experience = false,
         OriginIdentities = defaultOriginIdentities(),
         MechanicGranted = { Passives = {}, Spells = {} },
         Mechanics = {
@@ -291,6 +321,16 @@ local function root()
                 record.OriginIdentities[record.ActiveOriginIdentity] = true
             end
             record.ActiveOriginIdentity = nil
+        end
+        state.SchemaVersion = 6
+        M.MarkDirty()
+    end
+    if state.SchemaVersion == 6 then
+        -- 1.0.20 以前没有剧情奖励账本，测试经验也始终自动发放。
+        for _, record in pairs(state.Characters) do
+            record.OriginStoryRewards = { Claimed = {}, Consumed = {} }
+            record.OriginStoryGranted = { Passives = {}, Spells = {}, Statuses = {} }
+            record.TestLevel12Experience = false
         end
         state.SchemaVersion = SCHEMA_VERSION
         M.MarkDirty()
