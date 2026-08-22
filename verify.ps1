@@ -306,8 +306,9 @@ Require (Test-Path -LiteralPath $raceCatalogGeneratorPath -PathType Leaf) `
 $generatedCatalogCheck = Join-Path $ProjectRoot 'work\generated-race-catalog-check.lua'
 & $raceCatalogGeneratorPath -CatalogPath $raceCatalogPath -OutputPath $generatedCatalogCheck
 $raceCatalogLuaPath = Join-Path $luaRoot 'RaceCatalog.lua'
-Require ((Get-FileHash -LiteralPath $generatedCatalogCheck -Algorithm SHA256).Hash -eq
-    (Get-FileHash -LiteralPath $raceCatalogLuaPath -Algorithm SHA256).Hash) `
+$generatedCatalogText = (Get-Content -Raw -LiteralPath $generatedCatalogCheck -Encoding UTF8) -replace '\r\n?', "`n"
+$raceCatalogText = (Get-Content -Raw -LiteralPath $raceCatalogLuaPath -Encoding UTF8) -replace '\r\n?', "`n"
+Require ($generatedCatalogText -ceq $raceCatalogText) `
     'RaceCatalog.lua is stale; regenerate it from official-data/race-catalog.json'
 $raceCatalogLua = Get-Content -Raw -LiteralPath $raceCatalogLuaPath -Encoding UTF8
 foreach ($token in @('CandidateSpellPolicy = "grant_all"', 'RaceCount = 39', 'TagCount = 32',
