@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">法术劣势</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">流血</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下开关仅作用于当前主控混沌角色，并随存档保存。战斗中全部锁定；关闭机制会立即移除由本模组授予的对应能力。</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">新角色默认启用全部七项起源身份。可用总开关统一控制，也可独立调整；启用后会授予对应官方起源标签与按等级解锁的能力，可能改变剧情判定。身份开关显示在角色被动页，其内部标记不占用BUFF栏；战斗中不能切换。</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">七个起源身份默认全部开启。开启身份会同步官方标签、基础能力，并补发存档中已经完成的对应剧情奖励；关闭身份会移除标签与基础能力，但不会收回已经认领的永久剧情奖励。剧情奖励只能由官方剧情结果触发，不能在此手动解锁；战斗中不可修改。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">眩晕</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">常规设置</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">击杀获取混沌之力</content>

@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">주문 불리점</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">출혈</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">아래 설정은 현재 조종 중인 혼돈 캐릭터에만 적용되며 저장 파일에 보관됩니다. 전투 중에는 모두 잠기며, 기능을 끄면 이 모드가 부여한 해당 능력이 즉시 제거됩니다.</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">새 캐릭터는 일곱 오리진 정체성이 모두 활성화된 상태로 시작합니다. 전체 스위치 또는 개별 스위치로 조정할 수 있습니다. 각 정체성은 공식 오리진 태그와 레벨별 능력을 부여하며 스토리 판정에 영향을 줄 수 있습니다. 정체성 스위치는 캐릭터 패시브 목록에 표시되고 내부 표식은 BUFF 목록에 표시되지 않습니다. 전투 중에는 변경할 수 없습니다.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7개의 오리진 정체성은 기본적으로 모두 활성화됩니다. 활성화하면 공식 태그와 기본 능력을 동기화하고, 저장 데이터에서 이미 완료된 공식 스토리 결과의 보상을 소급 지급합니다. 비활성화하면 태그와 기본 능력은 제거되지만 이미 획득한 영구 스토리 보상은 회수되지 않습니다. 스토리 보상은 공식 스토리 결과로만 발동하며 여기서 수동으로 해제할 수 없습니다. 전투 중에는 변경할 수 없습니다.</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">기절</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">일반 설정</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">처치로 혼돈의 힘 획득</content>
