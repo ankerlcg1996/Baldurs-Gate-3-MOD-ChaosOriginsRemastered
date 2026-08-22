@@ -304,6 +304,7 @@ GetLevel(_Character, _Level)
 THEN
 PROC_COS_Register(_Character);
 PROC_COS_ConfigInitialize(_Character);
+PROC_COS_ConfigSyncRacialPassives(_Character);
 PROC_COS_StarterRewards(_Character);
 PROC_COS_GrantTags(_Character);
 PROC_COS_GrantFeatures(_Character, _Level);

@@ -47,11 +47,22 @@ $racialPassives = @(
     'SuperiorDarkvision',
     'Tiefling_HellishResistance'
 )
+$forbiddenPassives = @(
+    'HumanVersatility',
+    'Darkvision',
+    'Dragonborn_Resistance_Acid',
+    'Dragonborn_Resistance_Cold',
+    'Dragonborn_Resistance_Fire',
+    'Dragonborn_Resistance_Lightning',
+    'Dragonborn_Resistance_Poison',
+    'FearOfWolves_Shadowheart'
+)
 
 Require-Unique '机制目录' $mechanics 8
 Require-Unique '起源目录' $origins 7
 Require-Unique '受击负面目录' $woundNegatives 15
 Require-Unique '种族被动目录' $racialPassives 20
+Require (@(Compare-Object $racialPassives $forbiddenPassives -IncludeEqual -ExcludeDifferent).Count -eq 0) '种族被动目录与禁用被动清单重叠'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
 Require (Test-Path -LiteralPath $metaPath -PathType Leaf) "缺少模块元数据: $metaPath"
@@ -153,11 +164,20 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
         'DB_COS_ConfigOrigin(',
         'DB_COS_ConfigWound(',
         'DB_COS_ConfigBusy',
+        'DB_COS_RacialPassiveGranted',
         'PROC_COS_ConfigInitialize',
-        'PROC_COS_ConfigReset'
+        'PROC_COS_ConfigReset',
+        'PROC_COS_ConfigApplyRacialPassive',
+        'PROC_COS_ConfigRecordRacialGrant',
+        'PROC_COS_ConfigSetRacialPassive',
+        'PROC_COS_ConfigSetAllRacialPassives',
+        'PROC_COS_ConfigSyncRacialPassives'
     )) {
         Require ($configGoal.Contains($token)) "配置 Story 合约缺失: $token"
     }
+    Require ($configGoal.Contains('HasPassive(_Character, _Passive, 0)')) '种族被动开启前必须检查现有同 ID 被动'
+    Require ($configGoal.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动必须写入授予账本'
+    Require ($configGoal.Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive)')) '种族被动关闭必须清除授予账本'
 }
 
 Write-Host 'ChaosOriginsStory source verification: ok'

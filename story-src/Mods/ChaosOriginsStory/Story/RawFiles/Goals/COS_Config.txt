@@ -93,6 +93,71 @@ THEN
 DB_COS_ConfigWound(_Character, _Key, _Default);
 
 PROC
+PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, 1)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+PROC_COS_ConfigRecordRacialGrant(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigRecordRacialGrant((CHARACTER)_Character, (STRING)_Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+AND
+NOT DB_COS_RacialPassiveGranted(_Character, _Passive)
+THEN
+DB_COS_RacialPassiveGranted(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, 0)
+AND
+DB_COS_RacialPassiveGranted(_Character, _Passive)
+THEN
+RemovePassive(_Character, _Passive);
+NOT DB_COS_RacialPassiveGranted(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSetRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigRacialPassiveDefault(_Passive, _)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Current)
+AND
+_Current != _Enabled
+THEN
+NOT DB_COS_ConfigRacialPassive(_Character, _Passive, _Current);
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Enabled);
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSetRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigRacialPassiveDefault(_Passive, _)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, _Enabled)
+THEN
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSetAllRacialPassives((CHARACTER)_Character, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigRacialPassiveDefault(_Passive, _)
+THEN
+PROC_COS_ConfigSetRacialPassive(_Character, _Passive, _Enabled);
+
+PROC
+PROC_COS_ConfigSyncRacialPassives((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialPassive(_Character, _Passive, _)
+THEN
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive);
+
+PROC
 PROC_COS_ConfigResetMechanics((CHARACTER)_Character)
 AND
 DB_COS_ConfigMechanicDefault(_Key, _Default)
@@ -111,6 +176,7 @@ DB_COS_ConfigRacialPassive(_Character, _Passive, _Current)
 THEN
 NOT DB_COS_ConfigRacialPassive(_Character, _Passive, _Current);
 DB_COS_ConfigRacialPassive(_Character, _Passive, _Default);
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive);
 
 PROC
 PROC_COS_ConfigResetOrigins((CHARACTER)_Character)
