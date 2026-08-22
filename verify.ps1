@@ -20,12 +20,13 @@ $metaPath = Join-Path $source "Mods\$moduleName\meta.lsx"
 $passivePath = Join-Path $source "Public\$moduleName\Stats\Generated\Data\Passive.txt"
 $statusPath = Join-Path $source "Public\$moduleName\Stats\Generated\Data\Status_BOOST.txt"
 $tagPath = Join-Path $ProjectRoot "resource-src\Public\$moduleName\Tags\$originTag.lsf.lsx"
+$textureBankPath = Join-Path $ProjectRoot "resource-src\Public\$moduleName\Content\UI\[PAK]_$moduleName\_merged.lsf.lsx"
 $configPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Config.json"
 $bootstrapPath = Join-Path $source "Mods\$moduleName\ScriptExtender\Lua\BootstrapServer.lua"
 $packageFilesPath = Join-Path $ProjectRoot 'package-files.json'
 $raceCatalogPath = Join-Path $ProjectRoot 'official-data\race-catalog.json'
 $raceCatalogGeneratorPath = Join-Path $ProjectRoot 'generate-race-catalog.ps1'
-foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $configPath, $bootstrapPath, $packageFilesPath)) {
+foreach ($path in @($originPath, $metaPath, $passivePath, $statusPath, $tagPath, $textureBankPath, $configPath, $bootstrapPath, $packageFilesPath)) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "Required minimal source is missing: $path"
 }
 
@@ -515,6 +516,14 @@ foreach ($legacyUuid in @(
         "Legacy action-resource UUID remains: $legacyUuid"
 }
 $iconXml = [xml](Get-Content -Raw -LiteralPath $iconMapPath -Encoding UTF8)
+$textureBankXml = [xml](Get-Content -Raw -LiteralPath $textureBankPath -Encoding UTF8)
+$atlasUuid = [string]$iconXml.SelectSingleNode('//node[@id="TextureAtlasPath"]/attribute[@id="UUID"]').value
+$textureResource = $textureBankXml.SelectSingleNode('//region[@id="TextureBank"]//node[@id="Resource"]')
+Require ($null -ne $textureResource `
+    -and [string]$textureResource.SelectSingleNode('./attribute[@id="ID"]').value -eq $atlasUuid `
+    -and [string]$textureResource.SelectSingleNode('./attribute[@id="SourceFile"]').value `
+        -eq 'Public/ChaosOriginsRemastered/Assets/Textures/Icons/Icons_ChaosOrigins.dds') `
+    'Custom icon atlas must have a matching TextureBank resource registration'
 $iconKeys = @($iconXml.SelectNodes('//node[@id="IconUV"]/attribute[@id="MapKey"]') |
     ForEach-Object value)
 Require ($iconKeys.Count -eq ($iconKeys | Select-Object -Unique).Count) `
@@ -528,8 +537,10 @@ foreach ($icon in $customIconReferences) {
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $declaredPackageFiles = @($packageFiles.files | ForEach-Object { [string]$_ })
-Require ($declaredPackageFiles.Count -eq 32 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 32) `
-    'package-files.json must contain exactly 32 unique paths'
+Require ($declaredPackageFiles.Count -eq 33 -and ($declaredPackageFiles | Select-Object -Unique).Count -eq 33) `
+    'package-files.json must contain exactly 33 unique paths'
+Require ($declaredPackageFiles -contains 'Public/ChaosOriginsRemastered/Content/UI/[PAK]_ChaosOriginsRemastered/_merged.lsf') `
+    'Package manifest omits the custom icon TextureBank resource'
 foreach ($luaName in $expectedLuaFiles) {
     Require ($declaredPackageFiles -contains "Mods/ChaosOriginsRemastered/ScriptExtender/Lua/$luaName") `
         "Package manifest omits Lua module: $luaName"

@@ -59,8 +59,8 @@ $version64 = [int64]36028797018963968 + $nextBuild
 $packageFiles = Get-Content -Raw -LiteralPath $packageFilesPath -Encoding UTF8 | ConvertFrom-Json
 Require ($packageFiles.schema -eq 1) 'Unsupported package-files schema'
 $expectedFiles = @($packageFiles.files | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object)
-Require ($expectedFiles.Count -eq 32 -and ($expectedFiles | Select-Object -Unique).Count -eq 32) `
-    'package-files.json must contain exactly 32 unique paths'
+Require ($expectedFiles.Count -eq 33 -and ($expectedFiles | Select-Object -Unique).Count -eq 33) `
+    'package-files.json must contain exactly 33 unique paths'
 
 Reset-WorkDirectory $stageRoot
 Reset-WorkDirectory $reverseRoot
@@ -71,7 +71,8 @@ Copy-Item -LiteralPath (Join-Path $sourceRoot 'Public') -Destination $stageRoot 
 $loadParameters = [LSLib.LS.ResourceLoadParameters]::new()
 $conversionParameters = [LSLib.LS.ResourceConversionParameters]::new()
 $resourceSources = @(Get-ChildItem -LiteralPath $resourceRoot -Recurse -File -Filter '*.lsf.lsx')
-Require ($resourceSources.Count -eq 1) 'Minimal build must compile exactly one binary resource source'
+Require ($resourceSources.Count -eq 2) `
+    'Build must compile the origin tag and custom icon texture-bank resources'
 foreach ($source in $resourceSources) {
     $relative = Relative-Path $resourceRoot $source.FullName
     $targetRelative = $relative.Substring(0, $relative.Length - 4)
