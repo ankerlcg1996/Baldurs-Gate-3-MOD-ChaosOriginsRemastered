@@ -451,6 +451,12 @@ Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
     -and $mechanicEntryCounts['ChaosRuntime.txt'] -eq 179 `
     -and $mechanicEntryCounts['Interrupt.txt'] -eq 1) `
     'Mechanic stat family counts changed'
+$chaosCoreText = Get-Content -Raw -LiteralPath $mechanicStats[0] -Encoding UTF8
+$allInPassiveBlock = [regex]::Match($chaosCoreText,
+    '(?ms)^new entry "COR_ChaosAllIn"\r?\n.*?(?=^new entry |\z)').Value
+Require ($allInPassiveBlock.Contains('data "StatsFunctorContext" "OnCreate;OnShortRest"') `
+    -and $allInPassiveBlock.Contains('data "StatsFunctors" "RestoreResource(COR_ChaosAllInUse,100%,0)"')) `
+    'Chaos All-In resource must explicitly refill on creation and short rest'
 
 $resourcePath = Join-Path $source "Public\$moduleName\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
 $iconMapPath = Join-Path $source "Public\$moduleName\GUI\Icons_ChaosOrigins.lsx"

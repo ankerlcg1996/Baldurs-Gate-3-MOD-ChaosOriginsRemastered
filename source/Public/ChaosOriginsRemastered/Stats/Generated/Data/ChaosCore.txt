@@ -81,6 +81,8 @@ data "Description" "h92566fedgf73eg51degac36gf3f14d17c6da;1"
 data "Icon" "CO_AllIn"
 data "Properties" "Highlighted"
 data "Boosts" "ActionResource(COR_ChaosAllInUse,1,0);UnlockSpell(Shout_COR_ChaosAllIn)"
+data "StatsFunctorContext" "OnCreate;OnShortRest"
+data "StatsFunctors" "RestoreResource(COR_ChaosAllInUse,100%,0)"
 
 new entry "Shout_COR_ChaosAllIn"
 type "SpellData"
