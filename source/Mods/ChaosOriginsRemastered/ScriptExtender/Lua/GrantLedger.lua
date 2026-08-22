@@ -14,15 +14,22 @@ local function verificationKey(character, kind, statId)
     return character .. ":" .. kind .. ":" .. statId
 end
 
+local function completeOperation(operation)
+    for releasedLedger in pairs(operation.ReleasedLedgers) do
+        releasedLedger[operation.StatId] = nil
+    end
+    operation.Ledger[operation.StatId] = operation.Desired == 1 and true or nil
+    pending[operation.Key] = nil
+    State.MarkDirty()
+end
+
 local function scheduleVerification(operation, elapsed)
     Ext.Timer.WaitFor(VERIFY_INTERVAL_MS, function()
         if pending[operation.Key] ~= operation then return end
         if operation.Matches(operation.Character, operation.StatId, operation.Applied) then
             if operation.Desired == operation.Applied then
                 -- 只有引擎确认最新目标已生效，才更新 MOD 归属账本。
-                operation.Ledger[operation.StatId] = operation.Desired == 1 and true or nil
-                pending[operation.Key] = nil
-                State.MarkDirty()
+                completeOperation(operation)
                 return
             end
 
@@ -45,19 +52,46 @@ local function scheduleVerification(operation, elapsed)
     end)
 end
 
+local function transferPendingOwnership(operation, ledger)
+    assert(operation.Ledger[operation.StatId] == "removing",
+        "ChaosOriginsRemastered: ownership transfer requires a pending removal "
+            .. operation.Kind .. " " .. operation.StatId)
+    assert(ledger[operation.StatId] == nil or ledger[operation.StatId] == "adding",
+        "ChaosOriginsRemastered: conflicting ownership for pending "
+            .. operation.Kind .. " " .. operation.StatId)
+    operation.ReleasedLedgers[operation.Ledger] = true
+    operation.Ledger = ledger
+    ledger[operation.StatId] = "adding"
+    operation.Desired = 1
+    State.MarkDirty()
+end
+
 local function start(character, statId, kind, expected, matches, setState, ledger, validateStat)
     character = ChaosCharacter.CanonicalGuid(character, kind .. " character")
     if validateStat then requireStat(statId, kind) end
     local key = verificationKey(character, kind, statId)
     local operation = pending[key]
     if operation ~= nil then
-        if operation.Desired ~= expected then
-            assert(operation.Ledger == ledger,
-                "ChaosOriginsRemastered: conflicting ledgers for pending " .. kind .. " " .. statId)
-            operation.Desired = expected
-            operation.Ledger[statId] = expected == 1 and "adding" or "removing"
-            State.MarkDirty()
+        if operation.Ledger == ledger then
+            if operation.Desired ~= expected then
+                operation.Desired = expected
+                operation.Ledger[statId] = expected == 1 and "adding" or "removing"
+                State.MarkDirty()
+            end
+            return false
         end
+        if operation.ReleasedLedgers[ledger] == true then
+            assert(expected == 0 and ledger[statId] == "removing",
+                "ChaosOriginsRemastered: conflicting released ledger for pending "
+                    .. kind .. " " .. statId)
+            return false
+        end
+        if operation.Desired == 0 and expected == 1 then
+            transferPendingOwnership(operation, ledger)
+            return false
+        end
+        assert(false, "ChaosOriginsRemastered: conflicting ledgers for pending "
+            .. kind .. " " .. statId)
         return false
     end
 
@@ -72,7 +106,7 @@ local function start(character, statId, kind, expected, matches, setState, ledge
         return false
     end
 
-    -- 先持久化意图；切换会话后可根据实际状态确认或重试，不会留下无主授予。
+    -- 先持久化意图；切换会话后旧账本会继续移除，新账本会重新取得归属。
     ledger[statId] = expected == 1 and "adding" or "removing"
     State.MarkDirty()
     setState(character, statId, expected)
@@ -85,7 +119,8 @@ local function start(character, statId, kind, expected, matches, setState, ledge
         Desired = expected,
         Matches = matches,
         SetState = setState,
-        Ledger = ledger
+        Ledger = ledger,
+        ReleasedLedgers = {}
     }
     pending[key] = operation
     scheduleVerification(operation, 0)

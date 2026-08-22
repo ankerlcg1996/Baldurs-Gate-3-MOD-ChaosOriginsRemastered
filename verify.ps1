@@ -254,6 +254,21 @@ foreach ($token in @('function M.EnsureStatus', 'function M.RemoveStatus',
     'Osi.HasActiveStatus', 'Osi.ApplyStatus', 'Osi.RemoveStatus')) {
     Require ($grantLedgerLua.Contains($token)) "Grant ledger status support is missing: $token"
 }
+foreach ($token in @('ReleasedLedgers = {}', 'transferPendingOwnership',
+    'operation.ReleasedLedgers[operation.Ledger] = true', 'ledger[operation.StatId] = "adding"',
+    'operation.Ledger[operation.StatId] == "removing"',
+    'operation.ReleasedLedgers[ledger] == true', 'expected == 0 and ledger[statId] == "removing"',
+    'for releasedLedger in pairs(operation.ReleasedLedgers) do',
+    'releasedLedger[operation.StatId] = nil',
+    'operation.Ledger[operation.StatId] = operation.Desired == 1 and true or nil')) {
+    Require ($grantLedgerLua.Contains($token)) "Pending grant ownership transfer contract is missing: $token"
+}
+Require ([regex]::IsMatch($grantLedgerLua,
+    '(?s)if operation\.Desired == 0 and expected == 1 then\s+transferPendingOwnership\(operation, ledger\)')) `
+    'Pending grant ownership transfer must only promote a pending removal to a new ensure'
+Require ([regex]::IsMatch($grantLedgerLua,
+    '(?s)if operation\.Ledger == ledger then.*?if operation\.ReleasedLedgers\[ledger\] == true then.*?assert\(expected == 0')) `
+    'Pending grant ownership transfer must distinguish current and released ledger calls'
 $characterLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosCharacter.lua') -Encoding UTF8
 foreach ($token in @('Osi.IsPlayer', 'Osi.DB_Players', $originTag, 'COR_OriginMarker')) {
     Require ($characterLua.Contains($token)) "Chaos character eligibility is missing: $token"
