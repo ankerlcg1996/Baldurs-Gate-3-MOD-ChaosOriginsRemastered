@@ -275,7 +275,9 @@ foreach ($token in @(
 }
 foreach ($token in @('function M.CaptureBeforeDamage', 'event.Hit.InflicterOwner', 'uuid(event.Target)',
     'applyingTargets[target]', 'function M.ResetRuntime()', 'function M.IsApplying',
-    'source = assert(uuid(source)', 'character = assert(uuid(character)')) {
+    'source = assert(uuid(source)', 'character = assert(uuid(character)',
+    'local function writeHitDamage(hit, damages)', 'hit.TotalDamageDone = total(damages)',
+    'writeHitDamage(event.Hit, expanded)', 'writeHitDamage(event.Hit, fixed)')) {
     Require ($dualityLua.Contains($token)) "Correlated Duality runtime is missing: $token"
 }
 Require (-not $dualityLua.Contains('table.remove(captured, 1)')) `

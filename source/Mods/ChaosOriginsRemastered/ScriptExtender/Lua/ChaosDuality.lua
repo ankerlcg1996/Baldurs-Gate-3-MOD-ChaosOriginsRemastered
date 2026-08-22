@@ -300,6 +300,12 @@ local function writeDamageList(damageList, damages)
     end
 end
 
+local function writeHitDamage(hit, damages)
+    -- DamageList 只同步飘字与战斗日志；TotalDamageDone 才是引擎实际扣除的生命值。
+    hit.TotalDamageDone = total(damages)
+    writeDamageList(hit.DamageList, damages)
+end
+
 function M.CaptureBeforeDamage(event, multiplier)
     assert(options ~= nil, "ChaosOriginsRemastered: Chaos Duality is not configured")
     assert(type(multiplier) == "number" and multiplier % 1 == 0 and multiplier >= 1,
@@ -320,12 +326,12 @@ function M.CaptureBeforeDamage(event, multiplier)
     if eventTotal == 0 then return end
     local expanded = scaleDamages(damages, multiplier, 1)
     if not options.Enabled(source) then
-        if multiplier > 1 then writeDamageList(damageList, expanded) end
+        if multiplier > 1 then writeHitDamage(event.Hit, expanded) end
         return
     end
     local expandedTotal = total(expanded)
     local fixed, random = splitDamages(expanded, math.ceil(expandedTotal / 2))
-    writeDamageList(damageList, fixed)
+    writeHitDamage(event.Hit, fixed)
     DebugLog.Print(string.format(
         "[混沌起源][攻击轮盘] 已捕获伤害：施法者=%s，动作=%d，原始=%d，倍率后=%d，固定部分=%d，随机部分=%d",
         source, actionId, eventTotal, expandedTotal, total(fixed), total(random)))
