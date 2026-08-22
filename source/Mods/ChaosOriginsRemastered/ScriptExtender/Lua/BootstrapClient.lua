@@ -159,7 +159,6 @@ Ext.Events.SessionLoaded:Subscribe(function()
     snapshot = nil
     lastRevision = -1
     lastReplyId = 0
-    request("GetSnapshot")
 end)
 
 Ext.ModEvents.BG3MCM.MCM_Window_Opened:Subscribe(function()

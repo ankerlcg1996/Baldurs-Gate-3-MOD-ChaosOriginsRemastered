@@ -532,7 +532,8 @@ foreach ($forbiddenClientToken in @('Ext.Vars', 'Osi.SetTag', 'Osi.ClearTag', 'O
 }
 foreach ($token in @('SetRequestHandler', 'request.CharacterId ~= snapshot.CharacterId',
     'Osi.IsInCombat', 'OriginFeatures.SetActive', 'ChaosMechanics.SetMechanic',
-    'ChaosMechanics.SetWoundEffect', 'isHostPeer(peerId)', 'ClientControl')) {
+    'ChaosMechanics.SetWoundEffect', 'isHostPeer(peerId)', 'ClientControl',
+    'local osirisReady = false', 'if not osirisReady then', 'osirisReady = true')) {
     Require ($bootstrap.Contains($token)) "MCM server authority is missing: $token"
 }
 Require (-not $mcmClient.Contains('MCM_Window_Ready')) `
@@ -543,6 +544,10 @@ Require ($mcmCloseBlock -ne '' -and $mcmCloseBlock.Contains('mcmOpen = false') `
     -and -not $mcmCloseBlock.Contains('uiGeneration = uiGeneration + 1') `
     -and -not $mcmCloseBlock.Contains('controls =')) `
     'Closing MCM must stop polling without invalidating the retained UI tree'
+$clientSessionBlock = [regex]::Match($mcmClient,
+    '(?s)Ext.Events.SessionLoaded:Subscribe\(function\(\).*?end\)').Value
+Require ($clientSessionBlock -ne '' -and -not $clientSessionBlock.Contains('request("GetSnapshot")')) `
+    'Client SessionLoaded must not request MCM state before Osiris query adapters are ready'
 
 $publicRoot = Join-Path $source "Public\$moduleName"
 $modsRoot = Join-Path $source "Mods\$moduleName"

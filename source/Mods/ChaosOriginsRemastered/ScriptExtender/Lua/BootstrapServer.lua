@@ -18,6 +18,7 @@ local sessionGeneration = 0
 local READY_RETRY_MS = 100
 local READY_TIMEOUT_MS = 2000
 local mcmRevision = 0
+local osirisReady = false
 local mcmChannel = Ext.Net.CreateChannel(MODULE_UUID, McmProtocol.Channel)
 
 local function syncCharacter(character)
@@ -146,6 +147,10 @@ local function copyBooleanMap(source, definitions)
 end
 
 local function hostSnapshot()
+    if not osirisReady then
+        -- 会话加载早期尚未建立 Osiris 查询适配器，MCM 只能报告等待状态。
+        return { Ready = false, CharacterId = "", IsChaos = false, InCombat = false }
+    end
     local host = Osi.GetHostCharacter()
     if host == nil or host == "" then
         return { Ready = false, CharacterId = "", IsChaos = false, InCombat = false }
@@ -194,6 +199,7 @@ local function isHostPeer(peerId)
         "ChaosOriginsRemastered: invalid MCM peer id")
     local userId = (peerId & 0xffff0000) | 0x0001
     if userId == 65537 then return true end
+    if not osirisReady then return false end
     local host = Osi.GetHostCharacter()
     for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ClientControl")) do
         if entity.UserReservedFor.UserID == userId then
@@ -269,6 +275,7 @@ end)
 
 Ext.Events.SessionLoaded:Subscribe(function()
     -- 会话代数让上一存档已排队的同步和测试经验闭包全部失效。
+    osirisReady = false
     sessionGeneration = sessionGeneration + 1
     syncing = {}
     scheduled = {}
@@ -303,6 +310,8 @@ Ext.Osiris.RegisterListener("LeftCombat", 2, "after", function(character)
 end)
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function()
+    osirisReady = true
+    invalidateMcm()
     scheduleAllPlayers(500)
     scheduleLevel12TestExperience(750)
 end)
