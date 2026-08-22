@@ -67,7 +67,17 @@ Require (@($manifest | Sort-Object -Unique).Count -eq $manifest.Count) '打包�
 foreach ($relative in $manifest) {
     Require (-not [IO.Path]::IsPathRooted($relative)) "打包清单包含绝对路径: $relative"
     Require (-not $relative.Contains('..')) "打包清单包含父目录跳转: $relative"
+    if ($relative.EndsWith('.lsf')) {
+        $resourceSource = Join-Path $root ('resource-src\' + $relative.Replace('/', '\') + '.lsx')
+        Require (Test-Path -LiteralPath $resourceSource -PathType Leaf) "LSF 清单缺少源文件: $relative"
+    }
 }
+$declaredResourceSources = @($manifest | Where-Object { $_.EndsWith('.lsf') } | ForEach-Object { $_ + '.lsx' } | Sort-Object)
+$actualResourceSources = @(Get-ChildItem -LiteralPath (Join-Path $root 'resource-src') -Recurse -File -Filter '*.lsx' | ForEach-Object {
+    [IO.Path]::GetRelativePath((Join-Path $root 'resource-src'), $_.FullName).Replace('\', '/')
+} | Sort-Object)
+Require ($declaredResourceSources.Count -eq $actualResourceSources.Count) 'LSF 源文件数量与清单不一致'
+Require (@(Compare-Object $declaredResourceSources $actualResourceSources).Count -eq 0) 'LSF 源文件集合与清单不一致'
 
 $languagePaths = @(
     'Chinese',
