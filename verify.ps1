@@ -828,9 +828,11 @@ Require ([regex]::IsMatch($mcmProtocolCode, '(?m)^\s*Version\s*=\s*4\s*,') `
     'MCM protocol test-experience contract is missing'
 $applySnapshotBlock = [regex]::Match($mcmClientCode,
     '(?ms)^local\s+function\s+applySnapshot\s*\([^)]*\).*?(?=^local\s+function\s+receive)').Value
-Require ($applySnapshotBlock -ne '' -and [regex]::IsMatch($applySnapshotBlock,
+$testExperienceLifecycleBlock = [regex]::Match($applySnapshotBlock,
+    '(?ms)if\s+controls\.TestExperience\s*~=\s*nil\s+then(?<body>.*?)(?=^[ \t]*end\b)').Groups['body'].Value
+Require ($applySnapshotBlock -ne '' -and [regex]::IsMatch($testExperienceLifecycleBlock,
     '(?s)controls\.TestExperience\.Checked\s*=.*?snapshot\.TestLevel12Experience') `
-    -and $applySnapshotBlock.Contains('controls.TestExperience.Disabled = disabled')) `
+    -and $testExperienceLifecycleBlock.Contains('controls.TestExperience.Disabled = disabled')) `
     'MCM applySnapshot must own the test-experience control state'
 $renderGeneralBlock = [regex]::Match($mcmClientCode,
     '(?ms)^local\s+function\s+renderGeneral\s*\([^)]*\).*?(?=^local\s+function\s+renderOrigins)').Value
