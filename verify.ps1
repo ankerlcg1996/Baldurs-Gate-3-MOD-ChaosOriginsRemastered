@@ -308,7 +308,7 @@ $generatedCatalogCheck = Join-Path $ProjectRoot 'work\generated-race-catalog-che
 $raceCatalogLuaPath = Join-Path $luaRoot 'RaceCatalog.lua'
 $generatedCatalogText = (Get-Content -Raw -LiteralPath $generatedCatalogCheck -Encoding UTF8) -replace '\r\n', "`n"
 $raceCatalogText = (Get-Content -Raw -LiteralPath $raceCatalogLuaPath -Encoding UTF8) -replace '\r\n', "`n"
-Require ($generatedCatalogText -ceq $raceCatalogText) `
+Require ([string]::Equals($generatedCatalogText, $raceCatalogText, [StringComparison]::Ordinal)) `
     'RaceCatalog.lua is stale; regenerate it from official-data/race-catalog.json'
 $raceCatalogLua = Get-Content -Raw -LiteralPath $raceCatalogLuaPath -Encoding UTF8
 foreach ($token in @('CandidateSpellPolicy = "grant_all"', 'RaceCount = 39', 'TagCount = 32',
