@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">威尔身份</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">卡菈克身份</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">邪念身份</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">切换该起源身份及当前等级已解锁的对应能力。同一时间最多启用一种身份；开启新身份会关闭旧身份，战斗中不能切换。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">独立切换该起源身份及当前等级已解锁的对应能力，可与其他起源身份同时启用；战斗中不能切换。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">目盲1回合：远程攻击范围缩短至3m，攻击具有劣势，针对自身的攻击具有优势。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">持续1回合。随机从强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣中选择一种，受到该类型伤害翻倍。该临时惩罚结束后，混沌迷失层数仍然保留。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">每次混沌受创抽到负面结果，迷失便加深1层，并尝试转化为混沌之力。成功后迷失清零；休息无法使其消退。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;查看转化概率&lt;/LSTag&gt;。</content>
@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">法术劣势</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">流血</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下开关仅作用于当前主控混沌角色，并随存档保存。战斗中全部锁定；关闭机制会立即移除由本模组授予的对应能力。</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">起源身份七选一，也可全部关闭。启用后会授予对应官方起源标签与按等级解锁的能力，可能改变剧情判定；战斗中不能切换。</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">七项起源身份均可独立开关，也可同时启用多项。启用后会授予对应官方起源标签与按等级解锁的能力，可能改变剧情判定；战斗中不能切换。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">眩晕</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">常规设置</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">击杀获取混沌之力</content>

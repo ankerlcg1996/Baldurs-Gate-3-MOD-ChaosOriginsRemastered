@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">Wyll Identity</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">Karlach Identity</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">Dark Urge Identity</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">Toggle this origin identity and its abilities unlocked at your current level. Only one identity can be active at a time; enabling a new identity disables the previous one. Cannot be changed in combat.</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">Toggle this origin identity and its abilities unlocked at your current level independently. Multiple identities may be enabled together. Cannot be changed in combat.</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">Become Blinded for 1 turn: ranged attacks are limited to 3 m, attacks have Disadvantage, and attacks against it have Advantage.</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">Lasts 1 turn. Randomly selects Acid, Cold, Fire, Force, Lightning, Necrotic, Poison, Psychic, Radiant, or Thunder; damage of that type is doubled. The Chaos Lost stack remains after this temporary penalty ends.</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">Each negative Chaos Wound result deepens Chaos Lost by 1 and attempts to turn it into Chaos Power. A success resets Lost to 0; resting cannot reduce it. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;View conversion chances&lt;/LSTag&gt;.</content>
@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">Spell Disadvantage</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">Bleeding</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">These switches affect only the currently controlled Chaos character and are stored in the save. All settings are locked in combat; disabling a mechanic immediately removes the abilities granted by this mod.</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">Choose at most one of seven origin identities, or leave all disabled. An identity grants its official origin tag and level-gated abilities and may alter story checks. It cannot be changed in combat.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">Each of the seven origin identities can be toggled independently, and multiple identities may be enabled together. Each grants its official origin tag and level-gated abilities and may alter story checks. They cannot be changed in combat.</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">Stunned</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">General Settings</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">Chaos Power from Kills</content>

@@ -98,7 +98,7 @@ $originStatusNames = @('ASTARION', 'GALE', 'LAEZEL', 'SHADOWHEART', 'WYLL', 'KAR
 foreach ($entry in $originStatusNames) {
     $block = [regex]::Match($statusText,
         '(?ms)^new entry "COR_ORIGIN_TAG_' + $entry + '"\r?\n.*?(?=^new entry |\z)').Value
-    Require ($block -ne '' -and $block.Contains('data "StackId" "COR_ORIGIN_IDENTITY"') `
+    Require ($block -ne '' -and $block.Contains('data "StackId" "COR_ORIGIN_TAG_' + $entry + '"') `
         -and $block.Contains('data "Boosts" ""') -and -not $block.Contains('Tag(REALLY_')) `
         "Origin identity marker status is invalid: $entry"
 }
@@ -202,16 +202,16 @@ Require (([regex]::Matches($baseFeatures, '"(?:Target|Shout)_[A-Za-z0-9_]+"')).C
     'BaseFeatures.lua must declare exactly seven spells'
 
 $stateLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'ChaosState.lua') -Encoding UTF8
-foreach ($token in @('SCHEMA_VERSION = 5', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
-    'state.SchemaVersion == 3', 'state.SchemaVersion == 4', 'NativeRaceTags',
+foreach ($token in @('SCHEMA_VERSION = 6', 'state.SchemaVersion == 1', 'state.SchemaVersion == 2',
+    'state.SchemaVersion == 3', 'state.SchemaVersion == 4', 'state.SchemaVersion == 5', 'NativeRaceTags',
     'RaceGranted', 'RewardItems', 'StarterRewardsVersion', 'Granted', 'Persistent = true',
-    'OriginGranted', 'ActiveOriginIdentity', 'MechanicGranted', 'PendingDuality',
+    'OriginGranted', 'OriginIdentities', 'MechanicGranted', 'PendingDuality',
     'owned == "adding"', 'owned == "removing"')) {
     Require ($stateLua.Contains($token)) "Strict state implementation is missing: $token"
 }
 $originFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'OriginFeatures.lua') -Encoding UTF8
 foreach ($token in @('definition.Tag', 'record.OriginGranted.Tags', 'GrantLedger.EnsureTag',
-    'GrantLedger.RemoveTag')) {
+    'GrantLedger.RemoveTag', 'record.OriginIdentities[definition.Name]', 'function M.SetEnabled')) {
     Require ($originFeaturesLua.Contains($token)) "Origin identity tag ownership is missing: $token"
 }
 $grantLedgerLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'GrantLedger.lua') -Encoding UTF8
@@ -564,7 +564,7 @@ Require ($mcmBlueprint.Tabs.Count -eq 1 -and $mcmBlueprint.Tabs[0].TabId -eq 'bo
 
 $mcmProtocol = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'McmProtocol.lua') -Encoding UTF8
 $mcmClient = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'BootstrapClient.lua') -Encoding UTF8
-foreach ($token in @('Version = 1', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
+foreach ($token in @('Version = 2', 'Channel = "MCM"', 'Origins = {', 'Mechanics = {',
     'WoundEffects = {')) {
     Require ($mcmProtocol.Contains($token)) "MCM protocol is missing: $token"
 }
@@ -579,7 +579,7 @@ foreach ($forbiddenClientToken in @('Ext.Vars', 'Osi.SetTag', 'Osi.ClearTag', 'O
         "MCM client must not mutate authoritative state directly: $forbiddenClientToken"
 }
 foreach ($token in @('SetRequestHandler', 'request.CharacterId ~= snapshot.CharacterId',
-    'Osi.IsInCombat', 'OriginFeatures.SetActive', 'ChaosMechanics.SetMechanic',
+    'Osi.IsInCombat', 'OriginFeatures.SetEnabled', 'ChaosMechanics.SetMechanic',
     'ChaosMechanics.SetWoundEffect', 'isHostPeer(peerId)', 'ClientControl',
     'local osirisReady = false', 'if not osirisReady then', 'osirisReady = true')) {
     Require ($bootstrap.Contains($token)) "MCM server authority is missing: $token"

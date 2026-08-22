@@ -3,8 +3,11 @@ local ChaosCharacter = Ext.Require("ChaosCharacter.lua")
 
 local MODULE_UUID = "9112dfde-d843-408f-b59b-9c893f5f7d92"
 local STATE_NAME = "State"
-local SCHEMA_VERSION = 5
+local SCHEMA_VERSION = 6
 local registered = false
+local ORIGIN_IDENTITY_KEYS = {
+    "Astarion", "Gale", "Laezel", "Shadowheart", "Wyll", "Karlach", "DarkUrge"
+}
 local WOUND_EFFECT_KEYS = {
     "Madness", "Frightened", "Stunned", "Silenced", "Prone", "Blinded", "Slowed",
     "Poisoned", "Bleeding", "Burning", "MeleeDisadvantage", "RangedDisadvantage",
@@ -14,6 +17,12 @@ local WOUND_EFFECT_KEYS = {
 local function defaultWoundEffects()
     local result = {}
     for _, key in ipairs(WOUND_EFFECT_KEYS) do result[key] = true end
+    return result
+end
+
+local function defaultOriginIdentities()
+    local result = {}
+    for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do result[key] = false end
     return result
 end
 
@@ -68,7 +77,7 @@ local function validateCharacter(record, characterId)
         Granted = true,
         RaceGranted = true,
         OriginGranted = true,
-        ActiveOriginIdentity = true,
+        OriginIdentities = true,
         MechanicGranted = true,
         Mechanics = true,
         WoundEffects = true,
@@ -99,14 +108,18 @@ local function validateCharacter(record, characterId)
     validateGrantMap(record.OriginGranted.Passives, "origin passive grant ledger")
     validateGrantMap(record.OriginGranted.Spells, "origin spell grant ledger")
     validateGrantMap(record.OriginGranted.Tags, "origin tag grant ledger")
-    local validIdentity = {
-        [""] = true, Astarion = true, Gale = true, Laezel = true,
-        Shadowheart = true, Wyll = true, Karlach = true, DarkUrge = true
-    }
-    assert(type(record.ActiveOriginIdentity) == "string"
-        and validIdentity[record.ActiveOriginIdentity] == true,
-        "ChaosOriginsRemastered: invalid active origin identity "
-            .. tostring(record.ActiveOriginIdentity) .. " for " .. characterId)
+    assert(type(record.OriginIdentities) == "table",
+        "ChaosOriginsRemastered: origin identities must be a table " .. characterId)
+    local expectedIdentities = defaultOriginIdentities()
+    assertOnlyKeys(record.OriginIdentities, expectedIdentities, "origin identities")
+    local identityCount = 0
+    for key, enabled in pairs(record.OriginIdentities) do
+        assert(type(enabled) == "boolean",
+            "ChaosOriginsRemastered: invalid origin identity toggle " .. tostring(key))
+        identityCount = identityCount + 1
+    end
+    assert(identityCount == #ORIGIN_IDENTITY_KEYS,
+        "ChaosOriginsRemastered: origin identity toggle set is incomplete " .. characterId)
 
     assert(type(record.MechanicGranted) == "table",
         "ChaosOriginsRemastered: mechanic grant ledger must be a table " .. characterId)
@@ -170,7 +183,7 @@ local function newCharacter()
         Granted = { Passives = {}, Spells = {} },
         RaceGranted = { Passives = {}, Spells = {}, Tags = {} },
         OriginGranted = { Passives = {}, Spells = {}, Tags = {} },
-        ActiveOriginIdentity = "",
+        OriginIdentities = defaultOriginIdentities(),
         MechanicGranted = { Passives = {}, Spells = {} },
         Mechanics = {
             Skills = true, Power = true, Wound = true, KillPower = true,
@@ -260,6 +273,24 @@ local function root()
         -- 1.0.13 以前只用临时状态模拟起源身份，没有实际官方标签归属账本。
         for _, record in pairs(state.Characters) do
             record.OriginGranted.Tags = {}
+        end
+        state.SchemaVersion = 5
+        M.MarkDirty()
+    end
+    if state.SchemaVersion == 5 then
+        -- 旧版起源身份是单选字符串；迁移后保留原选项并改为七个独立开关。
+        local validIdentity = { [""] = true }
+        for _, key in ipairs(ORIGIN_IDENTITY_KEYS) do validIdentity[key] = true end
+        for characterId, record in pairs(state.Characters) do
+            assert(type(record.ActiveOriginIdentity) == "string"
+                and validIdentity[record.ActiveOriginIdentity] == true,
+                "ChaosOriginsRemastered: invalid legacy origin identity "
+                    .. tostring(record.ActiveOriginIdentity) .. " for " .. characterId)
+            record.OriginIdentities = defaultOriginIdentities()
+            if record.ActiveOriginIdentity ~= "" then
+                record.OriginIdentities[record.ActiveOriginIdentity] = true
+            end
+            record.ActiveOriginIdentity = nil
         end
         state.SchemaVersion = SCHEMA_VERSION
         M.MarkDirty()

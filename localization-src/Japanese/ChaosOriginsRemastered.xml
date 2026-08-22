@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">ウィルのアイデンティティ</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">カーラックのアイデンティティ</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">ダークアージのアイデンティティ</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">このオリジン識別と現在レベルで解放済みの能力を切り替える。同時に有効にできる識別は1つだけで、新しい識別を有効にすると以前の識別は無効になる。戦闘中は変更できない。</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">このオリジン識別と現在レベルで解放済みの能力を個別に切り替える。複数の識別を同時に有効化できる。戦闘中は変更できない。</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1ターン盲目になる。遠隔攻撃の射程は3mに制限され、攻撃が不利、受ける攻撃が有利になる。</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1ターン。酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴から1種をランダムに選び、そのダメージを2倍受ける。一時的なペナルティ終了後も混沌の迷走層は残る。</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">混沌の受創で負の結果が出るたび、迷走が1深まり、混沌の力への変換を試みる。成功すると迷走は0に戻り、休憩では減少しない。&lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;変換確率を見る&lt;/LSTag&gt;。</content>
@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">呪文不利</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">出血</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">以下のスイッチは現在操作中の混沌キャラクターだけに適用され、セーブに保存される。戦闘中は変更不可。機構を無効にすると、このMODが付与した対応能力は直ちに削除される。</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7つのオリジン識別から最大1つを選ぶか、すべて無効にする。識別は公式オリジンタグとレベル別能力を付与し、物語判定に影響する場合がある。戦闘中は変更不可。</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">7つのオリジン識別は個別に切り替えられ、複数を同時に有効化できる。識別は公式オリジンタグとレベル別能力を付与し、物語判定に影響する場合がある。戦闘中は変更不可。</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">朦朧</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">一般設定</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">撃破による混沌の力</content>

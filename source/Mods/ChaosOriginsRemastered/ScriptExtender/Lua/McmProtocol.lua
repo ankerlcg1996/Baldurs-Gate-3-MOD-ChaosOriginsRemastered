@@ -1,5 +1,5 @@
 local M = {
-    Version = 1,
+    Version = 2,
     Channel = "MCM",
     Origins = {
         { "Astarion", "hfa05cce9gef4dg570bgbc1fg7187d154129d" },

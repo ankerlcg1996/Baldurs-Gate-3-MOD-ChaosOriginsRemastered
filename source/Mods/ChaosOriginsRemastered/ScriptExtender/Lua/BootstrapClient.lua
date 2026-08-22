@@ -48,7 +48,8 @@ local function applySnapshot(code)
     for _, definition in ipairs(Protocol.Origins) do
         local control = controls.Origins[definition[1]]
         if control ~= nil then
-            control.Checked = snapshot ~= nil and snapshot.ActiveOriginIdentity == definition[1]
+            control.Checked = snapshot ~= nil and snapshot.OriginIdentities ~= nil
+                and snapshot.OriginIdentities[definition[1]] == true
             control.Disabled = disabled
         end
     end
@@ -129,12 +130,8 @@ local function render(parent)
     parent:AddText(loc(Protocol.Text.OriginHelp))
     for _, definition in ipairs(Protocol.Origins) do
         local key, handle = definition[1], definition[2]
-        controls.Origins[key] = checkbox(parent, loc(handle), false, function(value)
-            if value then request("SetOrigin", key, true)
-            elseif snapshot ~= nil and snapshot.ActiveOriginIdentity == key then
-                request("SetOrigin", "", false)
-            end
-        end)
+        controls.Origins[key] = checkbox(parent, loc(handle), false,
+            function(value) request("SetOrigin", key, value) end)
     end
     parent:AddSeparator()
     for _, definition in ipairs(Protocol.WoundEffects) do

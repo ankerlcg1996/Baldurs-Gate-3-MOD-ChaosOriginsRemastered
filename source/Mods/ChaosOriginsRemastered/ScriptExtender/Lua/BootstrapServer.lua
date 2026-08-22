@@ -166,7 +166,7 @@ local function hostSnapshot()
         CharacterId = host,
         IsChaos = true,
         InCombat = Osi.IsInCombat(host) ~= 0,
-        ActiveOriginIdentity = saved.ActiveOriginIdentity,
+        OriginIdentities = copyBooleanMap(saved.OriginIdentities, McmProtocol.Origins),
         Mechanics = copyBooleanMap(saved.Mechanics, McmProtocol.Mechanics),
         WoundEffects = copyBooleanMap(saved.WoundEffects, McmProtocol.WoundEffects),
         ChaosPower = saved.ChaosPower,
@@ -248,9 +248,11 @@ mcmChannel:SetRequestHandler(function(request, peerId)
     local changed = false
     if request.Action == "SetOrigin" then
         assert(type(request.Key) == "string"
-            and (request.Key == "" or protocolContains(McmProtocol.Origins, request.Key)),
+            and protocolContains(McmProtocol.Origins, request.Key),
             "ChaosOriginsRemastered: invalid MCM origin")
-        changed = OriginFeatures.SetActive(snapshot.CharacterId, saved, request.Key)
+        assert(type(request.Value) == "boolean",
+            "ChaosOriginsRemastered: MCM origin value must be boolean")
+        changed = OriginFeatures.SetEnabled(snapshot.CharacterId, saved, request.Key, request.Value)
     elseif request.Action == "SetMechanic" then
         assert(protocolContains(McmProtocol.Mechanics, request.Key),
             "ChaosOriginsRemastered: invalid MCM mechanic")

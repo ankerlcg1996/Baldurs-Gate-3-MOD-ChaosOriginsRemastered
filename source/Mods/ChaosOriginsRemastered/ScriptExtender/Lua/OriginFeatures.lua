@@ -77,7 +77,7 @@ end
 
 local function statusesMatch(character, record)
     for _, definition in ipairs(M.Definitions) do
-        local expected = record.ActiveOriginIdentity == definition.Name and 1 or 0
+        local expected = record.OriginIdentities[definition.Name] and 1 or 0
         if Osi.HasActiveStatus(character, definition.Status) ~= expected then return false end
     end
     return true
@@ -105,7 +105,7 @@ local function scheduleAlignment(character, record)
             if allPassivesReady then
                 local guard = guarded(character)
                 for _, definition in ipairs(M.Definitions) do
-                    local expected = operation.Record.ActiveOriginIdentity == definition.Name and 1 or 0
+                    local expected = operation.Record.OriginIdentities[definition.Name] and 1 or 0
                     if Osi.HasActiveStatus(character, definition.Status) ~= expected
                         and guard[definition.Status] == nil then
                         -- TogglePassive 没有显式目标参数，因此先比对状态，再记录预期事件并翻转一次。
@@ -126,14 +126,15 @@ end
 
 local function desiredFeatures(record, level)
     local passives, spells, tags = {}, {}, {}
-    local definition = byName[record.ActiveOriginIdentity]
-    if definition ~= nil then
-        tags[definition.Tag] = true
-        for _, feature in ipairs(definition.Passives) do
-            if feature[2] <= level then passives[feature[1]] = true end
-        end
-        for _, feature in ipairs(definition.Spells) do
-            if feature[2] <= level then spells[feature[1]] = true end
+    for _, definition in ipairs(M.Definitions) do
+        if record.OriginIdentities[definition.Name] then
+            tags[definition.Tag] = true
+            for _, feature in ipairs(definition.Passives) do
+                if feature[2] <= level then passives[feature[1]] = true end
+            end
+            for _, feature in ipairs(definition.Spells) do
+                if feature[2] <= level then spells[feature[1]] = true end
+            end
         end
     end
     return passives, spells, tags
@@ -195,19 +196,20 @@ function M.HandleStatus(character, status, enabled, record)
         Osi.TogglePassive(character, definition.Passive)
         return false
     end
-    if enabled then record.ActiveOriginIdentity = definition.Name
-    elseif record.ActiveOriginIdentity == definition.Name then record.ActiveOriginIdentity = "" end
+    record.OriginIdentities[definition.Name] = enabled
     State.MarkDirty()
     return true
 end
 
-function M.SetActive(character, record, identity)
-    assert(identity == "" or byName[identity] ~= nil,
+function M.SetEnabled(character, record, identity, enabled)
+    assert(byName[identity] ~= nil,
         "ChaosOriginsRemastered: invalid requested origin identity " .. tostring(identity))
-    if record.ActiveOriginIdentity == identity then return false end
+    assert(type(enabled) == "boolean",
+        "ChaosOriginsRemastered: origin identity value must be boolean")
+    if record.OriginIdentities[identity] == enabled then return false end
     assert(Osi.IsInCombat(character) == 0,
         "ChaosOriginsRemastered: origin identity cannot change in combat")
-    record.ActiveOriginIdentity = identity
+    record.OriginIdentities[identity] = enabled
     State.MarkDirty()
     return true
 end

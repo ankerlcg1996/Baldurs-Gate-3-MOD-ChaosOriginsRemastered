@@ -9,7 +9,7 @@
   <content contentuid="hbb2cc0a8gfdcdg5a4ag9783gf62a2527e686" version="1">윌 정체성</content>
   <content contentuid="hcf23c2c6ga9a3g55bega9c4g60781e86156a" version="1">카를라크 정체성</content>
   <content contentuid="h47aa1ba3g2956g5ba5gb309g7e66f6e19d84" version="1">다크 어지 정체성</content>
-  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">해당 오리진 정체성과 현재 레벨에 해금된 능력을 전환합니다. 한 번에 하나의 정체성만 활성화할 수 있으며 새 정체성을 켜면 이전 정체성이 꺼집니다. 전투 중에는 변경할 수 없습니다.</content>
+  <content contentuid="h049bbad7g2b78g5bedg831dga2a983c40cda" version="1">해당 오리진 정체성과 현재 레벨에 해금된 능력을 개별적으로 전환합니다. 여러 정체성을 동시에 활성화할 수 있습니다. 전투 중에는 변경할 수 없습니다.</content>
   <content contentuid="h00d6805bg2015g5665g903fg401742ec1966" version="1">1턴 동안 실명하여 원거리 공격 범위가 3m로 제한되고 공격에 불리점을 받으며 자신을 향한 공격에 이점이 적용됩니다.</content>
   <content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1턴 동안 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 중 하나를 무작위로 선택해 해당 피해를 2배로 받습니다. 임시 불이익이 끝나도 혼돈의 방황 중첩은 남습니다.</content>
   <content contentuid="h02e7b970g8c1fg5c4cg8b1dg0220ee3d1947" version="1">혼돈의 상처에서 부정 결과가 나올 때마다 방황이 1 깊어지고 혼돈의 힘으로 전환을 시도합니다. 성공하면 방황은 0으로 초기화되며 휴식으로 줄어들지 않습니다. &lt;LSTag Type="Status" Tooltip="COR_CHAOS_RULE_LOST"&gt;전환 확률 보기&lt;/LSTag&gt;.</content>
@@ -216,7 +216,7 @@
   <content contentuid="h900b5e21g0e62g50f9g97e5g9fe353e044d3" version="1">주문 불리점</content>
   <content contentuid="h914c9e58ge9f5g55efg8120g6926a10fc847" version="1">출혈</content>
   <content contentuid="h9bc9d749g7b27g5828g8eb4g37f198ae10b5" version="1">아래 설정은 현재 조종 중인 혼돈 캐릭터에만 적용되며 저장 파일에 보관됩니다. 전투 중에는 모두 잠기며, 기능을 끄면 이 모드가 부여한 해당 능력이 즉시 제거됩니다.</content>
-  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">일곱 오리진 정체성 중 최대 하나를 선택하거나 모두 끌 수 있습니다. 정체성은 공식 오리진 태그와 레벨별 능력을 부여하며 스토리 판정에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.</content>
+  <content contentuid="ha4779903g3937g5f9bg9576g88cdb2406df1" version="1">일곱 오리진 정체성을 각각 전환할 수 있으며 여러 정체성을 동시에 활성화할 수 있습니다. 각 정체성은 공식 오리진 태그와 레벨별 능력을 부여하며 스토리 판정에 영향을 줄 수 있습니다. 전투 중에는 변경할 수 없습니다.</content>
   <content contentuid="ha987abd6gbef6g5dc7gb3feg61a6692afb86" version="1">기절</content>
   <content contentuid="haca7c5c3g2473g5302gba14g21d3c3556514" version="1">일반 설정</content>
   <content contentuid="hba36bcaeg6611g5c19g837ag5d9b77eb2d47" version="1">처치로 혼돈의 힘 획득</content>
