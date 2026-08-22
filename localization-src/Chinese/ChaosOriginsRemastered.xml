@@ -245,4 +245,6 @@
   <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">尚未触发</content>
   <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">主控角色已变化，设置未应用。</content>
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">战斗中不能修改混沌设置。</content>
+  <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">起源身份</content>
+  <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">受创结果</content>
 </contentList>

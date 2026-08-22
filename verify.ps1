@@ -593,9 +593,12 @@ foreach ($token in @('Version = 2', 'Channel = "MCM"', 'Origins = {', 'Mechanics
 }
 foreach ($token in @('Ext.Net.IsHost()', 'uiGeneration', 'reply.Revision', 'snapshot.CharacterId',
     'SetOrigin', 'SetMechanic', 'SetWoundEffect', 'MCM_Window_Opened', 'MCM_Window_Closed',
-    'pollSnapshot', 'InsertModMenuTab')) {
+    'pollSnapshot', 'InsertModMenuTab', 'renderGeneral', 'renderOrigins', 'renderWounds',
+    'Protocol.Text.OriginTab', 'Protocol.Text.WoundTab')) {
     Require ($mcmClient.Contains($token)) "MCM client behavior is missing: $token"
 }
+Require (([regex]::Matches($mcmClient, 'MCM\.InsertModMenuTab\(')).Count -eq 3) `
+    'MCM must register separate general, origin and wound tabs'
 foreach ($forbiddenClientToken in @('Ext.Vars', 'Osi.SetTag', 'Osi.ClearTag', 'Osi.AddPassive',
     'Osi.RemovePassive')) {
     Require (-not $mcmClient.Contains($forbiddenClientToken)) `

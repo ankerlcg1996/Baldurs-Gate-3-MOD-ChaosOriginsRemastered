@@ -75,6 +75,8 @@ local M = {
     },
     Text = {
         Tab = "haca7c5c3g2473g5302gba14g21d3c3556514",
+        OriginTab = "h64000001g0001g4001g8001g000000000001",
+        WoundTab = "h64000002g0002g4002g8002g000000000002",
         Help = "h9bc9d749g7b27g5828g8eb4g37f198ae10b5",
         OriginHelp = "ha4779903g3937g5f9bg9576g88cdb2406df1",
         HostOnly = "h77a76816g434ag5c49g8199g60ba18bd10fb",

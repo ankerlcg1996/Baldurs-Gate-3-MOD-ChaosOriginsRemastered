@@ -245,4 +245,6 @@
   <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">Not triggered yet</content>
   <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">The controlled character changed; the setting was not applied.</content>
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">Chaos settings cannot be changed in combat.</content>
+  <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">Origin Identities</content>
+  <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">Wound Outcomes</content>
 </contentList>

@@ -245,4 +245,6 @@
   <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">아직 발동하지 않음</content>
   <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">조종 캐릭터가 바뀌어 설정을 적용하지 않았습니다.</content>
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">전투 중에는 혼돈 설정을 변경할 수 없습니다.</content>
+  <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">오리진 정체성</content>
+  <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">피격 결과</content>
 </contentList>

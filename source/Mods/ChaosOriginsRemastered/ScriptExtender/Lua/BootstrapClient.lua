@@ -11,7 +11,8 @@ local snapshot = nil
 local applying = false
 local mcmOpen = false
 local controls = { Origins = {}, Mechanics = {}, WoundEffects = {} }
-local statusText = nil
+local rendered = { General = false, Origins = false, Wounds = false }
+local statusTexts = {}
 local pollSnapshot
 
 local function loc(handle)
@@ -21,24 +22,30 @@ local function loc(handle)
 end
 
 local function updateStatus(code)
-    if statusText == nil then return end
-    if not Ext.Net.IsHost() then statusText.Label = loc(Protocol.Text.HostOnly); return end
-    if snapshot == nil or not snapshot.Ready then statusText.Label = loc(Protocol.Text.Waiting); return end
-    if not snapshot.IsChaos then statusText.Label = loc(Protocol.Text.NotChaos); return end
-    local wound = loc(Protocol.Text.NoWound)
-    if snapshot.LastWoundOutcome ~= "" then
-        wound = loc(assert(Protocol.WoundOutcomes[snapshot.LastWoundOutcome],
-            "ChaosOriginsRemastered: unknown wound outcome " .. snapshot.LastWoundOutcome))
+    if #statusTexts == 0 then return end
+    local line
+    if not Ext.Net.IsHost() then
+        line = loc(Protocol.Text.HostOnly)
+    elseif snapshot == nil or not snapshot.Ready then
+        line = loc(Protocol.Text.Waiting)
+    elseif not snapshot.IsChaos then
+        line = loc(Protocol.Text.NotChaos)
+    else
+        local wound = loc(Protocol.Text.NoWound)
+        if snapshot.LastWoundOutcome ~= "" then
+            wound = loc(assert(Protocol.WoundOutcomes[snapshot.LastWoundOutcome],
+                "ChaosOriginsRemastered: unknown wound outcome " .. snapshot.LastWoundOutcome))
+        end
+        line = loc(Protocol.Text.CurrentLost) .. ": " .. snapshot.LostCount .. "/10  |  "
+            .. loc(Protocol.Text.CurrentPower) .. ": " .. snapshot.ChaosPower .. "  |  "
+            .. loc(Protocol.Text.KillCount) .. ": " .. snapshot.KillCount .. "  |  "
+            .. loc(Protocol.Text.LastWound) .. ": " .. wound
     end
-    local line = loc(Protocol.Text.CurrentLost) .. ": " .. snapshot.LostCount .. "/10  |  "
-        .. loc(Protocol.Text.CurrentPower) .. ": " .. snapshot.ChaosPower .. "  |  "
-        .. loc(Protocol.Text.KillCount) .. ": " .. snapshot.KillCount .. "  |  "
-        .. loc(Protocol.Text.LastWound) .. ": " .. wound
     if code ~= nil and code ~= "" then
         line = line .. "  |  " .. loc(assert(Protocol.Errors[code],
             "ChaosOriginsRemastered: unknown MCM error " .. code))
     end
-    statusText.Label = line
+    for _, control in ipairs(statusTexts) do control.Label = line end
 end
 
 local function applySnapshot(code)
@@ -116,32 +123,51 @@ local function checkbox(parent, label, initial, onChange)
     return control
 end
 
-local function render(parent)
-    uiGeneration = uiGeneration + 1
-    controls = { Origins = {}, Mechanics = {}, WoundEffects = {} }
-    statusText = parent:AddText(loc(Protocol.Text.Waiting))
+local function addStatus(parent)
+    statusTexts[#statusTexts + 1] = parent:AddText(loc(Protocol.Text.Waiting))
+end
+
+local function finishRender()
+    applySnapshot("")
+    request("GetSnapshot")
+end
+
+local function renderGeneral(parent)
+    if rendered.General then return end
+    rendered.General = true
+    addStatus(parent)
     parent:AddText(loc(Protocol.Text.Help))
     for _, definition in ipairs(Protocol.Mechanics) do
         local key, handle = definition[1], definition[2]
         controls.Mechanics[key] = checkbox(parent, loc(handle), true,
             function(value) request("SetMechanic", key, value) end)
     end
-    parent:AddSeparator()
+    finishRender()
+end
+
+local function renderOrigins(parent)
+    if rendered.Origins then return end
+    rendered.Origins = true
+    addStatus(parent)
     parent:AddText(loc(Protocol.Text.OriginHelp))
     for _, definition in ipairs(Protocol.Origins) do
         local key, handle = definition[1], definition[2]
         controls.Origins[key] = checkbox(parent, loc(handle), false,
             function(value) request("SetOrigin", key, value) end)
     end
-    parent:AddSeparator()
+    finishRender()
+end
+
+local function renderWounds(parent)
+    if rendered.Wounds then return end
+    rendered.Wounds = true
+    addStatus(parent)
     for _, definition in ipairs(Protocol.WoundEffects) do
         local key, handle = definition[1], definition[2]
         controls.WoundEffects[key] = checkbox(parent, loc(handle), true,
             function(value) request("SetWoundEffect", key, value) end)
     end
-    applySnapshot("")
-    request("GetSnapshot")
-    if mcmOpen then pollSnapshot(uiGeneration) end
+    finishRender()
 end
 
 pollSnapshot = function(generation)
@@ -169,4 +195,7 @@ Ext.ModEvents.BG3MCM.MCM_Window_Closed:Subscribe(function()
     mcmOpen = false
 end)
 
-MCM.InsertModMenuTab(loc(Protocol.Text.Tab), render, MODULE_UUID, true)
+-- 分页避免 MCM 自定义页过长时截断起源开关与受创结果。
+MCM.InsertModMenuTab(loc(Protocol.Text.Tab), renderGeneral, MODULE_UUID, true)
+MCM.InsertModMenuTab(loc(Protocol.Text.OriginTab), renderOrigins, MODULE_UUID, true)
+MCM.InsertModMenuTab(loc(Protocol.Text.WoundTab), renderWounds, MODULE_UUID, true)

@@ -245,4 +245,6 @@
   <content contentuid="h62000001g0001g4001g8001g000000000001" version="1">未発動</content>
   <content contentuid="h63000001g0001g4001g8001g000000000001" version="1">操作キャラクターが変わったため、設定は適用されなかった。</content>
   <content contentuid="h63000002g0002g4002g8002g000000000002" version="1">戦闘中は混沌設定を変更できない。</content>
+  <content contentuid="h64000001g0001g4001g8001g000000000001" version="1">オリジン識別</content>
+  <content contentuid="h64000002g0002g4002g8002g000000000002" version="1">被傷結果</content>
 </contentList>
