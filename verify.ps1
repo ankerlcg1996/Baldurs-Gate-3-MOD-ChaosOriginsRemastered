@@ -455,6 +455,17 @@ Require ($mechanicEntryCounts['ChaosCore.txt'] -eq 34 `
     -and $mechanicEntryCounts['Interrupt.txt'] -eq 1) `
     'Mechanic stat family counts changed'
 $chaosCoreText = Get-Content -Raw -LiteralPath $mechanicStats[0] -Encoding UTF8
+$powerStatusBlock = [regex]::Match($chaosCoreText,
+    '(?ms)^new entry "COR_CHAOS_POWER_STACK"\r?\n.*?(?=^new entry |\z)').Value
+Require ($powerStatusBlock.Contains('data "StackType" "Additive"') `
+    -and $powerStatusBlock.Contains('FreezeDuration') `
+    -and -not $powerStatusBlock.Contains('DisablePortraitIndicator')) `
+    'Chaos Power must use a visible frozen Additive stack like an official charge status'
+$mechanicsFeaturesLua = Get-Content -Raw -LiteralPath (Join-Path $luaRoot 'MechanicsFeatures.lua') -Encoding UTF8
+Require ($mechanicsFeaturesLua.Contains(
+    'Osi.ApplyStatus(character, "COR_CHAOS_POWER_STACK", record.ChaosPower, 100, character)') `
+    -and -not $mechanicsFeaturesLua.Contains('for _ = 1, record.ChaosPower do')) `
+    'Chaos Power display must write its complete Additive stack count in one application'
 $allInPassiveBlock = [regex]::Match($chaosCoreText,
     '(?ms)^new entry "COR_ChaosAllIn"\r?\n.*?(?=^new entry |\z)').Value
 Require ($allInPassiveBlock.Contains('data "StatsFunctorContext" "OnCreate;OnShortRest"') `
