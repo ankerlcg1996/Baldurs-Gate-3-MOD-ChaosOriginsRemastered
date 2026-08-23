@@ -67,6 +67,48 @@
           <attribute id="V1" type="float" value="0.2509765625" />
           <attribute id="V2" type="float" value="0.3740234375" />
         </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_Wound" />
+          <attribute id="U1" type="float" value="0.1259765625" />
+          <attribute id="U2" type="float" value="0.2490234375" />
+          <attribute id="V1" type="float" value="0.2509765625" />
+          <attribute id="V2" type="float" value="0.3740234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_Duality" />
+          <attribute id="U1" type="float" value="0.2509765625" />
+          <attribute id="U2" type="float" value="0.3740234375" />
+          <attribute id="V1" type="float" value="0.2509765625" />
+          <attribute id="V2" type="float" value="0.3740234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_FateRevision" />
+          <attribute id="U1" type="float" value="0.3759765625" />
+          <attribute id="U2" type="float" value="0.4990234375" />
+          <attribute id="V1" type="float" value="0.2509765625" />
+          <attribute id="V2" type="float" value="0.3740234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_Mastery" />
+          <attribute id="U1" type="float" value="0.0009765625" />
+          <attribute id="U2" type="float" value="0.1240234375" />
+          <attribute id="V1" type="float" value="0.3759765625" />
+          <attribute id="V2" type="float" value="0.4990234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_MasteryTune" />
+          <attribute id="U1" type="float" value="0.1259765625" />
+          <attribute id="U2" type="float" value="0.2490234375" />
+          <attribute id="V1" type="float" value="0.3759765625" />
+          <attribute id="V2" type="float" value="0.4990234375" />
+        </node>
+        <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_MasteryCorrect" />
+          <attribute id="U1" type="float" value="0.2509765625" />
+          <attribute id="U2" type="float" value="0.3740234375" />
+          <attribute id="V1" type="float" value="0.3759765625" />
+          <attribute id="V2" type="float" value="0.4990234375" />
+        </node>
       </children>
     </node>
   </region>

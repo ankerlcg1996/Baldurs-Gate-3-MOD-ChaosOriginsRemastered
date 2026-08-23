@@ -190,15 +190,15 @@ foreach ($field in @{ IsHidden = 'true'; MaxValue = '12'; ReplenishType = 'Never
 }
 
 $masteryRequiredLines = @{
-    COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Power"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
-    COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Power"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,100%,0)"')
-    Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Power"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" ""', 'data "Requirements" ""', 'data "Cooldown" ""')
-    Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Power"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
-    Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Lost"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
-    COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "Icon" "COS_Power"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
-    COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "Icon" "COS_Lost"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
-    COS_CHAOS_MASTERY_POSITIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h5a27b995g2d15g4a0ega6a1g0e3a96807685;1"', 'data "Description" "hfb12183cg2eefg4c66g88cbg1d4452ea0277;1"', 'data "Icon" "COS_Power"', 'data "StackId" "COS_CHAOS_MASTERY_POSITIVE_INFO"')
-    COS_CHAOS_MASTERY_NEGATIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h4cb49a94g6cdag4be4g87eag95893020d052;1"', 'data "Description" "h6a7fc261g0307g46aeg9efcgea4e9d2add92;1"', 'data "Icon" "COS_Lost"', 'data "StackId" "COS_CHAOS_MASTERY_NEGATIVE_INFO"')
+    COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Mastery"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
+    COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Mastery"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,100%,0)"')
+    Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Mastery"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" ""', 'data "Requirements" ""', 'data "Cooldown" ""')
+    Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryTune"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryCorrect"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_POSITIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h5a27b995g2d15g4a0ega6a1g0e3a96807685;1"', 'data "Description" "hfb12183cg2eefg4c66g88cbg1d4452ea0277;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_POSITIVE_INFO"')
+    COS_CHAOS_MASTERY_NEGATIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h4cb49a94g6cdag4be4g87eag95893020d052;1"', 'data "Description" "h6a7fc261g0307g46aeg9efcgea4e9d2add92;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_NEGATIVE_INFO"')
     COS_CHAOS_MASTERY_CALM_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h0f888c08ge96ag4ac4ga02fgd41297ea527e;1"', 'data "Description" "hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_CALM_INFO"')
     COS_CHAOS_MASTERY_CALM_LOG = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h02971056gdde9g4363g80d5gdaf480557af7;1"', 'data "Description" "h8fae3635gba76g4614ga776gf8054d011d82;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_CALM_LOG"', 'data "StackType" "Overwrite"', 'data "StatusPropertyFlags" "DisableOverhead;DisablePortraitIndicator"')
     COS_CHAOS_MASTERY_RESULT_L01 = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h7f3cf979gec23g46b4g87a5g17724ad407e7;1"', 'data "Description" "hdb91fe36gf912g4c6bga223g06a6647455f7;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_RESULT_L01"', 'data "Boosts" "TemporaryHP(1d4+ProficiencyBonus)"', 'data "StatusPropertyFlags" "DisableOverhead;IgnoreResting"')
@@ -230,10 +230,39 @@ foreach ($entry in $expectedMasteryEntries) {
 }
 
 [xml]$masteryIconDocument = Get-Content -LiteralPath (Join-Path $root "Public\$module\GUI\Icons_ChaosOrigins.lsx") -Raw -Encoding UTF8
-$registeredMasteryIcons = @($masteryIconDocument.SelectNodes('//node[@id="IconUV"]/attribute[@id="MapKey"]') | ForEach-Object { [string]$_.value })
+$iconUvNodes = @($masteryIconDocument.SelectNodes('//node[@id="IconUV"]'))
+$registeredMasteryIcons = @($iconUvNodes | ForEach-Object { [string]$_.SelectSingleNode('attribute[@id="MapKey"]').value })
+$expectedIconUv = @{
+    COS_Identity = @('0.0009765625', '0.1240234375', '0.0009765625', '0.1240234375')
+    COS_Status = @('0.1259765625', '0.2490234375', '0.0009765625', '0.1240234375')
+    COS_Lost = @('0.2509765625', '0.3740234375', '0.0009765625', '0.1240234375')
+    COS_Power = @('0.3759765625', '0.4990234375', '0.0009765625', '0.1240234375')
+    COS_AllIn = @('0.0009765625', '0.1240234375', '0.1259765625', '0.2490234375')
+    COS_Echo = @('0.1259765625', '0.2490234375', '0.1259765625', '0.2490234375')
+    COS_Strike = @('0.2509765625', '0.3740234375', '0.1259765625', '0.2490234375')
+    COS_Genesis = @('0.3759765625', '0.4990234375', '0.1259765625', '0.2490234375')
+    COS_Finisher = @('0.0009765625', '0.1240234375', '0.2509765625', '0.3740234375')
+    COS_Wound = @('0.1259765625', '0.2490234375', '0.2509765625', '0.3740234375')
+    COS_Duality = @('0.2509765625', '0.3740234375', '0.2509765625', '0.3740234375')
+    COS_FateRevision = @('0.3759765625', '0.4990234375', '0.2509765625', '0.3740234375')
+    COS_Mastery = @('0.0009765625', '0.1240234375', '0.3759765625', '0.4990234375')
+    COS_MasteryTune = @('0.1259765625', '0.2490234375', '0.3759765625', '0.4990234375')
+    COS_MasteryCorrect = @('0.2509765625', '0.3740234375', '0.3759765625', '0.4990234375')
+}
+Require ($registeredMasteryIcons.Count -eq 15 -and @($registeredMasteryIcons | Select-Object -Unique).Count -eq 15 -and `
+    -not (Compare-Object @($expectedIconUv.Keys | Sort-Object) @($registeredMasteryIcons | Sort-Object))) `
+    '技能图集必须恰好注册15个唯一图标键'
+foreach ($node in $iconUvNodes) {
+    $key = [string]$node.SelectSingleNode('attribute[@id="MapKey"]').value
+    $actualUv = @('U1', 'U2', 'V1', 'V2') | ForEach-Object {
+        [string]$node.SelectSingleNode("attribute[@id='$_']").value
+    }
+    Require (($actualUv -join '|') -ceq ($expectedIconUv[$key] -join '|')) "技能图标UV坐标错误: $key"
+}
 $masteryIcons = @([regex]::Matches($masteryStats, '(?m)^data "Icon" "([^"]+)"') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
 foreach ($icon in $masteryIcons) {
-    Require (($icon -in @('COS_Power', 'COS_Lost', 'COS_Echo')) -and ($registeredMasteryIcons -contains $icon)) "掌控混沌使用了未注册或未批准图标: $icon"
+    Require (($icon -in @('COS_Mastery', 'COS_MasteryTune', 'COS_MasteryCorrect', 'COS_Echo')) -and `
+        ($registeredMasteryIcons -contains $icon)) "掌控混沌使用了未注册或未批准图标: $icon"
 }
 
 $passivePath = Join-Path $root "Public\$module\Stats\Generated\Data\Passive.txt"
@@ -503,77 +532,258 @@ try {
     $masteryGoalSha256.Dispose()
 }
 # Task 8 扩展 L02-L12 时必须有意更新完整语义模板及其哈希。
-$expectedMasteryGoalHash = 'ac618c03c5b332848fc881c00c10f990778e38a11da4671a23da835de2cbadc1'
+$expectedMasteryGoalHash = '0844bacf5ba7e6bcc1c7f590fdf8b091897da872a262fb72ef71e2efe0425952'
 Require ($masteryGoalHash -ceq $expectedMasteryGoalHash) `
     'Task 3 一级掌控混沌 Goal 完整语义模板已偏移'
 Require ($masteryGoal.StartsWith("Version 1`nSubGoalCombiner SGC_AND`nINITSECTION`n") -and `
     $masteryGoal.EndsWith("`nEXITSECTION`nENDEXITSECTION")) `
     '掌控混沌 Goal 头尾结构错误'
-foreach ($requiredMasteryStoryText in @(
-    'DB_COS_MasteryCarrier(1, "COS_ChaosMasteryPointL01");',
-    'DB_COS_MasteryEarned(', 'DB_COS_MasteryTuneCount(', 'DB_COS_MasteryCorrectCount(',
-    'PROC_COS_EnsureMasteryCounts', 'PROC_COS_SyncMastery', 'PROC_COS_GrantMasteryFrom',
-    'PROC_COS_UpdateMasterySpell', 'PROC_COS_ConsumeMasteryCarrier', 'PROC_COS_ResetMastery',
-    'LevelGameplayStarted(_, _)', 'GainedControl(_Character)', 'LeveledUp(_Character)',
-    'RespecCompleted(_Character)', 'IntegerMin(_Level, 1, _Cap)',
-    'AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1)',
-    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1)',
-    'GetActionResourceValuePersonal(_Character, "COS_ChaosMasteryPoint", 0, _Points)'
-)) {
-    Require ($masteryGoal.Contains($requiredMasteryStoryText)) `
-        "掌控混沌 Story 缺少一级同步、消费或洗点行为: $requiredMasteryStoryText"
+function Get-MasteryStoryBlocks([string]$Story, [string]$Kind, [string]$Name) {
+    $pattern = '(?ms)^' + [regex]::Escape($Kind) + '\n' + [regex]::Escape($Name) +
+        '\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)'
+    return @([regex]::Matches($Story, $pattern) | ForEach-Object { $_.Value })
 }
-Require ([regex]::Matches($masteryGoal, '(?m)^DB_COS_MasteryCarrier\(1, "COS_ChaosMasteryPointL01"\);$').Count -eq 1) `
-    '一级掌控载体映射必须恰好定义一次'
-Require (-not ($masteryGoal -match 'COS_ChaosMasteryPointL(?:0[2-9]|1[0-2])')) `
-    '一级掌控混沌 Story 不得引用 L02-L12 载体'
+
+function Get-MasteryThenActions([string]$Block) {
+    $parts = @([regex]::Split($Block, '(?m)^THEN$'))
+    if ($parts.Count -ne 2) { return @() }
+    return @($parts[1] -split '\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+}
+
+function Test-MasteryActions([string]$Block, [string[]]$Expected) {
+    $actual = @(Get-MasteryThenActions $Block)
+    return (($actual -join "`n") -ceq ($Expected -join "`n"))
+}
+
+function Test-COSMasteryLedgerSemantics([string]$Story) {
+    if ($Story -match 'GetActionResourceValuePersonal|TimerLaunch|SetEntityEvent|ParentTargetEdge|ApplyStatus\(') { return $false }
+    if ($Story -match 'COS_ChaosMasteryPointL(?:0[2-9]|1[0-2])') { return $false }
+    if ([regex]::Matches($Story, '(?m)^DB_COS_MasteryCarrier\(1, "COS_ChaosMasteryPointL01"\);$').Count -ne 1) { return $false }
+    if ($Story -notmatch 'DB_COS_MasteryUnspent\(' -or $Story -notmatch 'DB_COS_MasterySchema44To45\(') { return $false }
+    if ($Story -match '(?m)^NOT DB_COS_MasteryEarned\([^\n]+\);$') { return $false }
+
+    $syncBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_SyncMastery')
+    if ($syncBlocks.Count -ne 3) { return $false }
+    $guideSync = @($syncBlocks | Where-Object {
+        $_.Contains('HasPassive(_Character, "COS_ChaosMasteryGuide", 0)')
+    })
+    $migratedSync = @($syncBlocks | Where-Object {
+        $_.Contains('DB_COS_MasterySchema44To45(_Character)') -and
+        -not $_.Contains('NOT DB_COS_MasterySchema44To45(_Character)')
+    })
+    $unmigratedSync = @($syncBlocks | Where-Object {
+        $_.Contains('NOT DB_COS_MasterySchema44To45(_Character)')
+    })
+    if ($guideSync.Count -ne 1 -or $migratedSync.Count -ne 1 -or $unmigratedSync.Count -ne 1) { return $false }
+    foreach ($block in $syncBlocks) {
+        if (-not $block.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)')) { return $false }
+    }
+    if (-not (Test-MasteryActions $guideSync[0] @('AddPassive(_Character, "COS_ChaosMasteryGuide");'))) { return $false }
+    if (-not (Test-MasteryActions $migratedSync[0] @('PROC_COS_SyncMasteryAfterSchema45(_Character);'))) { return $false }
+    if (-not (Test-MasteryActions $unmigratedSync[0] @('PROC_COS_MigrateMasterySchema44To45(_Character);'))) { return $false }
+
+    $migrationBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_MigrateMasterySchema44To45')
+    if ($migrationBlocks.Count -ne 3) { return $false }
+    foreach ($block in $migrationBlocks) {
+        if (-not $block.Contains('NOT DB_COS_MasterySchema44To45(_Character)')) { return $false }
+    }
+    $recoverMigration = @($migrationBlocks | Where-Object {
+        $_.Contains('DB_COS_MasteryEarned(_Character, 1)') -and
+        $_.Contains('HasPassive(_Character, _Carrier, 1)')
+    })
+    $spentMigration = @($migrationBlocks | Where-Object {
+        $_.Contains('DB_COS_MasteryEarned(_Character, 1)') -and
+        $_.Contains('HasPassive(_Character, _Carrier, 0)')
+    })
+    $freshMigration = @($migrationBlocks | Where-Object {
+        $_.Contains('NOT DB_COS_MasteryEarned(_Character, 1)')
+    })
+    if ($recoverMigration.Count -ne 1 -or $spentMigration.Count -ne 1 -or $freshMigration.Count -ne 1) { return $false }
+    if (-not $recoverMigration[0].Contains('DB_COS_MasteryCarrier(1, _Carrier)') -or
+        -not $recoverMigration[0].Contains('NOT DB_COS_MasteryUnspent(_Character, 1)')) { return $false }
+    if (-not (Test-MasteryActions $recoverMigration[0] @(
+        'DB_COS_MasteryUnspent(_Character, 1);',
+        'DB_COS_MasterySchema44To45(_Character);',
+        'PROC_COS_SyncMasteryAfterSchema45(_Character);'
+    ))) { return $false }
+    if (-not $spentMigration[0].Contains('DB_COS_MasteryCarrier(1, _Carrier)') -or
+        $spentMigration[0].Contains('DB_COS_MasteryUnspent(') -or
+        -not (Test-MasteryActions $spentMigration[0] @(
+            'DB_COS_MasterySchema44To45(_Character);',
+            'PROC_COS_SyncMasteryAfterSchema45(_Character);'
+        ))) { return $false }
+    if ($freshMigration[0].Contains('DB_COS_MasteryUnspent(') -or
+        -not (Test-MasteryActions $freshMigration[0] @(
+            'DB_COS_MasterySchema44To45(_Character);',
+            'PROC_COS_SyncMasteryAfterSchema45(_Character);'
+        ))) { return $false }
+
+    $afterMigrationBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_SyncMasteryAfterSchema45')
+    if ($afterMigrationBlocks.Count -ne 1 -or
+        -not $afterMigrationBlocks[0].Contains('GetLevel(_Character, _Level)') -or
+        -not $afterMigrationBlocks[0].Contains('IntegerMin(_Level, 1, _Cap)') -or
+        -not (Test-MasteryActions $afterMigrationBlocks[0] @(
+            'PROC_COS_EnsureMasteryCounts(_Character);',
+            'PROC_COS_GrantMasteryFrom(_Character, 1, _Cap);'
+        ))) { return $false }
+
+    $grantBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_GrantMasteryFrom')
+    if ($grantBlocks.Count -ne 3) { return $false }
+    $freshGrant = @($grantBlocks | Where-Object { $_.Contains('NOT DB_COS_MasteryEarned(_Character, _Cursor)') })
+    $knownGrant = @($grantBlocks | Where-Object {
+        $_.Contains('DB_COS_MasteryEarned(_Character, _Cursor)') -and
+        -not $_.Contains('NOT DB_COS_MasteryEarned(_Character, _Cursor)')
+    })
+    $grantEnd = @($grantBlocks | Where-Object { $_.Contains('_Cursor > _Cap') })
+    if ($freshGrant.Count -ne 1 -or $knownGrant.Count -ne 1 -or $grantEnd.Count -ne 1) { return $false }
+    if (-not $freshGrant[0].Contains('DB_COS_MasteryCarrier(_Cursor, _Carrier)') -or
+        -not $freshGrant[0].Contains('HasPassive(_Character, _Carrier, 0)') -or
+        -not (Test-MasteryActions $freshGrant[0] @(
+            'AddPassive(_Character, _Carrier);',
+            'DB_COS_MasteryEarned(_Character, _Cursor);',
+            'DB_COS_MasteryUnspent(_Character, _Cursor);',
+            'PROC_COS_GrantMasteryFrom(_Character, _Next, _Cap);'
+        ))) { return $false }
+    if (-not (Test-MasteryActions $knownGrant[0] @('PROC_COS_GrantMasteryFrom(_Character, _Next, _Cap);'))) { return $false }
+    if (-not (Test-MasteryActions $grantEnd[0] @('PROC_COS_UpdateMasterySpell(_Character);'))) { return $false }
+
+    $updateBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_UpdateMasterySpell')
+    if ($updateBlocks.Count -ne 2) { return $false }
+    $showMastery = @($updateBlocks | Where-Object { $_.Contains('DB_COS_MasteryUnspent(_Character, 1)') -and -not $_.Contains('NOT DB_COS_MasteryUnspent(_Character, 1)') })
+    $hideMastery = @($updateBlocks | Where-Object { $_.Contains('NOT DB_COS_MasteryUnspent(_Character, 1)') })
+    if ($showMastery.Count -ne 1 -or $hideMastery.Count -ne 1) { return $false }
+    if (-not $showMastery[0].Contains('HasSpell(_Character, "Shout_COS_ChaosMastery", 0)') -or
+        -not (Test-MasteryActions $showMastery[0] @('AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1);'))) { return $false }
+    if (-not $hideMastery[0].Contains('HasSpell(_Character, "Shout_COS_ChaosMastery", 1)') -or
+        -not (Test-MasteryActions $hideMastery[0] @('RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);'))) { return $false }
+
+    $consumeBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ConsumeMasteryCarrier')
+    if ($consumeBlocks.Count -ne 1 -or
+        -not $consumeBlocks[0].Contains('DB_COS_MasteryUnspent(_Character, _Level)') -or
+        -not $consumeBlocks[0].Contains('DB_COS_MasteryCarrier(_Level, _Carrier)') -or
+        -not $consumeBlocks[0].Contains('HasPassive(_Character, _Carrier, 1)') -or
+        -not (Test-MasteryActions $consumeBlocks[0] @(
+            'NOT DB_COS_MasteryUnspent(_Character, _Level);',
+            'RemovePassive(_Character, _Carrier);',
+            'PROC_COS_UpdateMasterySpell(_Character);'
+        ))) { return $false }
+
+    foreach ($clearSpec in @(
+        @{ Proc = 'PROC_COS_ClearMasteryUnspent'; Fact = 'DB_COS_MasteryUnspent'; Variable = '_Level' },
+        @{ Proc = 'PROC_COS_ClearMasteryTuneCount'; Fact = 'DB_COS_MasteryTuneCount'; Variable = '_Count' },
+        @{ Proc = 'PROC_COS_ClearMasteryCorrectCount'; Fact = 'DB_COS_MasteryCorrectCount'; Variable = '_Count' }
+    )) {
+        $clearBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' $clearSpec.Proc)
+        $fact = $clearSpec.Fact + '(_Character, ' + $clearSpec.Variable + ')'
+        if ($clearBlocks.Count -ne 1 -or -not $clearBlocks[0].Contains($fact) -or
+            -not (Test-MasteryActions $clearBlocks[0] @(('NOT ' + $fact + ';')))) { return $false }
+    }
+
+    $resetBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ResetMastery')
+    if ($resetBlocks.Count -ne 1 -or -not (Test-MasteryActions $resetBlocks[0] @(
+        'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
+        'PROC_COS_ClearMasteryUnspent(_Character);',
+        'PROC_COS_ClearMasteryTuneCount(_Character);',
+        'PROC_COS_ClearMasteryCorrectCount(_Character);',
+        'DB_COS_MasteryTuneCount(_Character, 0);',
+        'DB_COS_MasteryCorrectCount(_Character, 0);',
+        'PROC_COS_RebuildMasteryAfterRespec(_Character);'
+    ))) { return $false }
+    if ($resetBlocks[0].Contains('RemovePassive(') -or $resetBlocks[0].Contains('DB_COS_MasteryEarned(')) { return $false }
+
+    $respecBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_RebuildMasteryAfterRespec')
+    if ($respecBlocks.Count -ne 2) { return $false }
+    $keepCarrier = @($respecBlocks | Where-Object { $_.Contains('HasPassive(_Character, _Carrier, 1)') })
+    $restoreCarrier = @($respecBlocks | Where-Object { $_.Contains('HasPassive(_Character, _Carrier, 0)') })
+    if ($keepCarrier.Count -ne 1 -or $restoreCarrier.Count -ne 1) { return $false }
+    foreach ($block in $respecBlocks) {
+        if (-not $block.Contains('DB_COS_MasteryEarned(_Character, 1)') -or
+            -not $block.Contains('DB_COS_MasteryCarrier(1, _Carrier)') -or
+            -not $block.Contains('NOT DB_COS_MasteryUnspent(_Character, 1)') -or
+            $block.Contains('RemovePassive(')) { return $false }
+    }
+    if (-not (Test-MasteryActions $keepCarrier[0] @(
+        'DB_COS_MasteryUnspent(_Character, 1);',
+        'PROC_COS_UpdateMasterySpell(_Character);'
+    ))) { return $false }
+    if (-not (Test-MasteryActions $restoreCarrier[0] @(
+        'AddPassive(_Character, _Carrier);',
+        'DB_COS_MasteryUnspent(_Character, 1);',
+        'PROC_COS_UpdateMasterySpell(_Character);'
+    ))) { return $false }
+
+    foreach ($route in @(
+        @{ Spell = 'Shout_COS_ChaosMasteryTune'; Count = 'DB_COS_MasteryTuneCount' },
+        @{ Spell = 'Shout_COS_ChaosMasteryCorrect'; Count = 'DB_COS_MasteryCorrectCount' }
+    )) {
+        $blocks = @(@(Get-MasteryStoryBlocks $Story 'IF' 'CastedSpell') | Where-Object {
+            $_.Contains('CastedSpell(_Character, "' + $route.Spell + '", _, _, _)')
+        })
+        if ($blocks.Count -ne 1) { return $false }
+        $block = $blocks[0]
+        if (-not $block.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -or
+            -not $block.Contains('DB_COS_MasteryUnspent((CHARACTER)_Character, 1)') -or
+            -not $block.Contains('DB_COS_MasteryCarrier(1, _Carrier)') -or
+            -not $block.Contains('HasPassive(_Character, _Carrier, 1)') -or
+            -not $block.Contains($route.Count + '((CHARACTER)_Character, _Count)') -or
+            -not $block.Contains('IntegerSum(_Count, 1, _Next)') -or
+            -not (Test-MasteryActions $block @(
+                ('NOT ' + $route.Count + '((CHARACTER)_Character, _Count);'),
+                ($route.Count + '((CHARACTER)_Character, _Next);'),
+                'PROC_COS_ConsumeMasteryCarrier((CHARACTER)_Character, 1);'
+            ))) { return $false }
+    }
+
+    return $true
+}
+
+Require (Test-COSMasteryLedgerSemantics $masteryGoal) `
+    '掌控混沌 Story 必须以角色级 Unspent 账本授予/消费/洗点并完成 .44 到 .45 一次性迁移'
+
+$masteryRaceMutant = $masteryGoal.Replace(
+    "AND`nDB_COS_MasteryUnspent(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)",
+    "AND`nGetActionResourceValuePersonal(_Character, `"COS_ChaosMasteryPoint`", 0, _Points)`nAND`n_Points > 0.0`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)"
+)
+Require ($masteryRaceMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRaceMutant)) `
+    '掌控混沌变异检查未拒绝 AddPassive 后同帧资源查询竞态'
+
+$masteryRepeatMigrationMutant = $masteryGoal.Replace(
+    "DB_COS_MasteryUnspent(_Character, 1);`nDB_COS_MasterySchema44To45(_Character);`nPROC_COS_SyncMasteryAfterSchema45(_Character);",
+    "DB_COS_MasteryUnspent(_Character, 1);`nPROC_COS_SyncMasteryAfterSchema45(_Character);"
+)
+Require ($masteryRepeatMigrationMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRepeatMigrationMutant)) `
+    '掌控混沌变异检查未拒绝可重复执行的迁移'
+
+$masteryShowWithoutUnspentMutant = $masteryGoal.Replace(
+    "PROC_COS_UpdateMasterySpell((CHARACTER)_Character)`nAND`nDB_COS_MasteryUnspent(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)",
+    "PROC_COS_UpdateMasterySpell((CHARACTER)_Character)`nAND`nDB_COS_MasteryEarned(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)"
+)
+Require ($masteryShowWithoutUnspentMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryShowWithoutUnspentMutant)) `
+    '掌控混沌变异检查未拒绝无 Unspent 仍显示母技能'
+
+$masteryRegrantSpentMutant = $masteryGoal.Replace(
+    "HasPassive(_Character, _Carrier, 0)`nTHEN`nDB_COS_MasterySchema44To45(_Character);",
+    "HasPassive(_Character, _Carrier, 0)`nTHEN`nDB_COS_MasteryUnspent(_Character, 1);`nDB_COS_MasterySchema44To45(_Character);"
+)
+Require ($masteryRegrantSpentMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRegrantSpentMutant)) `
+    '掌控混沌变异检查未拒绝已消费旧存档被迁移重补'
+
 foreach ($eventPattern in @(
     '(?ms)IF\nLevelGameplayStarted\(_, _\)\nAND\nGetHostCharacter\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nGainedControl\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nLeveledUp\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nRespecCompleted\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_ResetMastery\(_Character\);'
 )) {
-    Require ($masteryGoal -match $eventPattern) '掌控同步和洗点事件必须逐项限制为混沌起源'
-}
-Require ([regex]::Matches($masteryGoal, 'PROC_COS_ResetMastery\(').Count -eq 2) `
-    '掌控洗点过程只能由带标记的 RespecCompleted 事件调用'
-Require ([regex]::Matches($masteryGoal, 'CastedSpell\(_Character, "Shout_COS_ChaosMastery(?:Tune|Correct)", _, _, _\)').Count -eq 2) `
-    '两条路线必须且只能由两个成功 CastedSpell 事件驱动'
-foreach ($route in @(
-    @{ Spell = 'Shout_COS_ChaosMasteryTune'; Count = 'DB_COS_MasteryTuneCount' },
-    @{ Spell = 'Shout_COS_ChaosMasteryCorrect'; Count = 'DB_COS_MasteryCorrectCount' }
-)) {
-    $routePattern = '(?ms)IF\nCastedSpell\(_Character, "' + [regex]::Escape($route.Spell) +
-        '", _, _, _\)\n.*?THEN\n(.*?)(?=\n(?:PROC|IF|EXITSECTION)\n)'
-    $routeMatch = [regex]::Match($masteryGoal, $routePattern)
-    Require ($routeMatch.Success -and $routeMatch.Value.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and `
-        $routeMatch.Value.Contains("$($route.Count)((CHARACTER)_Character, _Count)") -and `
-        $routeMatch.Value.Contains('IntegerSum(_Count, 1, _Next)') -and `
-        $routeMatch.Groups[1].Value.Contains("NOT $($route.Count)((CHARACTER)_Character, _Count);") -and `
-        $routeMatch.Groups[1].Value.Contains("$($route.Count)((CHARACTER)_Character, _Next);") -and `
-        $routeMatch.Groups[1].Value.Contains('PROC_COS_ConsumeMasteryCarrier((CHARACTER)_Character, 1);')) `
-        "路线成功事件未严格递增计数并消费一级载体: $($route.Spell)"
-}
-foreach ($requiredResetText in @(
-    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);',
-    'RemovePassive(_Character, "COS_ChaosMasteryPointL01");',
-    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
-    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
-    'NOT DB_COS_MasteryEarned(_Character, _Level);',
-    'NOT DB_COS_MasteryTuneCount(_Character, _Count);',
-    'NOT DB_COS_MasteryCorrectCount(_Character, _Count);',
-    'DB_COS_MasteryTuneCount(_Character, 0);',
-    'DB_COS_MasteryCorrectCount(_Character, 0);',
-    'PROC_COS_SyncMastery(_Character);'
-)) {
-    Require ($masteryGoal.Contains($requiredResetText)) "洗点重建缺少确定性清理或重新同步: $requiredResetText"
+    Require ($masteryGoal -match $eventPattern) '掌控同步、迁移和洗点事件必须逐角色限制为混沌起源'
 }
 foreach ($forbiddenMasteryStoryPattern in @(
-    '(?m)^UsingSpell\(', '(?m)^CastSpell\(', '(?i)Preview', 'TimerLaunch', 'ScriptExtender',
-    '(?i)\bSE\b', '(?i)\bN?MCM\b', '(?i)Dialog(?:ue)?', '(?i)Default', 'ApplyStatus\('
+    '(?m)^UsingSpell\(', '(?m)^CastSpell\(', '(?i)Preview', 'TimerLaunch', 'SetEntityEvent',
+    'ParentTargetEdge', 'ScriptExtender', '(?i)\bSE\b', '(?i)\bN?MCM\b',
+    '(?i)Dialog(?:ue)?', '(?i)Default', 'ApplyStatus\('
 )) {
     Require (-not ($masteryGoal -match $forbiddenMasteryStoryPattern)) `
-        "掌控混沌 Story 包含禁用事件、外部依赖、自动路线或回退: $forbiddenMasteryStoryPattern"
+        "掌控混沌 Story 包含禁用延迟、外部依赖、自动路线或回退: $forbiddenMasteryStoryPattern"
 }
 $goal = Get-Content -LiteralPath $goalPath -Raw -Encoding UTF8
 $expectedRaceTags = @(
@@ -1026,11 +1236,141 @@ Require ([regex]::Matches($mechanicsGoal, 'NOT DB_COS_WoundConsumed\(\(CHARACTER
 Require (-not $mechanicsGoal.Contains('IsInCombat(_Target, 1)')) `
     '受击轮盘不得把非战斗状态下的角色攻击错误过滤掉'
 $iconAtlasPath = Join-Path $root "Public\$module\Assets\Textures\Icons\Icons_ChaosOrigins.dds"
-Require ((Get-FileHash -Algorithm SHA256 -LiteralPath $iconAtlasPath).Hash -eq `
-    'E35B45C4C4BCAE74FEFF1B8EF74E6BD4FA7767EA124196B11C80BD1775921B87') `
-    '技能图标必须使用 ChaosOriginsRemastered 1.0.25 的 8-bit Alpha DDS 原文件'
+Require (Test-Path -LiteralPath $iconAtlasPath -PathType Leaf) '缺少技能图标 DDS 图集'
+$iconTextureBytes = [IO.File]::ReadAllBytes($iconAtlasPath)
+Require ($iconTextureBytes.Length -eq 349680 -and `
+    [Text.Encoding]::ASCII.GetString($iconTextureBytes, 0, 4) -eq 'DDS ' -and `
+    [BitConverter]::ToInt32($iconTextureBytes, 12) -eq 512 -and `
+    [BitConverter]::ToInt32($iconTextureBytes, 16) -eq 512 -and `
+    [BitConverter]::ToInt32($iconTextureBytes, 24) -eq 1 -and `
+    [BitConverter]::ToInt32($iconTextureBytes, 28) -eq 10 -and `
+    [Text.Encoding]::ASCII.GetString($iconTextureBytes, 84, 4) -eq 'DXT5') `
+    '技能图集必须是512x512、10级mipmap的DXT5/BC3 DDS'
+for ($reservedIndex = 32; $reservedIndex -le 75; $reservedIndex++) {
+    Require ($iconTextureBytes[$reservedIndex] -eq 0) 'DDS 图集保留头必须为空'
+}
+
+$magick = Get-Command magick -ErrorAction SilentlyContinue
+Require ($null -ne $magick) '验证技能图标需要已安装的 ImageMagick magick'
+$atlasIdentity = [string](& $magick.Source identify -quiet -format '%w|%h|%[channels]|%[opaque]' $iconAtlasPath)
+Require ($LASTEXITCODE -eq 0) 'ImageMagick 无法解码技能图集'
+$atlasIdentityParts = @($atlasIdentity -split '\|')
+Require ($atlasIdentityParts.Count -eq 4 -and $atlasIdentityParts[0] -eq '512' -and `
+    $atlasIdentityParts[1] -eq '512' -and $atlasIdentityParts[2] -match 'a' -and `
+    $atlasIdentityParts[3] -eq 'False') '技能图集必须可解码为含真实透明度的512x512图像'
+
+$artworkRoot = Join-Path (Split-Path $root -Parent) 'artwork\icons-v2'
+$generatedIconKeys = @(
+    'COS_Power', 'COS_Lost', 'COS_Wound', 'COS_Duality',
+    'COS_AllIn', 'COS_FateRevision', 'COS_Genesis', 'COS_Strike',
+    'COS_Mastery', 'COS_MasteryTune', 'COS_MasteryCorrect', 'COS_Finisher'
+)
+$expectedArtworkFiles = @($generatedIconKeys | ForEach-Object { "$_.png" }) + @('preview-64px.png', 'README.md')
+$actualArtworkFiles = @(Get-ChildItem -LiteralPath $artworkRoot -File | ForEach-Object { $_.Name } | Sort-Object)
+Require (-not (Compare-Object @($expectedArtworkFiles | Sort-Object) $actualArtworkFiles)) `
+    '图标源目录必须只包含12枚透明PNG、64px预览和README'
+
+$artworkReadme = Get-Content -LiteralPath (Join-Path $artworkRoot 'README.md') -Raw -Encoding UTF8
+foreach ($readmeToken in @($generatedIconKeys + @('imagegen', 'DXT5', 'mipmap', 'transparent', 'row0', 'row1', 'row2', 'row3'))) {
+    Require ($artworkReadme.Contains($readmeToken)) "图标README缺少生成、行映射或后处理记录: $readmeToken"
+}
+$previewIdentity = [string](& $magick.Source identify -quiet -format '%w|%h' (Join-Path $artworkRoot 'preview-64px.png'))
+Require ($LASTEXITCODE -eq 0 -and $previewIdentity -eq '320|240') '64px图标预览必须是320x240'
+
+function ConvertFrom-InvariantDouble([string]$Value) {
+    return [double]::Parse($Value, [Globalization.CultureInfo]::InvariantCulture)
+}
+foreach ($iconKey in $generatedIconKeys) {
+    $sourcePng = Join-Path $artworkRoot "$iconKey.png"
+    $sourceIdentity = [string](& $magick.Source identify -quiet -format '%w|%h|%[channels]|%[opaque]' $sourcePng)
+    Require ($LASTEXITCODE -eq 0) "无法读取图标PNG: $iconKey"
+    $sourceIdentityParts = @($sourceIdentity -split '\|')
+    Require ($sourceIdentityParts.Count -eq 4 -and $sourceIdentityParts[0] -eq '256' -and `
+        $sourceIdentityParts[1] -eq '256' -and $sourceIdentityParts[2] -match 'a' -and `
+        $sourceIdentityParts[3] -eq 'False') "图标源必须是带透明背景的256x256 PNG: $iconKey"
+    $thumbnailMetrics = [string](& $magick.Source $sourcePng -resize '64x64!' -alpha extract `
+        -format '%w|%h|%[fx:minima]|%[fx:maxima]|%[fx:mean]|%[fx:p{0,0}]|%[fx:p{63,0}]|%[fx:p{0,63}]|%[fx:p{63,63}]' info:)
+    Require ($LASTEXITCODE -eq 0) "无法生成64px图标缩略图: $iconKey"
+    $thumbnailParts = @($thumbnailMetrics -split '\|')
+    Require ($thumbnailParts.Count -eq 9 -and $thumbnailParts[0] -eq '64' -and $thumbnailParts[1] -eq '64') `
+        "图标缩略图尺寸错误: $iconKey"
+    $alphaMinimum = ConvertFrom-InvariantDouble $thumbnailParts[2]
+    $alphaMaximum = ConvertFrom-InvariantDouble $thumbnailParts[3]
+    $alphaMean = ConvertFrom-InvariantDouble $thumbnailParts[4]
+    $cornerAlpha = @(5..8 | ForEach-Object { ConvertFrom-InvariantDouble $thumbnailParts[$_] })
+    Require ($alphaMinimum -le 0.001 -and $alphaMaximum -ge 0.99 -and `
+        $alphaMean -gt 0.005 -and $alphaMean -lt 0.95 -and `
+        -not ($cornerAlpha | Where-Object { $_ -gt 0.001 })) `
+        "64px图标缩略图必须非空且四角透明: $iconKey"
+}
+
+$atlasCellCoordinates = @{
+    COS_Identity = @(0, 0); COS_Status = @(1, 0); COS_Lost = @(2, 0); COS_Power = @(3, 0)
+    COS_AllIn = @(0, 1); COS_Echo = @(1, 1); COS_Strike = @(2, 1); COS_Genesis = @(3, 1)
+    COS_Finisher = @(0, 2); COS_Wound = @(1, 2); COS_Duality = @(2, 2); COS_FateRevision = @(3, 2)
+    COS_Mastery = @(0, 3); COS_MasteryTune = @(1, 3); COS_MasteryCorrect = @(2, 3)
+}
+foreach ($iconKey in $atlasCellCoordinates.Keys) {
+    $cell = $atlasCellCoordinates[$iconKey]
+    $crop = '64x64+{0}+{1}' -f ([int]$cell[0] * 64), ([int]$cell[1] * 64)
+    $cellMetrics = [string](& $magick.Source $iconAtlasPath -crop $crop +repage -alpha extract `
+        -format '%[fx:minima]|%[fx:maxima]|%[fx:mean]' info:)
+    Require ($LASTEXITCODE -eq 0) "无法解码DDS图标格: $iconKey"
+    $cellParts = @($cellMetrics -split '\|')
+    Require ($cellParts.Count -eq 3 -and (ConvertFrom-InvariantDouble $cellParts[0]) -le 0.05 -and `
+        (ConvertFrom-InvariantDouble $cellParts[1]) -ge 0.5 -and `
+        (ConvertFrom-InvariantDouble $cellParts[2]) -gt 0.001) `
+        "DDS图标格必须非空且保留透明度: $iconKey"
+}
 $allStats = (Get-ChildItem -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data") -File -Filter '*.txt' | `
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 }) -join "`n"
+function Require-StatsIcon([string]$Entry, [string]$ExpectedIcon) {
+    $entryPattern = '(?ms)^new entry "' + [regex]::Escape($Entry) + '".*?(?=^new entry |\z)'
+    $entryMatches = @([regex]::Matches($allStats, $entryPattern))
+    Require ($entryMatches.Count -eq 1) "Stats图标条目必须全局唯一: $Entry"
+    $iconMatches = @([regex]::Matches($entryMatches[0].Value, '(?m)^data "Icon" "([^"]+)"\r?$'))
+    Require ($iconMatches.Count -eq 1 -and $iconMatches[0].Groups[1].Value -eq $ExpectedIcon) `
+        "Stats图标映射错误: $Entry -> $ExpectedIcon"
+}
+$expectedStatsIcons = @{
+    COS_ChaosWound = 'COS_Wound'
+    COS_ChaosDuality = 'COS_Duality'
+    Shout_COS_FateRevision = 'COS_FateRevision'
+    COS_CHAOS_FATE_READY = 'COS_FateRevision'
+    COS_CHAOS_FATE_PENDING = 'COS_FateRevision'
+    COS_ChaosMasteryGuide = 'COS_Mastery'
+    COS_ChaosMasteryPointL01 = 'COS_Mastery'
+    Shout_COS_ChaosMastery = 'COS_Mastery'
+    Shout_COS_ChaosMasteryTune = 'COS_MasteryTune'
+    COS_CHAOS_MASTERY_TUNE = 'COS_MasteryTune'
+    COS_CHAOS_MASTERY_POSITIVE_INFO = 'COS_MasteryTune'
+    Shout_COS_ChaosMasteryCorrect = 'COS_MasteryCorrect'
+    COS_CHAOS_MASTERY_CORRECT = 'COS_MasteryCorrect'
+    COS_CHAOS_MASTERY_NEGATIVE_INFO = 'COS_MasteryCorrect'
+    COS_CHAOS_MASTERY_CALM_INFO = 'COS_Echo'
+    COS_CHAOS_MASTERY_CALM_LOG = 'COS_Echo'
+    COS_CHAOS_MASTERY_RESULT_L01 = 'COS_Echo'
+    COS_ChaosPower = 'COS_Power'
+    COS_ChaosLost = 'COS_Lost'
+    COS_ChaosAllIn = 'COS_AllIn'
+    COS_ChaosStrike = 'COS_Strike'
+    Shout_COS_ChaosGenesis = 'COS_Genesis'
+    COS_CHAOS_KILL = 'COS_Finisher'
+}
+foreach ($entry in $expectedStatsIcons.Keys) {
+    Require-StatsIcon $entry $expectedStatsIcons[$entry]
+}
+foreach ($newIconCount in @{
+    COS_Wound = 1
+    COS_Duality = 1
+    COS_FateRevision = 3
+    COS_Mastery = 3
+    COS_MasteryTune = 3
+    COS_MasteryCorrect = 3
+}.GetEnumerator()) {
+    Require ([regex]::Matches($allStats, '(?m)^data "Icon" "' + [regex]::Escape($newIconCount.Key) + '"\r?$').Count -eq `
+        $newIconCount.Value) "Stats新图标引用数量错误: $($newIconCount.Key)"
+}
 Require (-not ($allStats -match 'ProficiencyBonus\(Skill|ExpertiseBonus\(')) `
     '完整 Stats 不得额外授予任何技能熟练或专精'
 Require ([regex]::Matches($mechanicsGoal, 'DB_COS_LifeSkillLevel\(\d+, \d+, "COS_CHAOS_LIFE_SKILL_BONUS_\d"\);').Count -eq 7) `

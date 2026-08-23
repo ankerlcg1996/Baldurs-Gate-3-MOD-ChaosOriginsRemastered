@@ -32,6 +32,65 @@ PROC_COS_SyncMastery((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
+DB_COS_MasterySchema44To45(_Character)
+THEN
+PROC_COS_SyncMasteryAfterSchema45(_Character);
+
+PROC
+PROC_COS_SyncMastery((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+NOT DB_COS_MasterySchema44To45(_Character)
+THEN
+PROC_COS_MigrateMasterySchema44To45(_Character);
+
+PROC
+PROC_COS_MigrateMasterySchema44To45((CHARACTER)_Character)
+AND
+NOT DB_COS_MasterySchema44To45(_Character)
+AND
+DB_COS_MasteryEarned(_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 1)
+AND
+NOT DB_COS_MasteryUnspent(_Character, 1)
+THEN
+DB_COS_MasteryUnspent(_Character, 1);
+DB_COS_MasterySchema44To45(_Character);
+PROC_COS_SyncMasteryAfterSchema45(_Character);
+
+PROC
+PROC_COS_MigrateMasterySchema44To45((CHARACTER)_Character)
+AND
+NOT DB_COS_MasterySchema44To45(_Character)
+AND
+DB_COS_MasteryEarned(_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 0)
+THEN
+DB_COS_MasterySchema44To45(_Character);
+PROC_COS_SyncMasteryAfterSchema45(_Character);
+
+PROC
+PROC_COS_MigrateMasterySchema44To45((CHARACTER)_Character)
+AND
+NOT DB_COS_MasterySchema44To45(_Character)
+AND
+NOT DB_COS_MasteryEarned(_Character, 1)
+THEN
+DB_COS_MasterySchema44To45(_Character);
+PROC_COS_SyncMasteryAfterSchema45(_Character);
+
+PROC
+PROC_COS_SyncMasteryAfterSchema45((CHARACTER)_Character)
+AND
+DB_COS_MasterySchema44To45(_Character)
+AND
 GetLevel(_Character, _Level)
 AND
 IntegerMin(_Level, 1, _Cap)
@@ -54,6 +113,7 @@ IntegerSum(_Cursor, 1, _Next)
 THEN
 AddPassive(_Character, _Carrier);
 DB_COS_MasteryEarned(_Character, _Cursor);
+DB_COS_MasteryUnspent(_Character, _Cursor);
 PROC_COS_GrantMasteryFrom(_Character, _Next, _Cap);
 
 PROC
@@ -77,9 +137,7 @@ PROC_COS_UpdateMasterySpell(_Character);
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
 AND
-GetActionResourceValuePersonal(_Character, "COS_ChaosMasteryPoint", 0, _Points)
-AND
-_Points > 0.0
+DB_COS_MasteryUnspent(_Character, 1)
 AND
 HasSpell(_Character, "Shout_COS_ChaosMastery", 0)
 THEN
@@ -88,9 +146,7 @@ AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1);
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
 AND
-GetActionResourceValuePersonal(_Character, "COS_ChaosMasteryPoint", 0, _Points)
-AND
-_Points <= 0.0
+NOT DB_COS_MasteryUnspent(_Character, 1)
 AND
 HasSpell(_Character, "Shout_COS_ChaosMastery", 1)
 THEN
@@ -99,19 +155,22 @@ RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);
 PROC
 PROC_COS_ConsumeMasteryCarrier((CHARACTER)_Character, (INTEGER)_Level)
 AND
+DB_COS_MasteryUnspent(_Character, _Level)
+AND
 DB_COS_MasteryCarrier(_Level, _Carrier)
 AND
 HasPassive(_Character, _Carrier, 1)
 THEN
+NOT DB_COS_MasteryUnspent(_Character, _Level);
 RemovePassive(_Character, _Carrier);
 PROC_COS_UpdateMasterySpell(_Character);
 
 PROC
-PROC_COS_ClearMasteryEarned((CHARACTER)_Character)
+PROC_COS_ClearMasteryUnspent((CHARACTER)_Character)
 AND
-DB_COS_MasteryEarned(_Character, _Level)
+DB_COS_MasteryUnspent(_Character, _Level)
 THEN
-NOT DB_COS_MasteryEarned(_Character, _Level);
+NOT DB_COS_MasteryUnspent(_Character, _Level);
 
 PROC
 PROC_COS_ClearMasteryTuneCount((CHARACTER)_Character)
@@ -130,21 +189,54 @@ NOT DB_COS_MasteryCorrectCount(_Character, _Count);
 PROC
 PROC_COS_ResetMastery((CHARACTER)_Character)
 THEN
-RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);
-RemovePassive(_Character, "COS_ChaosMasteryPointL01");
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
-PROC_COS_ClearMasteryEarned(_Character);
+PROC_COS_ClearMasteryUnspent(_Character);
 PROC_COS_ClearMasteryTuneCount(_Character);
 PROC_COS_ClearMasteryCorrectCount(_Character);
 DB_COS_MasteryTuneCount(_Character, 0);
 DB_COS_MasteryCorrectCount(_Character, 0);
-PROC_COS_SyncMastery(_Character);
+PROC_COS_RebuildMasteryAfterRespec(_Character);
+
+PROC
+PROC_COS_RebuildMasteryAfterRespec((CHARACTER)_Character)
+AND
+DB_COS_MasteryEarned(_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 1)
+AND
+NOT DB_COS_MasteryUnspent(_Character, 1)
+THEN
+DB_COS_MasteryUnspent(_Character, 1);
+PROC_COS_UpdateMasterySpell(_Character);
+
+PROC
+PROC_COS_RebuildMasteryAfterRespec((CHARACTER)_Character)
+AND
+DB_COS_MasteryEarned(_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 0)
+AND
+NOT DB_COS_MasteryUnspent(_Character, 1)
+THEN
+AddPassive(_Character, _Carrier);
+DB_COS_MasteryUnspent(_Character, 1);
+PROC_COS_UpdateMasterySpell(_Character);
 
 IF
 CastedSpell(_Character, "Shout_COS_ChaosMasteryTune", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_MasteryUnspent((CHARACTER)_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 1)
 AND
 DB_COS_MasteryTuneCount((CHARACTER)_Character, _Count)
 AND
@@ -158,6 +250,12 @@ IF
 CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_MasteryUnspent((CHARACTER)_Character, 1)
+AND
+DB_COS_MasteryCarrier(1, _Carrier)
+AND
+HasPassive(_Character, _Carrier, 1)
 AND
 DB_COS_MasteryCorrectCount((CHARACTER)_Character, _Count)
 AND
