@@ -532,7 +532,7 @@ try {
     $masteryGoalSha256.Dispose()
 }
 # Task 8 扩展 L02-L12 时必须有意更新完整语义模板及其哈希。
-$expectedMasteryGoalHash = '0844bacf5ba7e6bcc1c7f590fdf8b091897da872a262fb72ef71e2efe0425952'
+$expectedMasteryGoalHash = 'c39eb2a648b042a91ca24fb0a936907330c283054c7f896bf5102e9229a4ccdf'
 Require ($masteryGoalHash -ceq $expectedMasteryGoalHash) `
     'Task 3 一级掌控混沌 Goal 完整语义模板已偏移'
 Require ($masteryGoal.StartsWith("Version 1`nSubGoalCombiner SGC_AND`nINITSECTION`n") -and `
@@ -681,6 +681,7 @@ function Test-COSMasteryLedgerSemantics([string]$Story) {
 
     $resetBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ResetMastery')
     if ($resetBlocks.Count -ne 1 -or -not (Test-MasteryActions $resetBlocks[0] @(
+        'DB_COS_MasterySchema44To45(_Character);',
         'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
         'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
         'PROC_COS_ClearMasteryUnspent(_Character);',
@@ -738,8 +739,86 @@ function Test-COSMasteryLedgerSemantics([string]$Story) {
     return $true
 }
 
+function Invoke-COSMasteryRespecModel(
+    [string[]]$Actions,
+    [bool]$InitialSchema,
+    [int]$InitialCarrierCount,
+    [int]$InitialUnspentCount
+) {
+    $state = [ordered]@{
+        Schema = $InitialSchema
+        Earned = $true
+        CarrierCount = $InitialCarrierCount
+        UnspentCount = $InitialUnspentCount
+        TuneCount = 1
+        CorrectCount = 1
+    }
+    foreach ($action in $Actions) {
+        switch -CaseSensitive ($action) {
+            'DB_COS_MasterySchema44To45(_Character);' { $state.Schema = $true }
+            'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);' { }
+            'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);' { }
+            'PROC_COS_ClearMasteryUnspent(_Character);' { $state.UnspentCount = 0 }
+            'PROC_COS_ClearMasteryTuneCount(_Character);' { $state.TuneCount = 0 }
+            'PROC_COS_ClearMasteryCorrectCount(_Character);' { $state.CorrectCount = 0 }
+            'DB_COS_MasteryTuneCount(_Character, 0);' { $state.TuneCount = 0 }
+            'DB_COS_MasteryCorrectCount(_Character, 0);' { $state.CorrectCount = 0 }
+            'PROC_COS_RebuildMasteryAfterRespec(_Character);' {
+                if (-not $state.Schema -or -not $state.Earned) { return $null }
+                if ($state.CarrierCount -eq 0) { $state.CarrierCount = 1 }
+                if ($state.CarrierCount -ne 1) { return $null }
+                $state.UnspentCount = 1
+            }
+            default { return $null }
+        }
+    }
+    return [pscustomobject]$state
+}
+
+function Test-COSMasteryFirstRespecStateMachine([string]$Story) {
+    $resetBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ResetMastery')
+    if ($resetBlocks.Count -ne 1) { return $false }
+    $actions = @(Get-MasteryThenActions $resetBlocks[0])
+    if ($actions.Count -ne 9 -or $actions[0] -cne 'DB_COS_MasterySchema44To45(_Character);') { return $false }
+    foreach ($scenario in @(
+        @{ Schema = $false; Carrier = 1; Unspent = 0 },
+        @{ Schema = $false; Carrier = 0; Unspent = 0 },
+        @{ Schema = $true; Carrier = 0; Unspent = 0 },
+        @{ Schema = $true; Carrier = 1; Unspent = 1 }
+    )) {
+        $result = Invoke-COSMasteryRespecModel $actions $scenario.Schema $scenario.Carrier $scenario.Unspent
+        if ($null -eq $result -or -not $result.Schema -or -not $result.Earned -or
+            $result.CarrierCount -ne 1 -or $result.UnspentCount -ne 1 -or
+            $result.TuneCount -ne 0 -or $result.CorrectCount -ne 0) { return $false }
+        # 下一次 Sync 必须走 Schema1 分支，不能再次进入 .44 -> .45 迁移。
+        if (-not $result.Schema) { return $false }
+    }
+    return $true
+}
+
 Require (Test-COSMasteryLedgerSemantics $masteryGoal) `
     '掌控混沌 Story 必须以角色级 Unspent 账本授予/消费/洗点并完成 .44 到 .45 一次性迁移'
+Require (Test-COSMasteryFirstRespecStateMachine $masteryGoal) `
+    '首次 Respec 必须先按角色写入 Schema1，再唯一重建 Earned/Carrier/Unspent'
+
+$masteryRespecWithoutSchemaMutant = $masteryGoal.Replace(
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);",
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);"
+)
+Require ($masteryRespecWithoutSchemaMutant -cne $masteryGoal -and `
+    -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecWithoutSchemaMutant)) `
+    '首次 Respec 状态机变异未拒绝 Reset 漏写 Schema1'
+
+$masteryRespecLateSchemaMutant = $masteryGoal.Replace(
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);",
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);"
+).Replace(
+    "DB_COS_MasteryCorrectCount(_Character, 0);`nPROC_COS_RebuildMasteryAfterRespec(_Character);",
+    "DB_COS_MasteryCorrectCount(_Character, 0);`nPROC_COS_RebuildMasteryAfterRespec(_Character);`nDB_COS_MasterySchema44To45(_Character);"
+)
+Require ($masteryRespecLateSchemaMutant -cne $masteryGoal -and `
+    -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecLateSchemaMutant)) `
+    '首次 Respec 状态机变异未拒绝 Schema1 晚于重建动作'
 
 $masteryRaceMutant = $masteryGoal.Replace(
     "AND`nDB_COS_MasteryUnspent(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)",

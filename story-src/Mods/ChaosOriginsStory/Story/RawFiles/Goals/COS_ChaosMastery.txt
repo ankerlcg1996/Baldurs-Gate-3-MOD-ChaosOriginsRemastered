@@ -189,6 +189,7 @@ NOT DB_COS_MasteryCorrectCount(_Character, _Count);
 PROC
 PROC_COS_ResetMastery((CHARACTER)_Character)
 THEN
+DB_COS_MasterySchema44To45(_Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
 PROC_COS_ClearMasteryUnspent(_Character);
