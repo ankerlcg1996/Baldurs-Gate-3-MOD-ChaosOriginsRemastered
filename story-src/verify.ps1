@@ -140,7 +140,10 @@ $reallyTags = @($origin.SelectNodes('children/node[@id="ReallyTags"]/attribute[@
 Require ($reallyTags.Count -eq 1 -and [string]$reallyTags[0].value -eq $originTagUuid) `
     'Origin 必须只包含新的混沌 ReallyTag'
 
-$masteryStats = (Get-Content -LiteralPath $masteryStatsPath -Raw -Encoding UTF8).Trim()
+function Normalize-LineEndings([string]$Text) {
+    return $Text.Replace("`r`n", "`n").Replace("`r", "`n")
+}
+$masteryStats = (Normalize-LineEndings (Get-Content -LiteralPath $masteryStatsPath -Raw -Encoding UTF8)).Trim()
 $masteryEntryNames = @([regex]::Matches($masteryStats, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
 $expectedMasteryEntries = @(
     'COS_ChaosMasteryGuide',
@@ -164,7 +167,8 @@ function Get-MasteryBlock([string]$Entry) {
 }
 function Require-MasteryData([string]$Entry, [string]$Field, [string]$Value) {
     $pattern = '(?m)^data "' + [regex]::Escape($Field) + '" "([^"]*)"$'
-    $matches = @([regex]::Matches((Get-MasteryBlock $Entry), $pattern))
+    $block = Normalize-LineEndings (Get-MasteryBlock $Entry)
+    $matches = @([regex]::Matches($block, $pattern))
     Require ($matches.Count -eq 1 -and $matches[0].Groups[1].Value -eq $Value) `
         "掌控混沌字段必须恰好一次且值准确: $Entry / $Field"
 }
@@ -218,7 +222,7 @@ foreach ($entry in @('COS_CHAOS_MASTERY_TUNE', 'COS_CHAOS_MASTERY_CORRECT')) {
     Require (-not (Get-MasteryBlock $entry).Contains('DisablePortraitIndicator')) "路线状态不得隐藏肖像提示: $entry"
 }
 $allMasteryStats = (Get-ChildItem -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data") -File -Filter '*.txt' | ForEach-Object {
-    Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
+    Normalize-LineEndings (Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8)
 }) -join "`n"
 foreach ($entry in $expectedMasteryEntries) {
     $pattern = '(?m)^new entry "' + [regex]::Escape($entry) + '"$'
