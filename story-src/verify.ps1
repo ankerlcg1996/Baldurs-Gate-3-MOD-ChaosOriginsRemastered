@@ -38,6 +38,13 @@ function Get-GitBlobBytes([string]$RepositoryRoot, [string]$ObjectSpec) {
     }
 }
 
+$buildProcessHelperPath = Join-Path $root 'build-process.ps1'
+$storyIrAttestationHelperPath = Join-Path $root 'story-ir-attestation.ps1'
+$storyIrValidationHelperPath = Join-Path $root 'story-ir-validation.ps1'
+Require (Test-Path -LiteralPath $buildProcessHelperPath -PathType Leaf) '缺少 build-process.ps1'
+Require (Test-Path -LiteralPath $storyIrAttestationHelperPath -PathType Leaf) '缺少 story-ir-attestation.ps1'
+Require (Test-Path -LiteralPath $storyIrValidationHelperPath -PathType Leaf) '缺少 story-ir-validation.ps1'
+
 $versionPath = Join-Path $root 'version.json'
 Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
 $version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -62,71 +69,126 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
         $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录26文件/4 Goals: $readmePath"
 }
 
-function Test-StoryCompilerProcessIsolation([string]$ScriptText) {
-    $legacyInProcessCall = [regex]::IsMatch($ScriptText,
-        '(?m)^\s*&\s*\(Join-Path\s+\$root\s+[''"]compile-story\.ps1[''"]\)\s*$')
-    $isolatedInvocation = [regex]::IsMatch($ScriptText,
-        '(?m)^\s*&\s+\$pwshExecutable\s+-NoLogo\s+-NoProfile\s+-NonInteractive\s+-File\s+\$compileStoryScript\s*$')
-    return -not $legacyInProcessCall -and
-        $ScriptText.Contains("`$compileStoryScript = Join-Path `$root 'compile-story.ps1'") -and
-        $isolatedInvocation -and
-        $ScriptText.Contains('$compileStoryExitCode = $LASTEXITCODE') -and
-        $ScriptText.Contains('Require ($compileStoryExitCode -eq 0)')
-}
+. $buildProcessHelperPath
+. $storyIrAttestationHelperPath
 
-$legacyCompilerFixture = @'
-& (Join-Path $root 'compile-story.ps1')
-'@
-$isolatedCompilerFixture = @'
-$compileStoryScript = Join-Path $root 'compile-story.ps1'
-& $pwshExecutable -NoLogo -NoProfile -NonInteractive -File $compileStoryScript
-$compileStoryExitCode = $LASTEXITCODE
-Require ($compileStoryExitCode -eq 0) "Story 编译子进程失败"
-'@
-$deletedCompilerGateMutation = $isolatedCompilerFixture.Replace(
-    '-File $compileStoryScript', "-Command 'exit 0'")
-Require (-not (Test-StoryCompilerProcessIsolation $legacyCompilerFixture)) `
-    '构建隔离变异检查必须拒绝旧同进程 Story 编译调用'
-Require (Test-StoryCompilerProcessIsolation $isolatedCompilerFixture) `
-    '构建隔离变异检查必须接受无配置 pwsh 子进程调用'
-Require (-not (Test-StoryCompilerProcessIsolation $deletedCompilerGateMutation)) `
-    '构建隔离变异检查必须拒绝删除 compile-story/IR 门'
+$cmdMutationRejected = $false
+try {
+    Assert-BuildPwshPath -PwshPath $env:ComSpec | Out-Null
+} catch {
+    $cmdMutationRejected = $_.Exception.Message.Contains(
+        '构建子进程必须使用当前 PowerShell 7 安装目录中的 pwsh.exe')
+}
+Require $cmdMutationRejected '构建进程 helper 必须实际拒绝 cmd.exe 变异'
+Write-Host 'MUTATION_CMD_EXE=KILLED'
+
+$tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd(
+    [IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+$tempFull = [IO.Path]::GetFullPath((Join-Path $tempRoot (
+    'cos-build-process-test-' + [guid]::NewGuid().ToString('N'))))
+Require ($tempFull.StartsWith($tempRoot + [IO.Path]::DirectorySeparatorChar,
+    [StringComparison]::OrdinalIgnoreCase) -and
+    [IO.Path]::GetFileName($tempFull).StartsWith('cos-build-process-test-',
+        [StringComparison]::Ordinal)) "拒绝使用未验证的构建进程临时目录: $tempFull"
+[void][IO.Directory]::CreateDirectory($tempFull)
+try {
+    $unicodeTestDirectory = Join-Path $tempFull '含 空格 中文'
+    [void][IO.Directory]::CreateDirectory($unicodeTestDirectory)
+    $successScript = Join-Path $unicodeTestDirectory '成功 helper.ps1'
+    $exitSevenScript = Join-Path $unicodeTestDirectory '失败 exit 7.ps1'
+    $ifFalseScript = Join-Path $unicodeTestDirectory 'IR if false.ps1'
+    [IO.File]::WriteAllText($successScript, @'
+param([string]$Value)
+Write-Output "BUILD_PROCESS_OK:$Value"
+'@, [Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText($exitSevenScript, @'
+Write-Output 'BUILD_PROCESS_EXIT7'
+exit 7
+'@, [Text.UTF8Encoding]::new($false))
+
+    $firstOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
+        -ArgumentList @('第一次 中文 空格'))
+    $secondOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
+        -ArgumentList @('第二次 中文 空格'))
+    $firstOutput | ForEach-Object { Write-Host $_ }
+    $secondOutput | ForEach-Object { Write-Host $_ }
+    Require ($firstOutput -contains 'BUILD_PROCESS_OK:第一次 中文 空格') `
+        '构建进程 helper 吞掉了首次子进程输出或破坏了中文空格参数'
+    Require ($secondOutput -contains 'BUILD_PROCESS_OK:第二次 中文 空格') `
+        '构建进程 helper 重复调用失败或吞掉了子进程输出'
+
+    $exitSevenRejected = $false
+    try {
+        Invoke-BuildScriptProcess -ScriptPath $exitSevenScript | ForEach-Object { Write-Host $_ }
+    } catch {
+        $exitSevenRejected = $_.Exception.Message.Contains('退出码: 7')
+    }
+    Require $exitSevenRejected '构建进程 helper 必须严格传播子进程 exit 7'
+    Write-Host 'MUTATION_EXIT7_SWALLOWED=KILLED'
+
+    $fakeStory = Join-Path $unicodeTestDirectory 'story.div.osi'
+    $fakeDebug = Join-Path $unicodeTestDirectory 'story.debug-info.pb'
+    $missingAttestation = Join-Path $unicodeTestDirectory 'story-ir-attestation.json'
+    [IO.File]::WriteAllBytes($fakeStory, [byte[]](1, 2, 3, 4))
+    [IO.File]::WriteAllBytes($fakeDebug, [byte[]](5, 6, 7, 8))
+    $escapedAttestation = $missingAttestation.Replace("'", "''")
+    [IO.File]::WriteAllText($ifFalseScript, @"
+if (`$false) {
+    [IO.File]::WriteAllText('$escapedAttestation', '{"validated":true}')
+}
+"@, [Text.UTF8Encoding]::new($false))
+    Invoke-BuildScriptProcess -ScriptPath $ifFalseScript
+    $ifFalseMutationRejected = $false
+    try {
+        Assert-StoryIrAttestation -StoryPath $fakeStory -DebugInfoPath $fakeDebug `
+            -AttestationPath $missingAttestation | Out-Null
+    } catch {
+        $ifFalseMutationRejected = $_.Exception.Message.Contains('Story IR 证明缺少文件')
+    }
+    Require $ifFalseMutationRejected 'Story IR attestation 必须实际拒绝 if(false) 跳过验证变异'
+    Write-Host 'MUTATION_IR_IF_FALSE=KILLED'
+} finally {
+    if ([IO.Directory]::Exists($tempFull)) {
+        [IO.Directory]::Delete($tempFull, $true)
+    }
+}
 
 $buildScriptPath = Join-Path $root 'build.ps1'
 Require (Test-Path -LiteralPath $buildScriptPath -PathType Leaf) '缺少 build.ps1'
 $buildScript = Get-Content -LiteralPath $buildScriptPath -Raw -Encoding UTF8
-Require (Test-StoryCompilerProcessIsolation $buildScript) `
-    'build.ps1 必须用无配置 pwsh 子进程执行 compile-story.ps1 并检查退出码'
 foreach ($buildIsolationToken in @(
-    '#requires -Version 7.0', '$pwshExecutable = (Get-Process -Id $PID).Path',
-    '[AppDomain]::CurrentDomain.GetAssemblies()', "GetName().Name -eq 'LSLib'",
-    '当前构建进程已加载其他路径的 LSLib', 'Add-Type -Path $selectedLslibPath',
-    '当前 LSLib 实际加载路径与所选路径不一致', 'LSLib.LS.LocaUtils', 'LSLib.LS.Packager'
+    '#requires -Version 7.0', "Join-Path `$root 'build-process.ps1'",
+    'Invoke-BuildScriptProcess -ScriptPath $compileStoryScript',
+    '[IO.File]::Delete([IO.Path]::GetFullPath($storyIrAttestationPath))',
+    'Assert-StoryIrAttestation -StoryPath $compiledStoryPath',
+    '[AppDomain]::CurrentDomain.GetAssemblies()', 'Add-Type -Path $selectedLslibPath'
 )) {
     Require ($buildScript.Contains($buildIsolationToken)) `
-        "build.ps1 缺少 Story/LSLib 进程隔离门: $buildIsolationToken"
+        "build.ps1 缺少构建进程或 Story IR 证明门: $buildIsolationToken"
 }
+Require (-not $buildScript.Contains('(Get-Process -Id $PID).Path')) `
+    'build.ps1 不得从宿主进程 MainModule 推断 pwsh 路径'
+Require (-not $buildScript.Contains("& (Join-Path `$root 'compile-story.ps1')")) `
+    'build.ps1 不得恢复同进程 Story 编译调用'
 
-function Test-StoryCompilerIrGate([string]$ScriptText) {
-    foreach ($irGateToken in @(
-        '--debug-info $debugInfo --json', 'StoryCompiler 未生成IR调试符号',
-        '$debugStory = [LSTools.StoryCompiler.StoryDebugInfoMsg]::Parser.ParseFrom($debugProto)',
-        "`$masteryGoals = @(`$debugStory.Goals | Where-Object Name -eq 'COS_ChaosMastery')",
-        '编译IR必须恰好包含一个 COS_ChaosMastery Goal', '编译IR必须恰好包含一个掌控读档root规则'
-    )) {
-        if (-not $ScriptText.Contains($irGateToken)) { return $false }
-    }
-    return $true
-}
 $compileStorySourcePath = Join-Path $root 'compile-story.ps1'
 Require (Test-Path -LiteralPath $compileStorySourcePath -PathType Leaf) '缺少 compile-story.ps1'
 $compileStorySource = Get-Content -LiteralPath $compileStorySourcePath -Raw -Encoding UTF8
-$deletedIrGateMutation = $compileStorySource.Replace(
-    '$debugStory = [LSTools.StoryCompiler.StoryDebugInfoMsg]::Parser.ParseFrom($debugProto)',
-    '# removed Story IR parser')
-Require (Test-StoryCompilerIrGate $compileStorySource) 'compile-story.ps1 缺少 Story 编译或 IR 反解门'
-Require (-not (Test-StoryCompilerIrGate $deletedIrGateMutation)) `
-    'Story 编译变异检查必须拒绝删除 IR 反解门'
+Require ($compileStorySource.Contains('Assert-CompiledStoryIr') -and
+    $compileStorySource.Contains('story-ir-attestation.json')) `
+    'compile-story.ps1 必须执行独立 IR root 验证并生成哈希证明'
+
+$compiledStoryPath = Join-Path $root 'work\compiled-story\story.div.osi'
+$compiledDebugInfoPath = Join-Path $root 'work\compiled-story\story.debug-info.pb'
+$compiledAttestationPath = Join-Path $root 'work\compiled-story\story-ir-attestation.json'
+if (Test-Path -LiteralPath $compiledAttestationPath -PathType Leaf) {
+    [IO.File]::Delete([IO.Path]::GetFullPath($compiledAttestationPath))
+}
+Invoke-BuildScriptProcess -ScriptPath $compileStorySourcePath
+$verifiedIrAttestation = Assert-StoryIrAttestation -StoryPath $compiledStoryPath `
+    -DebugInfoPath $compiledDebugInfoPath -AttestationPath $compiledAttestationPath
+Require ($verifiedIrAttestation.validated -eq $true) `
+    'verify.ps1 未获得当前 Story 编译产物的 validated=true 运行证明'
 
 $masteryStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosMastery.txt"
 Require (Test-Path -LiteralPath $masteryStatsPath -PathType Leaf) '缺少 ChaosMastery.txt'

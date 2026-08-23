@@ -28,13 +28,21 @@ function Reset-WorkChild([string]$Path) {
     New-Item -ItemType Directory -Path $pathFull -Force | Out-Null
 }
 
+. (Join-Path $root 'build-process.ps1')
+. (Join-Path $root 'story-ir-attestation.ps1')
+
 & (Join-Path $root 'verify.ps1')
-$pwshExecutable = (Get-Process -Id $PID).Path
-Require (Test-Path -LiteralPath $pwshExecutable -PathType Leaf) "缺少当前 pwsh 可执行文件: $pwshExecutable"
 $compileStoryScript = Join-Path $root 'compile-story.ps1'
-& $pwshExecutable -NoLogo -NoProfile -NonInteractive -File $compileStoryScript
-$compileStoryExitCode = $LASTEXITCODE
-Require ($compileStoryExitCode -eq 0) "Story 编译子进程失败，退出码: $compileStoryExitCode"
+$compiledStoryPath = Join-Path $work 'compiled-story\story.div.osi'
+$storyDebugInfoPath = Join-Path $work 'compiled-story\story.debug-info.pb'
+$storyIrAttestationPath = Join-Path $work 'compiled-story\story-ir-attestation.json'
+if (Test-Path -LiteralPath $storyIrAttestationPath -PathType Leaf) {
+    [IO.File]::Delete([IO.Path]::GetFullPath($storyIrAttestationPath))
+}
+Invoke-BuildScriptProcess -ScriptPath $compileStoryScript
+$storyIrAttestation = Assert-StoryIrAttestation -StoryPath $compiledStoryPath `
+    -DebugInfoPath $storyDebugInfoPath -AttestationPath $storyIrAttestationPath
+Require ($storyIrAttestation.validated -eq $true) 'Story IR 证明未通过构建进程校验'
 & (Join-Path $root 'compile-resources.ps1')
 
 $selectedLslibPath = [IO.Path]::GetFullPath($LslibPath)

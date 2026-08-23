@@ -16,7 +16,7 @@
 4. 在决定 Story 版是否与 SE 版共存之前，不复用 SE 模组 UUID。
 5. 不把 Lua 能力伪装成已经完成的 Story 功能；无法由原生 Story 等价实现的部分必须明确降级或重新设计。
 6. 每次成功构建将 Story 版本的最后一段递增 1；失败构建不修改版本号，`version.json`、`meta.lsx` 和构建清单必须一致。
-7. `build.ps1` 在无配置的独立 PowerShell 7 子进程中执行 Story 编译及 IR 校验，避免 StoryCompiler 自带的 LSLib 污染随后使用的打包器进程；打包阶段只接受并核对显式选择的 LSLib 路径。
+7. `build.ps1` 只通过 `build-process.ps1` 固定启动当前 `$PSHOME\pwsh.exe -NoProfile -NonInteractive -File` 子进程执行 Story 编译，避免嵌入宿主或 StoryCompiler 自带的 LSLib 污染打包器进程；编译后的 IR root 校验会生成绑定当前 `story.div.osi` 与 debug-info SHA-256/时间戳的证明，构建进程必须重新核对新鲜证明，并只加载显式选择且路径一致的 LSLib。
 
 ## 当前最终候选包
 
