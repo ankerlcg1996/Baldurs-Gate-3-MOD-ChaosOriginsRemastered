@@ -18,6 +18,17 @@ function Require-Unique([string]$Name, [string[]]$Values, [int]$ExpectedCount) {
     Require ($unique.Count -eq $Values.Count) "$Name 包含重复项"
 }
 
+$metaPath = Join-Path $PSScriptRoot "Mods\$module\meta.lsx"
+[xml]$metaDocument = Get-Content -LiteralPath $metaPath -Raw
+$dependencies = @($metaDocument.SelectNodes('//node[@id="Dependencies"]/children/node[@id="ModuleShortDesc"]'))
+Require ($dependencies.Count -eq 1) 'Story 模块必须恰好声明一个官方运行时依赖'
+$dependencyAttributes = @{}
+foreach ($attribute in @($dependencies[0].SelectNodes('attribute'))) { $dependencyAttributes[[string]$attribute.id] = [string]$attribute.value }
+Require ($dependencyAttributes['Folder'] -eq 'GustavX') 'Story 模块必须依赖当前官方战役模块 GustavX'
+Require ($dependencyAttributes['UUID'] -eq 'cb555efe-2d9e-131f-8195-a89329d218ea') 'GustavX 依赖 UUID 错误'
+$targetModes = @($metaDocument.SelectNodes('//node[@id="TargetModes"]/children/node[@id="Target"]/attribute[@id="Object"]') | ForEach-Object { [string]$_.value })
+Require ($targetModes.Count -eq 1 -and $targetModes[0] -eq 'Story') '模块 TargetModes 必须唯一声明 Story'
+
 $mechanics = @('Skills', 'Power', 'Wound', 'KillPower', 'Duality', 'AllIn', 'Echo', 'Strike')
 $origins = @('Astarion', 'Gale', 'Laezel', 'Shadowheart', 'Wyll', 'Karlach', 'DarkUrge')
 $originTags = @(
@@ -100,6 +111,27 @@ $actualResourceSources = @(Get-ChildItem -LiteralPath (Join-Path $root 'resource
 Require ($declaredResourceSources.Count -eq $actualResourceSources.Count) 'LSF 源文件数量与清单不一致'
 Require (@(Compare-Object $declaredResourceSources $actualResourceSources).Count -eq 0) 'LSF 源文件集合与清单不一致'
 
+$originPath = Join-Path $root "Public\$module\Origins\Origins.lsx"
+Require (Test-Path -LiteralPath $originPath -PathType Leaf) '缺少混沌起源定义'
+[xml]$originDocument = Get-Content -LiteralPath $originPath -Raw
+$originNode = $originDocument.SelectSingleNode('//node[@id="Origin"]')
+Require ($null -ne $originNode) '混沌起源定义缺少 Origin 节点'
+$originAttributes = @{}
+foreach ($attribute in @($originNode.SelectNodes('attribute'))) {
+    $originAttributes[[string]$attribute.id] = [string]$attribute.value
+}
+Require ($originAttributes['BodyShape'] -eq '0') 'Origin BodyShape 必须使用已验证的标准值 0'
+Require ($originAttributes['BodyType'] -eq '0') 'Origin BodyType 必须使用已验证的标准值 0'
+Require ($originAttributes['DefaultsTemplate'] -eq '782183f9-ceb5-4a96-8ac4-56af0319641d') 'Origin 缺少已验证的角色创建默认模板'
+Require ($originAttributes['IntroDialogUUID'] -eq 'f015fd39-a9f2-6ee5-a77b-a28806ac1b7a') 'Origin 缺少自定义角色创建 IntroDialog'
+foreach ($foreignAttribute in @('Identity', 'IsHenchman', 'Unique')) {
+    Require (-not $originAttributes.ContainsKey($foreignAttribute)) "Origin 不得包含验收版本不存在的字段: $foreignAttribute"
+}
+Require ($null -eq $originNode.SelectSingleNode('children/node[@id="AppearanceTags"]')) 'Origin 不得包含会限制守护者外观的 AppearanceTags'
+$reallyTagNodes = @($originNode.SelectNodes('children/node[@id="ReallyTags"]/attribute[@id="Object"]'))
+Require ($reallyTagNodes.Count -eq 1) 'Origin 必须恰好包含一个 ReallyTags 条目'
+Require ([string]$reallyTagNodes[0].value -eq '2c237035-d1a9-4469-91de-d74d8464c8d5') 'Origin ReallyTags UUID 错误'
+
 $languagePaths = @(
     'Chinese',
     'English',
@@ -171,10 +203,6 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialOrigin\(\(TUTORIALEVENT\)').Count -eq 14) '起源 TutorialEvent 映射必须恰好为 14 项'
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigTutorialWound\(\(TUTORIALEVENT\)').Count -eq 30) '受击 TutorialEvent 映射必须恰好为 30 项'
     Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigEvent\(\(TUTORIALEVENT\)').Count -eq 106) '启用的 TutorialEvent 必须恰好为 106 项'
-    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookMechanic\("').Count -eq 16) '手册机制操作映射必须恰好为 16 项'
-    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookRacialPassive\("').Count -eq 40) '手册种族操作映射必须恰好为 40 项'
-    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookOrigin\("').Count -eq 14) '手册起源操作映射必须恰好为 14 项'
-    Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigHandbookWound\("').Count -eq 30) '手册受击操作映射必须恰好为 30 项'
     foreach ($key in $mechanics) {
         Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) "机制默认值缺失或错误: $key"
     }
@@ -203,7 +231,9 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
         'PROC_COS_ConfigSyncRacialPassives',
         'PROC_COS_ConfigEnsureBook',
         'TemplateIsInInventory((ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Character, 0)',
-        'TemplateAddTo((ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Character, 1, 1)'
+        'TemplateAddTo((ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Character, 1, 1)',
+        'TemplateUseStarted(_Character, (ITEMROOT)c05fb001-0000-4000-8000-00000000b001, _Item)',
+        'OpenMessageBox(_Character, "hc05fb001g0000g4000g8000g000000000002")'
     )) {
         Require ($configGoal.Contains($token)) "配置 Story 合约缺失: $token"
     }
@@ -256,6 +286,13 @@ if (Test-Path -LiteralPath $configGoalPath -PathType Leaf) {
 
 $mainGoalPath = Join-Path $root "Mods\$module\Story\RawFiles\Goals\COS_ChaosOrigins.txt"
 $mainGoal = [IO.File]::ReadAllText($mainGoalPath)
+foreach ($goalPath in Get-ChildItem -LiteralPath (Join-Path $root "Mods\$module\Story\RawFiles\Goals") -File -Filter '*.txt') {
+    $goalText = [IO.File]::ReadAllText($goalPath.FullName)
+    Require ([regex]::Matches($goalText, '(?m)^ParentTargetEdge ').Count -eq 0) "常驻 Story Goal 必须保持顶层激活: $($goalPath.Name)"
+}
+foreach ($lifecycleEvent in @('LevelGameplayStarted(_, _)', 'LevelGameplayReady(_, _)', 'UserAvatarCreated(_, _Character, _)', 'GainedControl(_Character)', 'CharacterJoinedParty(_Character)', 'LeveledUp(_Character)')) {
+    Require ($mainGoal.Contains($lifecycleEvent)) "角色同步缺少生命周期触发: $lifecycleEvent"
+}
 foreach ($token in @(
     'DB_COS_ConfigMechanic(_Character, "Power", 1)',
     'DB_COS_ConfigMechanic(_Character, "KillPower", 1)',
@@ -313,14 +350,6 @@ $configStats = [IO.File]::ReadAllText($configStatsPath)
 $configEntries = @([regex]::Matches($configStats, '^new entry "(COS_CFG_[^"]+)"', 'Multiline') | ForEach-Object { $_.Groups[1].Value })
 Require-Unique '设置回显被动' $configEntries 50
 Require (-not $configStats.Contains('data "Boosts"')) '设置回显被动不得产生玩法 Boost'
-$handbookEntries = @([regex]::Matches($configStats, '^new entry "(Shout_COS_Config[^\"]+)"', 'Multiline') | ForEach-Object { $_.Groups[1].Value })
-Require-Unique '设置手册技能' $handbookEntries 110
-foreach ($container in @('Shout_COS_ConfigRoot', 'Shout_COS_ConfigMechanics', 'Shout_COS_ConfigRacialPassives', 'Shout_COS_ConfigOrigins', 'Shout_COS_ConfigWounds')) {
-    Require ($handbookEntries -contains $container) "设置手册缺少容器: $container"
-}
-Require ([regex]::Matches($configStats, '^new entry "Shout_COS_Config(?:Mechanic|RacialPassive|Origin|Wound)_[^\"]+_(?:On|Off)"', 'Multiline').Count -eq 100) '设置手册逐项操作必须恰好为 100 项'
-Require (-not ($configStats -match '(?s)new entry "Shout_COS_Config[^\"]+".*?data "SpellProperties"')) '设置手册技能不得产生状态、伤害或其他 SpellProperties'
-Require (-not ($configStats -match 'data "UseCosts" "[^\"]+"')) '设置手册技能不得消耗资源'
 
 $bookSourcePath = Join-Path $root "resource-src\Public\$module\RootTemplates\COS_ConfigBook.lsf.lsx"
 Require (Test-Path -LiteralPath $bookSourcePath -PathType Leaf) '缺少设置手册 RootTemplate 源'
@@ -328,15 +357,18 @@ Require (Test-Path -LiteralPath $bookSourcePath -PathType Leaf) '缺少设置手
 $bookMapKeys = @($bookDocument.SelectNodes('//attribute[@id="MapKey"]') | ForEach-Object { [string]$_.value })
 Require-Unique '设置手册 RootTemplate MapKey' $bookMapKeys 1
 Require ($bookMapKeys[0] -eq 'c05fb001-0000-4000-8000-00000000b001') '设置手册 RootTemplate UUID 错误'
-$bookSkill = @($bookDocument.SelectNodes('//attribute[@id="SkillID"]') | ForEach-Object { [string]$_.value })
-Require-Unique '设置手册使用技能' $bookSkill 1
-Require ($bookSkill[0] -eq 'Shout_COS_ConfigRoot') '设置手册没有打开根 SpellContainer'
+$bookActionTypes = @($bookDocument.SelectNodes('//attribute[@id="ActionType"]') | ForEach-Object { [string]$_.value })
+Require-Unique '设置手册使用动作' $bookActionTypes 1
+Require ($bookActionTypes[0] -eq '11') '设置手册必须使用原版普通书本动作'
+Require (@($bookDocument.SelectNodes('//attribute[@id="SkillID"]')).Count -eq 0) '设置手册不得引用 SpellData 技能'
+$bookIds = @($bookDocument.SelectNodes('//attribute[@id="BookId"]') | ForEach-Object { [string]$_.value })
+Require-Unique '设置手册 BookId' $bookIds 1
 Require ($manifest -contains "Public/$module/RootTemplates/COS_ConfigBook.lsf") '设置手册 RootTemplate 未进入打包清单'
-
-$configLocalizationHandles = @([regex]::Matches($configStats, '"(hc05fc[0-9a-f]{3}g0000g4000g8000g000000000000);1"') | ForEach-Object { $_.Groups[1].Value })
-Require-Unique '设置手册 Stats 本地化引用' $configLocalizationHandles 220
 $bookLocalizationHandles = @($bookDocument.SelectNodes('//attribute[@type="TranslatedString"]') | ForEach-Object { [string]$_.handle })
 Require-Unique '设置手册物品本地化引用' $bookLocalizationHandles 2
+foreach ($handle in $bookLocalizationHandles) {
+    Require ($handleSets[0] -contains $handle) "设置手册引用了缺失的本地化 handle: $handle"
+}
 
 $tutorialPath = Join-Path $root "Public\$module\Tutorials\TutorialEvents.lsx"
 Require (Test-Path -LiteralPath $tutorialPath -PathType Leaf) '缺少 TutorialEvents.lsx'
@@ -349,11 +381,6 @@ Require-Unique 'TutorialEvent UUID' $tutorialUuids 106
 Require-Unique 'TutorialEvent 名称' $tutorialNames 106
 Require (@($tutorialNodes | Where-Object { [string]($_.attribute | Where-Object id -eq 'EventType').value -ne '8' }).Count -eq 0) '所有设置 TutorialEvent 必须为 EventType 8'
 
-$requiredConfigHandles = @($configLocalizationHandles + $bookLocalizationHandles | Sort-Object -Unique)
-Require-Unique '设置手册本地化引用总集' $requiredConfigHandles 222
-foreach ($handle in $requiredConfigHandles) {
-    Require ($handleSets[0] -contains $handle) "设置手册引用了缺失的本地化 handle: $handle"
-}
 foreach ($removedGuiPath in @(
     "Mods/$module/GUI/metadata.lsf",
     "Public/$module/Content/UI/[PAK]_$module/_merged.lsf"

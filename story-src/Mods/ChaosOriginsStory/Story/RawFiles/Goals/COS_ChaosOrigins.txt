@@ -293,11 +293,11 @@ GetLevel(_Character, _Level)
 THEN
 PROC_COS_Register(_Character);
 PROC_COS_ConfigInitialize(_Character);
+PROC_COS_ConfigEnsureBook(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
 PROC_COS_ConfigSyncAccess(_Character);
 PROC_COS_ConfigSyncMirrors(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
-PROC_COS_ConfigEnsureBook(_Character);
 PROC_COS_StarterRewards(_Character);
 PROC_COS_GrantTags(_Character);
 PROC_COS_GrantFeatures(_Character, _Level);
@@ -901,6 +901,18 @@ IF
 LevelGameplayStarted(_, _)
 AND
 GetHostCharacter(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+LevelGameplayReady(_, _)
+AND
+GetHostCharacter(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+UserAvatarCreated(_, _Character, _)
 THEN
 PROC_COS_Sync(_Character);
 

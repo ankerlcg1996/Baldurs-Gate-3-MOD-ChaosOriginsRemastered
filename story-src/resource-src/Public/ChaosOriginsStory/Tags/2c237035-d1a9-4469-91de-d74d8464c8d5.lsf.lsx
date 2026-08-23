@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<save>
+    <version major="4" minor="7" revision="1" build="3" />
+    <region id="Tags">
+        <node id="root">
+            <children>
+                <node id="Tags">
+                    <attribute id="UUID" type="guid" value="2c237035-d1a9-4469-91de-d74d8464c8d5" />
+                    <attribute id="Name" type="FixedString" value="COS_CHAOS_ELIGIBLE" />
+                    <attribute id="Icon" type="FixedString" value="PassiveFeature_Lucky" />
+                    <attribute id="Description" type="LSString" value="Identifies the ChaosOriginsStory origin" />
+                    <children>
+                        <node id="Categories">
+                            <children>
+                                <node id="Category">
+                                    <attribute id="Name" type="LSString" value="Code" />
+                                </node>
+                                <node id="Category">
+                                    <attribute id="Name" type="LSString" value="Race" />
+                                </node>
+                                <node id="Category">
+                                    <attribute id="Name" type="LSString" value="PlayerRace" />
+                                </node>
+                            </children>
+                        </node>
+                        <node id="Properties" />
+                    </children>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

@@ -1,28 +1,28 @@
-# Chaos Origins Story Lite
+# Chaos Origins Story
 
-这是“混沌起源 Story Lite”独立工程的起点。当前仓库没有实现 Story 版功能，只完成了以下交接准备：
+“混沌起源”原生 Story 版。源码位于 `story-src/`，不依赖 Script Extender、BG3 MCM 或 Lua；`reference-se/` 仅保留 SE `1.0.25` 的行为参考。
 
-- `reference-se/`：Chaos Origins Remastered SE 版 `1.0.25` 的只读源码快照；
-- `story-src/`：后续原生 Story 实现区；
-- `docs/项目构造与迁移说明.md`：当前 SE 架构、迁移边界、目标结构和阶段验收；
-- `docs/功能迁移矩阵.md`：逐项说明保留、删除或重新设计的功能；
-- `docs/新任务启动说明.md`：可直接复制到新 Codex 任务的启动提示词。
+## 已实现
 
-## 隔离规则
+- 独立模块、起源与资源 UUID，可与 SE 版共存；
+- 自由种族、职业、体型的混沌起源，默认男性半精灵与骗子背景；
+- 全武器/护甲熟练、18 技能熟练与精通，无固定 `+5`；
+- 32 个可选种族身份标签、29 项种族主动技能/法术，不授予额外 20 项种族被动；
+- 七起源身份固定启用，剧情 Flag 驱动已定义的起源奖励；
+- 混沌受创、迷失/混沌之力、开天辟地、混沌回响、孤注、强袭与 Story 版混沌两仪；
+- 中、英、日、韩四语本地化；
+- Story/LSF/LOCA 编译、精确清单打包和反向 SHA-256 校验。
 
-1. 不在 `reference-se/` 内继续开发；它只用于核对旧版行为、资源 ID、文本和算法。
-2. Story 版源码只写入 `story-src/`，构建产物只写入忽略目录。
-3. 本仓库不关联 SE 版 GitHub 远程仓库。
-4. 在决定 Story 版是否与 SE 版共存之前，不复用 SE 模组 UUID。
-5. 不把 Lua 能力伪装成已经完成的 Story 功能；无法由原生 Story 等价实现的部分必须明确降级或重新设计。
+## Story 伤害边界
 
-## 当前基线
+原生 Story 只能在 `AttackedBy` 后读取汇总伤害，不能像 SE 的 `BeforeDealDamage` 一样改写伤害列表。两仪因此只对仍存活的目标回补一半伤害，再结算轮盘的另一半；致死伤害、临时生命与复合伤害包无法做到逐项等价。回响和倍率伤害使用无来源的追加伤害，避免递归触发自身。
 
-- SE 参考版本：`1.0.25`
-- SE 参考提交：`3a9834f4d078fab3488846b80579a6e6776d641c`
-- 快照来源：`C:\Users\ankerlcg\Desktop\chaos-BG3-mod\ChaosOriginsRemastered`
-- 快照范围：该提交中 54 个受 Git 管理的文件
-- 未复制内容：原仓库 `.git`、`.worktrees`、`backups`、`dist`、`work` 及其他未跟踪生成物
+## 构建
 
-开始开发前先阅读[项目构造与迁移说明](docs/项目构造与迁移说明.md)和[功能迁移矩阵](docs/功能迁移矩阵.md)。
+```powershell
+& .\story-src\build.ps1
+```
 
+产物为 `dist/ChaosOriginsStory.pak`。构建依赖本机已有的 LSLib、Divine、StoryCompiler 与官方 Story VFS；缺失时会直接报错。
+
+编译通过、PAK 安装成功和游戏内通过是三个独立验收结论。首次实机测试请重点检查角色创建/守护者、1–12 级升级、首次受创锁、两仪伤害、孤注/强袭组合倍率和剧情 Flag 奖励。
