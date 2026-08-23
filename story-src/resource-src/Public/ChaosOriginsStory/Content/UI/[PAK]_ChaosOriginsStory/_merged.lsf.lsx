@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+  <version major="4" minor="7" revision="1" build="3" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+  <region id="TextureBank">
+    <node id="TextureBank">
+      <children>
+        <node id="Resource">
+          <attribute id="ID" type="FixedString" value="a9d607ab-d504-40a9-a853-fc08b0e855aa" />
+          <attribute id="Localized" type="bool" value="False" />
+          <attribute id="Name" type="LSString" value="Icons_ChaosOriginsStory" />
+          <attribute id="SRGB" type="bool" value="False" />
+          <attribute id="SourceFile" type="LSString" value="Public/ChaosOriginsStory/Assets/Textures/Icons/Icons_ChaosOrigins.dds" />
+          <attribute id="Streaming" type="bool" value="True" />
+          <attribute id="Template" type="FixedString" value="Icons_Items" />
+          <attribute id="Type" type="int32" value="0" />
+          <attribute id="_OriginalFileVersion_" type="int64" value="144115188075855873" />
+        </node>
+      </children>
+    </node>
+  </region>
+</save>

@@ -1,0 +1,1400 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+DB_COS_WoundStatus(0, "COS_CHAOS_WOUND_ATTACK_MINUS_1", 1);
+DB_COS_WoundStatus(1, "COS_CHAOS_WOUND_ATTACK_MINUS_2", 1);
+DB_COS_WoundStatus(2, "COS_CHAOS_WOUND_ATTACK_MINUS_3", 1);
+DB_COS_WoundStatus(3, "COS_CHAOS_WOUND_AC_MINUS_1", 1);
+DB_COS_WoundStatus(4, "COS_CHAOS_WOUND_AC_MINUS_2", 1);
+DB_COS_WoundStatus(5, "COS_CHAOS_WOUND_AC_MINUS_3", 1);
+DB_COS_WoundStatus(6, "COS_CHAOS_WOUND_SAVE_MINUS_1", 1);
+DB_COS_WoundStatus(7, "COS_CHAOS_WOUND_SAVE_MINUS_2", 1);
+DB_COS_WoundStatus(8, "COS_CHAOS_WOUND_SAVE_MINUS_3", 1);
+DB_COS_WoundStatus(9, "COS_CHAOS_WOUND_CHECK_MINUS_1", 1);
+DB_COS_WoundStatus(10, "COS_CHAOS_WOUND_CHECK_MINUS_2", 1);
+DB_COS_WoundStatus(11, "COS_CHAOS_WOUND_CHECK_MINUS_3", 1);
+DB_COS_WoundStatus(12, "COS_CHAOS_WOUND_MOVE_MINUS_3", 1);
+DB_COS_WoundStatus(13, "BLESS", 0);
+DB_COS_WoundStatus(14, "COS_CHAOS_WOUND_HASTE", 0);
+DB_COS_WoundStatus(15, "BLUR", 0);
+DB_COS_WoundStatus(16, "COS_CHAOS_WOUND_HEROISM", 0);
+DB_COS_WoundStatus(17, "INVISIBILITY", 0);
+DB_COS_WoundStatus(18, "COS_CHAOS_WOUND_MELEE_ADVANTAGE", 0);
+DB_COS_WoundStatus(19, "COS_CHAOS_WOUND_RANGED_ADVANTAGE", 0);
+DB_COS_WoundStatus(20, "COS_CHAOS_WOUND_SPELL_ADVANTAGE", 0);
+DB_COS_WoundStatus(23, "COS_CHAOS_WOUND_MOVE_MINUS_6", 1);
+DB_COS_WoundStatus(24, "COS_CHAOS_WOUND_MOVE_MINUS_9", 1);
+DB_COS_WoundStatus(25, "COS_CHAOS_WOUND_BLOODLUST", 0);
+DB_COS_WoundLog(0, "COS_CHAOS_WOUND_LOG_MADNESS");
+DB_COS_WoundLog(1, "COS_CHAOS_WOUND_LOG_FRIGHTENED");
+DB_COS_WoundLog(2, "COS_CHAOS_WOUND_LOG_STUNNED");
+DB_COS_WoundLog(3, "COS_CHAOS_WOUND_LOG_SILENCED");
+DB_COS_WoundLog(4, "COS_CHAOS_WOUND_LOG_PRONE");
+DB_COS_WoundLog(5, "COS_CHAOS_WOUND_LOG_BLINDED");
+DB_COS_WoundLog(6, "COS_CHAOS_WOUND_LOG_SLOWED");
+DB_COS_WoundLog(7, "COS_CHAOS_WOUND_LOG_POISONED");
+DB_COS_WoundLog(8, "COS_CHAOS_WOUND_LOG_BLEEDING");
+DB_COS_WoundLog(9, "COS_CHAOS_WOUND_LOG_BURNING");
+DB_COS_WoundLog(10, "COS_CHAOS_WOUND_LOG_MELEEDISADVANTAGE");
+DB_COS_WoundLog(11, "COS_CHAOS_WOUND_LOG_RANGEDDISADVANTAGE");
+DB_COS_WoundLog(12, "COS_CHAOS_WOUND_LOG_SPELLDISADVANTAGE");
+DB_COS_WoundLog(13, "COS_CHAOS_WOUND_LOG_BLESS");
+DB_COS_WoundLog(14, "COS_CHAOS_WOUND_LOG_HASTE");
+DB_COS_WoundLog(15, "COS_CHAOS_WOUND_LOG_BLUR");
+DB_COS_WoundLog(16, "COS_CHAOS_WOUND_LOG_HEROISM");
+DB_COS_WoundLog(17, "COS_CHAOS_WOUND_LOG_INVISIBILITY");
+DB_COS_WoundLog(18, "COS_CHAOS_WOUND_LOG_MELEEADVANTAGE");
+DB_COS_WoundLog(19, "COS_CHAOS_WOUND_LOG_RANGEDADVANTAGE");
+DB_COS_WoundLog(20, "COS_CHAOS_WOUND_LOG_SPELLADVANTAGE");
+DB_COS_WoundLog(23, "COS_CHAOS_WOUND_LOG_VULNERABILITY_ACID");
+DB_COS_WoundLog(24, "COS_CHAOS_WOUND_LOG_EXTRADAMAGE_ACID");
+DB_COS_WoundLog(25, "COS_CHAOS_WOUND_LOG_BLOODLUST");
+DB_COS_WoundPositive(13);
+DB_COS_WoundPositive(14);
+DB_COS_WoundPositive(15);
+DB_COS_WoundPositive(16);
+DB_COS_WoundPositive(17);
+DB_COS_WoundPositive(18);
+DB_COS_WoundPositive(19);
+DB_COS_WoundPositive(20);
+DB_COS_WoundPositive(21);
+DB_COS_WoundPositive(22);
+DB_COS_WoundPositive(25);
+DB_COS_LevelBand(1, 5, 1);
+DB_COS_LevelBand(5, 9, 2);
+DB_COS_LevelBand(9, 13, 3);
+DB_COS_WoundLayer(1);
+DB_COS_WoundLayer(2);
+DB_COS_WoundLayer(3);
+DB_COS_WoundLayer(4);
+DB_COS_WoundLayer(5);
+DB_COS_WoundLayer(6);
+DB_COS_WoundLayer(7);
+DB_COS_WoundLayer(8);
+DB_COS_WoundLayer(9);
+DB_COS_WoundLayer(10);
+DB_COS_WoundLayer(11);
+DB_COS_WoundLayer(12);
+DB_COS_WoundLayer(13);
+DB_COS_WoundLayer(14);
+DB_COS_WoundLayer(15);
+DB_COS_WoundWeight(0, 4);
+DB_COS_WoundWeight(1, 2);
+DB_COS_WoundWeight(2, 1);
+DB_COS_WoundWeight(3, 4);
+DB_COS_WoundWeight(4, 2);
+DB_COS_WoundWeight(5, 1);
+DB_COS_WoundWeight(6, 4);
+DB_COS_WoundWeight(7, 2);
+DB_COS_WoundWeight(8, 1);
+DB_COS_WoundWeight(9, 4);
+DB_COS_WoundWeight(10, 2);
+DB_COS_WoundWeight(11, 1);
+DB_COS_WoundWeight(12, 4);
+DB_COS_WoundWeight(13, 5);
+DB_COS_WoundWeight(14, 1);
+DB_COS_WoundWeight(15, 3);
+DB_COS_WoundWeight(16, 5);
+DB_COS_WoundWeight(17, 1);
+DB_COS_WoundWeight(18, 6);
+DB_COS_WoundWeight(19, 6);
+DB_COS_WoundWeight(20, 6);
+DB_COS_WoundWeight(21, 3);
+DB_COS_WoundWeight(22, 4);
+DB_COS_WoundWeight(23, 2);
+DB_COS_WoundWeight(24, 1);
+DB_COS_WoundWeight(25, 1);
+DB_COS_WoundFateRank(0, 10);
+DB_COS_WoundFateRank(1, 5);
+DB_COS_WoundFateRank(2, 0);
+DB_COS_WoundFateRank(3, 10);
+DB_COS_WoundFateRank(4, 5);
+DB_COS_WoundFateRank(5, 0);
+DB_COS_WoundFateRank(6, 10);
+DB_COS_WoundFateRank(7, 5);
+DB_COS_WoundFateRank(8, 0);
+DB_COS_WoundFateRank(9, 12);
+DB_COS_WoundFateRank(10, 7);
+DB_COS_WoundFateRank(11, 2);
+DB_COS_WoundFateRank(12, 12);
+DB_COS_WoundFateRank(13, 20);
+DB_COS_WoundFateRank(14, 25);
+DB_COS_WoundFateRank(15, 21);
+DB_COS_WoundFateRank(16, 20);
+DB_COS_WoundFateRank(17, 24);
+DB_COS_WoundFateRank(18, 22);
+DB_COS_WoundFateRank(19, 22);
+DB_COS_WoundFateRank(20, 22);
+DB_COS_WoundFateRank(21, 23);
+DB_COS_WoundFateRank(22, 16);
+DB_COS_WoundFateRank(23, 6);
+DB_COS_WoundFateRank(24, 1);
+DB_COS_WoundFateRank(25, 25);
+DB_COS_WoundGrowthWeight(5, 13, 1);
+DB_COS_WoundGrowthWeight(5, 15, 1);
+DB_COS_WoundGrowthWeight(5, 16, 1);
+DB_COS_WoundGrowthWeight(5, 18, 1);
+DB_COS_WoundGrowthWeight(5, 19, 1);
+DB_COS_WoundGrowthWeight(5, 20, 1);
+DB_COS_WoundGrowthWeight(5, 21, 1);
+DB_COS_WoundGrowthWeight(5, 22, 1);
+DB_COS_WoundGrowthWeight(9, 13, 1);
+DB_COS_WoundGrowthWeight(9, 14, 1);
+DB_COS_WoundGrowthWeight(9, 15, 1);
+DB_COS_WoundGrowthWeight(9, 16, 1);
+DB_COS_WoundGrowthWeight(9, 17, 1);
+DB_COS_WoundGrowthWeight(9, 18, 1);
+DB_COS_WoundGrowthWeight(9, 19, 1);
+DB_COS_WoundGrowthWeight(9, 20, 1);
+DB_COS_WoundGrowthWeight(9, 21, 1);
+DB_COS_WoundGrowthWeight(9, 22, 2);
+DB_COS_WoundGrowthWeight(9, 25, 1);
+DB_COS_WoundDamageType(0, "Acid", "COS_CHAOS_WOUND_VULNERABILITY_ACID");
+DB_COS_WoundDamageType(1, "Cold", "COS_CHAOS_WOUND_VULNERABILITY_COLD");
+DB_COS_WoundDamageType(2, "Fire", "COS_CHAOS_WOUND_VULNERABILITY_FIRE");
+DB_COS_WoundDamageType(3, "Force", "COS_CHAOS_WOUND_VULNERABILITY_FORCE");
+DB_COS_WoundDamageType(4, "Lightning", "COS_CHAOS_WOUND_VULNERABILITY_LIGHTNING");
+DB_COS_WoundDamageType(5, "Necrotic", "COS_CHAOS_WOUND_VULNERABILITY_NECROTIC");
+DB_COS_WoundDamageType(6, "Poison", "COS_CHAOS_WOUND_VULNERABILITY_POISON");
+DB_COS_WoundDamageType(7, "Psychic", "COS_CHAOS_WOUND_VULNERABILITY_PSYCHIC");
+DB_COS_WoundDamageType(8, "Radiant", "COS_CHAOS_WOUND_VULNERABILITY_RADIANT");
+DB_COS_WoundDamageType(9, "Thunder", "COS_CHAOS_WOUND_VULNERABILITY_THUNDER");
+DB_COS_DualityBand(0, 2, 70, "COS_CHAOS_DUALITY_LOG_DEVOUR_60");
+DB_COS_DualityBand(2, 9, 85, "COS_CHAOS_DUALITY_LOG_DEVOUR_20");
+DB_COS_DualityBand(9, 23, 95, "COS_CHAOS_DUALITY_LOG_DEVOUR");
+DB_COS_DualityBand(23, 53, 100, "COS_CHAOS_DUALITY_LOG_RETURN");
+DB_COS_DualityBand(53, 75, 105, "COS_CHAOS_DUALITY_LOG_BOOST_20");
+DB_COS_DualityBand(75, 90, 115, "COS_CHAOS_DUALITY_LOG_BOOST_40");
+DB_COS_DualityBand(90, 98, 130, "COS_CHAOS_DUALITY_LOG_BOOST_60");
+DB_COS_DualityBand(98, 100, 150, "COS_CHAOS_DUALITY_LOG_BOOST_100");
+DB_COS_DualityTiming(1, 90, 98, 5, 15, 80);
+DB_COS_DualityTiming(2, 75, 90, 10, 25, 65);
+DB_COS_DualityTiming(3, 60, 85, 15, 35, 50);
+DB_COS_FateRolls(1, 5, 2);
+DB_COS_FateRolls(5, 9, 3);
+DB_COS_FateRolls(9, 13, 4);
+DB_COS_FateRolls(13, 17, 5);
+DB_COS_FateRolls(17, 21, 6);
+DB_COS_FateRolls(21, 25, 7);
+DB_COS_FateRolls(25, 100, 8);
+DB_COS_DualityDelaySerial(0);
+DB_COS_LifeSkillLevel(5, 9, "COS_CHAOS_LIFE_SKILL_BONUS_1");
+DB_COS_LifeSkillLevel(9, 13, "COS_CHAOS_LIFE_SKILL_BONUS_2");
+DB_COS_LifeSkillLevel(13, 17, "COS_CHAOS_LIFE_SKILL_BONUS_3");
+DB_COS_LifeSkillLevel(17, 21, "COS_CHAOS_LIFE_SKILL_BONUS_4");
+DB_COS_LifeSkillLevel(21, 25, "COS_CHAOS_LIFE_SKILL_BONUS_5");
+DB_COS_LifeSkillLevel(25, 29, "COS_CHAOS_LIFE_SKILL_BONUS_6");
+DB_COS_LifeSkillLevel(29, 100, "COS_CHAOS_LIFE_SKILL_BONUS_7");
+DB_COS_ConfigWoundOutcome("AttackMinus1", 0);
+DB_COS_ConfigWoundOutcome("AttackMinus2", 1);
+DB_COS_ConfigWoundOutcome("AttackMinus3", 2);
+DB_COS_ConfigWoundOutcome("ACMinus1", 3);
+DB_COS_ConfigWoundOutcome("ACMinus2", 4);
+DB_COS_ConfigWoundOutcome("ACMinus3", 5);
+DB_COS_ConfigWoundOutcome("SaveMinus1", 6);
+DB_COS_ConfigWoundOutcome("SaveMinus2", 7);
+DB_COS_ConfigWoundOutcome("SaveMinus3", 8);
+DB_COS_ConfigWoundOutcome("CheckMinus1", 9);
+DB_COS_ConfigWoundOutcome("CheckMinus2", 10);
+DB_COS_ConfigWoundOutcome("CheckMinus3", 11);
+DB_COS_ConfigWoundOutcome("MoveMinus3", 12);
+DB_COS_ConfigWoundOutcome("MoveMinus6", 23);
+DB_COS_ConfigWoundOutcome("MoveMinus9", 24);
+DB_COS_LostChance(1, 15);
+DB_COS_LostChance(2, 30);
+DB_COS_LostChance(3, 50);
+DB_COS_LostChance(4, 70);
+DB_COS_LostChance(5, 85);
+DB_COS_LostChance(6, 100);
+DB_COS_LostDisplay(0, "COS_CHAOS_LOST_COUNT_0");
+DB_COS_LostDisplay(1, "COS_CHAOS_LOST_COUNT_1");
+DB_COS_LostDisplay(2, "COS_CHAOS_LOST_COUNT_2");
+DB_COS_LostDisplay(3, "COS_CHAOS_LOST_COUNT_3");
+DB_COS_LostDisplay(4, "COS_CHAOS_LOST_COUNT_4");
+DB_COS_LostDisplay(5, "COS_CHAOS_LOST_COUNT_5");
+DB_COS_LostDisplay(6, "COS_CHAOS_LOST_COUNT_6");
+DB_COS_LostDisplay(7, "COS_CHAOS_LOST_COUNT_7");
+DB_COS_LostDisplay(8, "COS_CHAOS_LOST_COUNT_8");
+DB_COS_LostDisplay(9, "COS_CHAOS_LOST_COUNT_9");
+DB_COS_LostDisplay(10, "COS_CHAOS_LOST_COUNT_10");
+DB_COS_KillChance(1, 10, 5);
+DB_COS_KillChance(11, 20, 10);
+DB_COS_KillChance(21, 30, 20);
+DB_COS_KillChance(31, 39, 35);
+DB_COS_KillChance(40, 40, 100);
+KBSECTION
+PROC
+PROC_COS_Register((CHARACTER)_Character)
+AND
+NOT DB_COS_Character(_Character)
+THEN
+DB_COS_Character(_Character);
+DB_COS_LostCount(_Character, 0);
+DB_COS_Power(_Character, 0);
+DB_COS_KillCount(_Character, 0);
+DB_COS_ConfigMechanic(_Character, "Power", 1);
+DB_COS_ConfigMechanic(_Character, "Wound", 1);
+DB_COS_ConfigMechanic(_Character, "KillPower", 1);
+DB_COS_ConfigMechanic(_Character, "Duality", 1);
+DB_COS_ConfigMechanic(_Character, "AllIn", 1);
+DB_COS_ConfigMechanic(_Character, "Strike", 1);
+DB_COS_ConfigWound(_Character, "AttackMinus1", 1);
+DB_COS_ConfigWound(_Character, "AttackMinus2", 1);
+DB_COS_ConfigWound(_Character, "AttackMinus3", 1);
+DB_COS_ConfigWound(_Character, "ACMinus1", 1);
+DB_COS_ConfigWound(_Character, "ACMinus2", 1);
+DB_COS_ConfigWound(_Character, "ACMinus3", 1);
+DB_COS_ConfigWound(_Character, "SaveMinus1", 1);
+DB_COS_ConfigWound(_Character, "SaveMinus2", 1);
+DB_COS_ConfigWound(_Character, "SaveMinus3", 1);
+DB_COS_ConfigWound(_Character, "CheckMinus1", 1);
+DB_COS_ConfigWound(_Character, "CheckMinus2", 1);
+DB_COS_ConfigWound(_Character, "CheckMinus3", 1);
+DB_COS_ConfigWound(_Character, "MoveMinus3", 1);
+DB_COS_ConfigWound(_Character, "MoveMinus6", 1);
+DB_COS_ConfigWound(_Character, "MoveMinus9", 1);
+
+PROC
+PROC_COS_ApplyPowerDisplay((CHARACTER)_Character, (INTEGER)_Power)
+AND
+_Power > 0
+AND
+IntegerProduct(_Power, 6, _DurationSeconds)
+AND
+IntegerToReal(_DurationSeconds, _Duration)
+THEN
+ApplyStatus(_Character, "COS_CHAOS_POWER_STACK", _Duration, 100, _Character);
+
+PROC
+PROC_COS_ApplyPowerDisplay((CHARACTER)_Character, (INTEGER)_Power)
+AND
+_Power == 0
+THEN
+ApplyStatus(_Character, "COS_CHAOS_POWER_STACK", -1.0, 100, _Character);
+
+PROC
+PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)
+AND
+_Power >= 10
+THEN
+ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);
+
+PROC
+PROC_COS_ApplyFateReady((CHARACTER)_Character, (INTEGER)_Power)
+AND
+_Power >= 1
+THEN
+ApplyStatus(_Character, "COS_CHAOS_FATE_READY", -1.0, 100, _Character);
+
+PROC
+PROC_COS_SyncPowerDisplay((CHARACTER)_Character, (INTEGER)_Power)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+RemoveStatus(_Character, "COS_CHAOS_FATE_READY", _Character);
+PROC_COS_ApplyPowerDisplay(_Character, _Power);
+PROC_COS_ApplyGenesisReady(_Character, _Power);
+PROC_COS_ApplyFateReady(_Character, _Power);
+
+PROC
+PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)
+AND
+DB_COS_Power(_Character, _Power)
+THEN
+PROC_COS_SyncPowerDisplay(_Character, _Power);
+
+PROC
+PROC_COS_ClearLostDisplay((CHARACTER)_Character)
+AND
+DB_COS_LostDisplay(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_ApplyLostDisplay((CHARACTER)_Character, (INTEGER)_Count)
+AND
+DB_COS_LostDisplay(_Count, _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 100, _Character);
+
+PROC
+PROC_COS_SyncLostDisplay((CHARACTER)_Character, (INTEGER)_Count)
+THEN
+PROC_COS_ClearLostDisplay(_Character);
+PROC_COS_ApplyLostDisplay(_Character, _Count);
+
+PROC
+PROC_COS_SyncLostFromDatabase((CHARACTER)_Character)
+AND
+DB_COS_LostCount(_Character, _Count)
+THEN
+PROC_COS_SyncLostDisplay(_Character, _Count);
+
+PROC
+PROC_COS_ClearLifeSkillBonus((CHARACTER)_Character)
+AND
+DB_COS_LifeSkillLevel(_, _, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_ApplyLifeSkillBonus((CHARACTER)_Character)
+AND
+GetLevel(_Character, _Level)
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+DB_COS_LifeSkillLevel(_MinimumLevel, _MaximumLevel, _Status)
+AND
+_CappedLevel >= _MinimumLevel
+AND
+_CappedLevel < _MaximumLevel
+THEN
+ApplyStatus(_Character, _Status, -1.0, 100, _Character);
+
+PROC
+PROC_COS_Sync((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_Register(_Character);
+PROC_COS_SyncPowerFromDatabase(_Character);
+PROC_COS_SyncLostFromDatabase(_Character);
+PROC_COS_ClearLifeSkillBonus(_Character);
+PROC_COS_ApplyLifeSkillBonus(_Character);
+
+PROC
+PROC_COS_Sync((CHARACTER)_Character)
+AND
+DB_COS_WoundConsumed(_Character)
+THEN
+NOT DB_COS_WoundConsumed(_Character);
+
+PROC
+PROC_COS_AddPower((CHARACTER)_Character, (INTEGER)_Amount)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
+DB_COS_Power(_Character, _OldPower)
+AND
+IntegerSum(_OldPower, _Amount, _NewPower)
+THEN
+NOT DB_COS_Power(_Character, _OldPower);
+DB_COS_Power(_Character, _NewPower);
+PROC_COS_SyncPowerDisplay(_Character, _NewPower);
+
+PROC
+PROC_COS_AddLost((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
+DB_COS_LostCount(_Character, _OldCount)
+AND
+_OldCount < 10
+AND
+IntegerSum(_OldCount, 1, _NewCount)
+AND
+DB_COS_LostChance(_NewCount, _Chance)
+AND
+Random(100, _Roll)
+THEN
+NOT DB_COS_LostCount(_Character, _OldCount);
+DB_COS_LostCount(_Character, _NewCount);
+PROC_COS_SyncLostDisplay(_Character, _NewCount);
+PROC_COS_ConvertLost(_Character, _NewCount, _Chance, _Roll);
+
+PROC
+PROC_COS_ConvertLost((CHARACTER)_Character, (INTEGER)_Count, (INTEGER)_Chance, (INTEGER)_Roll)
+AND
+_Roll < _Chance
+AND
+DB_COS_LostCount(_Character, _Count)
+AND
+Random(100, _RewardRoll)
+THEN
+NOT DB_COS_LostCount(_Character, _Count);
+DB_COS_LostCount(_Character, 0);
+PROC_COS_SyncLostDisplay(_Character, 0);
+PROC_COS_RewardWoundPower(_Character, _RewardRoll);
+
+PROC
+PROC_COS_RewardWoundPower((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll < 60
+THEN
+PROC_COS_AddPower(_Character, 1);
+
+PROC
+PROC_COS_RewardWoundPower((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll >= 60
+AND
+_Roll < 90
+THEN
+PROC_COS_AddPower(_Character, 2);
+
+PROC
+PROC_COS_RewardWoundPower((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll >= 90
+THEN
+PROC_COS_AddPower(_Character, 3);
+
+PROC
+PROC_COS_RegisterKill((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "KillPower", 1)
+AND
+DB_COS_KillCount(_Character, _OldCount)
+AND
+IntegerSum(_OldCount, 1, _NewCount)
+THEN
+NOT DB_COS_KillCount(_Character, _OldCount);
+DB_COS_KillCount(_Character, _NewCount);
+PROC_COS_ResolveKill(_Character, _NewCount);
+
+PROC
+PROC_COS_ResolveKill((CHARACTER)_Character, (INTEGER)_Count)
+AND
+DB_COS_KillChance(_Minimum, _Maximum, _Chance)
+AND
+_Count >= _Minimum
+AND
+_Count <= _Maximum
+AND
+Random(100, _Roll)
+AND
+_Roll < _Chance
+AND
+Random(100, _RewardRoll)
+THEN
+PROC_COS_RewardKill(_Character, _RewardRoll);
+
+PROC
+PROC_COS_RewardKill((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll < 60
+THEN
+PROC_COS_CommitKillReward(_Character, 1);
+
+PROC
+PROC_COS_RewardKill((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll >= 60
+AND
+_Roll < 90
+THEN
+PROC_COS_CommitKillReward(_Character, 2);
+
+PROC
+PROC_COS_RewardKill((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+_Roll >= 90
+THEN
+PROC_COS_CommitKillReward(_Character, 3);
+
+PROC
+PROC_COS_CommitKillReward((CHARACTER)_Character, (INTEGER)_Reward)
+AND
+DB_COS_KillCount(_Character, _Count)
+THEN
+NOT DB_COS_KillCount(_Character, _Count);
+DB_COS_KillCount(_Character, 0);
+PROC_COS_AddPower(_Character, _Reward);
+
+PROC
+PROC_COS_ApplyAllIn((CHARACTER)_Character, (INTEGER)_Level)
+AND
+_Level < 3
+THEN
+ApplyStatus(_Character, "COS_CHAOS_ALLIN_L1", -1.0, 100, _Character);
+
+PROC
+PROC_COS_ApplyAllIn((CHARACTER)_Character, (INTEGER)_Level)
+AND
+_Level >= 3
+AND
+_Level < 7
+THEN
+ApplyStatus(_Character, "COS_CHAOS_ALLIN_L3", -1.0, 100, _Character);
+
+PROC
+PROC_COS_ApplyAllIn((CHARACTER)_Character, (INTEGER)_Level)
+AND
+_Level >= 7
+THEN
+ApplyStatus(_Character, "COS_CHAOS_ALLIN_L7", -1.0, 100, _Character);
+
+PROC
+PROC_COS_ClearAllIn((CHARACTER)_Character)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_ALLIN_TOGGLE", _Character);
+RemoveStatus(_Character, "COS_CHAOS_ALLIN_L1", _Character);
+RemoveStatus(_Character, "COS_CHAOS_ALLIN_L3", _Character);
+RemoveStatus(_Character, "COS_CHAOS_ALLIN_L7", _Character);
+
+PROC
+PROC_COS_RecordWoundNegative((CHARACTER)_Character, (INTEGER)_Negative, (INTEGER)_PowerEligible)
+AND
+_Negative == 1
+AND
+_PowerEligible == 1
+THEN
+PROC_COS_AddLost(_Character);
+
+PROC
+PROC_COS_ClearWoundPool((CHARACTER)_Character)
+AND
+DB_COS_WoundCandidate(_Character, _Slot, _Outcome)
+THEN
+NOT DB_COS_WoundCandidate(_Character, _Slot, _Outcome);
+
+PROC
+PROC_COS_ClearWoundPool((CHARACTER)_Character)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+THEN
+NOT DB_COS_WoundPoolCount(_Character, _Count);
+
+PROC
+PROC_COS_AppendWoundCandidate((CHARACTER)_Character, (INTEGER)_Outcome)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+AND
+IntegerSum(_Count, 1, _Next)
+THEN
+DB_COS_WoundCandidate(_Character, _Count, _Outcome);
+NOT DB_COS_WoundPoolCount(_Character, _Count);
+DB_COS_WoundPoolCount(_Character, _Next);
+
+PROC
+PROC_COS_AddPositiveWoundCandidates((CHARACTER)_Character)
+AND
+DB_COS_WoundPositive(_Outcome)
+AND
+DB_COS_WoundWeight(_Outcome, _Weight)
+AND
+DB_COS_WoundLayer(_Layer)
+AND
+_Layer <= _Weight
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_AddPositiveWoundGrowth((CHARACTER)_Character)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_WoundGrowthWeight(_MinimumLevel, _Outcome, _Weight)
+AND
+_Level >= _MinimumLevel
+AND
+DB_COS_WoundLayer(_Layer)
+AND
+_Layer <= _Weight
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_AddEnabledWoundCandidates((CHARACTER)_Character)
+AND
+DB_COS_ConfigWound(_Character, _Key, 1)
+AND
+DB_COS_ConfigWoundOutcome(_Key, _Outcome)
+AND
+DB_COS_WoundWeight(_Outcome, _Weight)
+AND
+DB_COS_WoundLayer(_Layer)
+AND
+_Layer <= _Weight
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_RebuildWoundPool((CHARACTER)_Character)
+THEN
+PROC_COS_ClearWoundPool(_Character);
+DB_COS_WoundPoolCount(_Character, 0);
+PROC_COS_AddPositiveWoundCandidates(_Character);
+PROC_COS_AddPositiveWoundGrowth(_Character);
+PROC_COS_AddEnabledWoundCandidates(_Character);
+
+PROC
+PROC_COS_CommitWoundRoll((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+AND
+_Count > 0
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)
+AND
+Random(_Count, _Slot)
+AND
+DB_COS_WoundCandidate(_Character, _Slot, _Outcome)
+THEN
+PROC_COS_ResolveWound(_Character, _Damage, _Outcome, _PowerEligible);
+PROC_COS_ClearWoundPool(_Character);
+
+PROC
+PROC_COS_CommitWoundRoll((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+AND
+DB_COS_WoundPoolCount(_Character, _Count)
+AND
+_Count > 0
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)
+AND
+GetLevel(_Character, _Level)
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)
+AND
+_CappedLevel >= _MinimumLevel
+AND
+_CappedLevel < _MaximumLevel
+AND
+Random(_Count, _FirstSlot)
+AND
+DB_COS_WoundCandidate(_Character, _FirstSlot, _FirstOutcome)
+AND
+DB_COS_WoundFateRank(_FirstOutcome, _FirstRank)
+AND
+IntegerSubtract(_RollCount, 1, _RemainingRolls)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
+PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _FirstOutcome, _FirstRank);
+
+PROC
+PROC_COS_ContinueFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_RemainingRolls > 0
+AND
+Random(_Count, _NextSlot)
+AND
+DB_COS_WoundCandidate(_Character, _NextSlot, _NextOutcome)
+AND
+DB_COS_WoundFateRank(_NextOutcome, _NextRank)
+AND
+IntegerSubtract(_RemainingRolls, 1, _NextRemaining)
+THEN
+PROC_COS_ChooseFateWound(_Character, _Damage, _PowerEligible, _Count, _NextRemaining, _BestOutcome, _BestRank, _NextOutcome, _NextRank);
+
+PROC
+PROC_COS_ChooseFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
+AND
+_NextRank <= _BestRank
+THEN
+PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _BestOutcome, _BestRank);
+
+PROC
+PROC_COS_ChooseFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
+AND
+_NextRank > _BestRank
+THEN
+PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _NextOutcome, _NextRank);
+
+PROC
+PROC_COS_ContinueFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_RemainingRolls == 0
+THEN
+PROC_COS_ResolveWound(_Character, _Damage, _BestOutcome, _PowerEligible);
+PROC_COS_ClearWoundPool(_Character);
+
+PROC
+PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+AND
+GetLevel(_Character, _Level)
+AND
+_Level < 13
+THEN
+PROC_COS_RebuildWoundPool(_Character);
+PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
+
+PROC
+PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+AND
+GetLevel(_Character, _Level)
+AND
+_Level >= 13
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+IntegerSubtract(_CappedLevel, 12, _PostLevels)
+AND
+IntegerProduct(_PostLevels, 5, _PositiveThreshold)
+AND
+Random(1000, _GrowthRoll)
+THEN
+PROC_COS_RollWoundPostGrowth(_Character, _Damage, _PowerEligible, _GrowthRoll, _PositiveThreshold);
+
+PROC
+PROC_COS_RollWoundPostGrowth((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_GrowthRoll, (INTEGER)_PositiveThreshold)
+AND
+_GrowthRoll < _PositiveThreshold
+THEN
+PROC_COS_ClearWoundPool(_Character);
+DB_COS_WoundPoolCount(_Character, 0);
+PROC_COS_AddPositiveWoundCandidates(_Character);
+PROC_COS_AddPositiveWoundGrowth(_Character);
+PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
+
+PROC
+PROC_COS_RollWoundPostGrowth((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_GrowthRoll, (INTEGER)_PositiveThreshold)
+AND
+_GrowthRoll >= _PositiveThreshold
+THEN
+PROC_COS_RebuildWoundPool(_Character);
+PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+DB_COS_WoundStatus(_Roll, _Status, _Negative)
+AND
+DB_COS_WoundLog(_Roll, _LogStatus)
+THEN
+ApplyStatus(_Character, _Status, 6.0, 100, _Character);
+ApplyStatus(_Character, _LogStatus, 0.1, 100, _Character);
+PROC_COS_RecordWoundNegative(_Character, _Negative, _PowerEligible);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+_Roll == 21
+AND
+GetHitpoints(_Character, _Hitpoints)
+AND
+GetMaxHitpoints(_Character, _Maximum)
+AND
+IntegerSum(_Hitpoints, _Damage, _RestoredRaw)
+AND
+IntegerMin(_RestoredRaw, _Maximum, _Restored)
+THEN
+SetHitpoints(_Character, _Restored, "Guaranteed");
+ApplyStatus(_Character, "COS_CHAOS_WOUND_LOG_RESTOREDAMAGE", 0.1, 100, _Character);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+_Roll == 22
+THEN
+ApplyStatus(_Character, "WET", 6.0, 100, _Character);
+ApplyStatus(_Character, "COS_CHAOS_WOUND_LOG_WET", 0.1, 100, _Character);
+
+PROC
+PROC_COS_ResolveDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Roll)
+AND
+IsDead(_Target, 0)
+AND
+GetLevel(_Owner, _Level)
+AND
+DB_COS_LevelBand(_MinimumLevel, _MaximumLevel, _Tier)
+AND
+_Level >= _MinimumLevel
+AND
+_Level < _MaximumLevel
+AND
+DB_COS_DualityTiming(_Tier, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance)
+AND
+IntegerDivide(_Damage, 2, _Half)
+AND
+_Half > 0
+AND
+GetHitpoints(_Target, _Hitpoints)
+AND
+GetMaxHitpoints(_Target, _Maximum)
+AND
+IntegerSum(_Hitpoints, _Half, _RestoredRaw)
+AND
+IntegerMin(_RestoredRaw, _Maximum, _Restored)
+THEN
+SetHitpoints(_Target, _Restored, "Guaranteed");
+PROC_COS_ResolveDualityOutcome(_Target, _Damage, _Half, _Roll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance);
+
+PROC
+PROC_COS_ResolveDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Roll)
+AND
+IsDead(_Target, 0)
+AND
+GetLevel(_Owner, _Level)
+AND
+_Level >= 13
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+IntegerSubtract(_CappedLevel, 12, _PostLevels)
+AND
+IntegerProduct(_PostLevels, 2, _SplitGrowth)
+AND
+IntegerProduct(_PostLevels, 3, _DelayGrowth)
+AND
+IntegerSum(15, _SplitGrowth, _SplitBonus)
+AND
+IntegerSum(35, _DelayGrowth, _DelayBonus)
+AND
+IntegerDivide(_Damage, 2, _Half)
+AND
+_Half > 0
+AND
+GetHitpoints(_Target, _Hitpoints)
+AND
+GetMaxHitpoints(_Target, _Maximum)
+AND
+IntegerSum(_Hitpoints, _Half, _RestoredRaw)
+AND
+IntegerMin(_RestoredRaw, _Maximum, _Restored)
+THEN
+SetHitpoints(_Target, _Restored, "Guaranteed");
+PROC_COS_ResolveDualityOutcome(_Target, _Damage, _Half, _Roll, 60, 85, _SplitBonus, _DelayBonus, 50);
+
+PROC
+PROC_COS_QueueDualityDamage((CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+_Amount > 0
+THEN
+DB_COS_DualityDamagePending(_Target, _Amount, _DamageType, _LogStatus);
+RealtimeObjectTimerLaunch(_Target, "COS_DualityApplyDamage", 50);
+
+PROC
+PROC_COS_QueueDualityDamage((CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+_Amount <= 0
+THEN
+ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
+
+PROC
+PROC_COS_QueueDelayedDualityDamage((CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+DB_COS_DualityDelaySerial(_Serial)
+AND
+IntegerSum(_Serial, 1, _NextSerial)
+THEN
+NOT DB_COS_DualityDelaySerial(_Serial);
+DB_COS_DualityDelaySerial(_NextSerial);
+DB_COS_DualityDelayed(_Target, _NextSerial, _Amount, _DamageType, _LogStatus);
+ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", -1.0, 100, _Target);
+
+PROC
+PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+_TimingRoll < _ImmediateEnd
+AND
+IntegerProduct(_Damage, _Percent, _Scaled)
+AND
+IntegerSum(_Scaled, 50, _Rounded)
+AND
+IntegerDivide(_Rounded, 100, _FinalDamage)
+AND
+IntegerSubtract(_Damage, _Half, _RetainedDamage)
+AND
+IntegerSubtract(_FinalDamage, _RetainedDamage, _ReturnDamage)
+THEN
+PROC_COS_QueueDualityDamage(_Target, _ReturnDamage, _DamageType, _LogStatus);
+
+PROC
+PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+_TimingRoll >= _ImmediateEnd
+AND
+_TimingRoll < _SplitEnd
+AND
+IntegerSum(_Percent, _SplitBonus, _AdjustedPercentRaw)
+AND
+IntegerMin(_AdjustedPercentRaw, 200, _AdjustedPercent)
+AND
+IntegerProduct(_Damage, _AdjustedPercent, _Scaled)
+AND
+IntegerSum(_Scaled, 50, _Rounded)
+AND
+IntegerDivide(_Rounded, 100, _FinalDamage)
+AND
+IntegerSubtract(_Damage, _Half, _RetainedDamage)
+AND
+IntegerSubtract(_FinalDamage, _RetainedDamage, _ReturnDamage)
+AND
+IntegerDivide(_ReturnDamage, 2, _ImmediateDamage)
+AND
+IntegerSubtract(_ReturnDamage, _ImmediateDamage, _DelayedDamage)
+THEN
+ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_BOOST_80", 0.1, 100, _Target);
+PROC_COS_QueueDualityDamage(_Target, _ImmediateDamage, _DamageType, _LogStatus);
+PROC_COS_QueueDelayedDualityDamage(_Target, _DelayedDamage, _DamageType, _LogStatus);
+
+PROC
+PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+AND
+_TimingRoll >= _SplitEnd
+AND
+IntegerSum(_Percent, _DelayBonus, _AdjustedPercentRaw)
+AND
+IntegerMin(_AdjustedPercentRaw, 200, _AdjustedPercent)
+AND
+IntegerProduct(_Damage, _AdjustedPercent, _Scaled)
+AND
+IntegerSum(_Scaled, 50, _Rounded)
+AND
+IntegerDivide(_Rounded, 100, _FinalDamage)
+AND
+IntegerSubtract(_Damage, _Half, _RetainedDamage)
+AND
+IntegerSubtract(_FinalDamage, _RetainedDamage, _ReturnDamage)
+THEN
+PROC_COS_QueueDelayedDualityDamage(_Target, _ReturnDamage, _DamageType, _LogStatus);
+
+PROC
+PROC_COS_ResolveDualityType((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
+AND
+_TypeChance < _ForceChance
+THEN
+PROC_COS_ResolveDualityTiming(_Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, "Force", _LogStatus);
+
+PROC
+PROC_COS_ResolveDualityType((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
+AND
+_TypeChance >= _ForceChance
+AND
+DB_COS_WoundDamageType(_DamageTypeRoll, _DamageType, _)
+THEN
+ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_ELEMENTAL", 0.1, 100, _Target);
+PROC_COS_ResolveDualityTiming(_Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _DamageType, _LogStatus);
+
+PROC
+PROC_COS_ResolveDualityOutcome((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Roll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance)
+AND
+DB_COS_DualityBand(_Minimum, _Maximum, _Percent, _LogStatus)
+AND
+_Roll >= _Minimum
+AND
+_Roll < _Maximum
+AND
+Random(100, _TimingRoll)
+AND
+Random(100, _TypeChance)
+AND
+Random(10, _DamageTypeRoll)
+THEN
+PROC_COS_ResolveDualityType(_Target, _Damage, _Half, _Percent, _TimingRoll, _TypeChance, _DamageTypeRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance, _LogStatus);
+
+PROC
+PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_RemainingRolls, (INTEGER)_BestRoll)
+AND
+_RemainingRolls > 0
+AND
+Random(100, _NextRoll)
+AND
+IntegerMax(_BestRoll, _NextRoll, _NextBestRoll)
+AND
+IntegerSubtract(_RemainingRolls, 1, _NextRemaining)
+THEN
+PROC_COS_ContinueFateDuality(_Owner, _Target, _Damage, _NextRemaining, _NextBestRoll);
+
+PROC
+PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_RemainingRolls, (INTEGER)_BestRoll)
+AND
+_RemainingRolls == 0
+THEN
+PROC_COS_ResolveDuality(_Owner, _Target, _Damage, _BestRoll);
+
+IF
+ObjectTimerFinished(_Target, "COS_DualityApplyDamage")
+AND
+DB_COS_DualityDamagePending((CHARACTER)_Target, _Amount, _DamageType, _LogStatus)
+THEN
+NOT DB_COS_DualityDamagePending((CHARACTER)_Target, _Amount, _DamageType, _LogStatus);
+ApplyDamage(_Target, _Amount, _DamageType, NULL_00000000-0000-0000-0000-000000000000);
+ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
+
+IF
+TurnStarted(_Target)
+AND
+DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
+AND
+GetHitpoints(_Target, _Hitpoints)
+AND
+IntegerSubtract(_Hitpoints, _Amount, _ReducedHitpoints)
+AND
+IntegerMax(_ReducedHitpoints, 0, _FinalHitpoints)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+SetHitpoints(_Target, _FinalHitpoints, "Guaranteed");
+ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
+RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+
+IF
+Died(_Target)
+AND
+DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+GetHostCharacter(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+GainedControl(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+CharacterJoinedParty(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+LeveledUp(_Character)
+THEN
+PROC_COS_Sync(_Character);
+
+IF
+UsingSpell(_Character, "Shout_COS_ChaosGenesis", _, _, _)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
+AND
+DB_COS_Power((CHARACTER)_Character, _OldPower)
+AND
+_OldPower >= 10
+AND
+IntegerSubtract(_OldPower, 10, _NewPower)
+THEN
+NOT DB_COS_Power((CHARACTER)_Character, _OldPower);
+DB_COS_Power((CHARACTER)_Character, _NewPower);
+RemoveHarmfulStatuses(_Character);
+PROC_COS_SyncPowerDisplay((CHARACTER)_Character, _NewPower);
+
+IF
+UsingSpell(_Character, "Shout_COS_FateRevision", _, _, _)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
+AND
+DB_COS_Power((CHARACTER)_Character, _OldPower)
+AND
+_OldPower >= 1
+AND
+IntegerSubtract(_OldPower, 1, _NewPower)
+THEN
+NOT DB_COS_Power((CHARACTER)_Character, _OldPower);
+DB_COS_Power((CHARACTER)_Character, _NewPower);
+PROC_COS_SyncPowerDisplay((CHARACTER)_Character, _NewPower);
+
+IF
+UsingSpell(_Character, "Shout_COS_TestPower100", _, _, _)
+AND
+DB_COS_Character((CHARACTER)_Character)
+THEN
+PROC_COS_AddPower((CHARACTER)_Character, 100);
+
+IF
+StatusApplied(_Character, "COS_CHAOS_ALLIN_TOGGLE", _, _)
+AND
+DB_COS_Character((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "AllIn", 1)
+AND
+GetLevel(_Character, _Level)
+THEN
+PROC_COS_ApplyAllIn((CHARACTER)_Character, _Level);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 1)
+AND
+_Damage > 0
+AND
+IntegerProduct(_Damage, 7, _ExtraDamage)
+THEN
+PROC_COS_ClearAllIn((CHARACTER)_AttackOwner);
+RemoveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", _AttackOwner);
+RemoveStatus(_AttackOwner, "COS_CHAOS_KILL", _AttackOwner);
+ApplyDamage(_Target, _ExtraDamage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 0)
+AND
+_Damage > 0
+AND
+IntegerProduct(_Damage, 3, _ExtraDamage)
+THEN
+PROC_COS_ClearAllIn((CHARACTER)_AttackOwner);
+RemoveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", _AttackOwner);
+ApplyDamage(_Target, _ExtraDamage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 0)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 1)
+AND
+_Damage > 0
+AND
+IntegerProduct(_Damage, 3, _ExtraDamage)
+THEN
+PROC_COS_ClearAllIn((CHARACTER)_AttackOwner);
+RemoveStatus(_AttackOwner, "COS_CHAOS_KILL", _AttackOwner);
+ApplyDamage(_Target, _ExtraDamage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 0)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 0)
+AND
+_Damage > 0
+THEN
+PROC_COS_ClearAllIn((CHARACTER)_AttackOwner);
+ApplyDamage(_Target, _Damage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+MissedBy(_, _AttackOwner, _Attacker, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character(_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
+THEN
+PROC_COS_ClearAllIn(_AttackOwner);
+
+IF
+AttackedBy(_Target, _AttackOwner, _, _, _Damage, _, _)
+AND
+IsCharacter(_Target, 1)
+AND
+IsCharacter(_AttackOwner, 1)
+AND
+_Target != _AttackOwner
+AND
+DB_COS_Character((CHARACTER)_Target)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Target, "Wound", 1)
+AND
+HasPassive(_Target, "COS_ChaosWound", 1)
+AND
+_Damage > 0
+AND
+NOT DB_COS_WoundConsumed((CHARACTER)_Target)
+AND
+IsEnemy((CHARACTER)_Target, (CHARACTER)_AttackOwner, _PowerEligible)
+THEN
+DB_COS_WoundConsumed((CHARACTER)_Target);
+PROC_COS_RollWound((CHARACTER)_Target, _Damage, _PowerEligible);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_PENDING", 0)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_PENDING", 1)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+GetLevel(_AttackOwner, _Level)
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)
+AND
+_CappedLevel >= _MinimumLevel
+AND
+_CappedLevel < _MaximumLevel
+AND
+Random(100, _FirstDualityRoll)
+AND
+IntegerSubtract(_RollCount, 1, _RemainingRolls)
+THEN
+RemoveStatus(_AttackOwner, "COS_CHAOS_FATE_PENDING", _AttackOwner);
+PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 0)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 1)
+AND
+IntegerProduct(_Damage, 3, _ExtraDamage)
+THEN
+RemoveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", _AttackOwner);
+RemoveStatus(_AttackOwner, "COS_CHAOS_KILL", _AttackOwner);
+ApplyDamage(_Target, _ExtraDamage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 0)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 0)
+THEN
+RemoveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", _AttackOwner);
+ApplyDamage(_Target, _Damage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 0)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 0)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_KILL", 1)
+THEN
+RemoveStatus(_AttackOwner, "COS_CHAOS_KILL", _AttackOwner);
+ApplyDamage(_Target, _Damage, "Force", NULL_00000000-0000-0000-0000-000000000000);
+
+IF
+KilledBy(_Defender, _AttackOwner, _Attacker, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "KillPower", 1)
+AND
+IsEnemy(_Defender, (CHARACTER)_AttackOwner, 1)
+THEN
+PROC_COS_RegisterKill((CHARACTER)_AttackOwner);
+
+IF
+KilledBy(_, _AttackOwner, _Attacker, _)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_WOUND_BLOODLUST", 1)
+THEN
+RemoveStatus(_AttackOwner, "COS_CHAOS_WOUND_BLOODLUST", _AttackOwner);
+ApplyStatus(_AttackOwner, "COS_CHAOS_WOUND_BLOODLUST_REWARD", 6.0, 100, _AttackOwner);
+
+IF
+TurnStarted(_Character)
+AND
+DB_COS_WoundConsumed((CHARACTER)_Character)
+THEN
+NOT DB_COS_WoundConsumed((CHARACTER)_Character);
+
+IF
+EnteredCombat(_Character, _)
+AND
+DB_COS_WoundConsumed((CHARACTER)_Character)
+THEN
+NOT DB_COS_WoundConsumed((CHARACTER)_Character);
+
+IF
+LeftCombat(_Character, _)
+AND
+DB_COS_WoundConsumed((CHARACTER)_Character)
+THEN
+NOT DB_COS_WoundConsumed((CHARACTER)_Character);
+
+IF
+RestorePartyFinished()
+AND
+DB_COS_Character(_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "AllIn", 1)
+THEN
+ApplyStatus(_Character, "COS_CHAOS_RESTORE_ALLIN", 0.1, 100, _Character);
+EXITSECTION
+ENDEXITSECTION

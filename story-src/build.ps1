@@ -9,6 +9,7 @@ $reverse = Join-Path $work 'reverse'
 $dist = Join-Path $repo 'dist'
 $pak = Join-Path $dist 'ChaosOriginsStory.pak'
 $manifestPath = Join-Path $root 'package-files.json'
+$versionPath = Join-Path $root 'version.json'
 
 function Require([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
@@ -26,8 +27,22 @@ function Reset-WorkChild([string]$Path) {
 }
 
 & (Join-Path $root 'verify.ps1')
+& (Join-Path $root 'compile-story.ps1')
 & (Join-Path $root 'compile-resources.ps1')
 Require (Test-Path -LiteralPath $LslibPath -PathType Leaf) "缺少 LSLib: $LslibPath"
+Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
+
+$version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+Require ($version.schema -eq 1) '不支持的版本文件格式'
+foreach ($field in @('major', 'minor', 'revision', 'lastBuild')) {
+    Require ($version.$field -is [int] -or $version.$field -is [long]) "版本字段必须为整数: $field"
+}
+$nextBuild = [int64]$version.lastBuild + 1
+Require ($nextBuild -ge 1 -and $nextBuild -le 2147483647) '末位版本号超出 BG3 Version64 范围'
+$nextVersion64 = ([int64]$version.major * 36028797018963968) + `
+    ([int64]$version.minor * 140737488355328) + `
+    ([int64]$version.revision * 2147483648) + $nextBuild
+$displayVersion = '{0}.{1}.{2}.{3}' -f $version.major, $version.minor, $version.revision, $nextBuild
 
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
@@ -41,7 +56,9 @@ foreach ($relative in $manifest) {
     $nativeRelative = $relative.Replace('/', '\')
     $target = Join-Path $stage $nativeRelative
     New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
-    if ($relative.EndsWith('.lsf')) {
+    if ($relative -eq 'Mods/ChaosOriginsStory/Story/story.div.osi') {
+        $source = Join-Path $work 'compiled-story\story.div.osi'
+    } elseif ($relative.EndsWith('.lsf')) {
         $source = Join-Path $work ('compiled-resources\' + $nativeRelative)
     } elseif ($relative.EndsWith('.loca')) {
         continue
@@ -62,14 +79,33 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     Require (Test-Path -LiteralPath $target -PathType Leaf) "本地化编译失败: $language"
 }
 
+$stagedMetaPath = Join-Path $stage 'Mods\ChaosOriginsStory\meta.lsx'
+[xml]$stagedMeta = Get-Content -LiteralPath $stagedMetaPath -Raw -Encoding UTF8
+$stagedModuleVersion = $stagedMeta.SelectSingleNode('//node[@id="ModuleInfo"]/attribute[@id="Version64"]')
+$stagedPublishVersion = $stagedMeta.SelectSingleNode('//node[@id="ModuleInfo"]/children/node[@id="PublishVersion"]/attribute[@id="Version64"]')
+Require ($null -ne $stagedModuleVersion -and $null -ne $stagedPublishVersion) '暂存 meta.lsx 缺少版本字段'
+$stagedModuleVersion.value = [string]$nextVersion64
+$stagedPublishVersion.value = [string]$nextVersion64
+$stagedMeta.OuterXml | Set-Content -LiteralPath $stagedMetaPath -Encoding UTF8
+
 $actual = @(Get-ChildItem -LiteralPath $stage -Recurse -File | ForEach-Object {
     [IO.Path]::GetRelativePath($stage, $_.FullName).Replace('\', '/')
 } | Sort-Object)
 $expected = @($manifest | Sort-Object)
 Require ($actual.Count -eq $expected.Count -and -not (Compare-Object $expected $actual)) `
     "打包清单不匹配: expected=$($expected.Count) actual=$($actual.Count)"
-Require (-not ($actual | Where-Object { $_ -match '/Story/|ScriptExtender|MCM|GUI/|ActionResourceDefinitions' })) `
-    '最小起源包夹带了 Story、SE、设置、图标或动作资源'
+$expectedStoryFiles = @(
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/story_header.div',
+    'Mods/ChaosOriginsStory/Story/story.div.osi'
+) | Sort-Object
+$actualStoryFiles = @($actual | Where-Object { $_ -match '/Story/' } | Sort-Object)
+Require (-not (Compare-Object $expectedStoryFiles $actualStoryFiles)) `
+    '原生 Story 包装必须同时包含唯一 Goal、当前原始头和编译 Story'
+Require (-not ($actual | Where-Object { $_ -match 'ScriptExtender|MCM' })) `
+    '原生 Story 最终包夹带了 SE 或 MCM 依赖'
 
 if (Test-Path -LiteralPath $pak) { Remove-Item -LiteralPath $pak -Force }
 $build = [LSLib.LS.PackageBuildData]::new()
@@ -97,5 +133,25 @@ foreach ($relative in $actual) {
     Require ($stageHash -eq $reverseHash) "反向解包哈希不匹配: $relative"
 }
 
-Write-Host "Story 最小起源 PAK 构建并反向校验完成: $pak ($($actual.Count) files)"
+$sourceMetaPath = Join-Path $root 'Mods\ChaosOriginsStory\meta.lsx'
+[xml]$sourceMeta = Get-Content -LiteralPath $sourceMetaPath -Raw -Encoding UTF8
+$sourceModuleVersion = $sourceMeta.SelectSingleNode('//node[@id="ModuleInfo"]/attribute[@id="Version64"]')
+$sourcePublishVersion = $sourceMeta.SelectSingleNode('//node[@id="ModuleInfo"]/children/node[@id="PublishVersion"]/attribute[@id="Version64"]')
+Require ($null -ne $sourceModuleVersion -and $null -ne $sourcePublishVersion) '源 meta.lsx 缺少版本字段'
+$sourceModuleVersion.value = [string]$nextVersion64
+$sourcePublishVersion.value = [string]$nextVersion64
+$sourceMeta.OuterXml | Set-Content -LiteralPath $sourceMetaPath -Encoding UTF8
+$version.lastBuild = $nextBuild
+$version | ConvertTo-Json | Set-Content -LiteralPath $versionPath -Encoding UTF8
 
+$buildManifest = [ordered]@{
+    schema = 1
+    displayVersion = $displayVersion
+    version64 = $nextVersion64
+    moduleName = 'ChaosOriginsStory'
+    moduleUuid = 'a5062238-0d2b-46d1-a093-cb02775b9f57'
+    pakSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $pak).Hash.ToLowerInvariant()
+    files = $actual
+}
+$buildManifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $dist 'build-manifest.json') -Encoding UTF8
+Write-Host "Story 最终候选 PAK 构建并反向校验完成: $displayVersion ($nextVersion64), $pak ($($actual.Count) files)"

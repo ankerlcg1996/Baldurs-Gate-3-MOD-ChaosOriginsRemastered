@@ -19,7 +19,7 @@
                     <attribute id="LockClass" type="bool" value="false" />
                     <attribute id="LockRace" type="bool" value="false" />
                     <attribute id="Name" type="FixedString" value="ChaosStoryMinimal" />
-                    <attribute id="Passives" type="LSString" value="DeathSavingThrows;COS_ChaosOriginMarker" />
+                    <attribute id="Passives" type="LSString" value="DeathSavingThrows;COS_ChaosOriginMarker;COS_Origin_Astarion;COS_Origin_Gale;COS_Origin_Laezel;COS_Origin_Shadowheart;COS_Origin_Wyll;COS_Origin_Karlach;COS_Origin_DarkUrge" />
                     <attribute id="RaceUUID" type="guid" value="45f4ac10-3c89-4fb2-b37d-f973bb9110c0" />
                     <attribute id="SubClassUUID" type="guid" value="d379fdae-b401-4731-8d50-277c73919ae3" />
                     <attribute id="SubRaceUUID" type="guid" value="30fafb0b-7c8b-4917-bd2a-536233b35d3c" />

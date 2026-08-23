@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+    <version major="4" minor="8" revision="0" build="500" />
+    <region id="IconUVList">
+        <node id="root">
+            <children>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="EC_Portrait_Chaos" />
+                    <attribute id="U1" type="float" value="0.00048828125" />
+                    <attribute id="V1" type="float" value="0.00048828125" />
+                    <attribute id="U2" type="float" value="0.14794921875" />
+                    <attribute id="V2" type="float" value="0.14794921875" />
+                </node>
+            </children>
+        </node>
+    </region>
+    <region id="TextureAtlasInfo">
+        <node id="root">
+            <children>
+                <node id="TextureAtlasIconSize">
+                    <attribute id="Height" type="int32" value="152" />
+                    <attribute id="Width" type="int32" value="152" />
+                </node>
+                <node id="TextureAtlasPath">
+                    <attribute id="Path" type="string" value="Assets/Textures/Icons/UIOrigin_Portraits_Chaos.dds" />
+                    <attribute id="UUID" type="FixedString" value="9ed8acc5-b984-4427-8d71-4d425a787a62" />
+                </node>
+                <node id="TextureAtlasTextureSize">
+                    <attribute id="Height" type="int32" value="1024" />
+                    <attribute id="Width" type="int32" value="1024" />
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

@@ -1,0 +1,254 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+DB_COS_RaceIdentityTag((TAG)60f6b464-752f-4970-a855-f729565b5e07);
+DB_COS_RaceIdentityTag((TAG)78adf3cd-4741-47a8-94f6-f3d322432591);
+DB_COS_RaceIdentityTag((TAG)534098fa-601d-4f6e-8c4e-b3a8d4b1f141);
+DB_COS_RaceIdentityTag((TAG)1dc20a7a-00e7-4126-80ad-aa1152a2136c);
+DB_COS_RaceIdentityTag((TAG)4fa13243-199d-4c9a-b455-d844276a98f5);
+DB_COS_RaceIdentityTag((TAG)eae44d86-3321-4a0a-811d-4fd8e48b5723);
+DB_COS_RaceIdentityTag((TAG)52b71dea-9d4e-402d-9700-fb9c360a44c9);
+DB_COS_RaceIdentityTag((TAG)5ffb703c-3ef4-493b-966d-749bc038f6bd);
+DB_COS_RaceIdentityTag((TAG)ef9c5b74-56a8-48cc-b0b9-169ee16bf026);
+DB_COS_RaceIdentityTag((TAG)6e913b6e-58b1-41bf-8751-89250dd17bff);
+DB_COS_RaceIdentityTag((TAG)492c3200-1226-4114-bad1-f6b1ba737f3d);
+DB_COS_RaceIdentityTag((TAG)889e0db5-d03e-4b63-86d7-13418f69729f);
+DB_COS_RaceIdentityTag((TAG)57a00605-9e74-477c-bd9d-53c721e25e56);
+DB_COS_RaceIdentityTag((TAG)8d545fa1-8416-493f-8325-7d112bceced8);
+DB_COS_RaceIdentityTag((TAG)02e5e9ed-b6b2-4524-99cd-cb2bc84c754a);
+DB_COS_RaceIdentityTag((TAG)a672ac1d-d088-451a-9537-3da4bf74466c);
+DB_COS_RaceIdentityTag((TAG)486a2562-31ae-437b-bf63-30393e18cbdd);
+DB_COS_RaceIdentityTag((TAG)50e7beca-4e90-43cd-b7c5-c235e236077f);
+DB_COS_RaceIdentityTag((TAG)351f4e42-1217-4c06-b47a-443dcf69b111);
+DB_COS_RaceIdentityTag((TAG)677ffa76-2562-4217-873e-2253d4720ba4);
+DB_COS_RaceIdentityTag((TAG)1f0551f3-d769-47a9-b02b-5d3a8c51978c);
+DB_COS_RaceIdentityTag((TAG)34317158-8e6e-45a2-bd1e-6604d82fdda2);
+DB_COS_RaceIdentityTag((TAG)3311a9a9-cdbc-4b05-9bf6-e02ba1fc72a3);
+DB_COS_RaceIdentityTag((TAG)b99b6a5d-8445-44e4-ac58-81b2ee88aab1);
+DB_COS_RaceIdentityTag((TAG)69fd1443-7686-4ca9-9516-72ec0b9d94d7);
+DB_COS_RaceIdentityTag((TAG)aaef5d43-c6f3-434d-b11e-c763290dbe0c);
+DB_COS_RaceIdentityTag((TAG)c3fd1fc3-2edf-4d17-935d-44ab92406df1);
+DB_COS_RaceIdentityTag((TAG)ec5bea6b-26f1-4917-919c-375f67ac13d1);
+DB_COS_RaceIdentityTag((TAG)ab677895-e08a-479f-a043-eac2d8447188);
+DB_COS_RaceIdentityTag((TAG)2bbc3217-3d8c-46e6-b599-a0f1c9063f9a);
+DB_COS_RaceIdentityTag((TAG)09518377-4ea1-4ce2-b8e8-61477c26ebdd);
+DB_COS_RaceIdentityTag((TAG)664cc044-a0ea-43a1-b21f-d8cad7721102);
+DB_COS_OriginIdentityToggle("COS_Origin_Astarion", "COS_ORIGIN_TAG_ASTARION", (TAG)ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3);
+DB_COS_OriginIdentityToggle("COS_Origin_Gale", "COS_ORIGIN_TAG_GALE", (TAG)9b0354c0-56d9-4723-8034-918ac9abab19);
+DB_COS_OriginIdentityToggle("COS_Origin_Laezel", "COS_ORIGIN_TAG_LAEZEL", (TAG)b5682d1d-c395-489c-9675-1f9b0c328ea5);
+DB_COS_OriginIdentityToggle("COS_Origin_Shadowheart", "COS_ORIGIN_TAG_SHADOWHEART", (TAG)642d2aee-e3df-47e3-9f47-bbcd441bb9e0);
+DB_COS_OriginIdentityToggle("COS_Origin_Wyll", "COS_ORIGIN_TAG_WYLL", (TAG)5f40def5-d3ec-4698-a367-01a339888956);
+DB_COS_OriginIdentityToggle("COS_Origin_Karlach", "COS_ORIGIN_TAG_KARLACH", (TAG)1a2f70d6-8ead-4eb5-a824-79ee1971764a);
+DB_COS_OriginIdentityToggle("COS_Origin_DarkUrge", "COS_ORIGIN_TAG_DARKURGE", (TAG)cd611d7d-b67d-42b4-a75c-a0c6091ef8a2);
+DB_COS_OriginIdentitySpell("COS_ORIGIN_TAG_ASTARION", "Target_VampireBite_Astarion");
+DB_COS_OriginIdentityPassive("COS_ORIGIN_TAG_WYLL", "BladeOfFrontiers");
+DB_COS_OriginIdentityPassive("COS_ORIGIN_TAG_KARLACH", "ORI_Karlach_SweatImmune");
+DB_COS_OriginIdentityPassive("COS_ORIGIN_TAG_KARLACH", "ORI_Karlach_Rage_Flames");
+DB_COS_CorePassive(1, "COS_ChaosPower");
+DB_COS_CorePassive(1, "COS_ChaosLost");
+DB_COS_CorePassive(1, "COS_ChaosWound");
+DB_COS_CorePassive(1, "COS_ChaosDuality");
+DB_COS_CorePassive(1, "COS_ChaosAllIn");
+DB_COS_CorePassive(5, "COS_ChaosAllInUseL5");
+DB_COS_CorePassive(9, "COS_ChaosAllInUseL9");
+DB_COS_CorePassive(12, "COS_ChaosStrike");
+DB_COS_CoreSpell(1, "Shout_COS_ChaosGenesis");
+DB_COS_CoreSpell(1, "Shout_COS_FateRevision");
+DB_COS_CoreSpell(1, "Shout_COS_TestPower100");
+DB_COS_CoreSpell(1, "Shout_COS_TestRestoreAllIn");
+KBSECTION
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasPassive(_Character, "COS_BaseProficiencies", 0)
+THEN
+AddPassive(_Character, "COS_BaseProficiencies");
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasPassive(_Character, "COS_BaseStarterSpells", 0)
+THEN
+AddPassive(_Character, "COS_BaseStarterSpells");
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosEcho", 1)
+THEN
+RemovePassive(_Character, "COS_ChaosEcho");
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+DB_COS_RaceIdentityTag(_Tag)
+AND
+IsTagged(_Character, _Tag, 0)
+THEN
+SetTag(_Character, _Tag);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+DB_COS_OriginIdentitySpell(_Status, _Spell)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+HasSpell((CHARACTER)_Character, _Spell, 0)
+THEN
+AddSpell((CHARACTER)_Character, _Spell, 0, 0);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+DB_COS_OriginIdentityPassive(_Status, _FeaturePassive)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+HasPassive(_Character, _FeaturePassive, 0)
+THEN
+AddPassive(_Character, _FeaturePassive);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_CorePassive(_RequiredLevel, _CorePassive)
+AND
+_Level >= _RequiredLevel
+AND
+HasPassive(_Character, _CorePassive, 0)
+THEN
+AddPassive(_Character, _CorePassive);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_CoreSpell(_RequiredLevel, _CoreSpell)
+AND
+_Level >= _RequiredLevel
+AND
+HasSpell(_Character, _CoreSpell, 0)
+THEN
+AddSpell(_Character, _CoreSpell, 0, 0);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+DB_COS_OriginIdentityToggle(_Passive, _Status, _Tag)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+DB_COS_OriginIdentityToggle(_Passive, _Status, _Tag)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+IsTagged(_Character, _Tag, 0)
+THEN
+SetTag(_Character, _Tag);
+
+IF
+StatusApplied(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentitySpell(_Status, _Spell)
+AND
+HasSpell((CHARACTER)_Character, _Spell, 0)
+THEN
+AddSpell((CHARACTER)_Character, _Spell, 0, 0);
+
+IF
+StatusApplied(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentityPassive(_Status, _FeaturePassive)
+AND
+HasPassive(_Character, _FeaturePassive, 0)
+THEN
+AddPassive(_Character, _FeaturePassive);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+GetHostCharacter(_Character)
+THEN
+PROC_COS_SyncBaseAfterCreation(_Character);
+
+IF
+GainedControl(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncBaseAfterCreation(_Character);
+
+IF
+LeveledUp(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncBaseAfterCreation(_Character);
+
+IF
+RespecCompleted(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncBaseAfterCreation(_Character);
+
+IF
+StatusApplied(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _Tag)
+THEN
+SetTag(_Character, _Tag);
+
+IF
+StatusRemoved(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _Tag)
+THEN
+ClearTag(_Character, _Tag);
+
+IF
+StatusRemoved(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentitySpell(_Status, _Spell)
+AND
+HasSpell((CHARACTER)_Character, _Spell, 1)
+THEN
+RemoveSpell((CHARACTER)_Character, _Spell, 0);
+
+IF
+StatusRemoved(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentityPassive(_Status, _FeaturePassive)
+AND
+HasPassive(_Character, _FeaturePassive, 1)
+THEN
+RemovePassive(_Character, _FeaturePassive);
+
+EXITSECTION
+ENDEXITSECTION

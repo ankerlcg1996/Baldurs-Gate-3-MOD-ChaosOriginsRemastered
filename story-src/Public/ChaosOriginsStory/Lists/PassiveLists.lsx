@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="7" revision="1" build="0" />
+    <region id="PassiveLists">
+        <node id="root">
+            <children>
+                <node id="PassiveList">
+                    <attribute id="Name" type="FixedString" value="Chaos Mastery Level 1" />
+                    <attribute id="Passives" type="LSString" value="COS_ChaosMastery_Tune_L01,COS_ChaosMastery_Correct_L01,COS_ChaosMastery_Buff_L01" />
+                    <attribute id="UUID" type="guid" value="2737ff48-0c92-4f09-b8f1-bf831ce1533e" />
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

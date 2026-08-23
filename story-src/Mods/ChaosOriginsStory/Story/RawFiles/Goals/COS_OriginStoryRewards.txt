@@ -1,0 +1,268 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+DB_COS_OriginStoryFlag((FLAG)ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e);
+DB_COS_OriginStoryFlag((FLAG)ORI_Gale_Event_BombDisarmed_3d014e79-5595-9365-87bb-5cbb1f87fe5c);
+DB_COS_OriginStoryFlag((FLAG)ORI_Gale_State_AbsorbedTWNBossPower_7d08986a-5410-ccdf-fe70-aaec379a1962);
+DB_COS_OriginStoryFlag((FLAG)ORI_Gale_State_CraftedDarkLantern_3ddebb12-8c9f-47b4-8b6a-bb8eeac51a9b);
+DB_COS_OriginStoryFlag((FLAG)ORI_Gale_State_IsGod_ec94f9a4-b032-ce25-f4eb-ecf4ed37d65d);
+DB_COS_OriginStoryFlag((FLAG)CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23);
+DB_COS_OriginStoryFlag((FLAG)COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8);
+DB_COS_OriginStoryFlag((FLAG)GLO_ForgingOfTheHeart_State_KarlachUpgraded_a818e2f5-9e0c-4ab3-8c1e-00765d3b892f);
+DB_COS_OriginStoryFlag((FLAG)GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c);
+DB_COS_OriginStoryFlag((FLAG)ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3);
+DB_COS_OriginStoryFlag((FLAG)ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86);
+KBSECTION
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_ASTARION", 1)
+AND
+GetFlag((FLAG)ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasPassive(_Character, "LOW_Astarion_VampireAscendant", 0)
+THEN
+AddPassive(_Character, "LOW_Astarion_VampireAscendant");
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_ASTARION", 1)
+AND
+GetFlag((FLAG)ORI_Astarion_State_BecameVampireLord_c446ce94-efd8-45d5-b407-284177b6b57e, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasSpell(_Character, "Shout_EPI_Astarion_TurnIntoBat", 0)
+THEN
+AddSpell(_Character, "Shout_EPI_Astarion_TurnIntoBat", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_GALE", 1)
+AND
+GetFlag((FLAG)ORI_Gale_Event_BombDisarmed_3d014e79-5595-9365-87bb-5cbb1f87fe5c, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasSpell(_Character, "Target_END_Gale_ActivateNethereseOrb", 0)
+THEN
+AddSpell(_Character, "Target_END_Gale_ActivateNethereseOrb", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_GALE", 1)
+AND
+GetFlag((FLAG)ORI_Gale_State_AbsorbedTWNBossPower_7d08986a-5410-ccdf-fe70-aaec379a1962, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasPassive(_Character, "ORI_Gale_ShadowSpellSlots", 0)
+THEN
+AddPassive(_Character, "ORI_Gale_ShadowSpellSlots");
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_GALE", 1)
+AND
+GetFlag((FLAG)ORI_Gale_State_CraftedDarkLantern_3ddebb12-8c9f-47b4-8b6a-bb8eeac51a9b, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasSpell(_Character, "Target_ORI_Gale_ShadowSummon", 0)
+THEN
+AddSpell(_Character, "Target_ORI_Gale_ShadowSummon", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_GALE", 1)
+AND
+GetFlag((FLAG)ORI_Gale_State_IsGod_ec94f9a4-b032-ce25-f4eb-ecf4ed37d65d, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasActiveStatus(_Character, "EPI_GALEGOD", 0)
+THEN
+ApplyStatus(_Character, "EPI_GALEGOD", -1.0, 100, _Character);
+SetImmortal(_Character, 1);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_WYLL", 1)
+AND
+GetFlag((FLAG)CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23, _Character, 1)
+AND
+HasSpell(_Character, "Shout_ORI_Wyll_FireShield_Warm", 0)
+THEN
+AddSpell(_Character, "Shout_ORI_Wyll_FireShield_Warm", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_WYLL", 1)
+AND
+GetFlag((FLAG)CAMP_MizorasJudgement_Event_Reward_eb10f6f8-cf1a-a2b2-4421-63b0fbeb7a23, (GUIDSTRING)c774d764-4a17-48dc-b470-32ace9ce447d, 1)
+AND
+HasSpell(_Character, "Shout_ORI_Wyll_FireShield_Warm", 0)
+THEN
+AddSpell(_Character, "Shout_ORI_Wyll_FireShield_Warm", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_WYLL", 1)
+AND
+GetFlag((FLAG)COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8, _Character, 1)
+AND
+HasSpell(_Character, "Target_ORI_Wyll_SummonCambion", 0)
+THEN
+AddSpell(_Character, "Target_ORI_Wyll_SummonCambion", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_WYLL", 1)
+AND
+GetFlag((FLAG)COL_MizorasRescue_Event_Reward_0e2f2a09-604c-2b9d-b8c0-db2baa1e6ac8, (GUIDSTRING)c774d764-4a17-48dc-b470-32ace9ce447d, 1)
+AND
+HasSpell(_Character, "Target_ORI_Wyll_SummonCambion", 0)
+THEN
+AddSpell(_Character, "Target_ORI_Wyll_SummonCambion", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_KARLACH", 1)
+AND
+GetFlag((FLAG)GLO_ForgingOfTheHeart_State_KarlachUpgraded_a818e2f5-9e0c-4ab3-8c1e-00765d3b892f, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+GetFlag((FLAG)GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c, NULL_00000000-0000-0000-0000-000000000000, 0)
+AND
+HasActiveStatus(_Character, "ORI_KARLACH_FIRSTUPGRADE", 0)
+THEN
+ApplyStatus(_Character, "ORI_KARLACH_FIRSTUPGRADE", -1.0, 100, _Character);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_KARLACH", 1)
+AND
+GetFlag((FLAG)GLO_ForgingOfTheHeart_State_KarlachSecondUpgrade_f6dc0de4-1089-43c0-b392-306a9a44387c, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasActiveStatus(_Character, "ORI_KARLACH_SECONDUPGRADE", 0)
+THEN
+RemoveStatus(_Character, "ORI_KARLACH_FIRSTUPGRADE", _Character);
+ApplyStatus(_Character, "ORI_KARLACH_SECONDUPGRADE", -1.0, 100, _Character);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_DARKURGE", 1)
+AND
+GetFlag((FLAG)ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasSpell(_Character, "Shout_DarkUrge_Slayer", 0)
+THEN
+AddSpell(_Character, "Shout_DarkUrge_Slayer", 0, 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+GetFlag((FLAG)ORI_DarkUrge_State_GivenSlayerForm_14aec5bc-1013-4845-96ca-20722c5219e3, NULL_00000000-0000-0000-0000-000000000000, 0)
+AND
+HasSpell(_Character, "Shout_DarkUrge_Slayer", 1)
+THEN
+RemoveSpell(_Character, "Shout_DarkUrge_Slayer", 0);
+
+PROC
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_ORIGIN_TAG_DARKURGE", 1)
+AND
+GetFlag((FLAG)ORI_DarkUrge_State_BhaalAccepted_904c45e0-bb06-40ed-b5d7-4f1c851b9d86, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+NOT DB_COS_PowerWordKillConsumed(_Character)
+AND
+HasSpell(_Character, "Target_LOW_DarkUrge_PowerWordKill", 0)
+THEN
+AddSpell(_Character, "Target_LOW_DarkUrge_PowerWordKill", 0, 0);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+GetHostCharacter(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character);
+
+IF
+GainedControl(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncOriginStoryRewards(_Character);
+
+IF
+StatusApplied(_Character, _Status, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _)
+THEN
+PROC_COS_SyncOriginStoryRewards((CHARACTER)_Character);
+
+IF
+FlagSet(_Flag, _, _)
+AND
+DB_COS_OriginStoryFlag(_Flag)
+AND
+GetHostCharacter(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncOriginStoryRewards(_Character);
+
+IF
+FlagCleared(_Flag, _, _)
+AND
+DB_COS_OriginStoryFlag(_Flag)
+AND
+GetHostCharacter(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncOriginStoryRewards(_Character);
+
+IF
+StatusRemoved(_Character, "COS_ORIGIN_TAG_KARLACH", _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+RemoveStatus(_Character, "ORI_KARLACH_FIRSTUPGRADE", _Character);
+RemoveStatus(_Character, "ORI_KARLACH_SECONDUPGRADE", _Character);
+
+IF
+StatusRemoved(_Character, "COS_ORIGIN_TAG_DARKURGE", _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasSpell((CHARACTER)_Character, "Shout_DarkUrge_Slayer", 1)
+THEN
+RemoveSpell((CHARACTER)_Character, "Shout_DarkUrge_Slayer", 0);
+
+IF
+UsingSpell(_Character, "Target_LOW_DarkUrge_PowerWordKill", _, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+NOT DB_COS_PowerWordKillConsumed((CHARACTER)_Character)
+THEN
+DB_COS_PowerWordKillConsumed((CHARACTER)_Character);
+RemoveSpell((CHARACTER)_Character, "Target_LOW_DarkUrge_PowerWordKill", 0);
+
+IF
+UsingSpell(_Character, "Target_END_Gale_ActivateNethereseOrb", _, _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+ShowGameOverMenu("GameOver_Default");
+
+EXITSECTION
+ENDEXITSECTION
