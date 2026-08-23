@@ -49,17 +49,6 @@ DB_COS_WoundLog(20, "COS_CHAOS_WOUND_LOG_SPELLADVANTAGE");
 DB_COS_WoundLog(23, "COS_CHAOS_WOUND_LOG_VULNERABILITY_ACID");
 DB_COS_WoundLog(24, "COS_CHAOS_WOUND_LOG_EXTRADAMAGE_ACID");
 DB_COS_WoundLog(25, "COS_CHAOS_WOUND_LOG_BLOODLUST");
-DB_COS_WoundPositive(13);
-DB_COS_WoundPositive(14);
-DB_COS_WoundPositive(15);
-DB_COS_WoundPositive(16);
-DB_COS_WoundPositive(17);
-DB_COS_WoundPositive(18);
-DB_COS_WoundPositive(19);
-DB_COS_WoundPositive(20);
-DB_COS_WoundPositive(21);
-DB_COS_WoundPositive(22);
-DB_COS_WoundPositive(25);
 DB_COS_LevelBand(1, 5, 1);
 DB_COS_LevelBand(5, 9, 2);
 DB_COS_LevelBand(9, 13, 3);
@@ -78,32 +67,41 @@ DB_COS_WoundLayer(12);
 DB_COS_WoundLayer(13);
 DB_COS_WoundLayer(14);
 DB_COS_WoundLayer(15);
-DB_COS_WoundWeight(0, 4);
-DB_COS_WoundWeight(1, 2);
-DB_COS_WoundWeight(2, 1);
-DB_COS_WoundWeight(3, 4);
-DB_COS_WoundWeight(4, 2);
-DB_COS_WoundWeight(5, 1);
-DB_COS_WoundWeight(6, 4);
-DB_COS_WoundWeight(7, 2);
-DB_COS_WoundWeight(8, 1);
-DB_COS_WoundWeight(9, 4);
-DB_COS_WoundWeight(10, 2);
-DB_COS_WoundWeight(11, 1);
-DB_COS_WoundWeight(12, 4);
-DB_COS_WoundWeight(13, 5);
-DB_COS_WoundWeight(14, 1);
-DB_COS_WoundWeight(15, 3);
-DB_COS_WoundWeight(16, 5);
-DB_COS_WoundWeight(17, 1);
-DB_COS_WoundWeight(18, 6);
-DB_COS_WoundWeight(19, 6);
-DB_COS_WoundWeight(20, 6);
-DB_COS_WoundWeight(21, 3);
-DB_COS_WoundWeight(22, 4);
-DB_COS_WoundWeight(23, 2);
-DB_COS_WoundWeight(24, 1);
-DB_COS_WoundWeight(25, 1);
+DB_COS_WoundLayer(16);
+DB_COS_WoundLayer(17);
+DB_COS_WoundLayer(18);
+DB_COS_WoundLayer(19);
+DB_COS_WoundLayer(20);
+DB_COS_WoundLayer(21);
+DB_COS_WoundLayer(22);
+DB_COS_WoundLayer(23);
+DB_COS_WoundLayer(24);
+DB_COS_WoundPositiveWeight(13, 20);
+DB_COS_WoundPositiveWeight(14, 4);
+DB_COS_WoundPositiveWeight(15, 12);
+DB_COS_WoundPositiveWeight(16, 20);
+DB_COS_WoundPositiveWeight(17, 4);
+DB_COS_WoundPositiveWeight(18, 24);
+DB_COS_WoundPositiveWeight(19, 24);
+DB_COS_WoundPositiveWeight(20, 24);
+DB_COS_WoundPositiveWeight(21, 12);
+DB_COS_WoundPositiveWeight(22, 16);
+DB_COS_WoundPositiveWeight(25, 4);
+DB_COS_WoundNegativeWeight(0, 4);
+DB_COS_WoundNegativeWeight(1, 2);
+DB_COS_WoundNegativeWeight(2, 1);
+DB_COS_WoundNegativeWeight(3, 4);
+DB_COS_WoundNegativeWeight(4, 2);
+DB_COS_WoundNegativeWeight(5, 1);
+DB_COS_WoundNegativeWeight(6, 4);
+DB_COS_WoundNegativeWeight(7, 2);
+DB_COS_WoundNegativeWeight(8, 1);
+DB_COS_WoundNegativeWeight(9, 4);
+DB_COS_WoundNegativeWeight(10, 2);
+DB_COS_WoundNegativeWeight(11, 1);
+DB_COS_WoundNegativeWeight(12, 4);
+DB_COS_WoundNegativeWeight(23, 2);
+DB_COS_WoundNegativeWeight(24, 1);
 DB_COS_WoundFateRank(0, 10);
 DB_COS_WoundFateRank(1, 5);
 DB_COS_WoundFateRank(2, 0);
@@ -130,25 +128,9 @@ DB_COS_WoundFateRank(22, 16);
 DB_COS_WoundFateRank(23, 6);
 DB_COS_WoundFateRank(24, 1);
 DB_COS_WoundFateRank(25, 25);
-DB_COS_WoundGrowthWeight(5, 13, 1);
-DB_COS_WoundGrowthWeight(5, 15, 1);
-DB_COS_WoundGrowthWeight(5, 16, 1);
-DB_COS_WoundGrowthWeight(5, 18, 1);
-DB_COS_WoundGrowthWeight(5, 19, 1);
-DB_COS_WoundGrowthWeight(5, 20, 1);
-DB_COS_WoundGrowthWeight(5, 21, 1);
-DB_COS_WoundGrowthWeight(5, 22, 1);
-DB_COS_WoundGrowthWeight(9, 13, 1);
-DB_COS_WoundGrowthWeight(9, 14, 1);
-DB_COS_WoundGrowthWeight(9, 15, 1);
-DB_COS_WoundGrowthWeight(9, 16, 1);
-DB_COS_WoundGrowthWeight(9, 17, 1);
-DB_COS_WoundGrowthWeight(9, 18, 1);
-DB_COS_WoundGrowthWeight(9, 19, 1);
-DB_COS_WoundGrowthWeight(9, 20, 1);
-DB_COS_WoundGrowthWeight(9, 21, 1);
-DB_COS_WoundGrowthWeight(9, 22, 2);
-DB_COS_WoundGrowthWeight(9, 25, 1);
+DB_COS_WoundFateRank(26, 17);
+DB_COS_WoundFateRank(38, 15);
+DB_COS_MasteryGift(1, 26, 4, 17);
 DB_COS_WoundDamageType(0, "Acid", "COS_CHAOS_WOUND_VULNERABILITY_ACID");
 DB_COS_WoundDamageType(1, "Cold", "COS_CHAOS_WOUND_VULNERABILITY_COLD");
 DB_COS_WoundDamageType(2, "Fire", "COS_CHAOS_WOUND_VULNERABILITY_FIRE");
@@ -570,9 +552,7 @@ DB_COS_WoundPoolCount(_Character, _Next);
 PROC
 PROC_COS_AddPositiveWoundCandidates((CHARACTER)_Character)
 AND
-DB_COS_WoundPositive(_Outcome)
-AND
-DB_COS_WoundWeight(_Outcome, _Weight)
+DB_COS_WoundPositiveWeight(_Outcome, _Weight)
 AND
 DB_COS_WoundLayer(_Layer)
 AND
@@ -581,11 +561,11 @@ THEN
 PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 
 PROC
-PROC_COS_AddPositiveWoundGrowth((CHARACTER)_Character)
+PROC_COS_AddMasteryGiftWoundCandidates((CHARACTER)_Character)
 AND
 GetLevel(_Character, _Level)
 AND
-DB_COS_WoundGrowthWeight(_MinimumLevel, _Outcome, _Weight)
+DB_COS_MasteryGift(_MinimumLevel, _Outcome, _Weight, _Rank)
 AND
 _Level >= _MinimumLevel
 AND
@@ -596,13 +576,13 @@ THEN
 PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 
 PROC
-PROC_COS_AddEnabledWoundCandidates((CHARACTER)_Character)
+PROC_COS_AddEnabledNegativeWoundCandidates((CHARACTER)_Character)
 AND
 DB_COS_ConfigWound(_Character, _Key, 1)
 AND
 DB_COS_ConfigWoundOutcome(_Key, _Outcome)
 AND
-DB_COS_WoundWeight(_Outcome, _Weight)
+DB_COS_WoundNegativeWeight(_Outcome, _Weight)
 AND
 DB_COS_WoundLayer(_Layer)
 AND
@@ -611,36 +591,150 @@ THEN
 PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 
 PROC
-PROC_COS_RebuildWoundPool((CHARACTER)_Character)
+PROC_COS_RebuildPositiveWoundPool((CHARACTER)_Character)
 THEN
 PROC_COS_ClearWoundPool(_Character);
 DB_COS_WoundPoolCount(_Character, 0);
 PROC_COS_AddPositiveWoundCandidates(_Character);
-PROC_COS_AddPositiveWoundGrowth(_Character);
-PROC_COS_AddEnabledWoundCandidates(_Character);
+PROC_COS_AddMasteryGiftWoundCandidates(_Character);
 
 PROC
-PROC_COS_CommitWoundRoll((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+PROC_COS_RebuildNegativeWoundPool((CHARACTER)_Character)
+THEN
+PROC_COS_ClearWoundPool(_Character);
+DB_COS_WoundPoolCount(_Character, 0);
+PROC_COS_AddEnabledNegativeWoundCandidates(_Character);
+
+PROC
+PROC_COS_BeginWoundTrials((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_RollCount)
+AND
+_RollCount > 0
+THEN
+PROC_COS_RollWoundTrial(_Character, _Damage, _PowerEligible, _RollCount, 0, 0, 0);
+
+PROC
+PROC_COS_RollWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_Remaining > 0
+AND
+DB_COS_MasteryTuneCount(_Character, _TuneCount)
+AND
+DB_COS_MasteryCorrectCount(_Character, _CorrectCount)
+AND
+IntegerProduct(_TuneCount, 2, _TuneCells)
+AND
+IntegerProduct(_CorrectCount, 4, _CalmCells)
+AND
+IntegerSum(162, _TuneCells, _PositiveEnd)
+AND
+IntegerSum(_PositiveEnd, _CalmCells, _CalmEnd)
+AND
+Random(300, _CategoryRoll)
+THEN
+PROC_COS_DispatchWoundCategory(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _CategoryRoll, _PositiveEnd, _CalmEnd);
+
+PROC
+PROC_COS_DispatchWoundCategory((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_CategoryRoll, (INTEGER)_PositiveEnd, (INTEGER)_CalmEnd)
+AND
+_CategoryRoll < _PositiveEnd
+THEN
+PROC_COS_RebuildPositiveWoundPool(_Character);
+PROC_COS_SelectWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank);
+
+PROC
+PROC_COS_DispatchWoundCategory((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_CategoryRoll, (INTEGER)_PositiveEnd, (INTEGER)_CalmEnd)
+AND
+_CategoryRoll >= _PositiveEnd
+AND
+_CategoryRoll < _CalmEnd
+AND
+DB_COS_WoundFateRank(38, _NextRank)
+THEN
+PROC_COS_ConsiderWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, 38, _NextRank);
+
+PROC
+PROC_COS_DispatchWoundCategory((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_CategoryRoll, (INTEGER)_PositiveEnd, (INTEGER)_CalmEnd)
+AND
+_CategoryRoll >= _CalmEnd
+THEN
+PROC_COS_RebuildNegativeWoundPool(_Character);
+PROC_COS_SelectWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank);
+
+PROC
+PROC_COS_SelectWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
 AND
 DB_COS_WoundPoolCount(_Character, _Count)
 AND
 _Count > 0
-AND
-HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)
 AND
 Random(_Count, _Slot)
 AND
-DB_COS_WoundCandidate(_Character, _Slot, _Outcome)
+DB_COS_WoundCandidate(_Character, _Slot, _NextOutcome)
+AND
+DB_COS_WoundFateRank(_NextOutcome, _NextRank)
 THEN
-PROC_COS_ResolveWound(_Character, _Damage, _Outcome, _PowerEligible);
+PROC_COS_ConsiderWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _NextOutcome, _NextRank);
+
+PROC
+PROC_COS_ConsiderWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
+AND
+_HasBest == 0
+AND
+IntegerSubtract(_Remaining, 1, _NextRemaining)
+THEN
+PROC_COS_ContinueWoundTrials(_Character, _Damage, _PowerEligible, _NextRemaining, _NextOutcome, _NextRank);
+
+PROC
+PROC_COS_ConsiderWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
+AND
+_HasBest == 1
+AND
+_NextRank <= _BestRank
+AND
+IntegerSubtract(_Remaining, 1, _NextRemaining)
+THEN
+PROC_COS_ContinueWoundTrials(_Character, _Damage, _PowerEligible, _NextRemaining, _BestOutcome, _BestRank);
+
+PROC
+PROC_COS_ConsiderWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
+AND
+_HasBest == 1
+AND
+_NextRank > _BestRank
+AND
+IntegerSubtract(_Remaining, 1, _NextRemaining)
+THEN
+PROC_COS_ContinueWoundTrials(_Character, _Damage, _PowerEligible, _NextRemaining, _NextOutcome, _NextRank);
+
+PROC
+PROC_COS_ContinueWoundTrials((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_Remaining > 0
+THEN
+PROC_COS_RollWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, 1, _BestOutcome, _BestRank);
+
+PROC
+PROC_COS_ContinueWoundTrials((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_Remaining == 0
+THEN
+PROC_COS_FinishWoundTrials(_Character, _Damage, _PowerEligible, _BestOutcome);
+
+PROC
+PROC_COS_FinishWoundTrials((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_BestOutcome)
+THEN
+PROC_COS_ResolveWound(_Character, _Damage, _BestOutcome, _PowerEligible);
 PROC_COS_ClearWoundPool(_Character);
 
 PROC
-PROC_COS_CommitWoundRoll((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
+PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
 AND
-DB_COS_WoundPoolCount(_Character, _Count)
-AND
-_Count > 0
+HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)
+THEN
+PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);
+
+PROC
+PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
 AND
 HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)
 AND
@@ -653,100 +747,9 @@ AND
 _CappedLevel >= _MinimumLevel
 AND
 _CappedLevel < _MaximumLevel
-AND
-Random(_Count, _FirstSlot)
-AND
-DB_COS_WoundCandidate(_Character, _FirstSlot, _FirstOutcome)
-AND
-DB_COS_WoundFateRank(_FirstOutcome, _FirstRank)
-AND
-IntegerSubtract(_RollCount, 1, _RemainingRolls)
 THEN
 RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
-PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _FirstOutcome, _FirstRank);
-
-PROC
-PROC_COS_ContinueFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
-AND
-_RemainingRolls > 0
-AND
-Random(_Count, _NextSlot)
-AND
-DB_COS_WoundCandidate(_Character, _NextSlot, _NextOutcome)
-AND
-DB_COS_WoundFateRank(_NextOutcome, _NextRank)
-AND
-IntegerSubtract(_RemainingRolls, 1, _NextRemaining)
-THEN
-PROC_COS_ChooseFateWound(_Character, _Damage, _PowerEligible, _Count, _NextRemaining, _BestOutcome, _BestRank, _NextOutcome, _NextRank);
-
-PROC
-PROC_COS_ChooseFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
-AND
-_NextRank <= _BestRank
-THEN
-PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _BestOutcome, _BestRank);
-
-PROC
-PROC_COS_ChooseFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_NextOutcome, (INTEGER)_NextRank)
-AND
-_NextRank > _BestRank
-THEN
-PROC_COS_ContinueFateWound(_Character, _Damage, _PowerEligible, _Count, _RemainingRolls, _NextOutcome, _NextRank);
-
-PROC
-PROC_COS_ContinueFateWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Count, (INTEGER)_RemainingRolls, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
-AND
-_RemainingRolls == 0
-THEN
-PROC_COS_ResolveWound(_Character, _Damage, _BestOutcome, _PowerEligible);
-PROC_COS_ClearWoundPool(_Character);
-
-PROC
-PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
-AND
-GetLevel(_Character, _Level)
-AND
-_Level < 13
-THEN
-PROC_COS_RebuildWoundPool(_Character);
-PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
-
-PROC
-PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
-AND
-GetLevel(_Character, _Level)
-AND
-_Level >= 13
-AND
-IntegerMin(_Level, 30, _CappedLevel)
-AND
-IntegerSubtract(_CappedLevel, 12, _PostLevels)
-AND
-IntegerProduct(_PostLevels, 5, _PositiveThreshold)
-AND
-Random(1000, _GrowthRoll)
-THEN
-PROC_COS_RollWoundPostGrowth(_Character, _Damage, _PowerEligible, _GrowthRoll, _PositiveThreshold);
-
-PROC
-PROC_COS_RollWoundPostGrowth((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_GrowthRoll, (INTEGER)_PositiveThreshold)
-AND
-_GrowthRoll < _PositiveThreshold
-THEN
-PROC_COS_ClearWoundPool(_Character);
-DB_COS_WoundPoolCount(_Character, 0);
-PROC_COS_AddPositiveWoundCandidates(_Character);
-PROC_COS_AddPositiveWoundGrowth(_Character);
-PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
-
-PROC
-PROC_COS_RollWoundPostGrowth((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_GrowthRoll, (INTEGER)_PositiveThreshold)
-AND
-_GrowthRoll >= _PositiveThreshold
-THEN
-PROC_COS_RebuildWoundPool(_Character);
-PROC_COS_CommitWoundRoll(_Character, _Damage, _PowerEligible);
+PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);
 
 PROC
 PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
@@ -782,6 +785,20 @@ _Roll == 22
 THEN
 ApplyStatus(_Character, "WET", 6.0, 100, _Character);
 ApplyStatus(_Character, "COS_CHAOS_WOUND_LOG_WET", 0.1, 100, _Character);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+_Roll == 26
+THEN
+ApplyStatus(_Character, "COS_CHAOS_MASTERY_RESULT_L01", 12.0, 100, _Character);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+_Roll == 38
+THEN
+ApplyStatus(_Character, "COS_CHAOS_MASTERY_CALM_LOG", 0.1, 100, _Character);
 
 PROC
 PROC_COS_ResolveDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Roll)

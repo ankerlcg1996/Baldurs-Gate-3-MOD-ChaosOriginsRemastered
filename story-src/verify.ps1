@@ -648,26 +648,208 @@ foreach ($postLevelMechanic in @(
     'IntegerMin(_Level, 30, _CappedLevel)',
     'IntegerProduct(_PostLevels, 2, _SplitGrowth)',
     'IntegerProduct(_PostLevels, 3, _DelayGrowth)',
-    'IntegerMin(_AdjustedPercentRaw, 200, _AdjustedPercent)',
-    'IntegerProduct(_PostLevels, 5, _PositiveThreshold)'
+    'IntegerMin(_AdjustedPercentRaw, 200, _AdjustedPercent)'
 )) {
     Require ($mechanicsGoal.Contains($postLevelMechanic)) "13至30级逐级成长缺少: $postLevelMechanic"
 }
-$woundWeights = @{}
-foreach ($match in [regex]::Matches($mechanicsGoal, 'DB_COS_WoundWeight\((\d+), (\d+)\);')) {
-    $woundWeights[[int]$match.Groups[1].Value] = [int]$match.Groups[2].Value
+for ($a = 0; $a -le 12; $a++) {
+    for ($b = 0; $b -le (12 - $a); $b++) {
+        $positive = 162 + 2 * $a
+        $negative = 138 - 2 * $a - 4 * $b
+        $calm = 4 * $b
+        Require (($positive + $negative + $calm) -eq 300) "掌控混沌轮盘总格数错误: A=$a B=$b"
+        Require ($positive -ge 0 -and $negative -ge 90 -and $calm -ge 0) "掌控混沌轮盘类别出现负数或负面低于90格: A=$a B=$b"
+        Require (($positive - $negative) -eq (24 + 4 * ($a + $b))) "掌控混沌轮盘正负差错误: A=$a B=$b"
+    }
 }
-Require ($woundWeights.Count -eq 26) '受击轮盘必须为全部 26 个结果声明独立权重'
-$positiveWoundWeight = (13,14,15,16,17,18,19,20,21,22,25 | ForEach-Object { $woundWeights[$_] } | Measure-Object -Sum).Sum
-$negativeWoundWeight = (0..12 + 23,24 | ForEach-Object { $woundWeights[$_] } | Measure-Object -Sum).Sum
-Require ($positiveWoundWeight -eq 41 -and $negativeWoundWeight -eq 35) `
-    '1至4级受击轮盘权重必须为正面 41 格、负面 35 格'
-$woundGrowth5 = ([regex]::Matches($mechanicsGoal, 'DB_COS_WoundGrowthWeight\(5, \d+, (\d+)\);') | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Sum).Sum
-$woundGrowth9 = ([regex]::Matches($mechanicsGoal, 'DB_COS_WoundGrowthWeight\(9, \d+, (\d+)\);') | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Sum).Sum
-Require ($woundGrowth5 -eq 8 -and $woundGrowth9 -eq 12) `
-    '受击轮盘必须在5级增至49个正面格、9级增至61个正面格'
-Require ($woundWeights[14] -eq 1 -and $woundWeights[17] -eq 1 -and $woundWeights[25] -eq 1) `
-    '加速、隐形和嗜血必须保持稀有权重'
+Require ((162 + 2 * 12) -eq 186 -and (138 - 2 * 12) -eq 114 -and (4 * 0) -eq 0) `
+    '12次调律、0次校准必须严格为186/114/0格'
+Require ((162 + 2 * 6) -eq 174 -and (138 - 2 * 6 - 4 * 6) -eq 102 -and (4 * 6) -eq 24) `
+    '6次调律、6次校准必须严格为174/102/24格'
+Require ((162 + 2 * 0) -eq 162 -and (138 - 4 * 12) -eq 90 -and (4 * 12) -eq 48) `
+    '0次调律、12次校准必须严格为162/90/48格'
+
+$positiveWoundWeights = @([regex]::Matches($mechanicsGoal, 'DB_COS_WoundPositiveWeight\((\d+), (\d+)\);'))
+$positiveWoundWeightTotal = ($positiveWoundWeights | ForEach-Object { [int]$_.Groups[2].Value } | Measure-Object -Sum).Sum
+Require ($positiveWoundWeightTotal -eq 164) '正面受击结果目录总权重必须严格为164'
+$actualPositiveWoundWeights = @($positiveWoundWeights | ForEach-Object { '{0}:{1}' -f $_.Groups[1].Value,$_.Groups[2].Value } | Sort-Object)
+$expectedPositiveWoundWeights = @('13:20','14:4','15:12','16:20','17:4','18:24','19:24','20:24','21:12','22:16','25:4') | Sort-Object
+Require ($positiveWoundWeights.Count -eq 11 -and -not (Compare-Object $expectedPositiveWoundWeights $actualPositiveWoundWeights)) `
+    '正面受击结果目录必须严格包含11个指定结果及权重'
+
+$negativeWoundWeights = @([regex]::Matches($mechanicsGoal, 'DB_COS_WoundNegativeWeight\((\d+), (\d+)\);'))
+$negativeWoundWeightTotal = ($negativeWoundWeights | ForEach-Object { [int]$_.Groups[2].Value } | Measure-Object -Sum).Sum
+Require ($negativeWoundWeightTotal -eq 35) '负面受击结果目录总权重必须严格为35'
+$actualNegativeWoundWeights = @($negativeWoundWeights | ForEach-Object { '{0}:{1}' -f $_.Groups[1].Value,$_.Groups[2].Value } | Sort-Object)
+$expectedNegativeWoundWeights = @('0:4','1:2','2:1','3:4','4:2','5:1','6:4','7:2','8:1','9:4','10:2','11:1','12:4','23:2','24:1') | Sort-Object
+Require ($negativeWoundWeights.Count -eq 15 -and -not (Compare-Object $expectedNegativeWoundWeights $actualNegativeWoundWeights)) `
+    '负面受击结果目录必须严格包含15个指定结果及权重'
+
+$woundLayers = @([regex]::Matches($mechanicsGoal, 'DB_COS_WoundLayer\((\d+)\);') | ForEach-Object { [int]$_.Groups[1].Value } | Sort-Object)
+Require ($woundLayers.Count -eq 24 -and (($woundLayers -join ',') -eq ((1..24) -join ','))) `
+    '受击候选层必须严格为整数1至24'
+Require ([regex]::Matches($mechanicsGoal, 'DB_COS_MasteryGift\(1, 26, 4, 17\);').Count -eq 1) `
+    '一级掌控混沌礼物必须严格为结果26、权重4、评级17'
+$expectedWoundFateRanks = @(
+    '0:10','1:5','2:0','3:10','4:5','5:0','6:10','7:5','8:0','9:12','10:7','11:2','12:12',
+    '13:20','14:25','15:21','16:20','17:24','18:22','19:22','20:22','21:23','22:16','23:6','24:1','25:25',
+    '26:17','38:15'
+) | Sort-Object
+$woundFateRanks = @([regex]::Matches($mechanicsGoal, 'DB_COS_WoundFateRank\((\d+), (\d+)\);'))
+$actualWoundFateRanks = @($woundFateRanks | ForEach-Object { '{0}:{1}' -f $_.Groups[1].Value,$_.Groups[2].Value } | Sort-Object)
+Require ($woundFateRanks.Count -eq 28 -and -not (Compare-Object $expectedWoundFateRanks $actualWoundFateRanks)) `
+    '受击命运评级必须保留0至25并新增结果26/38的指定评级'
+
+foreach ($staleWoundIdentifier in @(
+    'DB_COS_WoundWeight(', 'DB_COS_WoundPositive(', 'DB_COS_WoundGrowthWeight',
+    'PROC_COS_AddPositiveWoundGrowth', 'PROC_COS_RebuildWoundPool', 'PROC_COS_CommitWoundRoll',
+    'PROC_COS_ContinueFateWound', 'PROC_COS_ChooseFateWound', 'PROC_COS_RollWoundPostGrowth',
+    '_PositiveThreshold', 'IntegerProduct(_PostLevels, 5, _PositiveThreshold)'
+)) {
+    Require (-not $mechanicsGoal.Contains($staleWoundIdentifier)) "受击轮盘包含废弃标识符: $staleWoundIdentifier"
+}
+
+function Get-MechanicsProcBlocks([string]$Name) {
+    $escapedName = [regex]::Escape($Name)
+    return @([regex]::Matches($mechanicsGoal, "(?ms)^PROC\r?\n$escapedName\([^\r\n]*\)\r?\n.*?(?=^PROC\r?\n|^KBSECTION\r?$|\z)") | ForEach-Object { $_.Value })
+}
+
+$requiredWoundProcedures = @(
+    'PROC_COS_RebuildPositiveWoundPool','PROC_COS_RebuildNegativeWoundPool','PROC_COS_BeginWoundTrials',
+    'PROC_COS_RollWoundTrial','PROC_COS_DispatchWoundCategory','PROC_COS_SelectWoundTrial',
+    'PROC_COS_ConsiderWoundTrial','PROC_COS_ContinueWoundTrials','PROC_COS_FinishWoundTrials'
+)
+foreach ($procedureName in $requiredWoundProcedures) {
+    Require (@(Get-MechanicsProcBlocks $procedureName).Count -gt 0) "受击轮盘缺少过程: $procedureName"
+}
+
+$positiveCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddPositiveWoundCandidates')
+Require ($positiveCandidateBlocks.Count -eq 1 -and $positiveCandidateBlocks[0].Contains('DB_COS_WoundPositiveWeight(_Outcome, _Weight)') -and `
+    $positiveCandidateBlocks[0].Contains('DB_COS_WoundLayer(_Layer)') -and $positiveCandidateBlocks[0].Contains('_Layer <= _Weight')) `
+    '正面候选只能按正面目录权重和层数加入'
+$giftCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddMasteryGiftWoundCandidates')
+Require ($giftCandidateBlocks.Count -eq 1 -and $giftCandidateBlocks[0].Contains('GetLevel(_Character, _Level)') -and `
+    $giftCandidateBlocks[0].Contains('DB_COS_MasteryGift(_MinimumLevel, _Outcome, _Weight, _Rank)') -and `
+    $giftCandidateBlocks[0].Contains('_Level >= _MinimumLevel') -and $giftCandidateBlocks[0].Contains('_Layer <= _Weight')) `
+    '掌控混沌礼物候选必须按等级和权重加入'
+$negativeCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddEnabledNegativeWoundCandidates')
+Require ($negativeCandidateBlocks.Count -eq 1 -and $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWound(_Character, _Key, 1)') -and `
+    $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWoundOutcome(_Key, _Outcome)') -and `
+    $negativeCandidateBlocks[0].Contains('DB_COS_WoundNegativeWeight(_Outcome, _Weight)') -and `
+    $negativeCandidateBlocks[0].Contains('_Layer <= _Weight')) `
+    '负面候选只能从已启用配置和负面目录加入'
+
+$positiveRebuildBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RebuildPositiveWoundPool')
+Require ($positiveRebuildBlocks.Count -eq 1 -and $positiveRebuildBlocks[0].Contains('PROC_COS_ClearWoundPool(_Character);') -and `
+    $positiveRebuildBlocks[0].Contains('DB_COS_WoundPoolCount(_Character, 0);') -and `
+    $positiveRebuildBlocks[0].Contains('PROC_COS_AddPositiveWoundCandidates(_Character);') -and `
+    $positiveRebuildBlocks[0].Contains('PROC_COS_AddMasteryGiftWoundCandidates(_Character);') -and `
+    -not $positiveRebuildBlocks[0].Contains('PROC_COS_AddEnabledNegativeWoundCandidates')) `
+    '正面池必须清空后仅加入正面结果和等级合格礼物'
+$negativeRebuildBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RebuildNegativeWoundPool')
+Require ($negativeRebuildBlocks.Count -eq 1 -and $negativeRebuildBlocks[0].Contains('PROC_COS_ClearWoundPool(_Character);') -and `
+    $negativeRebuildBlocks[0].Contains('DB_COS_WoundPoolCount(_Character, 0);') -and `
+    $negativeRebuildBlocks[0].Contains('PROC_COS_AddEnabledNegativeWoundCandidates(_Character);') -and `
+    -not $negativeRebuildBlocks[0].Contains('PROC_COS_AddPositiveWoundCandidates') -and `
+    -not $negativeRebuildBlocks[0].Contains('PROC_COS_AddMasteryGiftWoundCandidates')) `
+    '负面池必须清空后仅加入已启用负面结果'
+
+$beginTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_BeginWoundTrials')
+Require ($beginTrialBlocks.Count -eq 1 -and $beginTrialBlocks[0].Contains('_RollCount > 0') -and `
+    $beginTrialBlocks[0].Contains('PROC_COS_RollWoundTrial(_Character, _Damage, _PowerEligible, _RollCount, 0, 0, 0);')) `
+    '受击试炼必须从无最佳结果状态开始'
+$rollTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWoundTrial')
+$rollTrialActions = @($rollTrialBlocks | ForEach-Object { ($_ -split '(?m)^THEN\r?$', 2)[1] })
+Require ($rollTrialBlocks.Count -eq 1 -and ([regex]::Matches($rollTrialBlocks[0], 'Random\(300, _CategoryRoll\)').Count -eq 1) -and `
+    $rollTrialBlocks[0].Contains('DB_COS_MasteryTuneCount(_Character, _TuneCount)') -and `
+    $rollTrialBlocks[0].Contains('DB_COS_MasteryCorrectCount(_Character, _CorrectCount)') -and `
+    $rollTrialBlocks[0].Contains('IntegerProduct(_TuneCount, 2, _TuneCells)') -and `
+    $rollTrialBlocks[0].Contains('IntegerProduct(_CorrectCount, 4, _CalmCells)') -and `
+    ([regex]::Matches($rollTrialBlocks[0], 'PROC_COS_DispatchWoundCategory\(').Count -eq 1) -and `
+    ([regex]::Matches($rollTrialActions[0], '(?m)^PROC_COS_[A-Za-z0-9_]+\(').Count -eq 1) -and `
+    $rollTrialActions[0].Contains('PROC_COS_DispatchWoundCategory(')) `
+    '每次受击试炼必须只生成一次300格类别随机并交给分类过程'
+Require ([regex]::Matches($mechanicsGoal, 'Random\(300').Count -eq 1) '受击机制全文必须且只能有一次Random(300)调用'
+
+$dispatchBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_DispatchWoundCategory')
+Require ($dispatchBlocks.Count -eq 3 -and -not (($dispatchBlocks -join "`n").Contains('Random('))) `
+    '受击类别分类必须严格为三个无随机分支'
+$positiveDispatch = @($dispatchBlocks | Where-Object { $_.Contains('_CategoryRoll < _PositiveEnd') -and -not $_.Contains('_CategoryRoll >= _PositiveEnd') })
+$calmDispatch = @($dispatchBlocks | Where-Object { $_.Contains('_CategoryRoll >= _PositiveEnd') -and $_.Contains('_CategoryRoll < _CalmEnd') })
+$negativeDispatch = @($dispatchBlocks | Where-Object { $_.Contains('_CategoryRoll >= _CalmEnd') })
+Require ($positiveDispatch.Count -eq 1 -and $positiveDispatch[0].Contains('PROC_COS_RebuildPositiveWoundPool(_Character);') -and `
+    $positiveDispatch[0].Contains('PROC_COS_SelectWoundTrial(') -and -not $positiveDispatch[0].Contains('PROC_COS_RebuildNegativeWoundPool')) `
+    '正面类别边界或正面池分派错误'
+Require ($calmDispatch.Count -eq 1 -and $calmDispatch[0].Contains('DB_COS_WoundFateRank(38, _NextRank)') -and `
+    $calmDispatch[0].Contains('PROC_COS_ConsiderWoundTrial(') -and -not ($calmDispatch[0] -match 'PROC_COS_Rebuild(Positive|Negative)WoundPool')) `
+    '平静类别必须直接以结果38进入评级比较'
+Require ($negativeDispatch.Count -eq 1 -and $negativeDispatch[0].Contains('PROC_COS_RebuildNegativeWoundPool(_Character);') -and `
+    $negativeDispatch[0].Contains('PROC_COS_SelectWoundTrial(') -and -not $negativeDispatch[0].Contains('PROC_COS_RebuildPositiveWoundPool')) `
+    '负面类别边界或负面池分派错误'
+
+$selectTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_SelectWoundTrial')
+Require ($selectTrialBlocks.Count -eq 1 -and $selectTrialBlocks[0].Contains('DB_COS_WoundPoolCount(_Character, _Count)') -and `
+    $selectTrialBlocks[0].Contains('_Count > 0') -and $selectTrialBlocks[0].Contains('Random(_Count, _Slot)') -and `
+    $selectTrialBlocks[0].Contains('DB_COS_WoundCandidate(_Character, _Slot, _NextOutcome)') -and `
+    $selectTrialBlocks[0].Contains('DB_COS_WoundFateRank(_NextOutcome, _NextRank)') -and `
+    $selectTrialBlocks[0].Contains('PROC_COS_ConsiderWoundTrial(')) `
+    '池内抽取必须要求非空池并把候选交给评级比较'
+
+$considerTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_ConsiderWoundTrial')
+Require ($considerTrialBlocks.Count -eq 3) '受击试炼评级必须严格包含首次、保留和替换三个分支'
+foreach ($considerBlock in $considerTrialBlocks) {
+    Require ([regex]::Matches($considerBlock, 'IntegerSubtract\(_Remaining, 1, _NextRemaining\)').Count -eq 1) `
+        '每个受击试炼评级分支必须恰好递减一次剩余次数'
+    Require ([regex]::Matches($considerBlock, 'PROC_COS_ContinueWoundTrials\(').Count -eq 1) `
+        '每个受击试炼评级分支必须恰好继续一次'
+}
+$firstConsider = @($considerTrialBlocks | Where-Object { $_.Contains('_HasBest == 0') })
+$keepConsider = @($considerTrialBlocks | Where-Object { $_.Contains('_HasBest == 1') -and $_.Contains('_NextRank <= _BestRank') })
+$replaceConsider = @($considerTrialBlocks | Where-Object { $_.Contains('_HasBest == 1') -and $_.Contains('_NextRank > _BestRank') })
+Require ($firstConsider.Count -eq 1 -and $firstConsider[0].Contains('_NextOutcome, _NextRank);')) '首次试炼结果必须直接成为最佳结果'
+Require ($keepConsider.Count -eq 1 -and $keepConsider[0].Contains('_BestOutcome, _BestRank);')) '同评级或更低评级必须保留首次最佳结果'
+Require ($replaceConsider.Count -eq 1 -and $replaceConsider[0].Contains('_NextOutcome, _NextRank);')) '只有严格更高评级才能替换最佳结果'
+
+$continueTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_ContinueWoundTrials')
+Require ($continueTrialBlocks.Count -eq 2) '受击试炼继续过程必须严格包含继续和结束两个分支'
+$continueRolling = @($continueTrialBlocks | Where-Object { $_.Contains('_Remaining > 0') })
+$continueFinish = @($continueTrialBlocks | Where-Object { $_.Contains('_Remaining == 0') })
+Require ($continueRolling.Count -eq 1 -and $continueRolling[0].Contains('PROC_COS_RollWoundTrial(_Character, _Damage, _PowerEligible, _Remaining, 1, _BestOutcome, _BestRank);')) `
+    '仍有次数时必须带当前最佳结果重投完整受击试炼'
+Require ($continueFinish.Count -eq 1 -and $continueFinish[0].Contains('PROC_COS_FinishWoundTrials(_Character, _Damage, _PowerEligible, _BestOutcome);')) `
+    '次数耗尽时必须进入唯一结束过程'
+$finishTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_FinishWoundTrials')
+Require ($finishTrialBlocks.Count -eq 1 -and ([regex]::Matches($finishTrialBlocks[0], 'PROC_COS_ResolveWound\(').Count -eq 1) -and `
+    ([regex]::Matches($finishTrialBlocks[0], 'PROC_COS_ClearWoundPool\(').Count -eq 1)) `
+    '受击试炼结束必须只结算一次并清空候选池'
+
+$rollWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWound')
+Require ($rollWoundBlocks.Count -eq 2) '受击入口必须严格包含普通和命运改签两个分支'
+$normalWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)') })
+$fateWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)') })
+Require ($normalWoundRoll.Count -eq 1 -and $normalWoundRoll[0].Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);')) `
+    '普通受击必须开始且只开始一次完整试炼'
+Require ($fateWoundRoll.Count -eq 1 -and $fateWoundRoll[0].Contains('GetLevel(_Character, _Level)') -and `
+    $fateWoundRoll[0].Contains('IntegerMin(_Level, 30, _CappedLevel)') -and `
+    $fateWoundRoll[0].Contains('DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)') -and `
+    ([regex]::Matches($fateWoundRoll[0], 'RemoveStatus\(_Character, "COS_CHAOS_FATE_PENDING", _Character\);').Count -eq 1) -and `
+    $fateWoundRoll[0].IndexOf('RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);') -lt `
+        $fateWoundRoll[0].IndexOf('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);')) `
+    '命运改签必须按等级档取得次数、仅移除一次挂起状态后再开始完整试炼'
+
+$resolveWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_ResolveWound')
+$giftResolve = @($resolveWoundBlocks | Where-Object { $_.Contains('_Roll == 26') })
+$calmResolve = @($resolveWoundBlocks | Where-Object { $_.Contains('_Roll == 38') })
+$giftResolveActions = @($giftResolve | ForEach-Object { ($_ -split '(?m)^THEN\r?$', 2)[1] })
+$calmResolveActions = @($calmResolve | ForEach-Object { ($_ -split '(?m)^THEN\r?$', 2)[1] })
+Require ($giftResolve.Count -eq 1 -and $giftResolve[0].Contains('ApplyStatus(_Character, "COS_CHAOS_MASTERY_RESULT_L01", 12.0, 100, _Character);') -and `
+    ([regex]::Matches($giftResolveActions[0], '(?m)^[A-Za-z][A-Za-z0-9_]+\(').Count -eq 1) -and `
+    -not ($giftResolve[0] -match 'PROC_COS_(RecordWoundNegative|AddLost)|DB_COS_WoundStatus')) `
+    '结果26必须只应用12秒一级掌控混沌礼物且不得串联普通正面结果'
+Require ($calmResolve.Count -eq 1 -and $calmResolve[0].Contains('ApplyStatus(_Character, "COS_CHAOS_MASTERY_CALM_LOG", 0.1, 100, _Character);') -and `
+    ([regex]::Matches($calmResolveActions[0], '(?m)^[A-Za-z][A-Za-z0-9_]+\(').Count -eq 1) -and `
+    -not ($calmResolve[0] -match 'PROC_COS_(RecordWoundNegative|AddLost)|DB_COS_WoundStatus')) `
+    '结果38必须只显示平静日志且不得记录负面或增加遗失'
 Require (-not [regex]::IsMatch($mechanicsGoal, 'DB_COS_WoundStatus\([^\r\n]+"(MADNESS|FRIGHTENED|STUNNED|PRONE|SILENCED|BLINDED|SLOW|POISONED|BLEEDING|BURNING)"')) `
     '受击轮盘不得包含夺取控制或可能造成失控死亡的原版负面状态'
 Require (-not [regex]::IsMatch($mechanicsGoal, '_Roll == (23|24)[\s\S]{0,700}(ApplyDamage|WOUND_VULNERABILITY)')) `
@@ -726,11 +908,10 @@ Require ($featuresText.Contains('new entry "Shout_COS_FateRevision"') -and `
 Require ($mechanicsGoal.Contains('UsingSpell(_Character, "Shout_COS_FateRevision", _, _, _)') -and `
     $mechanicsGoal.Contains('IntegerSubtract(_OldPower, 1, _NewPower)')) `
     '命运改签必须消耗 1 点混沌之力'
-Require ([regex]::Matches($mechanicsGoal, 'DB_COS_WoundFateRank\(\d+, \d+\);').Count -eq 26 -and `
-    $mechanicsGoal.Contains('Random(_Count, _FirstSlot)') -and `
-    $mechanicsGoal.Contains('PROC_COS_ContinueFateWound') -and `
+Require ($mechanicsGoal.Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);') -and `
+    $mechanicsGoal.Contains('PROC_COS_ContinueWoundTrials') -and `
     $mechanicsGoal.Contains('_NextRank > _BestRank')) `
-    '命运改签必须为受击轮盘递归判定并保留评级最高的结果'
+    '命运改签必须重投完整受击结果并保留评级最高的首次结果'
 Require ($mechanicsGoal.Contains('Random(100, _FirstDualityRoll)') -and `
     $mechanicsGoal.Contains('PROC_COS_ContinueFateDuality') -and `
     $mechanicsGoal.Contains('IntegerMax(_BestRoll, _NextRoll, _NextBestRoll)')) `
