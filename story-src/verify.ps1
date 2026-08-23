@@ -72,6 +72,21 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
 . $buildProcessHelperPath
 . $storyIrAttestationHelperPath
 
+$buildProcessHelper = Get-Content -LiteralPath $buildProcessHelperPath -Raw -Encoding UTF8
+foreach ($processApiToken in @(
+    '[Diagnostics.ProcessStartInfo]::new()', 'UseShellExecute = $false',
+    'ArgumentList.Add($argument)', 'ReadToEndAsync()', 'WaitForExit()', '$process.ExitCode'
+)) {
+    Require ($buildProcessHelper.Contains($processApiToken)) `
+        "build-process.ps1 缺少真实 Process API 隔离步骤: $processApiToken"
+}
+Require (-not $buildProcessHelper.Contains('& $pwshPath')) `
+    'build-process.ps1 不得退回受调用者 native preference 影响的原生命令调用'
+Require (-not $buildProcessHelper.Contains('$LASTEXITCODE')) `
+    'build-process.ps1 必须只读取 Process.ExitCode，不得依赖 LASTEXITCODE'
+Require (-not $buildProcessHelper.Contains('$PSNativeCommandUseErrorActionPreference =')) `
+    'build-process.ps1 不得修改调用者的 PSNativeCommandUseErrorActionPreference'
+
 $cmdMutationRejected = $false
 try {
     Assert-BuildPwshPath -PwshPath $env:ComSpec | Out-Null
@@ -100,30 +115,53 @@ try {
     [IO.File]::WriteAllText($successScript, @'
 param([string]$Value)
 Write-Output "BUILD_PROCESS_OK:$Value"
+[Console]::Error.WriteLine("BUILD_PROCESS_ERROR:$Value")
 '@, [Text.UTF8Encoding]::new($false))
     [IO.File]::WriteAllText($exitSevenScript, @'
 Write-Output 'BUILD_PROCESS_EXIT7'
+[Console]::Error.WriteLine('BUILD_PROCESS_ERROR_EXIT7')
 exit 7
 '@, [Text.UTF8Encoding]::new($false))
 
-    $firstOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
-        -ArgumentList @('第一次 中文 空格'))
-    $secondOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
-        -ArgumentList @('第二次 中文 空格'))
-    $firstOutput | ForEach-Object { Write-Host $_ }
-    $secondOutput | ForEach-Object { Write-Host $_ }
-    Require ($firstOutput -contains 'BUILD_PROCESS_OK:第一次 中文 空格') `
-        '构建进程 helper 吞掉了首次子进程输出或破坏了中文空格参数'
-    Require ($secondOutput -contains 'BUILD_PROCESS_OK:第二次 中文 空格') `
-        '构建进程 helper 重复调用失败或吞掉了子进程输出'
-
-    $exitSevenRejected = $false
+    $nativePreferenceBeforeTests = $PSNativeCommandUseErrorActionPreference
     try {
-        Invoke-BuildScriptProcess -ScriptPath $exitSevenScript | ForEach-Object { Write-Host $_ }
-    } catch {
-        $exitSevenRejected = $_.Exception.Message.Contains('退出码: 7')
+        foreach ($nativePreference in @($false, $true)) {
+            $PSNativeCommandUseErrorActionPreference = $nativePreference
+            $preferenceBeforeCall = $PSNativeCommandUseErrorActionPreference
+            $firstOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
+                -ArgumentList @('第一次 中文 空格') 2>&1)
+            $secondOutput = @(Invoke-BuildScriptProcess -ScriptPath $successScript `
+                -ArgumentList @('第二次 中文 空格') 2>&1)
+            $firstText = @($firstOutput | ForEach-Object { $_.ToString() })
+            $secondText = @($secondOutput | ForEach-Object { $_.ToString() })
+            $firstText | ForEach-Object { Write-Host $_ }
+            $secondText | ForEach-Object { Write-Host $_ }
+            Require ($firstText -contains 'BUILD_PROCESS_OK:第一次 中文 空格' -and
+                $firstText -contains 'BUILD_PROCESS_ERROR:第一次 中文 空格') `
+                "构建进程 helper 在 nativePreference=$nativePreference 时吞掉首次输出或破坏中文空格参数"
+            Require ($secondText -contains 'BUILD_PROCESS_OK:第二次 中文 空格' -and
+                $secondText -contains 'BUILD_PROCESS_ERROR:第二次 中文 空格') `
+                "构建进程 helper 在 nativePreference=$nativePreference 时重复调用失败或吞掉输出"
+            Require ($PSNativeCommandUseErrorActionPreference -eq $preferenceBeforeCall) `
+                '构建进程 helper 修改了调用者的 PSNativeCommandUseErrorActionPreference'
+
+            $exitSevenRejected = $false
+            try {
+                Invoke-BuildScriptProcess -ScriptPath $exitSevenScript | ForEach-Object { Write-Host $_ }
+            } catch {
+                $exitSevenRejected = $_.Exception.Message.Contains('退出码: 7')
+            }
+            Require $exitSevenRejected `
+                "构建进程 helper 在 nativePreference=$nativePreference 时未严格传播 exit 7"
+            Require ($PSNativeCommandUseErrorActionPreference -eq $preferenceBeforeCall) `
+                'exit 7 后 helper 修改了调用者的 PSNativeCommandUseErrorActionPreference'
+            Write-Host "BUILD_PROCESS_NATIVE_PREFERENCE_$($nativePreference.ToString().ToUpperInvariant())=PASS"
+        }
+    } finally {
+        $PSNativeCommandUseErrorActionPreference = $nativePreferenceBeforeTests
     }
-    Require $exitSevenRejected '构建进程 helper 必须严格传播子进程 exit 7'
+    Require ($PSNativeCommandUseErrorActionPreference -eq $nativePreferenceBeforeTests) `
+        '构建进程 helper 双态测试未恢复调用者的 PSNativeCommandUseErrorActionPreference'
     Write-Host 'MUTATION_EXIT7_SWALLOWED=KILLED'
 
     $fakeStory = Join-Path $unicodeTestDirectory 'story.div.osi'

@@ -19,6 +19,26 @@ function Assert-BuildPwshPath {
     return $resolvedPath
 }
 
+function Write-BuildProcessText {
+    param(
+        [string]$Text,
+        [switch]$ErrorStream
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) { return }
+    $lines = @([regex]::Split($Text, '\r\n|\n|\r'))
+    if ($lines.Count -gt 0 -and $lines[-1].Length -eq 0) {
+        $lines = @($lines[0..($lines.Count - 2)])
+    }
+    foreach ($line in $lines) {
+        if ($ErrorStream) {
+            Write-Error -Message $line -ErrorAction Continue
+        } else {
+            Write-Output $line
+        }
+    }
+}
+
 function Invoke-BuildScriptProcess {
     param(
         [Parameter(Mandatory)][string]$ScriptPath,
@@ -31,8 +51,36 @@ function Invoke-BuildScriptProcess {
         throw "构建子进程脚本不存在: $ScriptPath"
     }
     $resolvedScriptPath = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $ScriptPath).Path)
-    & $pwshPath -NoLogo -NoProfile -NonInteractive -File $resolvedScriptPath @ArgumentList
-    $processExitCode = $LASTEXITCODE
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $pwshPath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.StandardOutputEncoding = [Text.UTF8Encoding]::new($false)
+    $startInfo.StandardErrorEncoding = [Text.UTF8Encoding]::new($false)
+    foreach ($argument in @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $resolvedScriptPath)) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+    foreach ($argument in $ArgumentList) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) { throw "无法启动构建子进程: $pwshPath" }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        $processExitCode = $process.ExitCode
+    } finally {
+        $process.Dispose()
+    }
+
+    Write-BuildProcessText -Text $stdout
+    Write-BuildProcessText -Text $stderr -ErrorStream
     if ($processExitCode -ne 0) {
         throw "构建子进程脚本失败，退出码: $processExitCode / $resolvedScriptPath"
     }
