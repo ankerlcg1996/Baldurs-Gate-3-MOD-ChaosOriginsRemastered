@@ -62,6 +62,72 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
         $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录26文件/4 Goals: $readmePath"
 }
 
+function Test-StoryCompilerProcessIsolation([string]$ScriptText) {
+    $legacyInProcessCall = [regex]::IsMatch($ScriptText,
+        '(?m)^\s*&\s*\(Join-Path\s+\$root\s+[''"]compile-story\.ps1[''"]\)\s*$')
+    $isolatedInvocation = [regex]::IsMatch($ScriptText,
+        '(?m)^\s*&\s+\$pwshExecutable\s+-NoLogo\s+-NoProfile\s+-NonInteractive\s+-File\s+\$compileStoryScript\s*$')
+    return -not $legacyInProcessCall -and
+        $ScriptText.Contains("`$compileStoryScript = Join-Path `$root 'compile-story.ps1'") -and
+        $isolatedInvocation -and
+        $ScriptText.Contains('$compileStoryExitCode = $LASTEXITCODE') -and
+        $ScriptText.Contains('Require ($compileStoryExitCode -eq 0)')
+}
+
+$legacyCompilerFixture = @'
+& (Join-Path $root 'compile-story.ps1')
+'@
+$isolatedCompilerFixture = @'
+$compileStoryScript = Join-Path $root 'compile-story.ps1'
+& $pwshExecutable -NoLogo -NoProfile -NonInteractive -File $compileStoryScript
+$compileStoryExitCode = $LASTEXITCODE
+Require ($compileStoryExitCode -eq 0) "Story 编译子进程失败"
+'@
+$deletedCompilerGateMutation = $isolatedCompilerFixture.Replace(
+    '-File $compileStoryScript', "-Command 'exit 0'")
+Require (-not (Test-StoryCompilerProcessIsolation $legacyCompilerFixture)) `
+    '构建隔离变异检查必须拒绝旧同进程 Story 编译调用'
+Require (Test-StoryCompilerProcessIsolation $isolatedCompilerFixture) `
+    '构建隔离变异检查必须接受无配置 pwsh 子进程调用'
+Require (-not (Test-StoryCompilerProcessIsolation $deletedCompilerGateMutation)) `
+    '构建隔离变异检查必须拒绝删除 compile-story/IR 门'
+
+$buildScriptPath = Join-Path $root 'build.ps1'
+Require (Test-Path -LiteralPath $buildScriptPath -PathType Leaf) '缺少 build.ps1'
+$buildScript = Get-Content -LiteralPath $buildScriptPath -Raw -Encoding UTF8
+Require (Test-StoryCompilerProcessIsolation $buildScript) `
+    'build.ps1 必须用无配置 pwsh 子进程执行 compile-story.ps1 并检查退出码'
+foreach ($buildIsolationToken in @(
+    '#requires -Version 7.0', '$pwshExecutable = (Get-Process -Id $PID).Path',
+    '[AppDomain]::CurrentDomain.GetAssemblies()', "GetName().Name -eq 'LSLib'",
+    '当前构建进程已加载其他路径的 LSLib', 'Add-Type -Path $selectedLslibPath',
+    '当前 LSLib 实际加载路径与所选路径不一致', 'LSLib.LS.LocaUtils', 'LSLib.LS.Packager'
+)) {
+    Require ($buildScript.Contains($buildIsolationToken)) `
+        "build.ps1 缺少 Story/LSLib 进程隔离门: $buildIsolationToken"
+}
+
+function Test-StoryCompilerIrGate([string]$ScriptText) {
+    foreach ($irGateToken in @(
+        '--debug-info $debugInfo --json', 'StoryCompiler 未生成IR调试符号',
+        '$debugStory = [LSTools.StoryCompiler.StoryDebugInfoMsg]::Parser.ParseFrom($debugProto)',
+        "`$masteryGoals = @(`$debugStory.Goals | Where-Object Name -eq 'COS_ChaosMastery')",
+        '编译IR必须恰好包含一个 COS_ChaosMastery Goal', '编译IR必须恰好包含一个掌控读档root规则'
+    )) {
+        if (-not $ScriptText.Contains($irGateToken)) { return $false }
+    }
+    return $true
+}
+$compileStorySourcePath = Join-Path $root 'compile-story.ps1'
+Require (Test-Path -LiteralPath $compileStorySourcePath -PathType Leaf) '缺少 compile-story.ps1'
+$compileStorySource = Get-Content -LiteralPath $compileStorySourcePath -Raw -Encoding UTF8
+$deletedIrGateMutation = $compileStorySource.Replace(
+    '$debugStory = [LSTools.StoryCompiler.StoryDebugInfoMsg]::Parser.ParseFrom($debugProto)',
+    '# removed Story IR parser')
+Require (Test-StoryCompilerIrGate $compileStorySource) 'compile-story.ps1 缺少 Story 编译或 IR 反解门'
+Require (-not (Test-StoryCompilerIrGate $deletedIrGateMutation)) `
+    'Story 编译变异检查必须拒绝删除 IR 反解门'
+
 $masteryStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosMastery.txt"
 Require (Test-Path -LiteralPath $masteryStatsPath -PathType Leaf) '缺少 ChaosMastery.txt'
 $forbiddenMasteryPaths = @(

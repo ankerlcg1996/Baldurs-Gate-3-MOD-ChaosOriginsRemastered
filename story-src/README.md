@@ -20,7 +20,7 @@ story-src/
    └─ Korean/
 ```
 
-`package-files.json` 锁定 26 个正式文件和四个 Goal。`verify.ps1` 核对装备熟练、七个基础法术、32 个种族身份标签、七个起源身份开关及即时能力、11 个官方剧情 Flag、一级掌控混沌、混沌核心 Stats/Story 和图标 atlas，并禁止技能熟练、专精、种族主动能力、旧菜单和 SE/MCM 依赖混入。运行 `build.ps1` 会编译 Story、标签与四语本地化、生成 PAK，并反向解包逐文件比较 SHA-256。
+`package-files.json` 锁定 26 个正式文件和四个 Goal。`verify.ps1` 核对装备熟练、七个基础法术、32 个种族身份标签、七个起源身份开关及即时能力、11 个官方剧情 Flag、一级掌控混沌、混沌核心 Stats/Story 和图标 atlas，并禁止技能熟练、专精、种族主动能力、旧菜单和 SE/MCM 依赖混入。运行 `build.ps1` 会在无配置的独立 PowerShell 7 子进程中完成 Story 编译及 IR 校验，随后在未被 StoryCompiler 程序集污染的构建进程中加载并核对显式选择的 LSLib，编译标签与四语本地化、生成 PAK，并反向解包逐文件比较 SHA-256。
 
 `version.json` 保存当前成功构建版本。每次完整构建与反向校验全部成功后，最后一段版本号才会 `+1`，并同步写入源 `meta.lsx`、PAK 内 `meta.lsx` 和 `dist/build-manifest.json`。
 

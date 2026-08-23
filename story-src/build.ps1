@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 param([string]$LslibPath = 'C:\Users\ankerlcg\Desktop\BG3ModManager_Latest\_Lib\LSLib.dll')
 
 $ErrorActionPreference = 'Stop'
@@ -27,9 +29,16 @@ function Reset-WorkChild([string]$Path) {
 }
 
 & (Join-Path $root 'verify.ps1')
-& (Join-Path $root 'compile-story.ps1')
+$pwshExecutable = (Get-Process -Id $PID).Path
+Require (Test-Path -LiteralPath $pwshExecutable -PathType Leaf) "缺少当前 pwsh 可执行文件: $pwshExecutable"
+$compileStoryScript = Join-Path $root 'compile-story.ps1'
+& $pwshExecutable -NoLogo -NoProfile -NonInteractive -File $compileStoryScript
+$compileStoryExitCode = $LASTEXITCODE
+Require ($compileStoryExitCode -eq 0) "Story 编译子进程失败，退出码: $compileStoryExitCode"
 & (Join-Path $root 'compile-resources.ps1')
-Require (Test-Path -LiteralPath $LslibPath -PathType Leaf) "缺少 LSLib: $LslibPath"
+
+$selectedLslibPath = [IO.Path]::GetFullPath($LslibPath)
+Require (Test-Path -LiteralPath $selectedLslibPath -PathType Leaf) "缺少 LSLib: $selectedLslibPath"
 Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
 
 $version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -69,7 +78,37 @@ foreach ($relative in $manifest) {
     Copy-Item -LiteralPath $source -Destination $target -Force
 }
 
-Add-Type -Path $LslibPath
+$loadedLslibAssemblies = @([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object {
+    $_.GetName().Name -eq 'LSLib'
+})
+$differentLslibAssemblies = @($loadedLslibAssemblies | Where-Object {
+    [string]::IsNullOrWhiteSpace($_.Location) -or
+        -not [IO.Path]::GetFullPath($_.Location).Equals(
+            $selectedLslibPath, [StringComparison]::OrdinalIgnoreCase)
+})
+$loadedLslibLocations = @($differentLslibAssemblies | ForEach-Object {
+    if ([string]::IsNullOrWhiteSpace($_.Location)) { '<无加载路径>' } else { $_.Location }
+}) -join ', '
+Require ($differentLslibAssemblies.Count -eq 0) `
+    "当前构建进程已加载其他路径的 LSLib: $loadedLslibLocations；所选路径: $selectedLslibPath"
+
+Add-Type -Path $selectedLslibPath
+$activeLslibAssemblies = @([AppDomain]::CurrentDomain.GetAssemblies() | Where-Object {
+    $_.GetName().Name -eq 'LSLib'
+})
+Require ($activeLslibAssemblies.Count -eq 1) `
+    "当前构建进程中的 LSLib 程序集数量错误: $($activeLslibAssemblies.Count)"
+$actualLslibPath = [IO.Path]::GetFullPath($activeLslibAssemblies[0].Location)
+Require ($actualLslibPath.Equals($selectedLslibPath, [StringComparison]::OrdinalIgnoreCase)) `
+    "当前 LSLib 实际加载路径与所选路径不一致: actual=$actualLslibPath selected=$selectedLslibPath"
+foreach ($requiredLslibType in @(
+    'LSLib.LS.LocaUtils', 'LSLib.LS.Packager', 'LSLib.LS.PackageBuildData',
+    'LSLib.LS.Enums.PackageVersion', 'LSLib.LS.CompressionMethod',
+    'LSLib.LS.LSCompressionLevel', 'LSLib.LS.PackageFlags'
+)) {
+    Require ($null -ne $activeLslibAssemblies[0].GetType($requiredLslibType, $false)) `
+        "所选 LSLib 缺少构建所需类型: $requiredLslibType"
+}
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $xml = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     $target = Join-Path $stage "Localization\$language\ChaosOriginsStory.loca"
