@@ -346,6 +346,17 @@ Require ($goals.Count -eq 4 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
     ($goals.FullName -contains $mechanicsGoalPath)) `
     '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制和起源剧情奖励四个 Goal'
+$expectedMasteryGoal = @(
+    'Version 1',
+    'SubGoalCombiner SGC_AND',
+    'INITSECTION',
+    'KBSECTION',
+    'EXITSECTION',
+    'ENDEXITSECTION'
+) -join "`n"
+$masteryGoal = ([IO.File]::ReadAllText($masteryGoalPath)).Replace("`r`n", "`n").TrimEnd("`n")
+Require ($masteryGoal -eq $expectedMasteryGoal) `
+    'Task 1 掌控混沌 Goal 必须保持六行空骨架'
 $goal = Get-Content -LiteralPath $goalPath -Raw -Encoding UTF8
 $expectedRaceTags = @(
     '60f6b464-752f-4970-a855-f729565b5e07','78adf3cd-4741-47a8-94f6-f3d322432591',
