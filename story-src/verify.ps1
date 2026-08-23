@@ -384,7 +384,22 @@ Require ($goals.Count -eq 4 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
     ($goals.FullName -contains $mechanicsGoalPath)) `
     '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制和起源剧情奖励四个 Goal'
-$masteryGoal = ([IO.File]::ReadAllText($masteryGoalPath)).Replace("`r`n", "`n").TrimEnd("`n")
+$masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
+if ($masteryGoal.EndsWith("`n")) {
+    $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
+}
+$masteryGoalSha256 = [Security.Cryptography.SHA256]::Create()
+try {
+    $masteryGoalHash = ([Convert]::ToHexString(
+        $masteryGoalSha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($masteryGoal))
+    )).ToLowerInvariant()
+} finally {
+    $masteryGoalSha256.Dispose()
+}
+# Task 8 扩展 L02-L12 时必须有意更新完整语义模板及其哈希。
+$expectedMasteryGoalHash = 'ac618c03c5b332848fc881c00c10f990778e38a11da4671a23da835de2cbadc1'
+Require ($masteryGoalHash -ceq $expectedMasteryGoalHash) `
+    'Task 3 一级掌控混沌 Goal 完整语义模板已偏移'
 Require ($masteryGoal.StartsWith("Version 1`nSubGoalCombiner SGC_AND`nINITSECTION`n") -and `
     $masteryGoal.EndsWith("`nEXITSECTION`nENDEXITSECTION")) `
     '掌控混沌 Goal 头尾结构错误'
