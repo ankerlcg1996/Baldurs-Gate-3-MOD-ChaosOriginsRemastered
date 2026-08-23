@@ -2,6 +2,7 @@ Version 1
 SubGoalCombiner SGC_AND
 INITSECTION
 DB_COS_MasteryCarrier(1, "COS_ChaosMasteryPointL01");
+NOT DB_Avatars((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
 KBSECTION
 
 PROC
@@ -190,6 +191,7 @@ PROC
 PROC_COS_ResetMastery((CHARACTER)_Character)
 THEN
 DB_COS_MasterySchema44To45(_Character);
+DB_COS_MasteryEarned(_Character, 1);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
 PROC_COS_ClearMasteryUnspent(_Character);
@@ -269,7 +271,7 @@ PROC_COS_ConsumeMasteryCarrier((CHARACTER)_Character, 1);
 IF
 LevelGameplayStarted(_, _)
 AND
-GetHostCharacter(_Character)
+DB_Avatars(_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN

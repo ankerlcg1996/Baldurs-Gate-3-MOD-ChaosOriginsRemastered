@@ -12,6 +12,13 @@
           <attribute id="V2" type="float" value="0.1240234375" />
         </node>
         <node id="IconUV">
+          <attribute id="MapKey" type="FixedString" value="COS_Origin" />
+          <attribute id="U1" type="float" value="0.0009765625" />
+          <attribute id="U2" type="float" value="0.1240234375" />
+          <attribute id="V1" type="float" value="0.0009765625" />
+          <attribute id="V2" type="float" value="0.1240234375" />
+        </node>
+        <node id="IconUV">
           <attribute id="MapKey" type="FixedString" value="COS_Status" />
           <attribute id="U1" type="float" value="0.1259765625" />
           <attribute id="U2" type="float" value="0.2490234375" />

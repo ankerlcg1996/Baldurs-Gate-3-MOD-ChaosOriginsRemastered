@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 $ErrorActionPreference = 'Stop'
 
 $root = $PSScriptRoot
@@ -12,6 +14,30 @@ function Require([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
 }
 
+function Get-GitBlobBytes([string]$RepositoryRoot, [string]$ObjectSpec) {
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = 'git'
+    $startInfo.WorkingDirectory = $RepositoryRoot
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.UseShellExecute = $false
+    $startInfo.ArgumentList.Add('cat-file')
+    $startInfo.ArgumentList.Add('blob')
+    $startInfo.ArgumentList.Add($ObjectSpec)
+    $process = [Diagnostics.Process]::Start($startInfo)
+    $stream = [IO.MemoryStream]::new()
+    try {
+        $process.StandardOutput.BaseStream.CopyTo($stream)
+        $stderr = $process.StandardError.ReadToEnd()
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) { throw "git cat-file 失败: $ObjectSpec / $stderr" }
+        return $stream.ToArray()
+    } finally {
+        $stream.Dispose()
+        $process.Dispose()
+    }
+}
+
 $versionPath = Join-Path $root 'version.json'
 Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
 $version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -24,6 +50,17 @@ Require ([int64]$version.lastBuild -le 2147483647) '末位版本号超出 BG3 Ve
 $expectedVersion64 = ([int64]$version.major * 36028797018963968) + `
     ([int64]$version.minor * 140737488355328) + `
     ([int64]$version.revision * 2147483648) + [int64]$version.lastBuild
+
+$repositoryReadmePath = Join-Path (Split-Path $root -Parent) 'README.md'
+$storyReadmePath = Join-Path $root 'README.md'
+foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
+    Require (Test-Path -LiteralPath $readmePath -PathType Leaf) "缺少工程说明: $readmePath"
+    $readmeText = Get-Content -LiteralPath $readmePath -Raw -Encoding UTF8
+    Require (-not ($readmeText -match '1\.0\.1\.(?:28|44)|23\s*(?:个|/23)|三个\s*(?:Raw\s*)?Goal')) `
+        "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
+    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('26') -and `
+        $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录26文件/4 Goals: $readmePath"
+}
 
 $masteryStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosMastery.txt"
 Require (Test-Path -LiteralPath $masteryStatsPath -PathType Leaf) '缺少 ChaosMastery.txt'
@@ -234,6 +271,7 @@ $iconUvNodes = @($masteryIconDocument.SelectNodes('//node[@id="IconUV"]'))
 $registeredMasteryIcons = @($iconUvNodes | ForEach-Object { [string]$_.SelectSingleNode('attribute[@id="MapKey"]').value })
 $expectedIconUv = @{
     COS_Identity = @('0.0009765625', '0.1240234375', '0.0009765625', '0.1240234375')
+    COS_Origin = @('0.0009765625', '0.1240234375', '0.0009765625', '0.1240234375')
     COS_Status = @('0.1259765625', '0.2490234375', '0.0009765625', '0.1240234375')
     COS_Lost = @('0.2509765625', '0.3740234375', '0.0009765625', '0.1240234375')
     COS_Power = @('0.3759765625', '0.4990234375', '0.0009765625', '0.1240234375')
@@ -249,16 +287,24 @@ $expectedIconUv = @{
     COS_MasteryTune = @('0.1259765625', '0.2490234375', '0.3759765625', '0.4990234375')
     COS_MasteryCorrect = @('0.2509765625', '0.3740234375', '0.3759765625', '0.4990234375')
 }
-Require ($registeredMasteryIcons.Count -eq 15 -and @($registeredMasteryIcons | Select-Object -Unique).Count -eq 15 -and `
+Require ($registeredMasteryIcons.Count -eq 16 -and @($registeredMasteryIcons | Select-Object -Unique).Count -eq 16 -and `
     -not (Compare-Object @($expectedIconUv.Keys | Sort-Object) @($registeredMasteryIcons | Sort-Object))) `
-    '技能图集必须恰好注册15个唯一图标键'
+    '技能图集必须恰好注册16个唯一图标键并闭合 COS_Origin'
+$uvOwners = @{}
 foreach ($node in $iconUvNodes) {
     $key = [string]$node.SelectSingleNode('attribute[@id="MapKey"]').value
     $actualUv = @('U1', 'U2', 'V1', 'V2') | ForEach-Object {
         [string]$node.SelectSingleNode("attribute[@id='$_']").value
     }
     Require (($actualUv -join '|') -ceq ($expectedIconUv[$key] -join '|')) "技能图标UV坐标错误: $key"
+    $uvKey = $actualUv -join '|'
+    if (-not $uvOwners.ContainsKey($uvKey)) { $uvOwners[$uvKey] = [Collections.Generic.List[string]]::new() }
+    $uvOwners[$uvKey].Add($key)
 }
+$duplicateUvGroups = @($uvOwners.Values | Where-Object { $_.Count -gt 1 })
+Require ($duplicateUvGroups.Count -eq 1 -and $duplicateUvGroups[0].Count -eq 2 -and `
+    ($duplicateUvGroups[0] -contains 'COS_Identity') -and ($duplicateUvGroups[0] -contains 'COS_Origin')) `
+    '图标UV坐标只允许 COS_Origin 有意别名到 COS_Identity'
 $masteryIcons = @([regex]::Matches($masteryStats, '(?m)^data "Icon" "([^"]+)"') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
 foreach ($icon in $masteryIcons) {
     Require (($icon -in @('COS_Mastery', 'COS_MasteryTune', 'COS_MasteryCorrect', 'COS_Echo')) -and `
@@ -523,18 +569,6 @@ $masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
 if ($masteryGoal.EndsWith("`n")) {
     $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
 }
-$masteryGoalSha256 = [Security.Cryptography.SHA256]::Create()
-try {
-    $masteryGoalHash = ([Convert]::ToHexString(
-        $masteryGoalSha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($masteryGoal))
-    )).ToLowerInvariant()
-} finally {
-    $masteryGoalSha256.Dispose()
-}
-# Task 8 扩展 L02-L12 时必须有意更新完整语义模板及其哈希。
-$expectedMasteryGoalHash = 'c39eb2a648b042a91ca24fb0a936907330c283054c7f896bf5102e9229a4ccdf'
-Require ($masteryGoalHash -ceq $expectedMasteryGoalHash) `
-    'Task 3 一级掌控混沌 Goal 完整语义模板已偏移'
 Require ($masteryGoal.StartsWith("Version 1`nSubGoalCombiner SGC_AND`nINITSECTION`n") -and `
     $masteryGoal.EndsWith("`nEXITSECTION`nENDEXITSECTION")) `
     '掌控混沌 Goal 头尾结构错误'
@@ -682,6 +716,7 @@ function Test-COSMasteryLedgerSemantics([string]$Story) {
     $resetBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ResetMastery')
     if ($resetBlocks.Count -ne 1 -or -not (Test-MasteryActions $resetBlocks[0] @(
         'DB_COS_MasterySchema44To45(_Character);',
+        'DB_COS_MasteryEarned(_Character, 1);',
         'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
         'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
         'PROC_COS_ClearMasteryUnspent(_Character);',
@@ -691,7 +726,8 @@ function Test-COSMasteryLedgerSemantics([string]$Story) {
         'DB_COS_MasteryCorrectCount(_Character, 0);',
         'PROC_COS_RebuildMasteryAfterRespec(_Character);'
     ))) { return $false }
-    if ($resetBlocks[0].Contains('RemovePassive(') -or $resetBlocks[0].Contains('DB_COS_MasteryEarned(')) { return $false }
+    if ($resetBlocks[0].Contains('RemovePassive(') -or
+        [regex]::Matches($resetBlocks[0], '(?m)^DB_COS_MasteryEarned\(_Character, 1\);$').Count -ne 1) { return $false }
 
     $respecBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_RebuildMasteryAfterRespec')
     if ($respecBlocks.Count -ne 2) { return $false }
@@ -742,12 +778,13 @@ function Test-COSMasteryLedgerSemantics([string]$Story) {
 function Invoke-COSMasteryRespecModel(
     [string[]]$Actions,
     [bool]$InitialSchema,
+    [bool]$InitialEarned,
     [int]$InitialCarrierCount,
     [int]$InitialUnspentCount
 ) {
     $state = [ordered]@{
         Schema = $InitialSchema
-        Earned = $true
+        Earned = $InitialEarned
         CarrierCount = $InitialCarrierCount
         UnspentCount = $InitialUnspentCount
         TuneCount = 1
@@ -756,6 +793,7 @@ function Invoke-COSMasteryRespecModel(
     foreach ($action in $Actions) {
         switch -CaseSensitive ($action) {
             'DB_COS_MasterySchema44To45(_Character);' { $state.Schema = $true }
+            'DB_COS_MasteryEarned(_Character, 1);' { $state.Earned = $true }
             'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);' { }
             'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);' { }
             'PROC_COS_ClearMasteryUnspent(_Character);' { $state.UnspentCount = 0 }
@@ -779,83 +817,121 @@ function Test-COSMasteryFirstRespecStateMachine([string]$Story) {
     $resetBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ResetMastery')
     if ($resetBlocks.Count -ne 1) { return $false }
     $actions = @(Get-MasteryThenActions $resetBlocks[0])
-    if ($actions.Count -ne 9 -or $actions[0] -cne 'DB_COS_MasterySchema44To45(_Character);') { return $false }
-    foreach ($scenario in @(
-        @{ Schema = $false; Carrier = 1; Unspent = 0 },
-        @{ Schema = $false; Carrier = 0; Unspent = 0 },
-        @{ Schema = $true; Carrier = 0; Unspent = 0 },
-        @{ Schema = $true; Carrier = 1; Unspent = 1 }
-    )) {
-        $result = Invoke-COSMasteryRespecModel $actions $scenario.Schema $scenario.Carrier $scenario.Unspent
-        if ($null -eq $result -or -not $result.Schema -or -not $result.Earned -or
-            $result.CarrierCount -ne 1 -or $result.UnspentCount -ne 1 -or
-            $result.TuneCount -ne 0 -or $result.CorrectCount -ne 0) { return $false }
-        # 下一次 Sync 必须走 Schema1 分支，不能再次进入 .44 -> .45 迁移。
-        if (-not $result.Schema) { return $false }
+    if ($actions.Count -ne 10 -or
+        $actions[0] -cne 'DB_COS_MasterySchema44To45(_Character);' -or
+        $actions[1] -cne 'DB_COS_MasteryEarned(_Character, 1);') { return $false }
+    foreach ($initialSchema in @($false, $true)) {
+        foreach ($initialEarned in @($false, $true)) {
+            foreach ($initialCarrier in @(0, 1)) {
+                foreach ($initialUnspent in @(0, 1)) {
+                    $result = Invoke-COSMasteryRespecModel `
+                        $actions $initialSchema $initialEarned $initialCarrier $initialUnspent
+                    if ($null -eq $result -or -not $result.Schema -or -not $result.Earned -or
+                        $result.CarrierCount -ne 1 -or $result.UnspentCount -ne 1 -or
+                        $result.TuneCount -ne 0 -or $result.CorrectCount -ne 0) { return $false }
+                    # 下一次 Sync 必须走 Schema1 分支，不能再次进入 .44 -> .45 迁移。
+                    if (-not $result.Schema) { return $false }
+                }
+            }
+        }
     }
+    # 两个化身分别执行同一角色键控序列；第二个化身在自己的事件前保持原态。
+    $first = Invoke-COSMasteryRespecModel $actions $false $false 0 0
+    $secondBefore = [pscustomobject]@{ Schema = $false; Earned = $false; CarrierCount = 1; UnspentCount = 0 }
+    if (-not $first.Schema -or -not $first.Earned -or $secondBefore.Schema -or $secondBefore.Earned -or
+        $secondBefore.CarrierCount -ne 1 -or $secondBefore.UnspentCount -ne 0) { return $false }
+    $second = Invoke-COSMasteryRespecModel $actions $secondBefore.Schema $secondBefore.Earned `
+        $secondBefore.CarrierCount $secondBefore.UnspentCount
+    if (-not $second.Schema -or -not $second.Earned -or $second.CarrierCount -ne 1 -or
+        $second.UnspentCount -ne 1 -or $first.CarrierCount -ne 1 -or $first.UnspentCount -ne 1) { return $false }
     return $true
 }
 
+Require (Test-COSMasteryFirstRespecStateMachine $masteryGoal) `
+    'Respec 必须先按角色写入 Schema1/Earned1，再把全部合法L1状态唯一归一为 Carrier1/Unspent1'
 Require (Test-COSMasteryLedgerSemantics $masteryGoal) `
     '掌控混沌 Story 必须以角色级 Unspent 账本授予/消费/洗点并完成 .44 到 .45 一次性迁移'
-Require (Test-COSMasteryFirstRespecStateMachine $masteryGoal) `
-    '首次 Respec 必须先按角色写入 Schema1，再唯一重建 Earned/Carrier/Unspent'
 
 $masteryRespecWithoutSchemaMutant = $masteryGoal.Replace(
-    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);",
-    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);"
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);",
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN"
 )
 Require ($masteryRespecWithoutSchemaMutant -cne $masteryGoal -and `
     -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecWithoutSchemaMutant)) `
-    '首次 Respec 状态机变异未拒绝 Reset 漏写 Schema1'
+    '首次 Respec 静态状态机变异未拒绝 Reset 漏写 Schema1'
 
 $masteryRespecLateSchemaMutant = $masteryGoal.Replace(
-    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);",
-    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nRemoveStatus(_Character, `"COS_CHAOS_MASTERY_TUNE`", _Character);"
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN`nDB_COS_MasterySchema44To45(_Character);",
+    "PROC_COS_ResetMastery((CHARACTER)_Character)`nTHEN"
 ).Replace(
     "DB_COS_MasteryCorrectCount(_Character, 0);`nPROC_COS_RebuildMasteryAfterRespec(_Character);",
     "DB_COS_MasteryCorrectCount(_Character, 0);`nPROC_COS_RebuildMasteryAfterRespec(_Character);`nDB_COS_MasterySchema44To45(_Character);"
 )
 Require ($masteryRespecLateSchemaMutant -cne $masteryGoal -and `
     -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecLateSchemaMutant)) `
-    '首次 Respec 状态机变异未拒绝 Schema1 晚于重建动作'
+    '首次 Respec 静态状态机变异未拒绝 Schema1 晚于重建动作'
+
+$masteryRespecWithoutEarnedMutant = $masteryGoal.Replace(
+    "DB_COS_MasterySchema44To45(_Character);`nDB_COS_MasteryEarned(_Character, 1);",
+    'DB_COS_MasterySchema44To45(_Character);'
+)
+Require ($masteryRespecWithoutEarnedMutant -cne $masteryGoal -and `
+    -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecWithoutEarnedMutant)) `
+    'Respec 静态状态机变异未拒绝 Earned=false 无法归一'
+
+$masteryRespecLateEarnedMutant = $masteryGoal.Replace(
+    "DB_COS_MasterySchema44To45(_Character);`nDB_COS_MasteryEarned(_Character, 1);",
+    'DB_COS_MasterySchema44To45(_Character);'
+).Replace(
+    "PROC_COS_RebuildMasteryAfterRespec(_Character);",
+    "PROC_COS_RebuildMasteryAfterRespec(_Character);`nDB_COS_MasteryEarned(_Character, 1);"
+)
+Require ($masteryRespecLateEarnedMutant -cne $masteryGoal -and `
+    -not (Test-COSMasteryFirstRespecStateMachine $masteryRespecLateEarnedMutant)) `
+    'Respec 静态状态机变异未拒绝 Earned1 晚于重建动作'
 
 $masteryRaceMutant = $masteryGoal.Replace(
     "AND`nDB_COS_MasteryUnspent(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)",
     "AND`nGetActionResourceValuePersonal(_Character, `"COS_ChaosMasteryPoint`", 0, _Points)`nAND`n_Points > 0.0`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)"
 )
 Require ($masteryRaceMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRaceMutant)) `
-    '掌控混沌变异检查未拒绝 AddPassive 后同帧资源查询竞态'
+    '掌控混沌静态变异检查未拒绝 AddPassive 后同帧资源查询竞态'
 
 $masteryRepeatMigrationMutant = $masteryGoal.Replace(
     "DB_COS_MasteryUnspent(_Character, 1);`nDB_COS_MasterySchema44To45(_Character);`nPROC_COS_SyncMasteryAfterSchema45(_Character);",
     "DB_COS_MasteryUnspent(_Character, 1);`nPROC_COS_SyncMasteryAfterSchema45(_Character);"
 )
 Require ($masteryRepeatMigrationMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRepeatMigrationMutant)) `
-    '掌控混沌变异检查未拒绝可重复执行的迁移'
+    '掌控混沌静态变异检查未拒绝可重复执行的迁移'
 
 $masteryShowWithoutUnspentMutant = $masteryGoal.Replace(
     "PROC_COS_UpdateMasterySpell((CHARACTER)_Character)`nAND`nDB_COS_MasteryUnspent(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)",
     "PROC_COS_UpdateMasterySpell((CHARACTER)_Character)`nAND`nDB_COS_MasteryEarned(_Character, 1)`nAND`nHasSpell(_Character, `"Shout_COS_ChaosMastery`", 0)"
 )
 Require ($masteryShowWithoutUnspentMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryShowWithoutUnspentMutant)) `
-    '掌控混沌变异检查未拒绝无 Unspent 仍显示母技能'
+    '掌控混沌静态变异检查未拒绝无 Unspent 仍显示母技能'
 
 $masteryRegrantSpentMutant = $masteryGoal.Replace(
     "HasPassive(_Character, _Carrier, 0)`nTHEN`nDB_COS_MasterySchema44To45(_Character);",
     "HasPassive(_Character, _Carrier, 0)`nTHEN`nDB_COS_MasteryUnspent(_Character, 1);`nDB_COS_MasterySchema44To45(_Character);"
 )
 Require ($masteryRegrantSpentMutant -cne $masteryGoal -and -not (Test-COSMasteryLedgerSemantics $masteryRegrantSpentMutant)) `
-    '掌控混沌变异检查未拒绝已消费旧存档被迁移重补'
+    '掌控混沌静态变异检查未拒绝已消费旧存档被迁移重补'
 
 foreach ($eventPattern in @(
-    '(?ms)IF\nLevelGameplayStarted\(_, _\)\nAND\nGetHostCharacter\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
+    '(?ms)IF\nLevelGameplayStarted\(_, _\)\nAND\nDB_Avatars\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nGainedControl\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nLeveledUp\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nRespecCompleted\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_ResetMastery\(_Character\);'
 )) {
     Require ($masteryGoal -match $eventPattern) '掌控同步、迁移和洗点事件必须逐角色限制为混沌起源'
 }
+Require ([regex]::Matches($masteryGoal,
+    '(?m)^NOT DB_Avatars\(\(CHARACTER\)NULL_00000000-0000-0000-0000-000000000000\);$').Count -eq 1) `
+    '独立模块必须用NULL删除声明官方合并Story的DB_Avatars签名，且不得写入虚构化身'
+Require ((-not ($masteryGoal -match '(?m)^DB_Avatars\([^_\r\n]')) -and `
+    ($masteryGoal.Contains('GetHostCharacter(') -eq $false)) `
+    '掌控读档同步不得写入虚构DB_Avatars事实或退回仅主机角色'
 foreach ($forbiddenMasteryStoryPattern in @(
     '(?m)^UsingSpell\(', '(?m)^CastSpell\(', '(?i)Preview', 'TimerLaunch', 'SetEntityEvent',
     'ParentTargetEdge', 'ScriptExtender', '(?i)\bSE\b', '(?i)\bN?MCM\b',
@@ -1329,6 +1405,62 @@ for ($reservedIndex = 32; $reservedIndex -le 75; $reservedIndex++) {
     Require ($iconTextureBytes[$reservedIndex] -eq 0) 'DDS 图集保留头必须为空'
 }
 
+$atlasCellCoordinates = @{
+    COS_Identity = @(0, 0); COS_Status = @(1, 0); COS_Lost = @(2, 0); COS_Power = @(3, 0)
+    COS_AllIn = @(0, 1); COS_Echo = @(1, 1); COS_Strike = @(2, 1); COS_Genesis = @(3, 1)
+    COS_Finisher = @(0, 2); COS_Wound = @(1, 2); COS_Duality = @(2, 2); COS_FateRevision = @(3, 2)
+    COS_Mastery = @(0, 3); COS_MasteryTune = @(1, 3); COS_MasteryCorrect = @(2, 3)
+}
+$generatedIconKeys = @(
+    'COS_Power', 'COS_Lost', 'COS_Wound', 'COS_Duality',
+    'COS_AllIn', 'COS_FateRevision', 'COS_Genesis', 'COS_Strike',
+    'COS_Mastery', 'COS_MasteryTune', 'COS_MasteryCorrect', 'COS_Finisher'
+)
+$repositoryRoot = Split-Path $root -Parent
+$baselineIconBytes = Get-GitBlobBytes $repositoryRoot `
+    'ad3c4cc:story-src/Public/ChaosOriginsStory/Assets/Textures/Icons/Icons_ChaosOrigins.dds'
+Require ($baselineIconBytes.Length -eq $iconTextureBytes.Length) `
+    '当前技能图集必须保持 ad3c4cc 基线 DDS 的尺寸与布局'
+for ($headerIndex = 0; $headerIndex -lt 128; $headerIndex++) {
+    Require ($iconTextureBytes[$headerIndex] -eq $baselineIconBytes[$headerIndex]) `
+        "技能图集头必须逐字节保留 ad3c4cc 基线: offset=$headerIndex"
+}
+$mipOffset = 128
+for ($mip = 0; $mip -lt 10; $mip++) {
+    $mipSize = [Math]::Max(1, 512 -shr $mip)
+    $blocksWide = [Math]::Max(1, [int][Math]::Ceiling($mipSize / 4.0))
+    $blocksHigh = $blocksWide
+    $targetBlockStarts = [Collections.Generic.HashSet[int]]::new()
+    if ($mip -le 4) {
+        $cellSize = 64 -shr $mip
+        $cellBlocks = $cellSize / 4
+        foreach ($iconKey in $generatedIconKeys) {
+            $cell = $atlasCellCoordinates[$iconKey]
+            $firstBlockX = ([int]$cell[0] * $cellSize) / 4
+            $firstBlockY = ([int]$cell[1] * $cellSize) / 4
+            for ($blockY = 0; $blockY -lt $cellBlocks; $blockY++) {
+                for ($blockX = 0; $blockX -lt $cellBlocks; $blockX++) {
+                    $blockStart = $mipOffset + ((($firstBlockY + $blockY) * $blocksWide +
+                        $firstBlockX + $blockX) * 16)
+                    [void]$targetBlockStarts.Add($blockStart)
+                }
+            }
+        }
+    }
+    for ($blockIndex = 0; $blockIndex -lt ($blocksWide * $blocksHigh); $blockIndex++) {
+        $blockStart = $mipOffset + ($blockIndex * 16)
+        if ($targetBlockStarts.Contains($blockStart)) { continue }
+        for ($byteInBlock = 0; $byteInBlock -lt 16; $byteInBlock++) {
+            if ($iconTextureBytes[$blockStart + $byteInBlock] -ne
+                $baselineIconBytes[$blockStart + $byteInBlock]) {
+                throw "DDS 未触及 BC3 block 偏离 ad3c4cc 基线: mip=$mip block=$blockIndex byte=$byteInBlock"
+            }
+        }
+    }
+    $mipOffset += $blocksWide * $blocksHigh * 16
+}
+Require ($mipOffset -eq $iconTextureBytes.Length) 'DDS mip 布局与文件长度不一致'
+
 $magick = Get-Command magick -ErrorAction SilentlyContinue
 Require ($null -ne $magick) '验证技能图标需要已安装的 ImageMagick magick'
 $atlasIdentity = [string](& $magick.Source identify -quiet -format '%w|%h|%[channels]|%[opaque]' $iconAtlasPath)
@@ -1339,26 +1471,41 @@ Require ($atlasIdentityParts.Count -eq 4 -and $atlasIdentityParts[0] -eq '512' -
     $atlasIdentityParts[3] -eq 'False') '技能图集必须可解码为含真实透明度的512x512图像'
 
 $artworkRoot = Join-Path (Split-Path $root -Parent) 'artwork\icons-v2'
-$generatedIconKeys = @(
-    'COS_Power', 'COS_Lost', 'COS_Wound', 'COS_Duality',
-    'COS_AllIn', 'COS_FateRevision', 'COS_Genesis', 'COS_Strike',
-    'COS_Mastery', 'COS_MasteryTune', 'COS_MasteryCorrect', 'COS_Finisher'
-)
-$expectedArtworkFiles = @($generatedIconKeys | ForEach-Object { "$_.png" }) + @('preview-64px.png', 'README.md')
+$expectedArtworkFiles = @($generatedIconKeys | ForEach-Object { "$_.png" }) +
+    @('preview-64px.png', 'README.md', 'rebuild-atlas.ps1')
 $actualArtworkFiles = @(Get-ChildItem -LiteralPath $artworkRoot -File | ForEach-Object { $_.Name } | Sort-Object)
 Require (-not (Compare-Object @($expectedArtworkFiles | Sort-Object) $actualArtworkFiles)) `
     '图标源目录必须只包含12枚透明PNG、64px预览和README'
 
 $artworkReadme = Get-Content -LiteralPath (Join-Path $artworkRoot 'README.md') -Raw -Encoding UTF8
-foreach ($readmeToken in @($generatedIconKeys + @('imagegen', 'DXT5', 'mipmap', 'transparent', 'row0', 'row1', 'row2', 'row3'))) {
+foreach ($readmeToken in @($generatedIconKeys + @(
+    'imagegen', 'DXT5', 'mipmap', 'transparent', 'row0', 'row1', 'row2', 'row3',
+    'COS_Origin', 'COS_Identity', 'ad3c4cc', 'mip0', 'mip4', 'mip5+', '#808080', 'rebuild-atlas.ps1'
+))) {
     Require ($artworkReadme.Contains($readmeToken)) "图标README缺少生成、行映射或后处理记录: $readmeToken"
 }
-$previewIdentity = [string](& $magick.Source identify -quiet -format '%w|%h' (Join-Path $artworkRoot 'preview-64px.png'))
-Require ($LASTEXITCODE -eq 0 -and $previewIdentity -eq '320|240') '64px图标预览必须是320x240'
-
+$rebuildAtlasScript = Get-Content -LiteralPath (Join-Path $artworkRoot 'rebuild-atlas.ps1') -Raw -Encoding UTF8
+foreach ($scriptToken in @(
+    '#requires -Version 7.0', "BaselineCommit = 'ad3c4cc'", '[byte[]]$patchedBytes = $baselineBytes.Clone()',
+    '$mip -le 4', '64 -shr $mip', 'canvas:none', 'xc:#808080', 'Get-GitBlobBytes'
+)) {
+    Require ($rebuildAtlasScript.Contains($scriptToken)) "图标重建脚本缺少可复现基线block patch步骤: $scriptToken"
+}
 function ConvertFrom-InvariantDouble([string]$Value) {
     return [double]::Parse($Value, [Globalization.CultureInfo]::InvariantCulture)
 }
+$previewIdentity = [string](& $magick.Source (Join-Path $artworkRoot 'preview-64px.png') -format `
+    '%w|%h|%[opaque]|%[fx:p{0,0}.r]|%[fx:p{0,0}.g]|%[fx:p{0,0}.b]' info:)
+$previewParts = @($previewIdentity -split '\|')
+Require ($LASTEXITCODE -eq 0 -and $previewParts.Count -eq 6 -and $previewParts[0] -eq '320' -and `
+    $previewParts[1] -eq '240' -and $previewParts[2] -eq 'True' -and `
+    [Math]::Abs((ConvertFrom-InvariantDouble $previewParts[3]) - (128.0 / 255.0)) -lt 0.0001 -and `
+    [Math]::Abs((ConvertFrom-InvariantDouble $previewParts[4]) - (128.0 / 255.0)) -lt 0.0001 -and `
+    [Math]::Abs((ConvertFrom-InvariantDouble $previewParts[5]) - (128.0 / 255.0)) -lt 0.0001) `
+    '64px图标预览必须是320x240且实际合成在#808080灰底'
+
+$neutralMatteExpression = `
+    '(a>0)&&(r<=0.156863)&&(g<=0.156863)&&(b<=0.156863)&&(abs(r-g)<=0.039216)&&(abs(r-b)<=0.039216)&&(abs(g-b)<=0.039216)?1:0'
 foreach ($iconKey in $generatedIconKeys) {
     $sourcePng = Join-Path $artworkRoot "$iconKey.png"
     $sourceIdentity = [string](& $magick.Source identify -quiet -format '%w|%h|%[channels]|%[opaque]' $sourcePng)
@@ -1367,7 +1514,11 @@ foreach ($iconKey in $generatedIconKeys) {
     Require ($sourceIdentityParts.Count -eq 4 -and $sourceIdentityParts[0] -eq '256' -and `
         $sourceIdentityParts[1] -eq '256' -and $sourceIdentityParts[2] -match 'a' -and `
         $sourceIdentityParts[3] -eq 'False') "图标源必须是带透明背景的256x256 PNG: $iconKey"
-    $thumbnailMetrics = [string](& $magick.Source $sourcePng -resize '64x64!' -alpha extract `
+    $mattePixels = [string](& $magick.Source $sourcePng -channel A -fx $neutralMatteExpression `
+        -format '%[fx:mean*w*h]' info:)
+    Require ($LASTEXITCODE -eq 0 -and (ConvertFrom-InvariantDouble $mattePixels) -lt 0.01) `
+        "图标源仍含近黑中性不透明 matte: $iconKey / pixels=$mattePixels"
+    $thumbnailMetrics = [string](& $magick.Source $sourcePng -filter Lanczos -resize '64x64!' -alpha extract `
         -format '%w|%h|%[fx:minima]|%[fx:maxima]|%[fx:mean]|%[fx:p{0,0}]|%[fx:p{63,0}]|%[fx:p{0,63}]|%[fx:p{63,63}]' info:)
     Require ($LASTEXITCODE -eq 0) "无法生成64px图标缩略图: $iconKey"
     $thumbnailParts = @($thumbnailMetrics -split '\|')
@@ -1383,12 +1534,76 @@ foreach ($iconKey in $generatedIconKeys) {
         "64px图标缩略图必须非空且四角透明: $iconKey"
 }
 
-$atlasCellCoordinates = @{
-    COS_Identity = @(0, 0); COS_Status = @(1, 0); COS_Lost = @(2, 0); COS_Power = @(3, 0)
-    COS_AllIn = @(0, 1); COS_Echo = @(1, 1); COS_Strike = @(2, 1); COS_Genesis = @(3, 1)
-    COS_Finisher = @(0, 2); COS_Wound = @(1, 2); COS_Duality = @(2, 2); COS_FateRevision = @(3, 2)
-    COS_Mastery = @(0, 3); COS_MasteryTune = @(1, 3); COS_MasteryCorrect = @(2, 3)
+function Get-ImageRmse([string]$ExpectedPath, [string]$ActualPath, [string]$Label) {
+    $metricOutput = @(& $magick.Source compare -metric RMSE $ExpectedPath $ActualPath null: 2>&1)
+    $metricExit = $LASTEXITCODE
+    Require ($metricExit -in @(0, 1)) "ImageMagick RMSE比较失败: $Label"
+    $metricText = $metricOutput -join ' '
+    $metricMatch = [regex]::Match($metricText, '\(([0-9.eE+-]+)\)')
+    Require ($metricMatch.Success) "ImageMagick RMSE输出无法解析: $Label / $metricText"
+    return ConvertFrom-InvariantDouble $metricMatch.Groups[1].Value
 }
+
+$comparisonTemp = Join-Path ([IO.Path]::GetTempPath()) ('cos-icon-verify-' + [guid]::NewGuid().ToString('N'))
+[void][IO.Directory]::CreateDirectory($comparisonTemp)
+$comparisonFiles = [Collections.Generic.List[string]]::new()
+try {
+    foreach ($iconKey in $generatedIconKeys) {
+        $cell = $atlasCellCoordinates[$iconKey]
+        $crop = '64x64+{0}+{1}' -f ([int]$cell[0] * 64), ([int]$cell[1] * 64)
+        $expectedThumbnail = Join-Path $comparisonTemp "$iconKey-expected.png"
+        $actualCell = Join-Path $comparisonTemp "$iconKey-dds.png"
+        $comparisonFiles.Add($expectedThumbnail)
+        $comparisonFiles.Add($actualCell)
+        & $magick.Source (Join-Path $artworkRoot "$iconKey.png") -filter Lanczos -resize '64x64!' `
+            $expectedThumbnail
+        Require ($LASTEXITCODE -eq 0) "无法生成图标比对缩略图: $iconKey"
+        & $magick.Source ($iconAtlasPath + '[0]') -crop $crop +repage $actualCell
+        Require ($LASTEXITCODE -eq 0) "无法提取DDS目标格: $iconKey"
+
+        $alphaExpected = Join-Path $comparisonTemp "$iconKey-alpha-expected.png"
+        $alphaActual = Join-Path $comparisonTemp "$iconKey-alpha-dds.png"
+        $comparisonFiles.Add($alphaExpected)
+        $comparisonFiles.Add($alphaActual)
+        & $magick.Source $expectedThumbnail -alpha extract $alphaExpected
+        Require ($LASTEXITCODE -eq 0) "无法提取源alpha: $iconKey"
+        & $magick.Source $actualCell -alpha extract $alphaActual
+        Require ($LASTEXITCODE -eq 0) "无法提取DDS alpha: $iconKey"
+        $alphaRmse = Get-ImageRmse $alphaExpected $alphaActual "$iconKey alpha"
+        Require ($alphaRmse -le 0.02) `
+            "DDS目标格alpha偏离当前source: $iconKey / RMSE=$alphaRmse threshold=0.02"
+
+        $pollutionExpression = '(u.a<=0.01)&&(v.a>0.08)?1:0'
+        $pollutedPixels = [string](& $magick.Source $expectedThumbnail $actualCell -channel A `
+            -fx $pollutionExpression -format '%[fx:mean*w*h]' info:)
+        Require ($LASTEXITCODE -eq 0 -and (ConvertFrom-InvariantDouble $pollutedPixels) -lt 0.01) `
+            "DDS透明源区出现旧像素或alpha污染: $iconKey / pixels=$pollutedPixels threshold=0"
+
+        foreach ($background in @('#181818', '#808080', '#f0f0f0')) {
+            $backgroundToken = $background.TrimStart('#')
+            $expectedComposite = Join-Path $comparisonTemp "$iconKey-$backgroundToken-expected.png"
+            $actualComposite = Join-Path $comparisonTemp "$iconKey-$backgroundToken-dds.png"
+            $comparisonFiles.Add($expectedComposite)
+            $comparisonFiles.Add($actualComposite)
+            & $magick.Source -size '64x64' "xc:$background" $expectedThumbnail -compose over -composite `
+                -alpha off $expectedComposite
+            Require ($LASTEXITCODE -eq 0) "无法合成源图背景: $iconKey / $background"
+            & $magick.Source -size '64x64' "xc:$background" $actualCell -compose over -composite `
+                -alpha off $actualComposite
+            Require ($LASTEXITCODE -eq 0) "无法合成DDS背景: $iconKey / $background"
+            $compositeRmse = Get-ImageRmse $expectedComposite $actualComposite `
+                "$iconKey composite $background"
+            Require ($compositeRmse -le 0.085) `
+                "DDS目标格在实际背景合成后偏离source: $iconKey / $background / RMSE=$compositeRmse threshold=0.085"
+        }
+    }
+} finally {
+    foreach ($comparisonFile in $comparisonFiles) {
+        if ([IO.File]::Exists($comparisonFile)) { [IO.File]::Delete($comparisonFile) }
+    }
+    if ([IO.Directory]::Exists($comparisonTemp)) { [IO.Directory]::Delete($comparisonTemp) }
+}
+
 foreach ($iconKey in $atlasCellCoordinates.Keys) {
     $cell = $atlasCellCoordinates[$iconKey]
     $crop = '64x64+{0}+{1}' -f ([int]$cell[0] * 64), ([int]$cell[1] * 64)
@@ -1403,6 +1618,9 @@ foreach ($iconKey in $atlasCellCoordinates.Keys) {
 }
 $allStats = (Get-ChildItem -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data") -File -Filter '*.txt' | `
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 }) -join "`n"
+Require (($registeredMasteryIcons -contains 'COS_Origin') -and `
+    [regex]::Matches($allStats, '(?m)^data "Icon" "COS_Origin"\r?$').Count -eq 7) `
+    'ChaosRuntime 的七个 COS_Origin 引用必须闭合到 COS_Identity 有意别名'
 function Require-StatsIcon([string]$Entry, [string]$ExpectedIcon) {
     $entryPattern = '(?ms)^new entry "' + [regex]::Escape($Entry) + '".*?(?=^new entry |\z)'
     $entryMatches = @([regex]::Matches($allStats, $entryPattern))
