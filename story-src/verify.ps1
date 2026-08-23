@@ -880,15 +880,23 @@ $rollWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWound')
 Require ($rollWoundBlocks.Count -eq 2) '受击入口必须严格包含普通和命运改签两个分支'
 $normalWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)') })
 $fateWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)') })
-Require ($normalWoundRoll.Count -eq 1 -and $normalWoundRoll[0].Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);')) `
-    '普通受击必须开始且只开始一次完整试炼'
+$normalWoundRollActions = @(Get-MechanicsThenActions $normalWoundRoll[0])
+$fateWoundRollActions = @(Get-MechanicsThenActions $fateWoundRoll[0])
+$expectedNormalWoundRollActions = @(
+    'PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);'
+)
+$expectedFateWoundRollActions = @(
+    'RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);',
+    'PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);'
+)
+Require ($normalWoundRoll.Count -eq 1 -and `
+    (($normalWoundRollActions -join "`n") -ceq ($expectedNormalWoundRollActions -join "`n"))) `
+    '普通受击入口必须且只能开始一次单次完整试炼'
 Require ($fateWoundRoll.Count -eq 1 -and $fateWoundRoll[0].Contains('GetLevel(_Character, _Level)') -and `
     $fateWoundRoll[0].Contains('IntegerMin(_Level, 30, _CappedLevel)') -and `
     $fateWoundRoll[0].Contains('DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)') -and `
-    ([regex]::Matches($fateWoundRoll[0], 'RemoveStatus\(_Character, "COS_CHAOS_FATE_PENDING", _Character\);').Count -eq 1) -and `
-    $fateWoundRoll[0].IndexOf('RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);') -lt `
-        $fateWoundRoll[0].IndexOf('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);')) `
-    '命运改签必须按等级档取得次数、仅移除一次挂起状态后再开始完整试炼'
+    (($fateWoundRollActions -join "`n") -ceq ($expectedFateWoundRollActions -join "`n"))) `
+    '命运改签入口必须按等级档取次数，并依次且仅执行移除挂起状态、开始完整试炼'
 
 $resolveWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_ResolveWound')
 $giftResolve = @($resolveWoundBlocks | Where-Object { $_.Contains('_Roll == 26') })
