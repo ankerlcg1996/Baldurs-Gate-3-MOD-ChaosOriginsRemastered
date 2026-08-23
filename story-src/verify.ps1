@@ -25,20 +25,17 @@ $expectedVersion64 = ([int64]$version.major * 36028797018963968) + `
     ([int64]$version.minor * 140737488355328) + `
     ([int64]$version.revision * 2147483648) + [int64]$version.lastBuild
 
-$masteryPassiveListPath = Join-Path $root "Public\$module\Lists\PassiveLists.lsx"
-$masteryProgressionDescriptionPath = Join-Path $root "Public\$module\Progressions\ProgressionDescriptions.lsx"
-$masteryProgressionPath = Join-Path $root "Public\$module\Progressions\Progressions.lsx"
 $masteryStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosMastery.txt"
-$masteryTableUuid = '1d20a825-9a5b-4b4a-b87c-ac1c73b8987b'
-$masteryProgressionDescriptionUuid = 'fea09ff8-cfda-47cc-960b-34b5646f2465'
-$masteryProgressionUuid = '07cad9c2-d3fa-4c2f-b9e1-f0397b3dad1e'
-$masteryPassiveListUuid = '2737ff48-0c92-4f09-b8f1-bf831ce1533e'
-$masteryDisplayHandle = 'h1253cd25g6db6g4704g90e7gadf6ad0df3ed'
-$masteryDescriptionHandle = 'h11f157e4g81c1g4dc8gbd3eg20fbb820812f'
-Require (Test-Path -LiteralPath $masteryPassiveListPath -PathType Leaf) '缺少 PassiveLists.lsx'
-Require (Test-Path -LiteralPath $masteryProgressionDescriptionPath -PathType Leaf) '缺少 ProgressionDescriptions.lsx'
-Require (Test-Path -LiteralPath $masteryProgressionPath -PathType Leaf) '缺少 Progressions.lsx'
 Require (Test-Path -LiteralPath $masteryStatsPath -PathType Leaf) '缺少 ChaosMastery.txt'
+$forbiddenMasteryPaths = @(
+    "Public\$module\Lists\PassiveLists.lsx",
+    "Public\$module\Progressions\ProgressionDescriptions.lsx",
+    "Public\$module\Progressions\Progressions.lsx"
+)
+foreach ($relative in $forbiddenMasteryPaths) {
+    Require (-not (Test-Path -LiteralPath (Join-Path $root $relative))) `
+        "失败的 Origin Progression 资源仍存在: $relative"
+}
 
 $expectedPackageFiles = @(
     'Localization/Chinese/ChaosOriginsStory.loca',
@@ -47,6 +44,7 @@ $expectedPackageFiles = @(
     'Localization/Korean/ChaosOriginsStory.loca',
     'Mods/ChaosOriginsStory/meta.lsx',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/story_header.div',
@@ -58,9 +56,6 @@ $expectedPackageFiles = @(
     'Public/ChaosOriginsStory/Content/UI/[PAK]_ChaosOriginsStory/_merged.lsf',
     'Public/ChaosOriginsStory/GUI/Icons_ChaosOrigins.lsx',
     'Public/ChaosOriginsStory/GUI/UIOrigin_Portraits_Chaos.lsx',
-    'Public/ChaosOriginsStory/Lists/PassiveLists.lsx',
-    'Public/ChaosOriginsStory/Progressions/ProgressionDescriptions.lsx',
-    'Public/ChaosOriginsStory/Progressions/Progressions.lsx',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosDamage.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosFeatures.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosMastery.txt',
@@ -76,8 +71,8 @@ Require (Test-Path -LiteralPath $manifestPath -PathType Leaf) '缺少 package-fi
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
 $manifest = @($manifestDocument.files | Sort-Object)
-Require ($manifest.Count -eq 28 -and @($manifest | Select-Object -Unique).Count -eq 28) `
-    '原生 Story 打包清单必须恰好包含 28 个唯一文件'
+Require ($manifest.Count -eq 26 -and @($manifest | Select-Object -Unique).Count -eq 26) `
+    '原生 Story 打包清单必须恰好包含 26 个唯一文件'
 Require (-not (Compare-Object $expectedPackageFiles $manifest)) '原生 Story 打包清单内容错误'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
@@ -145,70 +140,13 @@ $reallyTags = @($origin.SelectNodes('children/node[@id="ReallyTags"]/attribute[@
 Require ($reallyTags.Count -eq 1 -and [string]$reallyTags[0].value -eq $originTagUuid) `
     'Origin 必须只包含新的混沌 ReallyTag'
 
-[xml]$masteryProgressionDescriptionDocument = Get-Content -LiteralPath $masteryProgressionDescriptionPath -Raw -Encoding UTF8
-$masteryProgressionDescriptions = @($masteryProgressionDescriptionDocument.SelectNodes('//node[@id="ProgressionDescription"]'))
-Require ($masteryProgressionDescriptions.Count -eq 1) '一级切片必须恰好包含一个 ProgressionDescription'
-$masteryProgressionDescriptionAttributes = @{}
-foreach ($attribute in @($masteryProgressionDescriptions[0].SelectNodes('attribute'))) {
-    $masteryProgressionDescriptionAttributes[[string]$attribute.id] = [string]$attribute.value
-}
-Require (-not $masteryProgressionDescriptionAttributes.ContainsKey('Hidden')) `
-    '包含 SelectPassives 的混沌起源成长入口不得隐藏'
-Require ([string]$masteryProgressionDescriptions[0].SelectSingleNode('attribute[@id="DisplayName"]').handle -eq $masteryDisplayHandle) `
-    '掌控混沌成长入口名称 handle 错误'
-Require ([string]$masteryProgressionDescriptions[0].SelectSingleNode('attribute[@id="Description"]').handle -eq $masteryDescriptionHandle) `
-    '掌控混沌成长入口说明 handle 错误'
-Require ($masteryProgressionDescriptionAttributes.Type -eq 'Origin_ChaosStoryMinimal') `
-    '混沌起源成长说明 Type 必须匹配 Origin Name'
-Require ($masteryProgressionDescriptionAttributes.ProgressionTableId -eq $masteryTableUuid) `
-    '混沌起源成长说明表 UUID 错误'
-Require ($masteryProgressionDescriptionAttributes.UUID -eq $masteryProgressionDescriptionUuid) `
-    '混沌起源成长说明节点 UUID 错误'
-
-[xml]$masteryProgressionDocument = Get-Content -LiteralPath $masteryProgressionPath -Raw -Encoding UTF8
-$masteryProgressions = @($masteryProgressionDocument.SelectNodes('//node[@id="Progression"]'))
-Require ($masteryProgressions.Count -eq 1) '一级切片必须恰好包含一个 Progression'
-$masteryProgressionAttributes = @{}
-foreach ($attribute in @($masteryProgressions[0].SelectNodes('attribute'))) {
-    $masteryProgressionAttributes[[string]$attribute.id] = [string]$attribute.value
-}
-Require ($masteryProgressionAttributes.Level -eq '1') '一级切片 Progression 等级必须为 1'
-Require ($masteryProgressionAttributes.Name -eq 'Origin_ChaosStoryMinimal') `
-    '一级切片 Progression Name 必须匹配 Origin Name'
-Require ($masteryProgressionAttributes.ProgressionType -eq '0') '一级切片 ProgressionType 必须为 0'
-Require ($masteryProgressionAttributes.TableUUID -eq $masteryTableUuid) `
-    '一级切片 Progression 与说明未复用同一 TableUUID'
-$expectedMasterySelector = "SelectPassives($masteryPassiveListUuid,1,ChaosMasteryLevel1)"
-Require ($masteryProgressionAttributes.Selectors -eq $expectedMasterySelector) `
-    '一级切片必须使用固定三选一 SelectPassives'
-Require ($masteryProgressionAttributes.UUID -eq $masteryProgressionUuid) '一级 Progression 节点 UUID 错误'
-
-[xml]$masteryPassiveListDocument = Get-Content -LiteralPath $masteryPassiveListPath -Raw -Encoding UTF8
-$masteryPassiveLists = @($masteryPassiveListDocument.SelectNodes('//node[@id="PassiveList"]'))
-Require ($masteryPassiveLists.Count -eq 1) '一级切片必须恰好包含一个 PassiveList'
-$masteryPassiveListAttributes = @{}
-foreach ($attribute in @($masteryPassiveLists[0].SelectNodes('attribute'))) {
-    $masteryPassiveListAttributes[[string]$attribute.id] = [string]$attribute.value
-}
+$masteryStats = (Get-Content -LiteralPath $masteryStatsPath -Raw -Encoding UTF8).Trim()
+$masteryEntryNames = @([regex]::Matches($masteryStats, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
 $expectedMasteryPassives = @(
     'COS_ChaosMastery_Tune_L01',
     'COS_ChaosMastery_Correct_L01',
     'COS_ChaosMastery_Buff_L01'
 )
-Require ($masteryPassiveListAttributes.Name -eq 'Chaos Mastery Level 1') '一级 PassiveList 名称错误'
-Require ($masteryPassiveListAttributes.Passives -eq ($expectedMasteryPassives -join ',')) `
-    '一级 PassiveList 必须严格按调律、纠偏、新BUFF排列'
-Require ($masteryPassiveListAttributes.UUID -eq $masteryPassiveListUuid) '一级 PassiveList UUID 错误'
-$masteryIdentifiers = @(
-    $masteryTableUuid,
-    $masteryProgressionDescriptionUuid,
-    $masteryProgressionUuid,
-    $masteryPassiveListUuid
-)
-Require (@($masteryIdentifiers | Select-Object -Unique).Count -eq 4) '掌控混沌 LSX 固定 UUID 不得重复'
-
-$masteryStats = (Get-Content -LiteralPath $masteryStatsPath -Raw -Encoding UTF8).Trim()
-$masteryEntryNames = @([regex]::Matches($masteryStats, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
 $expectedMasteryStatuses = @(
     'COS_CHAOS_MASTERY_POSITIVE_INFO',
     'COS_CHAOS_MASTERY_NEGATIVE_INFO',
@@ -333,14 +271,6 @@ $identityHandles = @(
     'hdc7f2089gaa8bg493bg910fg96d1eae6ce0e'
 )
 $masteryLocalizationHandles = @(
-    'h1253cd25g6db6g4704g90e7gadf6ad0df3ed',
-    'h11f157e4g81c1g4dc8gbd3eg20fbb820812f',
-    'hbfabec61g3070g4e70g8e71gc20633da5d52',
-    'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
-    'h03a4fec8gb0efg45f9g8c5fgfd91d085f127',
-    'h0a9761a0g8ebeg4517ga88bgc9605641ea43',
-    'h1d501940gbda0g4737g8fecg66e1bbc85fe4',
-    'h09c3063egc130g48c2g8414g0535ea4196eb',
     'h5a27b995g2d15g4a0ega6a1g0e3a96807685',
     'hfb12183cg2eefg4c66g88cbg1d4452ea0277',
     'h4cb49a94g6cdag4be4g87eag95893020d052',
@@ -351,11 +281,6 @@ $masteryLocalizationHandles = @(
     'hdb91fe36gf912g4c6bga223g06a6647455f7'
 )
 $expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $masteryLocalizationHandles) | Sort-Object
-$masteryTooltipSpecs = @{
-    h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_POSITIVE_INFO')
-    h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO')
-    h09c3063egc130g48c2g8414g0535ea4196eb = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_RESULT_L01')
-}
 $referenceLocalizationHandles = $null
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
@@ -378,17 +303,6 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
         $contentsByHandle[[string]$content.contentuid] = $content
     }
-    foreach ($description in $masteryTooltipSpecs.Keys) {
-        $tooltips = @([regex]::Matches([string]$contentsByHandle[$description].InnerText, 'Tooltip="([^"]+)"') | `
-            ForEach-Object { $_.Groups[1].Value } | Sort-Object)
-        $expectedTooltips = @($masteryTooltipSpecs[$description] | Sort-Object)
-        Require ($tooltips.Count -eq $expectedTooltips.Count -and -not (Compare-Object $expectedTooltips $tooltips)) `
-            "掌控混沌 T键链接结构错误: $language / $description"
-        foreach ($tooltip in $tooltips) {
-            Require ($expectedMasteryStatuses -contains $tooltip) `
-                "掌控混沌 T键链接指向不存在的 StatusData: $language / $tooltip"
-        }
-    }
 }
 
 $storyPath = Join-Path $root "Mods\$module\Story"
@@ -403,11 +317,13 @@ Require ([regex]::Matches($headerText, '(?m)^enum_type ').Count -eq 14) `
 Require ([regex]::Matches($headerText, '(?m)^alias_type ').Count -eq 25) `
     'Story 原始头文件 alias_type 数量错误'
 $rewardGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_OriginStoryRewards.txt'
+$masteryGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMastery.txt'
 $mechanicsGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMechanics.txt'
 $goals = @(Get-ChildItem -LiteralPath (Split-Path $goalPath -Parent) -File -Filter '*.txt')
-Require ($goals.Count -eq 3 -and ($goals.FullName -contains $goalPath) -and `
-    ($goals.FullName -contains $rewardGoalPath) -and ($goals.FullName -contains $mechanicsGoalPath)) `
-    '当前 Story 必须且只能包含基础同步、混沌机制和起源剧情奖励三个 Goal'
+Require ($goals.Count -eq 4 -and ($goals.FullName -contains $goalPath) -and `
+    ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
+    ($goals.FullName -contains $mechanicsGoalPath)) `
+    '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制和起源剧情奖励四个 Goal'
 $goal = Get-Content -LiteralPath $goalPath -Raw -Encoding UTF8
 $expectedRaceTags = @(
     '60f6b464-752f-4970-a855-f729565b5e07','78adf3cd-4741-47a8-94f6-f3d322432591',
@@ -716,12 +632,10 @@ Require ($featuresText.Contains('RestoreResource(ActionPoint,100%,0)')) `
 $formalFiles = @(
     (Join-Path $root "Mods\$module\meta.lsx"),
     $goalPath,
+    $masteryGoalPath,
     $mechanicsGoalPath,
     $rewardGoalPath,
     (Join-Path $root "Public\$module\Origins\Origins.lsx"),
-    $masteryPassiveListPath,
-    $masteryProgressionDescriptionPath,
-    $masteryProgressionPath,
     $masteryStatsPath,
     (Join-Path $root "Public\$module\Stats\Generated\Data\Passive.txt"),
     (Join-Path $root "Public\$module\Stats\Generated\Data\Status_BOOST.txt")
