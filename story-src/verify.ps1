@@ -349,55 +349,17 @@ Require-Unique 'TutorialEvent UUID' $tutorialUuids 106
 Require-Unique 'TutorialEvent 名称' $tutorialNames 106
 Require (@($tutorialNodes | Where-Object { [string]($_.attribute | Where-Object id -eq 'EventType').value -ne '8' }).Count -eq 0) '所有设置 TutorialEvent 必须为 EventType 8'
 
-$guiRoot = Join-Path $root "Mods\$module\GUI"
-$guiRelativePaths = @(
-    'Pages/COS_ConfigEscButton.xaml',
-    'Pages/COS_ConfigEscButton_c.xaml',
-    'Pages/COS_ConfigMenu.xaml',
-    'Pages/COS_ConfigMenu_c.xaml',
-    'StateMachines/Keyboard.xaml',
-    'StateMachines/Controller.xaml'
-)
-foreach ($relative in $guiRelativePaths) {
-    $path = Join-Path $guiRoot $relative
-    Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少原生 GUI 文件: $relative"
-    try { [xml](Get-Content -LiteralPath $path -Raw) | Out-Null } catch { throw "GUI XML 无效: $relative :: $($_.Exception.Message)" }
-    Require ($manifest -contains "Mods/$module/GUI/$relative") "GUI 文件未进入打包清单: $relative"
-    $visibleText = [IO.File]::ReadAllText($path)
-    Require (-not ($visibleText -match '(?:Text|Content|Tag)="(?!\{Binding)[^\"]+"')) "原生 GUI 仍包含未本地化的玩家可见文本: $relative"
-}
-$guiLocalizationHandles = @($guiRelativePaths | ForEach-Object {
-    $pageText = [IO.File]::ReadAllText((Join-Path $guiRoot $_))
-    [regex]::Matches($pageText, "Source='(hc05fd[0-9a-f]{3}g0000g4000g8000g000000000000)'") | ForEach-Object { $_.Groups[1].Value }
-} | Sort-Object -Unique)
-Require-Unique '原生页面本地化引用' $guiLocalizationHandles 66
-$requiredConfigHandles = @($configLocalizationHandles + $bookLocalizationHandles + $guiLocalizationHandles | Sort-Object -Unique)
-Require-Unique '原生设置本地化引用总集' $requiredConfigHandles 288
+$requiredConfigHandles = @($configLocalizationHandles + $bookLocalizationHandles | Sort-Object -Unique)
+Require-Unique '设置手册本地化引用总集' $requiredConfigHandles 222
 foreach ($handle in $requiredConfigHandles) {
-    Require ($handleSets[0] -contains $handle) "原生设置引用了缺失的本地化 handle: $handle"
+    Require ($handleSets[0] -contains $handle) "设置手册引用了缺失的本地化 handle: $handle"
 }
-$keyboardState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Keyboard.xaml'))
-$controllerState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Controller.xaml'))
-foreach ($state in @($keyboardState, $controllerState)) {
-    Require ($state.Contains('Name="Paused" ModType="Extend"')) '暂停状态必须使用 ModType="Extend"'
-    Require ($state.Contains('Name="SystemUIs" ModType="Extend"')) 'SystemUIs 状态必须使用 ModType="Extend"'
-    Require ($state.Contains('Name="COS_CFG_MENU"')) '缺少 COS_CFG_MENU 模态状态'
+foreach ($removedGuiPath in @(
+    "Mods/$module/GUI/metadata.lsf",
+    "Public/$module/Content/UI/[PAK]_$module/_merged.lsf"
+)) {
+    Require ($manifest -notcontains $removedGuiPath) "会导致客户端 Load 阶段崩溃的 GUI 资源仍在打包清单: $removedGuiPath"
 }
-Require ($controllerState.Contains('COS_ConfigMenu_c.xaml')) '手柄状态机未使用独立页面'
-$keyboardPage = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigMenu.xaml'))
-$controllerPage = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigMenu_c.xaml'))
-Require ($keyboardPage -ne $controllerPage) '键鼠与手柄页面不得完全相同'
-foreach ($page in @($keyboardPage, $controllerPage)) {
-    foreach ($tab in @('TabMECH', 'TabRACE', 'TabORIGIN', 'TabWOUND')) {
-        Require ($page.Contains("x:Name=`"$tab`"")) "设置页面缺少标签: $tab"
-    }
-    Require ($page.Contains('Value="COS_UI_ACCESS_OK"')) '设置页面缺少只读访问门控'
-    $parameters = @([regex]::Matches($page, 'CommandParameter="([0-9a-f-]{36})"') | ForEach-Object { $_.Groups[1].Value })
-    Require-Unique '设置页面 TutorialEvent 参数' $parameters 106
-    Require (@(Compare-Object ($tutorialUuids | Sort-Object) ($parameters | Sort-Object)).Count -eq 0) '设置页面 TutorialEvent 参数与协议清单不一致'
-}
-$controllerEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton_c.xaml'))
-Require ($controllerEntry.Contains('BoundEvent="UIShowInfo"')) '手柄暂停入口缺少原生输入绑定'
-Require ($manifest -contains "Mods/$module/GUI/metadata.lsf") 'GUI metadata 未进入打包清单'
+Require (@($manifest | Where-Object { $_ -like "Mods/$module/GUI/Pages/*" -or $_ -like "Mods/$module/GUI/StateMachines/*" }).Count -eq 0) '暂停菜单 XAML 不得进入修复包'
 
 Write-Host 'ChaosOriginsStory source verification: ok'
