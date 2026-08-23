@@ -384,17 +384,76 @@ Require ($goals.Count -eq 4 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
     ($goals.FullName -contains $mechanicsGoalPath)) `
     '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制和起源剧情奖励四个 Goal'
-$expectedMasteryGoal = @(
-    'Version 1',
-    'SubGoalCombiner SGC_AND',
-    'INITSECTION',
-    'KBSECTION',
-    'EXITSECTION',
-    'ENDEXITSECTION'
-) -join "`n"
 $masteryGoal = ([IO.File]::ReadAllText($masteryGoalPath)).Replace("`r`n", "`n").TrimEnd("`n")
-Require ($masteryGoal -eq $expectedMasteryGoal) `
-    'Task 1 掌控混沌 Goal 必须保持六行空骨架'
+Require ($masteryGoal.StartsWith("Version 1`nSubGoalCombiner SGC_AND`nINITSECTION`n") -and `
+    $masteryGoal.EndsWith("`nEXITSECTION`nENDEXITSECTION")) `
+    '掌控混沌 Goal 头尾结构错误'
+foreach ($requiredMasteryStoryText in @(
+    'DB_COS_MasteryCarrier(1, "COS_ChaosMasteryPointL01");',
+    'DB_COS_MasteryEarned(', 'DB_COS_MasteryTuneCount(', 'DB_COS_MasteryCorrectCount(',
+    'PROC_COS_EnsureMasteryCounts', 'PROC_COS_SyncMastery', 'PROC_COS_GrantMasteryFrom',
+    'PROC_COS_UpdateMasterySpell', 'PROC_COS_ConsumeMasteryCarrier', 'PROC_COS_ResetMastery',
+    'LevelGameplayStarted(_, _)', 'GainedControl(_Character)', 'LeveledUp(_Character)',
+    'RespecCompleted(_Character)', 'IntegerMin(_Level, 1, _Cap)',
+    'AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1)',
+    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1)',
+    'GetActionResourceValuePersonal(_Character, "COS_ChaosMasteryPoint", 0, _Points)'
+)) {
+    Require ($masteryGoal.Contains($requiredMasteryStoryText)) `
+        "掌控混沌 Story 缺少一级同步、消费或洗点行为: $requiredMasteryStoryText"
+}
+Require ([regex]::Matches($masteryGoal, '(?m)^DB_COS_MasteryCarrier\(1, "COS_ChaosMasteryPointL01"\);$').Count -eq 1) `
+    '一级掌控载体映射必须恰好定义一次'
+Require (-not ($masteryGoal -match 'COS_ChaosMasteryPointL(?:0[2-9]|1[0-2])')) `
+    '一级掌控混沌 Story 不得引用 L02-L12 载体'
+foreach ($eventPattern in @(
+    '(?ms)IF\nLevelGameplayStarted\(_, _\)\nAND\nGetHostCharacter\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
+    '(?ms)IF\nGainedControl\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
+    '(?ms)IF\nLeveledUp\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
+    '(?ms)IF\nRespecCompleted\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_ResetMastery\(_Character\);'
+)) {
+    Require ($masteryGoal -match $eventPattern) '掌控同步和洗点事件必须逐项限制为混沌起源'
+}
+Require ([regex]::Matches($masteryGoal, 'PROC_COS_ResetMastery\(').Count -eq 2) `
+    '掌控洗点过程只能由带标记的 RespecCompleted 事件调用'
+Require ([regex]::Matches($masteryGoal, 'CastedSpell\(_Character, "Shout_COS_ChaosMastery(?:Tune|Correct)", _, _, _\)').Count -eq 2) `
+    '两条路线必须且只能由两个成功 CastedSpell 事件驱动'
+foreach ($route in @(
+    @{ Spell = 'Shout_COS_ChaosMasteryTune'; Count = 'DB_COS_MasteryTuneCount' },
+    @{ Spell = 'Shout_COS_ChaosMasteryCorrect'; Count = 'DB_COS_MasteryCorrectCount' }
+)) {
+    $routePattern = '(?ms)IF\nCastedSpell\(_Character, "' + [regex]::Escape($route.Spell) +
+        '", _, _, _\)\n.*?THEN\n(.*?)(?=\n(?:PROC|IF|EXITSECTION)\n)'
+    $routeMatch = [regex]::Match($masteryGoal, $routePattern)
+    Require ($routeMatch.Success -and $routeMatch.Value.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and `
+        $routeMatch.Value.Contains("$($route.Count)((CHARACTER)_Character, _Count)") -and `
+        $routeMatch.Value.Contains('IntegerSum(_Count, 1, _Next)') -and `
+        $routeMatch.Groups[1].Value.Contains("NOT $($route.Count)((CHARACTER)_Character, _Count);") -and `
+        $routeMatch.Groups[1].Value.Contains("$($route.Count)((CHARACTER)_Character, _Next);") -and `
+        $routeMatch.Groups[1].Value.Contains('PROC_COS_ConsumeMasteryCarrier((CHARACTER)_Character, 1);')) `
+        "路线成功事件未严格递增计数并消费一级载体: $($route.Spell)"
+}
+foreach ($requiredResetText in @(
+    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);',
+    'RemovePassive(_Character, "COS_ChaosMasteryPointL01");',
+    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
+    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
+    'NOT DB_COS_MasteryEarned(_Character, _Level);',
+    'NOT DB_COS_MasteryTuneCount(_Character, _Count);',
+    'NOT DB_COS_MasteryCorrectCount(_Character, _Count);',
+    'DB_COS_MasteryTuneCount(_Character, 0);',
+    'DB_COS_MasteryCorrectCount(_Character, 0);',
+    'PROC_COS_SyncMastery(_Character);'
+)) {
+    Require ($masteryGoal.Contains($requiredResetText)) "洗点重建缺少确定性清理或重新同步: $requiredResetText"
+}
+foreach ($forbiddenMasteryStoryPattern in @(
+    '(?m)^UsingSpell\(', '(?m)^CastSpell\(', '(?i)Preview', 'TimerLaunch', 'ScriptExtender',
+    '(?i)\bSE\b', '(?i)\bN?MCM\b', '(?i)Dialog(?:ue)?', '(?i)Default', 'ApplyStatus\('
+)) {
+    Require (-not ($masteryGoal -match $forbiddenMasteryStoryPattern)) `
+        "掌控混沌 Story 包含禁用事件、外部依赖、自动路线或回退: $forbiddenMasteryStoryPattern"
+}
 $goal = Get-Content -LiteralPath $goalPath -Raw -Encoding UTF8
 $expectedRaceTags = @(
     '60f6b464-752f-4970-a855-f729565b5e07','78adf3cd-4741-47a8-94f6-f3d322432591',
