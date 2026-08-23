@@ -271,6 +271,12 @@ $identityHandles = @(
     'hdc7f2089gaa8bg493bg910fg96d1eae6ce0e'
 )
 $masteryLocalizationHandles = @(
+    'hbfabec61g3070g4e70g8e71gc20633da5d52',
+    'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
+    'h03a4fec8gb0efg45f9g8c5fgfd91d085f127',
+    'h0a9761a0g8ebeg4517ga88bgc9605641ea43',
+    'h1d501940gbda0g4737g8fecg66e1bbc85fe4',
+    'h09c3063egc130g48c2g8414g0535ea4196eb',
     'h5a27b995g2d15g4a0ega6a1g0e3a96807685',
     'hfb12183cg2eefg4c66g88cbg1d4452ea0277',
     'h4cb49a94g6cdag4be4g87eag95893020d052',
@@ -281,6 +287,11 @@ $masteryLocalizationHandles = @(
     'hdb91fe36gf912g4c6bga223g06a6647455f7'
 )
 $expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $masteryLocalizationHandles) | Sort-Object
+$masteryTooltipSpecs = @{
+    h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_POSITIVE_INFO')
+    h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO')
+    h09c3063egc130g48c2g8414g0535ea4196eb = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_RESULT_L01')
+}
 $referenceLocalizationHandles = $null
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
@@ -302,6 +313,17 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     foreach ($content in $contents) {
         Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
         $contentsByHandle[[string]$content.contentuid] = $content
+    }
+    foreach ($description in $masteryTooltipSpecs.Keys) {
+        $tooltips = @([regex]::Matches([string]$contentsByHandle[$description].InnerText, 'Tooltip="([^"]+)"') | `
+            ForEach-Object { $_.Groups[1].Value } | Sort-Object)
+        $expectedTooltips = @($masteryTooltipSpecs[$description] | Sort-Object)
+        Require ($tooltips.Count -eq $expectedTooltips.Count -and -not (Compare-Object $expectedTooltips $tooltips)) `
+            "掌控混沌 T键链接结构错误: $language / $description"
+        foreach ($tooltip in $tooltips) {
+            Require ($expectedMasteryStatuses -contains $tooltip) `
+                "掌控混沌 T键链接指向不存在的 StatusData: $language / $tooltip"
+        }
     }
 }
 
