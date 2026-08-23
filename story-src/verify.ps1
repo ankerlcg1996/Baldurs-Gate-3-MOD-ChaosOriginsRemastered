@@ -306,6 +306,10 @@ $identityHandles = @(
     'hdc7f2089gaa8bg493bg910fg96d1eae6ce0e'
 )
 $masteryLocalizationHandles = @(
+    'h0d010313gb67fg4c89ga5b9g30c58d4fb2f9',
+    'hf1437f68g6231g4f22gb12ega9bcfc6189d8',
+    'h1253cd25g6db6g4704g90e7gadf6ad0df3ed',
+    'h11f157e4g81c1g4dc8gbd3eg20fbb820812f',
     'hbfabec61g3070g4e70g8e71gc20633da5d52',
     'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
     'h03a4fec8gb0efg45f9g8c5fgfd91d085f127',
@@ -316,11 +320,14 @@ $masteryLocalizationHandles = @(
     'h6a7fc261g0307g46aeg9efcgea4e9d2add92',
     'h0f888c08ge96ag4ac4ga02fgd41297ea527e',
     'hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e',
+    'h02971056gdde9g4363g80d5gdaf480557af7',
+    'h8fae3635gba76g4614ga776gf8054d011d82',
     'h7f3cf979gec23g46b4g87a5g17724ad407e7',
     'hdb91fe36gf912g4c6bga223g06a6647455f7'
 )
 $expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $masteryLocalizationHandles) | Sort-Object
 $masteryTooltipSpecs = @{
+    h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('COS_CHAOS_MASTERY_POSITIVE_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_RESULT_L01')
     h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_POSITIVE_INFO')
     h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO')
 }
@@ -330,6 +337,56 @@ $masteryTooltipStatuses = @(
     'COS_CHAOS_MASTERY_CALM_INFO',
     'COS_CHAOS_MASTERY_RESULT_L01'
 )
+$masteryRequiredFragments = @{
+    Chinese = @{
+        hf1437f68g6231g4f22gb12ega9bcfc6189d8 = @('隐藏资源', '每级获得1点', '最多12点', '休息不会恢复')
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('返还伤害类结果在受击后结算', '不能挽救本次致死攻击')
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('2/300', '正面=162+2A', '负面=138-2A-4B', '平息=4B')
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('4/300', '不施加正面或负面结果', '不增加混沌迷失')
+        h09c3063egc130g48c2g8414g0535ea4196eb = @('达到1级', '自动进入正面权重池', '不消耗掌控点', '不改变正面、负面或平息格数')
+        hfb12183cg2eefg4c66g88cbg1d4452ea0277 = @('正面格数=162+2A', '300格', '正面权重池')
+        h6a7fc261g0307g46aeg9efcgea4e9d2add92 = @('负面格数=138-2A-4B', '负面池')
+        hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e = @('平息格数=4B', '不施加正面或负面结果', '不增加混沌迷失')
+        h8fae3635gba76g4614ga776gf8054d011d82 = @('不施加正面或负面结果', '不增加混沌迷失')
+        hdb91fe36gf912g4c6bga223g06a6647455f7 = @('正面类别', '替代普通正面结果', '1d4+熟练加值', '2回合', '临时生命不叠加')
+    }
+    English = @{
+        hf1437f68g6231g4f22gb12ega9bcfc6189d8 = @('Hidden resource', '1 point per level', '12 points', 'resting does not restore')
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('resolve after the hit', 'cannot save you from that hit if it is lethal')
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('2/300', 'Positive=162+2A', 'Negative=138-2A-4B', 'Calm=4B')
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('4/300', 'applies no positive or negative result', 'adds no Chaos Lost')
+        h09c3063egc130g48c2g8414g0535ea4196eb = @('level 1', 'automatically enters the weighted positive pool', 'costs no Chaos Mastery point', 'does not change positive, negative, or calm cells')
+        hfb12183cg2eefg4c66g88cbg1d4452ea0277 = @('Positive cells=162+2A', '300 cells', 'weighted positive pool')
+        h6a7fc261g0307g46aeg9efcgea4e9d2add92 = @('Negative cells=138-2A-4B', 'negative pool')
+        hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e = @('Calm cells=4B', 'applies no positive or negative result', 'adds no Chaos Lost')
+        h8fae3635gba76g4614ga776gf8054d011d82 = @('applies no positive or negative result', 'adds no Chaos Lost')
+        hdb91fe36gf912g4c6bga223g06a6647455f7 = @('positive category', 'replace an ordinary positive result', '1d4 + Proficiency Bonus', '2 turns', 'do not stack')
+    }
+    Japanese = @{
+        hf1437f68g6231g4f22gb12ega9bcfc6189d8 = @('非表示のリソース', 'レベルごとに1ポイント', '最大12ポイント', '休息では回復しない')
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('被撃後に解決され', '致死なら救うことはできない')
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('2/300', '正効果=162+2A', '負効果=138-2A-4B', '鎮静=4B')
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('4/300', '正・負いずれの結果も適用せず', '混沌の喪失も増加させない')
+        h09c3063egc130g48c2g8414g0535ea4196eb = @('レベル1', '正効果プールへ自動的に加わる', '混沌掌握ポイントを消費せず', '正効果・負効果・鎮静のマス数を変えない')
+        hfb12183cg2eefg4c66g88cbg1d4452ea0277 = @('正効果マス=162+2A', '300マス', '正効果プール')
+        h6a7fc261g0307g46aeg9efcgea4e9d2add92 = @('負効果マス=138-2A-4B', '負効果プール')
+        hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e = @('鎮静マス=4B', '正・負いずれの結果も適用せず', '混沌の喪失も増加させない')
+        h8fae3635gba76g4614ga776gf8054d011d82 = @('正・負いずれの結果も適用せず', '混沌の喪失も増加させない')
+        hdb91fe36gf912g4c6bga223g06a6647455f7 = @('正効果区分', '通常の正効果結果を置き換える', '1d4+習熟ボーナス', '2ターン', '累積せず')
+    }
+    Korean = @{
+        hf1437f68g6231g4f22gb12ega9bcfc6189d8 = @('숨겨진 자원', '레벨마다 1점', '최대 12점', '휴식으로 회복되지 않습니다')
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('피격 후에 처리되며', '치명적인 공격에서는 살릴 수 없습니다')
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('2/300', '긍정=162+2A', '부정=138-2A-4B', '진정=4B')
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('4/300', '긍정 또는 부정 결과를 적용하지 않고', '혼돈 상실도 증가시키지 않습니다')
+        h09c3063egc130g48c2g8414g0535ea4196eb = @('1레벨', '긍정 가중치 풀에 자동으로 추가', '혼돈 통제 점수를 소모하지 않고', '긍정, 부정, 진정 칸 수를 바꾸지 않습니다')
+        hfb12183cg2eefg4c66g88cbg1d4452ea0277 = @('긍정 칸=162+2A', '300칸', '긍정 가중치 풀')
+        h6a7fc261g0307g46aeg9efcgea4e9d2add92 = @('부정 칸=138-2A-4B', '부정 풀')
+        hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e = @('진정 칸=4B', '긍정 또는 부정 결과를 적용하지 않고', '혼돈 상실도 증가시키지 않습니다')
+        h8fae3635gba76g4614ga776gf8054d011d82 = @('긍정 또는 부정 결과를 적용하지 않고', '혼돈 상실도 증가시키지 않습니다')
+        hdb91fe36gf912g4c6bga223g06a6647455f7 = @('긍정 범주', '일반 긍정 결과를 대체', '1d4+숙련 보너스', '2턴', '중첩되지')
+    }
+}
 $referenceLocalizationHandles = $null
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
@@ -337,8 +394,16 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     [xml]$localization = Get-Content -LiteralPath $path -Raw -Encoding UTF8
     $contents = @($localization.contentList.content)
     $handles = @($contents | ForEach-Object { [string]$_.contentuid } | Sort-Object)
-    Require ($handles.Count -eq 642 -and @($handles | Select-Object -Unique).Count -eq 642) `
-        "完整本地化必须包含 642 个唯一文本: $language"
+    $contentsByHandle = @{}
+    foreach ($content in $contents) {
+        Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
+        $contentsByHandle[[string]$content.contentuid] = $content
+    }
+    $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
+    Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
+        "调律说明仍使用旧百分比: $language"
+    Require ($handles.Count -eq 646 -and @($handles | Select-Object -Unique).Count -eq 646) `
+        "完整本地化必须包含 646 个唯一文本: $language"
     Require (-not ($expectedHandles | Where-Object { $handles -notcontains $_ })) `
         "完整本地化缺少起源、身份或掌控混沌文本: $language"
     if ($null -eq $referenceLocalizationHandles) {
@@ -347,10 +412,12 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         Require (-not (Compare-Object $referenceLocalizationHandles $handles)) `
             "四语本地化 handle 集合不一致: $language"
     }
-    $contentsByHandle = @{}
-    foreach ($content in $contents) {
-        Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
-        $contentsByHandle[[string]$content.contentuid] = $content
+    foreach ($description in $masteryRequiredFragments[$language].Keys) {
+        $text = [string]$contentsByHandle[$description].InnerText
+        foreach ($fragment in $masteryRequiredFragments[$language][$description]) {
+            Require ($text.Contains($fragment)) `
+                "掌控混沌说明缺少固定语义: $language / $description / $fragment"
+        }
     }
     foreach ($description in $masteryTooltipSpecs.Keys) {
         $tooltips = @([regex]::Matches([string]$contentsByHandle[$description].InnerText, 'Tooltip="([^"]+)"') | `

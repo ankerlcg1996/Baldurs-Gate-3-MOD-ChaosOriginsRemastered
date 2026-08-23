@@ -627,19 +627,23 @@
 	<content contentuid="h72000001g0001g4001g8001g000000000001" version="1">命运改签</content>
 	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">消耗1点混沌之力。下一次由你触发的两仪或你承受的受击轮盘进行多次判定并采用对你最有利的结果。1–4级2次、5–8级3次、9–12级4次、13–16级5次、17–20级6次、21–24级7次、25级以上8次。首次生效后消失。</content>
 	<content contentuid="hbfabec61g3070g4e70g8e71gc20633da5d52" version="1">调律</content>
-	<content contentuid="h0cf72805gf1e4g4f89gbc8fgb4eb4561d859" version="1">受击轮盘的正面概率+1%，负面概率-1%。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO"&gt;正面受创结果&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;。</content>
+	<content contentuid="h0cf72805gf1e4g4f89gbc8fgb4eb4561d859" version="1">每层把2/300的负面格转为正面格。正面=162+2A，负面=138-2A-4B，平息=4B。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO"&gt;正面受创结果&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;。</content>
 	<content contentuid="h03a4fec8gb0efg45f9g8c5fgfd91d085f127" version="1">厄兆纠偏</content>
-	<content contentuid="h0a9761a0g8ebeg4517ga88bgc9605641ea43" version="1">受击轮盘的负面概率-2%，平息概率+2%。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO"&gt;平息&lt;/LSTag&gt;。</content>
+	<content contentuid="h0a9761a0g8ebeg4517ga88bgc9605641ea43" version="1">每层把4/300的负面格转为平息格。平息不施加正面或负面结果，也不增加混沌迷失。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO"&gt;平息&lt;/LSTag&gt;。</content>
 	<content contentuid="h1d501940gbda0g4737g8fecg66e1bbc85fe4" version="1">浮光护体</content>
-	<content contentuid="h09c3063egc130g48c2g8414g0535ea4196eb" version="1">正面概率不变，负面概率-1%，平息概率+1%；并将“浮光护体”以权重1加入正面池。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;、&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO"&gt;平息&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01"&gt;浮光护体效果&lt;/LSTag&gt;。</content>
+	<content contentuid="h09c3063egc130g48c2g8414g0535ea4196eb" version="1">角色达到1级后，浮光护体自动进入正面权重池；不消耗掌控点，也不改变正面、负面或平息格数。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01"&gt;浮光护体效果&lt;/LSTag&gt;。</content>
 	<content contentuid="h5a27b995g2d15g4a0ega6a1g0e3a96807685" version="1">正面受创结果</content>
-	<content contentuid="hfb12183cg2eefg4c66g88cbg1d4452ea0277" version="1">基础概率54%。每选择一次调律，正面概率增加1个百分点。受击轮盘先判定结果类别，再从正面权重池中抽取具体结果。</content>
+	<content contentuid="hfb12183cg2eefg4c66g88cbg1d4452ea0277" version="1">正面格数=162+2A。受击轮盘先按300格判定类别，再从正面权重池抽取具体结果。</content>
 	<content contentuid="h4cb49a94g6cdag4be4g87eag95893020d052" version="1">负面受创结果</content>
-	<content contentuid="h6a7fc261g0307g46aeg9efcgea4e9d2add92" version="1">基础概率46%。每次调律降低1个百分点，每次厄兆纠偏降低2个百分点，每次新增BUFF选择降低1个百分点。负面候选会继续接受平息判定。</content>
+	<content contentuid="h6a7fc261g0307g46aeg9efcgea4e9d2add92" version="1">负面格数=138-2A-4B。受击轮盘判定为负面类别后，只从按惩罚强度加权的负面池抽取具体结果。</content>
 	<content contentuid="h0f888c08ge96ag4ac4ga02fgd41297ea527e" version="1">平息</content>
-	<content contentuid="hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e" version="1">基础概率0%。每次厄兆纠偏增加2个百分点，每次新增BUFF选择增加1个百分点。平息会取消本次负面候选：不施加正面或负面状态，也不增加混沌迷失。</content>
+	<content contentuid="hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e" version="1">平息格数=4B。平息不施加正面或负面结果，也不增加混沌迷失。</content>
 	<content contentuid="h7f3cf979gec23g46b4g87a5g17724ad407e7" version="1">浮光护体</content>
-	<content contentuid="hdb91fe36gf912g4c6bga223g06a6647455f7" version="1">受击轮盘抽中时，获得1d4+熟练加值点临时生命，持续2回合。临时生命遵循BG3原生覆盖规则：不会叠加，只保留较高值。</content>
+	<content contentuid="hdb91fe36gf912g4c6bga223g06a6647455f7" version="1">判定为正面类别后，浮光护体可能替代普通正面结果。获得1d4+熟练加值点临时生命，持续2回合。临时生命不叠加，只保留较高值。</content>
 	<content contentuid="h1253cd25g6db6g4704g90e7gadf6ad0df3ed" version="1">掌控混沌</content>
-	<content contentuid="h11f157e4g81c1g4dc8gbd3eg20fbb820812f" version="1">选择一项掌控混沌成长，调整受击轮盘的正面、负面与平息结果。</content>
+	<content contentuid="h11f157e4g81c1g4dc8gbd3eg20fbb820812f" version="1">用掌控点在调律与厄兆纠偏之间自由分配。查看&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO"&gt;正面受创结果&lt;/LSTag&gt;、&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO"&gt;负面受创结果&lt;/LSTag&gt;、&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO"&gt;平息&lt;/LSTag&gt;与&lt;LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01"&gt;浮光护体&lt;/LSTag&gt;。返还伤害类结果在受击后结算，不能挽救本次致死攻击。</content>
+	<content contentuid="h0d010313gb67fg4c89ga5b9g30c58d4fb2f9" version="1">掌控点</content>
+	<content contentuid="hf1437f68g6231g4f22gb12ega9bcfc6189d8" version="1">隐藏资源。混沌起源每级获得1点，最多12点；休息不会恢复。</content>
+	<content contentuid="h02971056gdde9g4363g80d5gdaf480557af7" version="1">混沌平息</content>
+	<content contentuid="h8fae3635gba76g4614ga776gf8054d011d82" version="1">本次受击轮盘平息：不施加正面或负面结果，也不增加混沌迷失。</content>
 </contentList>
