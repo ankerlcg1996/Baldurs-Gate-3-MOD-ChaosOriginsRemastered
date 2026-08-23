@@ -6,20 +6,8 @@
     "Localization/Japanese/ChaosOriginsStory.loca",
     "Localization/Korean/ChaosOriginsStory.loca",
     "Mods/ChaosOriginsStory/meta.lsx",
-    "Mods/ChaosOriginsStory/Story/story.div.osi",
-    "Public/ChaosOriginsStory/ActionResourceDefinitions/ActionResourceDefinitions.lsx",
-    "Public/ChaosOriginsStory/Assets/Textures/Icons/Icons_ChaosOrigins.dds",
-    "Public/ChaosOriginsStory/Assets/Textures/Icons/UIOrigin_Portraits_Chaos.dds",
-    "Public/ChaosOriginsStory/GUI/Icons_ChaosOrigins.lsx",
-    "Public/ChaosOriginsStory/GUI/UIOrigin_Portraits_Chaos.lsx",
     "Public/ChaosOriginsStory/Origins/Origins.lsx",
-    "Public/ChaosOriginsStory/RootTemplates/COS_ConfigBook.lsf",
-    "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosDamage.txt",
-    "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosConfig.txt",
-    "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosFeatures.txt",
-    "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosRuntime.txt",
-    "Public/ChaosOriginsStory/Stats/Generated/Data/Interrupt.txt",
-    "Public/ChaosOriginsStory/Tutorials/TutorialEvents.lsx",
+    "Public/ChaosOriginsStory/Stats/Generated/Data/Passive.txt",
     "Public/ChaosOriginsStory/Tags/2c237035-d1a9-4469-91de-d74d8464c8d5.lsf"
   ]
 }

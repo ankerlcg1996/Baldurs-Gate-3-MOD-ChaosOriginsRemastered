@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <save>
-    <version major="4" minor="7" revision="1" build="3" />
+    <version major="4" minor="0" revision="9" build="307" />
     <region id="Origins">
         <node id="root">
             <children>
@@ -18,7 +18,7 @@
                     <attribute id="LockBody" type="bool" value="false" />
                     <attribute id="LockClass" type="bool" value="false" />
                     <attribute id="LockRace" type="bool" value="false" />
-                    <attribute id="Name" type="FixedString" value="Chaos" />
+                    <attribute id="Name" type="FixedString" value="ChaosStoryMinimal" />
                     <attribute id="Passives" type="LSString" value="DeathSavingThrows;COS_ChaosOriginMarker" />
                     <attribute id="RaceUUID" type="guid" value="45f4ac10-3c89-4fb2-b37d-f973bb9110c0" />
                     <attribute id="SubClassUUID" type="guid" value="d379fdae-b401-4731-8d50-277c73919ae3" />
@@ -26,9 +26,7 @@
                     <attribute id="UUID" type="guid" value="b751ba19-8aeb-4da5-a515-cf853e4c459c" />
                     <attribute id="VoiceTableUUID" type="guid" value="2949c570-0a52-4cfd-8434-50925e18d44b" />
                     <children>
-                        <node id="ReallyTags">
-                            <attribute id="Object" type="guid" value="2c237035-d1a9-4469-91de-d74d8464c8d5" />
-                        </node>
+                        <node id="ReallyTags"><attribute id="Object" type="guid" value="2c237035-d1a9-4469-91de-d74d8464c8d5" /></node>
                     </children>
                 </node>
             </children>

@@ -1,29 +1,20 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <save>
-    <version major="4" minor="7" revision="1" build="3" />
+    <version major="4" minor="0" revision="7" build="1" />
     <region id="Tags">
-        <node id="root">
+        <node id="Tags">
+            <attribute id="Description" type="LSString" value="Chaos Origins Story origin identity" />
+            <attribute id="DisplayDescription" type="TranslatedString" handle="ls::TranslatedStringRepository::s_HandleUnknown" version="0" />
+            <attribute id="DisplayName" type="TranslatedString" handle="hcd7a5c95gbdd1g5784gac8bg86b0dcd0e16a" version="1" />
+            <attribute id="Icon" type="FixedString" value="" />
+            <attribute id="Name" type="FixedString" value="COS_REALLY_CHAOS" />
+            <attribute id="UUID" type="guid" value="2c237035-d1a9-4469-91de-d74d8464c8d5" />
             <children>
-                <node id="Tags">
-                    <attribute id="UUID" type="guid" value="2c237035-d1a9-4469-91de-d74d8464c8d5" />
-                    <attribute id="Name" type="FixedString" value="COS_CHAOS_ELIGIBLE" />
-                    <attribute id="Icon" type="FixedString" value="PassiveFeature_Lucky" />
-                    <attribute id="Description" type="LSString" value="Identifies the ChaosOriginsStory origin" />
+                <node id="Categories">
                     <children>
-                        <node id="Categories">
-                            <children>
-                                <node id="Category">
-                                    <attribute id="Name" type="LSString" value="Code" />
-                                </node>
-                                <node id="Category">
-                                    <attribute id="Name" type="LSString" value="Race" />
-                                </node>
-                                <node id="Category">
-                                    <attribute id="Name" type="LSString" value="PlayerRace" />
-                                </node>
-                            </children>
-                        </node>
-                        <node id="Properties" />
+                        <node id="Category"><attribute id="Name" type="LSString" value="Code" /></node>
+                        <node id="Category"><attribute id="Name" type="LSString" value="Dialog" /></node>
+                        <node id="Category"><attribute id="Name" type="LSString" value="DialogHidden" /></node>
                     </children>
                 </node>
             </children>

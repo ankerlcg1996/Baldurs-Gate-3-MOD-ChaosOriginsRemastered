@@ -1,0 +1,3 @@
+new entry "COS_ChaosOriginMarker"
+type "PassiveData"
+data "Properties" "IsHidden"

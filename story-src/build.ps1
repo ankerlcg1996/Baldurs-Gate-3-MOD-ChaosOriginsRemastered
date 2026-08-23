@@ -8,34 +8,47 @@ $stage = Join-Path $work 'staging'
 $reverse = Join-Path $work 'reverse'
 $dist = Join-Path $repo 'dist'
 $pak = Join-Path $dist 'ChaosOriginsStory.pak'
-$manifest = (Get-Content -LiteralPath (Join-Path $root 'package-files.json') -Raw | ConvertFrom-Json).files
-if (-not (Test-Path -LiteralPath $LslibPath -PathType Leaf)) { throw "缺少 LSLib: $LslibPath" }
+$manifestPath = Join-Path $root 'package-files.json'
 
-& (Join-Path $root 'compile-story.ps1')
-& (Join-Path $root 'compile-resources.ps1')
-
-foreach ($path in @($stage, $reverse)) {
-    if (-not (Test-Path -LiteralPath $path)) { continue }
-    $resolved = (Resolve-Path -LiteralPath $path).Path
-    $resolvedWork = (Resolve-Path -LiteralPath $work).Path
-    if (-not $resolved.StartsWith($resolvedWork + [IO.Path]::DirectorySeparatorChar)) { throw "拒绝清理工作目录外路径: $resolved" }
-    Remove-Item -LiteralPath $resolved -Recurse -Force
+function Require([bool]$Condition, [string]$Message) {
+    if (-not $Condition) { throw $Message }
 }
-New-Item -ItemType Directory -Path $stage, $reverse, $dist -Force | Out-Null
+
+function Reset-WorkChild([string]$Path) {
+    $workFull = [IO.Path]::GetFullPath($work).TrimEnd('\')
+    $pathFull = [IO.Path]::GetFullPath($Path)
+    Require ($pathFull.StartsWith($workFull + '\', [StringComparison]::OrdinalIgnoreCase)) `
+        "拒绝清理工作目录外路径: $pathFull"
+    if (Test-Path -LiteralPath $pathFull) {
+        Remove-Item -LiteralPath $pathFull -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $pathFull -Force | Out-Null
+}
+
+& (Join-Path $root 'verify.ps1')
+& (Join-Path $root 'compile-resources.ps1')
+Require (Test-Path -LiteralPath $LslibPath -PathType Leaf) "缺少 LSLib: $LslibPath"
+
+$manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
+$manifest = @($manifestDocument.files)
+
+Reset-WorkChild $stage
+Reset-WorkChild $reverse
+New-Item -ItemType Directory -Path $dist -Force | Out-Null
 
 foreach ($relative in $manifest) {
-    $target = Join-Path $stage $relative
+    $nativeRelative = $relative.Replace('/', '\')
+    $target = Join-Path $stage $nativeRelative
     New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
-    if ($relative -eq 'Mods/ChaosOriginsStory/Story/story.div.osi') {
-        $source = Join-Path $work 'compiled-story\story.div.osi'
-    } elseif ($relative.EndsWith('.lsf')) {
-        $source = Join-Path $work ('compiled-resources\' + $relative.Replace('/', '\'))
+    if ($relative.EndsWith('.lsf')) {
+        $source = Join-Path $work ('compiled-resources\' + $nativeRelative)
     } elseif ($relative.EndsWith('.loca')) {
         continue
     } else {
-        $source = Join-Path $root $relative.Replace('/', '\')
+        $source = Join-Path $root $nativeRelative
     }
-    if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw "清单源文件不存在: $relative -> $source" }
+    Require (Test-Path -LiteralPath $source -PathType Leaf) "清单源文件不存在: $relative -> $source"
     Copy-Item -LiteralPath $source -Destination $target -Force
 }
 
@@ -43,15 +56,22 @@ Add-Type -Path $LslibPath
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $xml = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     $target = Join-Path $stage "Localization\$language\ChaosOriginsStory.loca"
-    $resource = [LSLib.LS.LocaUtils]::Load($xml)
-    [LSLib.LS.LocaUtils]::Save($resource, $target)
+    New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
+    $localization = [LSLib.LS.LocaUtils]::Load($xml)
+    [LSLib.LS.LocaUtils]::Save($localization, $target)
+    Require (Test-Path -LiteralPath $target -PathType Leaf) "本地化编译失败: $language"
 }
 
-$actual = @(Get-ChildItem -LiteralPath $stage -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($stage, $_.FullName).Replace('\', '/') } | Sort-Object)
+$actual = @(Get-ChildItem -LiteralPath $stage -Recurse -File | ForEach-Object {
+    [IO.Path]::GetRelativePath($stage, $_.FullName).Replace('\', '/')
+} | Sort-Object)
 $expected = @($manifest | Sort-Object)
-if ($actual.Count -ne $expected.Count -or (Compare-Object $expected $actual)) { throw "打包清单不匹配: expected=$($expected.Count) actual=$($actual.Count)" }
-if (Get-ChildItem -LiteralPath $stage -Recurse -File | Where-Object { $_.FullName -match 'ScriptExtender|MCM_blueprint|BG3MCM' }) { throw 'Story 包含 SE 或 MCM 文件' }
+Require ($actual.Count -eq $expected.Count -and -not (Compare-Object $expected $actual)) `
+    "打包清单不匹配: expected=$($expected.Count) actual=$($actual.Count)"
+Require (-not ($actual | Where-Object { $_ -match '/Story/|ScriptExtender|MCM|GUI/|ActionResourceDefinitions' })) `
+    '最小起源包夹带了 Story、SE、设置、图标或动作资源'
 
+if (Test-Path -LiteralPath $pak) { Remove-Item -LiteralPath $pak -Force }
 $build = [LSLib.LS.PackageBuildData]::new()
 $build.Version = [LSLib.LS.Enums.PackageVersion]::V18
 $build.Compression = [LSLib.LS.CompressionMethod]::LZ4
@@ -62,14 +82,20 @@ $build.ExcludeHidden = $true
 $build.Priority = 0
 $packager = [LSLib.LS.Packager]::new()
 $packager.CreatePackage($pak, $stage, $build).GetAwaiter().GetResult()
+Require (Test-Path -LiteralPath $pak -PathType Leaf) 'PAK 创建失败'
 $packager.UncompressPackage($pak, $reverse)
 
-$reverseFiles = @(Get-ChildItem -LiteralPath $reverse -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($reverse, $_.FullName).Replace('\', '/') } | Sort-Object)
-if ($actual.Count -ne $reverseFiles.Count -or (Compare-Object $actual $reverseFiles)) { throw "反向解包清单不匹配: stage=$($actual.Count) reverse=$($reverseFiles.Count)" }
+$reverseFiles = @(Get-ChildItem -LiteralPath $reverse -Recurse -File | ForEach-Object {
+    [IO.Path]::GetRelativePath($reverse, $_.FullName).Replace('\', '/')
+} | Sort-Object)
+Require ($actual.Count -eq $reverseFiles.Count -and -not (Compare-Object $actual $reverseFiles)) `
+    "反向解包清单不匹配: stage=$($actual.Count) reverse=$($reverseFiles.Count)"
 foreach ($relative in $actual) {
-    $stageHash = (Get-FileHash -LiteralPath (Join-Path $stage $relative)).Hash
-    $reverseHash = (Get-FileHash -LiteralPath (Join-Path $reverse $relative)).Hash
-    if ($stageHash -ne $reverseHash) { throw "反向解包哈希不匹配: $relative" }
+    $nativeRelative = $relative.Replace('/', '\')
+    $stageHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $stage $nativeRelative)).Hash
+    $reverseHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $reverse $nativeRelative)).Hash
+    Require ($stageHash -eq $reverseHash) "反向解包哈希不匹配: $relative"
 }
-Write-Host "Story PAK 构建并反向校验完成: $pak ($($actual.Count) files)"
+
+Write-Host "Story 最小起源 PAK 构建并反向校验完成: $pak ($($actual.Count) files)"
 
