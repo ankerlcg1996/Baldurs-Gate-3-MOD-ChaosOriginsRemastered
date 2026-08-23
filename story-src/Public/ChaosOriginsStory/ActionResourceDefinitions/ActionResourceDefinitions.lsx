@@ -32,5 +32,15 @@
       <attribute id="ShowOnActionResourcePanel" type="bool" value="false" />
       <attribute id="UUID" type="guid" value="daacb26c-6cc2-46d4-a548-5c3af93d7772" />
     </node>
+    <node id="ActionResourceDefinition">
+      <attribute id="Description" type="TranslatedString" handle="hf1437f68g6231g4f22gb12ega9bcfc6189d8" version="1" />
+      <attribute id="DisplayName" type="TranslatedString" handle="h0d010313gb67fg4c89ga5b9g30c58d4fb2f9" version="1" />
+      <attribute id="IsHidden" type="bool" value="true" />
+      <attribute id="MaxValue" type="uint32" value="12" />
+      <attribute id="Name" type="FixedString" value="COS_ChaosMasteryPoint" />
+      <attribute id="ReplenishType" type="FixedString" value="Never" />
+      <attribute id="ShowOnActionResourcePanel" type="bool" value="false" />
+      <attribute id="UUID" type="guid" value="377db753-9c76-4d31-a2f6-cb02687c95eb" />
+    </node>
   </children></node></region>
 </save>

@@ -142,63 +142,74 @@ Require ($reallyTags.Count -eq 1 -and [string]$reallyTags[0].value -eq $originTa
 
 $masteryStats = (Get-Content -LiteralPath $masteryStatsPath -Raw -Encoding UTF8).Trim()
 $masteryEntryNames = @([regex]::Matches($masteryStats, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
-$expectedMasteryPassives = @(
-    'COS_ChaosMastery_Tune_L01',
-    'COS_ChaosMastery_Correct_L01',
-    'COS_ChaosMastery_Buff_L01'
-)
-$expectedMasteryStatuses = @(
+$expectedMasteryEntries = @(
+    'COS_ChaosMasteryGuide',
+    'COS_ChaosMasteryPointL01',
+    'Shout_COS_ChaosMastery',
+    'Shout_COS_ChaosMasteryTune',
+    'Shout_COS_ChaosMasteryCorrect',
+    'COS_CHAOS_MASTERY_TUNE',
+    'COS_CHAOS_MASTERY_CORRECT',
     'COS_CHAOS_MASTERY_POSITIVE_INFO',
     'COS_CHAOS_MASTERY_NEGATIVE_INFO',
     'COS_CHAOS_MASTERY_CALM_INFO',
+    'COS_CHAOS_MASTERY_CALM_LOG',
     'COS_CHAOS_MASTERY_RESULT_L01'
 )
-$expectedMasteryEntries = @($expectedMasteryPassives) + $expectedMasteryStatuses
-Require ($masteryEntryNames.Count -eq 7 -and -not (Compare-Object $expectedMasteryEntries $masteryEntryNames)) `
-    '一级 ChaosMastery.txt 必须且只能包含3个成长被动和4个说明状态'
-$masteryPassiveSpecs = @{
-    COS_ChaosMastery_Tune_L01 = @('hbfabec61g3070g4e70g8e71gc20633da5d52', 'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859', 'COS_Power')
-    COS_ChaosMastery_Correct_L01 = @('h03a4fec8gb0efg45f9g8c5fgfd91d085f127', 'h0a9761a0g8ebeg4517ga88bgc9605641ea43', 'COS_Lost')
-    COS_ChaosMastery_Buff_L01 = @('h1d501940gbda0g4737g8fecg66e1bbc85fe4', 'h09c3063egc130g48c2g8414g0535ea4196eb', 'COS_Echo')
+Require ($masteryEntryNames.Count -eq 12 -and -not (Compare-Object $expectedMasteryEntries $masteryEntryNames)) `
+    '一级 ChaosMastery.txt 必须且只能包含掌控资源、母子技能、路线状态和结果状态'
+function Get-MasteryBlock([string]$Entry) {
+    $pattern = '(?ms)^new entry "' + [regex]::Escape($Entry) + '".*?(?=^new entry |\z)'
+    return [regex]::Match($masteryStats, $pattern).Value
 }
-foreach ($entry in $expectedMasteryPassives) {
-    $pattern = '(?ms)^new entry "' + [regex]::Escape($entry) + '"\s*.*?(?=^new entry |\z)'
-    $block = [regex]::Match($masteryStats, $pattern).Value
-    $spec = $masteryPassiveSpecs[$entry]
-    Require ($block.Contains('type "PassiveData"')) "成长选择必须是 PassiveData: $entry"
-    Require ($block.Contains("data `"DisplayName`" `"$($spec[0]);1`"") -and `
-        $block.Contains("data `"Description`" `"$($spec[1]);1`"")) `
-        "成长选择缺少固定名称或说明: $entry"
-    Require ($block.Contains("data `"Icon`" `"$($spec[2])`"")) "成长选择图标错误: $entry"
-    Require ($block.Contains('data "Properties" "Highlighted"') -and -not $block.Contains('IsHidden')) `
-        "成长选择必须可见且不得隐藏: $entry"
-    Require (-not ($block -match '(?m)^data "(Boosts|StatsFunctors|ToggleOnFunctors|ToggleOffFunctors)"')) `
-        "一级选择只能保存选择并提供说明，不得提前改变轮盘: $entry"
+
+$actionResourcePath = Join-Path $root "Public\$module\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
+[xml]$actionResources = Get-Content -LiteralPath $actionResourcePath -Raw -Encoding UTF8
+$masteryResources = @($actionResources.SelectNodes('//node[@id="ActionResourceDefinition"]') | Where-Object {
+    [string]$_.SelectSingleNode('attribute[@id="Name"]').value -eq 'COS_ChaosMasteryPoint'
+})
+Require ($masteryResources.Count -eq 1) '必须且只能定义一个 COS_ChaosMasteryPoint 行动资源'
+$masteryResource = $masteryResources[0]
+$masteryResourceAttributes = @{}
+foreach ($attribute in @($masteryResource.SelectNodes('attribute'))) { $masteryResourceAttributes[[string]$attribute.id] = [string]$attribute.value }
+Require ($masteryResourceAttributes.UUID -eq '377db753-9c76-4d31-a2f6-cb02687c95eb') 'COS_ChaosMasteryPoint UUID 错误'
+Require ([string]$masteryResource.SelectSingleNode('attribute[@id="DisplayName"]').handle -eq 'h0d010313gb67fg4c89ga5b9g30c58d4fb2f9') 'COS_ChaosMasteryPoint DisplayName handle 错误'
+Require ([string]$masteryResource.SelectSingleNode('attribute[@id="Description"]').handle -eq 'hf1437f68g6231g4f22gb12ega9bcfc6189d8') 'COS_ChaosMasteryPoint Description handle 错误'
+foreach ($field in @{ IsHidden = 'true'; MaxValue = '12'; ReplenishType = 'Never'; ShowOnActionResourcePanel = 'false' }.GetEnumerator()) {
+    Require ($masteryResourceAttributes[$field.Key] -eq $field.Value) "COS_ChaosMasteryPoint 字段错误: $($field.Key)"
 }
-$masteryStatusSpecs = @{
-    COS_CHAOS_MASTERY_POSITIVE_INFO = @('h5a27b995g2d15g4a0ega6a1g0e3a96807685', 'hfb12183cg2eefg4c66g88cbg1d4452ea0277', 'COS_Power')
-    COS_CHAOS_MASTERY_NEGATIVE_INFO = @('h4cb49a94g6cdag4be4g87eag95893020d052', 'h6a7fc261g0307g46aeg9efcgea4e9d2add92', 'COS_Lost')
-    COS_CHAOS_MASTERY_CALM_INFO = @('h0f888c08ge96ag4ac4ga02fgd41297ea527e', 'hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e', 'COS_Echo')
-    COS_CHAOS_MASTERY_RESULT_L01 = @('h7f3cf979gec23g46b4g87a5g17724ad407e7', 'hdb91fe36gf912g4c6bga223g06a6647455f7', 'COS_Echo')
+
+$masteryRequiredLines = @{
+    COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Power"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
+    COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Power"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,100%,0)"')
+    Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Power"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "Requirements" ""', 'data "Cooldown" ""')
+    Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Power"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Lost"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "Icon" "COS_Power"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "Icon" "COS_Lost"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_POSITIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h5a27b995g2d15g4a0ega6a1g0e3a96807685;1"', 'data "Description" "hfb12183cg2eefg4c66g88cbg1d4452ea0277;1"', 'data "Icon" "COS_Power"', 'data "StackId" "COS_CHAOS_MASTERY_POSITIVE_INFO"')
+    COS_CHAOS_MASTERY_NEGATIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h4cb49a94g6cdag4be4g87eag95893020d052;1"', 'data "Description" "h6a7fc261g0307g46aeg9efcgea4e9d2add92;1"', 'data "Icon" "COS_Lost"', 'data "StackId" "COS_CHAOS_MASTERY_NEGATIVE_INFO"')
+    COS_CHAOS_MASTERY_CALM_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h0f888c08ge96ag4ac4ga02fgd41297ea527e;1"', 'data "Description" "hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_CALM_INFO"')
+    COS_CHAOS_MASTERY_CALM_LOG = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h02971056gdde9g4363g80d5gdaf480557af7;1"', 'data "Description" "h8fae3635gba76g4614ga776gf8054d011d82;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_CALM_LOG"', 'data "StackType" "Overwrite"', 'data "StatusPropertyFlags" "DisableOverhead;DisablePortraitIndicator"')
+    COS_CHAOS_MASTERY_RESULT_L01 = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h7f3cf979gec23g46b4g87a5g17724ad407e7;1"', 'data "Description" "hdb91fe36gf912g4c6bga223g06a6647455f7;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_RESULT_L01"', 'data "Boosts" "TemporaryHP(1d4+ProficiencyBonus)"', 'data "StatusPropertyFlags" "DisableOverhead;IgnoreResting"')
 }
-foreach ($entry in $expectedMasteryStatuses) {
-    $pattern = '(?ms)^new entry "' + [regex]::Escape($entry) + '"\s*.*?(?=^new entry |\z)'
-    $block = [regex]::Match($masteryStats, $pattern).Value
-    $spec = $masteryStatusSpecs[$entry]
-    Require ($block.Contains('type "StatusData"') -and $block.Contains('using "COS_CHAOS_RACE_TEMPLATE"')) `
-        "T键说明目标必须是只读 StatusData: $entry"
-    Require ($block.Contains("data `"DisplayName`" `"$($spec[0]);1`"") -and `
-        $block.Contains("data `"Description`" `"$($spec[1]);1`"")) `
-        "T键说明状态缺少固定名称或说明: $entry"
-    Require ($block.Contains("data `"Icon`" `"$($spec[2])`"") -and `
-        $block.Contains("data `"StackId`" `"$entry`"")) `
-        "T键说明状态图标或 StackId 错误: $entry"
-    Require (-not ($block -match '(?m)^data "Boosts"')) "一级说明状态不得提前产生效果: $entry"
+foreach ($entry in $masteryRequiredLines.Keys) {
+    $block = Get-MasteryBlock $entry
+    foreach ($line in $masteryRequiredLines[$entry]) { Require ($block.Contains($line)) "掌控混沌字段错误: $entry / $line" }
 }
+Require (-not ((Get-MasteryBlock 'COS_ChaosMasteryGuide') -match '(?m)^data "UnlockSpell"')) '掌控混沌指南不得授予技能'
+foreach ($entry in @('Shout_COS_ChaosMastery', 'Shout_COS_ChaosMasteryTune', 'Shout_COS_ChaosMasteryCorrect')) {
+    Require (-not ((Get-MasteryBlock $entry) -match '(?m)^data "UseCosts" ".*(ActionPoint|BonusActionPoint)')) "掌控混沌技能不得消耗行动点或附赠动作: $entry"
+}
+foreach ($entry in @('COS_CHAOS_MASTERY_TUNE', 'COS_CHAOS_MASTERY_CORRECT')) {
+    Require (-not (Get-MasteryBlock $entry).Contains('DisablePortraitIndicator')) "路线状态不得隐藏肖像提示: $entry"
+}
+
 [xml]$masteryIconDocument = Get-Content -LiteralPath (Join-Path $root "Public\$module\GUI\Icons_ChaosOrigins.lsx") -Raw -Encoding UTF8
 $registeredMasteryIcons = @($masteryIconDocument.SelectNodes('//node[@id="IconUV"]/attribute[@id="MapKey"]') | ForEach-Object { [string]$_.value })
-foreach ($icon in @('COS_Power', 'COS_Lost', 'COS_Echo')) {
-    Require ($registeredMasteryIcons -contains $icon) "掌控混沌复用了未注册图标: $icon"
+$masteryIcons = @([regex]::Matches($masteryStats, '(?m)^data "Icon" "([^"]+)"') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+foreach ($icon in $masteryIcons) {
+    Require (($icon -in @('COS_Power', 'COS_Lost', 'COS_Echo')) -and ($registeredMasteryIcons -contains $icon)) "掌控混沌使用了未注册或未批准图标: $icon"
 }
 
 $passivePath = Join-Path $root "Public\$module\Stats\Generated\Data\Passive.txt"
@@ -275,8 +286,6 @@ $masteryLocalizationHandles = @(
     'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
     'h03a4fec8gb0efg45f9g8c5fgfd91d085f127',
     'h0a9761a0g8ebeg4517ga88bgc9605641ea43',
-    'h1d501940gbda0g4737g8fecg66e1bbc85fe4',
-    'h09c3063egc130g48c2g8414g0535ea4196eb',
     'h5a27b995g2d15g4a0ega6a1g0e3a96807685',
     'hfb12183cg2eefg4c66g88cbg1d4452ea0277',
     'h4cb49a94g6cdag4be4g87eag95893020d052',
@@ -290,8 +299,13 @@ $expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $
 $masteryTooltipSpecs = @{
     h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_POSITIVE_INFO')
     h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO')
-    h09c3063egc130g48c2g8414g0535ea4196eb = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_RESULT_L01')
 }
+$masteryTooltipStatuses = @(
+    'COS_CHAOS_MASTERY_POSITIVE_INFO',
+    'COS_CHAOS_MASTERY_NEGATIVE_INFO',
+    'COS_CHAOS_MASTERY_CALM_INFO',
+    'COS_CHAOS_MASTERY_RESULT_L01'
+)
 $referenceLocalizationHandles = $null
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
@@ -321,7 +335,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         Require ($tooltips.Count -eq $expectedTooltips.Count -and -not (Compare-Object $expectedTooltips $tooltips)) `
             "掌控混沌 T键链接结构错误: $language / $description"
         foreach ($tooltip in $tooltips) {
-            Require ($expectedMasteryStatuses -contains $tooltip) `
+            Require ($masteryTooltipStatuses -contains $tooltip) `
                 "掌控混沌 T键链接指向不存在的 StatusData: $language / $tooltip"
         }
     }
