@@ -162,6 +162,12 @@ function Get-MasteryBlock([string]$Entry) {
     $pattern = '(?ms)^new entry "' + [regex]::Escape($Entry) + '".*?(?=^new entry |\z)'
     return [regex]::Match($masteryStats, $pattern).Value
 }
+function Require-MasteryData([string]$Entry, [string]$Field, [string]$Value) {
+    $pattern = '(?m)^data "' + [regex]::Escape($Field) + '" "([^"]*)"$'
+    $matches = @([regex]::Matches((Get-MasteryBlock $Entry), $pattern))
+    Require ($matches.Count -eq 1 -and $matches[0].Groups[1].Value -eq $Value) `
+        "掌控混沌字段必须恰好一次且值准确: $Entry / $Field"
+}
 
 $actionResourcePath = Join-Path $root "Public\$module\ActionResourceDefinitions\ActionResourceDefinitions.lsx"
 [xml]$actionResources = Get-Content -LiteralPath $actionResourcePath -Raw -Encoding UTF8
@@ -182,7 +188,7 @@ foreach ($field in @{ IsHidden = 'true'; MaxValue = '12'; ReplenishType = 'Never
 $masteryRequiredLines = @{
     COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Power"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
     COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Power"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,100%,0)"')
-    Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Power"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "Requirements" ""', 'data "Cooldown" ""')
+    Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Power"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" ""', 'data "Requirements" ""', 'data "Cooldown" ""')
     Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Power"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
     Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_Lost"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
     COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "Icon" "COS_Power"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
@@ -195,7 +201,14 @@ $masteryRequiredLines = @{
 }
 foreach ($entry in $masteryRequiredLines.Keys) {
     $block = Get-MasteryBlock $entry
-    foreach ($line in $masteryRequiredLines[$entry]) { Require ($block.Contains($line)) "掌控混沌字段错误: $entry / $line" }
+    foreach ($line in $masteryRequiredLines[$entry]) {
+        $dataMatch = [regex]::Match($line, '^data "([^"]+)" "([^"]*)"$')
+        if ($dataMatch.Success) {
+            Require-MasteryData $entry $dataMatch.Groups[1].Value $dataMatch.Groups[2].Value
+        } else {
+            Require ($block.Contains($line)) "掌控混沌字段错误: $entry / $line"
+        }
+    }
 }
 Require (-not ((Get-MasteryBlock 'COS_ChaosMasteryGuide') -match '(?m)^data "UnlockSpell"')) '掌控混沌指南不得授予技能'
 foreach ($entry in @('Shout_COS_ChaosMastery', 'Shout_COS_ChaosMasteryTune', 'Shout_COS_ChaosMasteryCorrect')) {
@@ -203,6 +216,13 @@ foreach ($entry in @('Shout_COS_ChaosMastery', 'Shout_COS_ChaosMasteryTune', 'Sh
 }
 foreach ($entry in @('COS_CHAOS_MASTERY_TUNE', 'COS_CHAOS_MASTERY_CORRECT')) {
     Require (-not (Get-MasteryBlock $entry).Contains('DisablePortraitIndicator')) "路线状态不得隐藏肖像提示: $entry"
+}
+$allMasteryStats = (Get-ChildItem -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data") -File -Filter '*.txt' | ForEach-Object {
+    Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
+}) -join "`n"
+foreach ($entry in $expectedMasteryEntries) {
+    $pattern = '(?m)^new entry "' + [regex]::Escape($entry) + '"$'
+    Require ([regex]::Matches($allMasteryStats, $pattern).Count -eq 1) "掌控混沌条目必须在完整 Stats 中全局唯一: $entry"
 }
 
 [xml]$masteryIconDocument = Get-Content -LiteralPath (Join-Path $root "Public\$module\GUI\Icons_ChaosOrigins.lsx") -Raw -Encoding UTF8

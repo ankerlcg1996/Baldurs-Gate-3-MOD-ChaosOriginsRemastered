@@ -27,6 +27,8 @@ data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"
 data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"
 data "UseCosts" ""
 data "SpellFlags" "IsLinkedSpellContainer"
+data "SpellProperties" ""
+data "TooltipStatusApply" ""
 data "Requirements" ""
 data "Cooldown" ""
 
