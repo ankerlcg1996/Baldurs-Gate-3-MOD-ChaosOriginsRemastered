@@ -641,9 +641,9 @@
 	<content contentuid="h7f3cf979gec23g46b4g87a5g17724ad407e7" version="1">浮光护体</content>
 	<content contentuid="hdb91fe36gf912g4c6bga223g06a6647455f7" version="1">判定为正面类别后，浮光护体可能替代普通正面结果。获得1d4+熟练加值点临时生命，持续2回合。临时生命不叠加，只保留较高值。</content>
 	<content contentuid="h1253cd25g6db6g4704g90e7gadf6ad0df3ed" version="1">掌控混沌</content>
-	<content contentuid="h11f157e4g81c1g4dc8gbd3eg20fbb820812f" version="1">消耗1点掌控混沌，选择增加1层调律或厄兆纠偏。洗点会清空路线并返还该点。</content>
-	<content contentuid="h46000001g0001g4001g8001g000000000001" version="1">当前1层。受击轮盘：正面164/300（54.7%），负面136/300（45.3%），平息0/300。已将2个负面格改为正面格。</content>
-	<content contentuid="h46000002g0002g4002g8002g000000000002" version="1">当前1层。受击轮盘：正面162/300（54.0%），负面134/300（44.7%），平息4/300（1.3%）。已将4个负面格改为平息格。</content>
+	<content contentuid="h11f157e4g81c1g4dc8gbd3eg20fbb820812f" version="1">消耗1点掌控混沌，选择增加1层调律或厄兆纠偏。洗点会清空两条路线，并返还当前等级已经获得的全部点数。</content>
+	<content contentuid="h46000001g0001g4001g8001g000000000001" version="1">每层将受击轮盘中的2个负面格改为正面格。状态图标上的数字就是当前层数；正面格=162+2×层数，负面格=138-2×层数。</content>
+	<content contentuid="h46000002g0002g4002g8002g000000000002" version="1">每层将受击轮盘中的4个负面格改为平息格。状态图标上的数字就是当前层数；负面格=138-4×层数，平息格=4×层数。</content>
 	<content contentuid="h0d010313gb67fg4c89ga5b9g30c58d4fb2f9" version="1">掌控点</content>
 	<content contentuid="hf1437f68g6231g4f22gb12ega9bcfc6189d8" version="1">隐藏资源。混沌起源每级获得1点，最多12点；休息不会恢复。</content>
 	<content contentuid="h02971056gdde9g4363g80d5gdaf480557af7" version="1">混沌平息</content>

@@ -1,6 +1,6 @@
 # Story 源码区
 
-此目录包含原生 Story 源码。当前版本以 `version.json` 为唯一准绳；已验收的最小起源基线之上接入了身份即时能力、剧情奖励、混沌核心机制与一级掌控混沌。Story 版不依赖 Script Extender、MCM 或 NMCM，也不授予额外技能熟练、专精、种族主动能力或 20 个种族被动。
+此目录包含原生 Story 源码。当前版本以 `version.json` 为唯一准绳；已验收的最小起源基线之上接入了身份即时能力、剧情奖励、混沌核心机制与 1 至 12 级掌控混沌。Story 版不依赖 Script Extender、MCM 或 NMCM，也不授予额外技能熟练、专精、种族主动能力或 20 个种族被动。
 
 当前可打包结构：
 
@@ -20,7 +20,7 @@ story-src/
    └─ Korean/
 ```
 
-`package-files.json` 锁定 26 个正式文件和四个 Goal。`verify.ps1` 核对装备熟练、七个基础法术、32 个种族身份标签、七个起源身份开关及即时能力、11 个官方剧情 Flag、一级掌控混沌、混沌核心 Stats/Story 和图标 atlas，并禁止技能熟练、专精、种族主动能力、旧菜单和 SE/MCM 依赖混入。`build-process.ps1` 使用 `ProcessStartInfo` 固定从当前 `$PSHOME` 启动真正的 `pwsh.exe -NoProfile -NonInteractive -File`，通过 `ArgumentList` 逐项传参，并发读取和透传 stdout/stderr，只按 `Process.ExitCode` 判定；运行测试覆盖 native-error 偏好 true/false、含空格/中文路径、重复调用、输出透传、非零退出码、`cmd.exe` 和 `if(false)` 变异，并确认调用者偏好未变。Story 编译的独立 IR root 验证只有全部通过后才生成绑定当前 `story.div.osi` 与 debug-info SHA-256/时间戳的新鲜证明；`verify.ps1` 和 `build.ps1` 都会实际编译并核对证明。随后构建进程才加载路径一致的指定 LSLib，编译标签与四语本地化、生成 PAK，并反向解包逐文件比较 SHA-256。
+`package-files.json` 锁定 26 个正式文件和四个 Goal。`verify.ps1` 核对装备熟练、七个基础法术、32 个种族身份标签、七个起源身份开关及即时能力、11 个官方剧情 Flag、1 至 12 级掌控混沌、混沌核心 Stats/Story 和图标 atlas，并禁止技能熟练、专精、种族主动能力、旧菜单和 SE/MCM 依赖混入。`build-process.ps1` 使用 `ProcessStartInfo` 固定从当前 `$PSHOME` 启动真正的 `pwsh.exe -NoProfile -NonInteractive -File`，通过 `ArgumentList` 逐项传参，并发读取和透传 stdout/stderr，只按 `Process.ExitCode` 判定；运行测试覆盖 native-error 偏好 true/false、含空格/中文路径、重复调用、输出透传、非零退出码、`cmd.exe` 和 `if(false)` 变异，并确认调用者偏好未变。Story 编译的独立 IR root 验证只有全部通过后才生成绑定当前 `story.div.osi` 与 debug-info SHA-256/时间戳的新鲜证明；`verify.ps1` 和 `build.ps1` 都会实际编译并核对证明。随后构建进程才加载路径一致的指定 LSLib，编译标签与四语本地化、生成 PAK，并反向解包逐文件比较 SHA-256。
 
 `version.json` 保存当前成功构建版本。每次完整构建与反向校验全部成功后，最后一段版本号才会 `+1`，并同步写入源 `meta.lsx`、PAK 内 `meta.lsx` 和 `dist/build-manifest.json`。
 
