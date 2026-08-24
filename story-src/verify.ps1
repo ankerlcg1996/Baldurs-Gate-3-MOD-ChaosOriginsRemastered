@@ -398,8 +398,8 @@ $masteryRequiredLines = @{
     Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Mastery"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" ""', 'data "Requirements" ""', 'data "Cooldown" ""')
     Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryTune"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
     Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryCorrect"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,-1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
-    COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
-    COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h46000001g0001g4001g8001g000000000001;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
+    COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h46000002g0002g4002g8002g000000000002;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration"')
     COS_CHAOS_MASTERY_POSITIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h5a27b995g2d15g4a0ega6a1g0e3a96807685;1"', 'data "Description" "hfb12183cg2eefg4c66g88cbg1d4452ea0277;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_POSITIVE_INFO"')
     COS_CHAOS_MASTERY_NEGATIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h4cb49a94g6cdag4be4g87eag95893020d052;1"', 'data "Description" "h6a7fc261g0307g46aeg9efcgea4e9d2add92;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_NEGATIVE_INFO"')
     COS_CHAOS_MASTERY_CALM_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h0f888c08ge96ag4ac4ga02fgd41297ea527e;1"', 'data "Description" "hb04f8bb6g8fceg4b25gaf0egb62b3a9f1b0e;1"', 'data "Icon" "COS_Echo"', 'data "StackId" "COS_CHAOS_MASTERY_CALM_INFO"')
@@ -480,6 +480,19 @@ foreach ($icon in $masteryIcons) {
 $passivePath = Join-Path $root "Public\$module\Stats\Generated\Data\Passive.txt"
 $passive = (Get-Content -LiteralPath $passivePath -Raw -Encoding UTF8).Trim()
 $passiveEntries = @([regex]::Matches($passive, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+$tooltipSourceStatuses = @(
+    'COS_CHAOS_ALLIN_L1','COS_CHAOS_ALLIN_L3','COS_CHAOS_ALLIN_L7','COS_CHAOS_GENESIS','COS_CHAOS_KILL',
+    'COS_CHAOS_LOST_ARMORCLASS_1','COS_CHAOS_LOST_ATTACK_1','COS_CHAOS_LOST_SAVINGTHROW_1','COS_CHAOS_LOST_SLOW','COS_CHAOS_LOST_SPELLDC_1',
+    'COS_CHAOS_MASTERY_CALM_INFO','COS_CHAOS_MASTERY_NEGATIVE_INFO','COS_CHAOS_MASTERY_POSITIVE_INFO','COS_CHAOS_MASTERY_RESULT_L01','COS_CHAOS_STRIKE_ACTIVE',
+    'COS_CHAOS_WOUND_LOG_BLEEDING','COS_CHAOS_WOUND_LOG_BLESS','COS_CHAOS_WOUND_LOG_BLINDED','COS_CHAOS_WOUND_LOG_BLOODLUST',
+    'COS_CHAOS_WOUND_LOG_BLUR','COS_CHAOS_WOUND_LOG_BURNING','COS_CHAOS_WOUND_LOG_EXTRADAMAGE_ACID','COS_CHAOS_WOUND_LOG_FRIGHTENED',
+    'COS_CHAOS_WOUND_LOG_HASTE','COS_CHAOS_WOUND_LOG_HEROISM','COS_CHAOS_WOUND_LOG_INVISIBILITY','COS_CHAOS_WOUND_LOG_MADNESS',
+    'COS_CHAOS_WOUND_LOG_MELEEADVANTAGE','COS_CHAOS_WOUND_LOG_MELEEDISADVANTAGE','COS_CHAOS_WOUND_LOG_POISONED','COS_CHAOS_WOUND_LOG_PRONE',
+    'COS_CHAOS_WOUND_LOG_RANGEDADVANTAGE','COS_CHAOS_WOUND_LOG_RANGEDDISADVANTAGE','COS_CHAOS_WOUND_LOG_RESTOREDAMAGE',
+    'COS_CHAOS_WOUND_LOG_SILENCED','COS_CHAOS_WOUND_LOG_SLOWED','COS_CHAOS_WOUND_LOG_SPELLADVANTAGE',
+    'COS_CHAOS_WOUND_LOG_SPELLDISADVANTAGE','COS_CHAOS_WOUND_LOG_STUNNED','COS_CHAOS_WOUND_LOG_VULNERABILITY_ACID','COS_CHAOS_WOUND_LOG_WET'
+)
+$tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' + $_.Substring(4) })
 $expectedPassiveEntries = @(
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
@@ -490,17 +503,53 @@ $expectedPassiveEntries = @(
     'COS_Origin_Shadowheart',
     'COS_Origin_Wyll',
     'COS_Origin_Karlach',
-    'COS_Origin_DarkUrge'
-)
+    'COS_Origin_DarkUrge',
+    'COS_FateRevision',
+    'COS_ChaosTooltipTemplate'
+) + $tooltipPassiveEntries
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
-    '静态包必须且只能定义三个基础被动和七个起源身份开关'
+    'Passive.txt 必须且只能定义基础、身份、命运改签与黄色词条代理被动'
 Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 3) '三项基础被动必须全部隐藏'
-Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 1) `
-    '七个继承同一基类的起源身份开关必须在获得时默认开启'
+Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
+    '起源身份开关基类与命运改签必须在获得时默认开启'
 Require ([regex]::Matches($passive, 'data "ToggleOnFunctors" "ApplyStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
     '七个起源身份被动必须各自应用一个隐藏状态'
 Require ([regex]::Matches($passive, 'data "ToggleOffFunctors" "RemoveStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
     '七个起源身份被动必须各自移除一个隐藏状态'
+Require ($passive.Contains('new entry "COS_FateRevision"') -and `
+    $passive.Contains('data "ToggleOnFunctors" "ApplyStatus(COS_CHAOS_FATE_ENABLED,100,-1)"') -and `
+    $passive.Contains('data "ToggleOffFunctors" "RemoveStatus(COS_CHAOS_FATE_ENABLED)"')) `
+    '命运改签必须是默认开启且可关闭的状态驱动被动'
+foreach ($tooltipPassive in $tooltipPassiveEntries) {
+    Require ([regex]::Matches($passive, '(?m)^new entry "' + [regex]::Escape($tooltipPassive) + '"\r?$').Count -eq 1) `
+        "黄色词条说明被动缺失或重复: $tooltipPassive"
+}
+$allTooltipStats = Normalize-LineEndings ((Get-ChildItem -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data") -File -Filter '*.txt' | `
+    ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 }) -join "`n")
+function Resolve-COSTooltipStatsField([string]$Entry, [string]$Field) {
+    $currentEntry = $Entry
+    $visited = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    while ($visited.Add($currentEntry)) {
+        $entryPattern = '(?ms)^new entry "' + [regex]::Escape($currentEntry) + '".*?(?=^new entry |\z)'
+        $entryBlocks = @([regex]::Matches($allTooltipStats, $entryPattern))
+        Require ($entryBlocks.Count -eq 1) "黄色词条字段解析目标缺失或重复: $Entry -> $currentEntry"
+        $fieldMatches = @([regex]::Matches($entryBlocks[0].Value, '(?m)^data "' + [regex]::Escape($Field) + '" "([^"]*)"$'))
+        Require ($fieldMatches.Count -le 1) "黄色词条字段重复: $currentEntry / $Field"
+        if ($fieldMatches.Count -eq 1) { return $fieldMatches[0].Groups[1].Value }
+        $usingMatches = @([regex]::Matches($entryBlocks[0].Value, '(?m)^using "([^"]+)"$'))
+        Require ($usingMatches.Count -eq 1) "黄色词条字段无值且无唯一父项: $currentEntry / $Field"
+        $currentEntry = $usingMatches[0].Groups[1].Value
+    }
+    throw "黄色词条 Stats 继承出现循环: $Entry / $Field"
+}
+foreach ($sourceStatus in $tooltipSourceStatuses) {
+    $proxyPassive = 'COS_TT_' + $sourceStatus.Substring(4)
+    foreach ($field in @('DisplayName', 'Description', 'Icon')) {
+        $sourceValue = Resolve-COSTooltipStatsField $sourceStatus $field
+        $proxyValue = Resolve-COSTooltipStatsField $proxyPassive $field
+        Require ($sourceValue -ceq $proxyValue) "黄色词条代理字段与原状态不一致: $sourceStatus -> $proxyPassive / $field"
+    }
+}
 Require ($passive.Contains('Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)')) `
     '基础熟练清单未与 ChaosOriginsRemastered 1.0.25 对齐'
 Require (-not ($passive -match 'ProficiencyBonus\(Skill,|ExpertiseBonus\(')) `
@@ -564,32 +613,29 @@ $masteryLocalizationHandles = @(
     'h02971056gdde9g4363g80d5gdaf480557af7',
     'h8fae3635gba76g4614ga776gf8054d011d82',
     'h7f3cf979gec23g46b4g87a5g17724ad407e7',
-    'hdb91fe36gf912g4c6bga223g06a6647455f7'
+    'hdb91fe36gf912g4c6bga223g06a6647455f7',
+    'h46000001g0001g4001g8001g000000000001',
+    'h46000002g0002g4002g8002g000000000002'
 )
 $expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $masteryLocalizationHandles) | Sort-Object
-$masteryTooltipSpecs = @{
-    h11f157e4g81c1g4dc8gbd3eg20fbb820812f = @('COS_CHAOS_MASTERY_POSITIVE_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_RESULT_L01')
-    h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = @('COS_CHAOS_MASTERY_NEGATIVE_INFO', 'COS_CHAOS_MASTERY_POSITIVE_INFO')
-    h0a9761a0g8ebeg4517ga88bgc9605641ea43 = @('COS_CHAOS_MASTERY_CALM_INFO', 'COS_CHAOS_MASTERY_NEGATIVE_INFO')
-}
-$masteryTooltipStatuses = @(
-    'COS_CHAOS_MASTERY_POSITIVE_INFO',
-    'COS_CHAOS_MASTERY_NEGATIVE_INFO',
-    'COS_CHAOS_MASTERY_CALM_INFO',
-    'COS_CHAOS_MASTERY_RESULT_L01'
+$masterySimpleDescriptionHandles = @(
+    'h11f157e4g81c1g4dc8gbd3eg20fbb820812f',
+    'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
+    'h0a9761a0g8ebeg4517ga88bgc9605641ea43',
+    'h09c3063egc130g48c2g8414g0535ea4196eb'
 )
 $masteryExactTexts = @{
     Chinese = @{
         h0d010313gb67fg4c89ga5b9g30c58d4fb2f9 = '掌控点'
         hf1437f68g6231g4f22gb12ega9bcfc6189d8 = '隐藏资源。混沌起源每级获得1点，最多12点；休息不会恢复。'
         h1253cd25g6db6g4704g90e7gadf6ad0df3ed = '掌控混沌'
-        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '用掌控点在调律与厄兆纠偏之间自由分配。查看<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">正面受创结果</LSTag>、<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">负面受创结果</LSTag>、<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">平息</LSTag>与<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">浮光护体</LSTag>。返还伤害类结果在受击后结算，不能挽救本次致死攻击。'
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '消耗1点掌控混沌，选择增加1层调律或厄兆纠偏。洗点会清空路线并返还该点。'
         hbfabec61g3070g4e70g8e71gc20633da5d52 = '调律'
-        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '每层把2/300的负面格转为正面格。正面=162+2A，负面=138-2A-4B，平息=4B。查看<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">正面受创结果</LSTag>与<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">负面受创结果</LSTag>。'
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '消耗1点掌控混沌，增加1层调律。'
         h03a4fec8gb0efg45f9g8c5fgfd91d085f127 = '厄兆纠偏'
-        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '每层把4/300的负面格转为平息格。平息不施加正面或负面结果，也不增加混沌迷失。查看<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">负面受创结果</LSTag>与<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">平息</LSTag>。'
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '消耗1点掌控混沌，增加1层厄兆纠偏。'
         h1d501940gbda0g4737g8fecg66e1bbc85fe4 = '浮光护体'
-        h09c3063egc130g48c2g8414g0535ea4196eb = '角色达到1级后，浮光护体自动进入正面权重池；不消耗掌控点，也不改变正面、负面或平息格数。查看<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">浮光护体效果</LSTag>。'
+        h09c3063egc130g48c2g8414g0535ea4196eb = '1级自动将浮光护体加入正面结果池：获得1d4+熟练加值点临时生命，持续2回合。'
         h5a27b995g2d15g4a0ega6a1g0e3a96807685 = '正面受创结果'
         hfb12183cg2eefg4c66g88cbg1d4452ea0277 = '正面格数=162+2A。受击轮盘先按300格判定类别，再从正面权重池抽取具体结果。'
         h4cb49a94g6cdag4be4g87eag95893020d052 = '负面受创结果'
@@ -600,18 +646,20 @@ $masteryExactTexts = @{
         h8fae3635gba76g4614ga776gf8054d011d82 = '本次受击轮盘平息：不施加正面或负面结果，也不增加混沌迷失。'
         h7f3cf979gec23g46b4g87a5g17724ad407e7 = '浮光护体'
         hdb91fe36gf912g4c6bga223g06a6647455f7 = '判定为正面类别后，浮光护体可能替代普通正面结果。获得1d4+熟练加值点临时生命，持续2回合。临时生命不叠加，只保留较高值。'
+        h46000001g0001g4001g8001g000000000001 = '当前1层。受击轮盘：正面164/300（54.7%），负面136/300（45.3%），平息0/300。已将2个负面格改为正面格。'
+        h46000002g0002g4002g8002g000000000002 = '当前1层。受击轮盘：正面162/300（54.0%），负面134/300（44.7%），平息4/300（1.3%）。已将4个负面格改为平息格。'
     }
     English = @{
         h0d010313gb67fg4c89ga5b9g30c58d4fb2f9 = 'Chaos Mastery Point'
         hf1437f68g6231g4f22gb12ega9bcfc6189d8 = 'Hidden resource. Chaos Origin gains 1 point per level, up to 12 points; resting does not restore it.'
         h1253cd25g6db6g4704g90e7gadf6ad0df3ed = 'Chaos Mastery'
-        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = 'Spend Chaos Mastery points freely between Attunement and Omen Correction. See <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">positive wound results</LSTag>, <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">negative wound results</LSTag>, <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">calm</LSTag>, and <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">Glimmering Guard</LSTag>. Damage-refund results resolve after the hit and cannot save you from that hit if it is lethal.'
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = 'Spend 1 Chaos Mastery point to gain 1 Attunement or Omen Correction stack. Respeccing clears the route and returns that point.'
         hbfabec61g3070g4e70g8e71gc20633da5d52 = 'Attunement'
-        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = 'Each stack converts 2/300 negative cells into positive cells. Positive=162+2A, Negative=138-2A-4B, Calm=4B. See <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">positive wound results</LSTag> and <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">negative wound results</LSTag>.'
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = 'Spend 1 Chaos Mastery point to gain 1 Attunement stack.'
         h03a4fec8gb0efg45f9g8c5fgfd91d085f127 = 'Omen Correction'
-        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = 'Each stack converts 4/300 negative cells into calm cells. Calm applies no positive or negative result and adds no Chaos Lost. See <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">negative wound results</LSTag> and <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">calm</LSTag>.'
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = 'Spend 1 Chaos Mastery point to gain 1 Omen Correction stack.'
         h1d501940gbda0g4737g8fecg66e1bbc85fe4 = 'Glimmering Guard'
-        h09c3063egc130g48c2g8414g0535ea4196eb = 'At level 1, Glimmering Guard automatically enters the weighted positive pool; it costs no Chaos Mastery point and does not change positive, negative, or calm cells. See the <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">Glimmering Guard effect</LSTag>.'
+        h09c3063egc130g48c2g8414g0535ea4196eb = 'At level 1, Glimmering Guard automatically enters the positive pool: gain 1d4 + Proficiency Bonus temporary hit points for 2 turns.'
         h5a27b995g2d15g4a0ega6a1g0e3a96807685 = 'Positive Wound Results'
         hfb12183cg2eefg4c66g88cbg1d4452ea0277 = 'Positive cells=162+2A. The Wound wheel first determines the category across 300 cells, then draws a specific result from the weighted positive pool.'
         h4cb49a94g6cdag4be4g87eag95893020d052 = 'Negative Wound Results'
@@ -622,18 +670,20 @@ $masteryExactTexts = @{
         h8fae3635gba76g4614ga776gf8054d011d82 = 'This Wound wheel trial is calmed: it applies no positive or negative result and adds no Chaos Lost.'
         h7f3cf979gec23g46b4g87a5g17724ad407e7 = 'Glimmering Guard'
         hdb91fe36gf912g4c6bga223g06a6647455f7 = 'After the positive category is selected, Glimmering Guard may replace an ordinary positive result. Gain temporary hit points equal to 1d4 + Proficiency Bonus for 2 turns. Temporary hit points do not stack; only the higher value remains.'
+        h46000001g0001g4001g8001g000000000001 = 'Current: 1 stack. Wound wheel: Positive 164/300 (54.7%), Negative 136/300 (45.3%), Calm 0/300. Two negative cells have become positive.'
+        h46000002g0002g4002g8002g000000000002 = 'Current: 1 stack. Wound wheel: Positive 162/300 (54.0%), Negative 134/300 (44.7%), Calm 4/300 (1.3%). Four negative cells have become calm.'
     }
     Japanese = @{
         h0d010313gb67fg4c89ga5b9g30c58d4fb2f9 = '混沌掌握ポイント'
         hf1437f68g6231g4f22gb12ega9bcfc6189d8 = '非表示のリソース。混沌の起源はレベルごとに1ポイントを獲得し、最大12ポイント。休息では回復しない。'
         h1253cd25g6db6g4704g90e7gadf6ad0df3ed = '混沌掌握'
-        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '混沌掌握ポイントを調律と凶兆補正に自由に配分する。<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">正の被撃結果</LSTag>、<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">負の被撃結果</LSTag>、<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">鎮静</LSTag>、<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">微光の守り</LSTag>を確認できる。ダメージ返還系の結果は被撃後に解決され、その攻撃が致死なら救うことはできない。'
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '混沌掌握ポイントを1消費し、調律または凶兆補正を1スタック得る。再訓練するとルートを消去し、そのポイントを返還する。'
         hbfabec61g3070g4e70g8e71gc20633da5d52 = '調律'
-        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '1スタックごとに負効果の2/300マスを正効果へ変換する。正効果=162+2A、負効果=138-2A-4B、鎮静=4B。<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">正の被撃結果</LSTag>と<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">負の被撃結果</LSTag>を確認できる。'
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '混沌掌握ポイントを1消費し、調律を1スタック得る。'
         h03a4fec8gb0efg45f9g8c5fgfd91d085f127 = '凶兆補正'
-        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '1スタックごとに負効果の4/300マスを鎮静へ変換する。鎮静は正・負いずれの結果も適用せず、混沌の喪失も増加させない。<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">負の被撃結果</LSTag>と<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">鎮静</LSTag>を確認できる。'
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '混沌掌握ポイントを1消費し、凶兆補正を1スタック得る。'
         h1d501940gbda0g4737g8fecg66e1bbc85fe4 = '微光の守り'
-        h09c3063egc130g48c2g8414g0535ea4196eb = 'レベル1になると、微光の守りが正効果プールへ自動的に加わる。混沌掌握ポイントを消費せず、正効果・負効果・鎮静のマス数を変えない。<LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">微光の守りの効果</LSTag>を確認できる。'
+        h09c3063egc130g48c2g8414g0535ea4196eb = 'レベル1で微光の守りが正効果プールへ加わる。2ターンの間、1d4＋習熟ボーナスの一時的ヒットポイントを得る。'
         h5a27b995g2d15g4a0ega6a1g0e3a96807685 = '正の被撃結果'
         hfb12183cg2eefg4c66g88cbg1d4452ea0277 = '正効果マス=162+2A。被撃ルーレットは先に300マスで結果区分を決め、その後、重み付き正効果プールから具体的な結果を抽選する。'
         h4cb49a94g6cdag4be4g87eag95893020d052 = '負の被撃結果'
@@ -644,18 +694,20 @@ $masteryExactTexts = @{
         h8fae3635gba76g4614ga776gf8054d011d82 = '今回の被撃ルーレットは鎮静された。正・負いずれの結果も適用せず、混沌の喪失も増加させない。'
         h7f3cf979gec23g46b4g87a5g17724ad407e7 = '微光の守り'
         hdb91fe36gf912g4c6bga223g06a6647455f7 = '正効果区分が選ばれた後、微光の守りが通常の正効果結果を置き換えることがある。1d4+習熟ボーナスに等しい一時的ヒット・ポイントを2ターン得る。一時的ヒット・ポイントは累積せず、高い値だけが残る。'
+        h46000001g0001g4001g8001g000000000001 = '現在1スタック。被撃ルーレット：正効果164/300（54.7%）、負効果136/300（45.3%）、鎮静0/300。負効果2マスを正効果へ変更済み。'
+        h46000002g0002g4002g8002g000000000002 = '現在1スタック。被撃ルーレット：正効果162/300（54.0%）、負効果134/300（44.7%）、鎮静4/300（1.3%）。負効果4マスを鎮静へ変更済み。'
     }
     Korean = @{
         h0d010313gb67fg4c89ga5b9g30c58d4fb2f9 = '혼돈 통제 점수'
         hf1437f68g6231g4f22gb12ega9bcfc6189d8 = '숨겨진 자원입니다. 혼돈 기원은 레벨마다 1점을 얻으며 최대 12점까지 보유합니다. 휴식으로 회복되지 않습니다.'
         h1253cd25g6db6g4704g90e7gadf6ad0df3ed = '혼돈 통제'
-        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '혼돈 통제 점수를 조율과 흉조 교정에 자유롭게 배분합니다. <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">긍정 피격 결과</LSTag>, <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">부정 피격 결과</LSTag>, <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">진정</LSTag>, <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">잔광 수호</LSTag>를 확인할 수 있습니다. 피해 반환 결과는 피격 후에 처리되며 치명적인 공격에서는 살릴 수 없습니다.'
+        h11f157e4g81c1g4dc8gbd3eg20fbb820812f = '혼돈 통제 점수 1을 소모해 조율 또는 흉조 교정 1중첩을 얻습니다. 재분배하면 경로를 초기화하고 해당 점수를 돌려받습니다.'
         hbfabec61g3070g4e70g8e71gc20633da5d52 = '조율'
-        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '중첩마다 부정 2/300칸을 긍정 칸으로 전환합니다. 긍정=162+2A, 부정=138-2A-4B, 진정=4B. <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_POSITIVE_INFO">긍정 피격 결과</LSTag>와 <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">부정 피격 결과</LSTag>를 확인할 수 있습니다.'
+        h0cf72805gf1e4g4f89gbc8fgb4eb4561d859 = '혼돈 통제 점수 1을 소모해 조율 1중첩을 얻습니다.'
         h03a4fec8gb0efg45f9g8c5fgfd91d085f127 = '흉조 교정'
-        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '중첩마다 부정 4/300칸을 진정 칸으로 전환합니다. 진정은 긍정 또는 부정 결과를 적용하지 않고 혼돈 상실도 증가시키지 않습니다. <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_NEGATIVE_INFO">부정 피격 결과</LSTag>와 <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_CALM_INFO">진정</LSTag>을 확인할 수 있습니다.'
+        h0a9761a0g8ebeg4517ga88bgc9605641ea43 = '혼돈 통제 점수 1을 소모해 흉조 교정 1중첩을 얻습니다.'
         h1d501940gbda0g4737g8fecg66e1bbc85fe4 = '잔광 수호'
-        h09c3063egc130g48c2g8414g0535ea4196eb = '1레벨이 되면 잔광 수호가 긍정 가중치 풀에 자동으로 추가됩니다. 혼돈 통제 점수를 소모하지 않고 긍정, 부정, 진정 칸 수를 바꾸지 않습니다. <LSTag Type="Status" Tooltip="COS_CHAOS_MASTERY_RESULT_L01">잔광 수호 효과</LSTag>를 확인할 수 있습니다.'
+        h09c3063egc130g48c2g8414g0535ea4196eb = '1레벨에 잔광 수호가 긍정 결과 풀에 추가됩니다. 2턴 동안 1d4＋숙련 보너스만큼 임시 생명력을 얻습니다.'
         h5a27b995g2d15g4a0ega6a1g0e3a96807685 = '긍정 피격 결과'
         hfb12183cg2eefg4c66g88cbg1d4452ea0277 = '긍정 칸=162+2A. 피격 룰렛은 먼저 300칸으로 결과 범주를 정한 뒤 긍정 가중치 풀에서 구체적인 결과를 뽑습니다.'
         h4cb49a94g6cdag4be4g87eag95893020d052 = '부정 피격 결과'
@@ -666,9 +718,12 @@ $masteryExactTexts = @{
         h8fae3635gba76g4614ga776gf8054d011d82 = '이번 피격 룰렛은 진정되었습니다. 긍정 또는 부정 결과를 적용하지 않고 혼돈 상실도 증가시키지 않습니다.'
         h7f3cf979gec23g46b4g87a5g17724ad407e7 = '잔광 수호'
         hdb91fe36gf912g4c6bga223g06a6647455f7 = '긍정 범주가 선택된 뒤 잔광 수호가 일반 긍정 결과를 대체할 수 있습니다. 1d4+숙련 보너스만큼 임시 생명력을 2턴 동안 얻습니다. 임시 생명력은 중첩되지 않으며 더 높은 값만 남습니다.'
+        h46000001g0001g4001g8001g000000000001 = '현재 1중첩. 피격 룰렛: 긍정 164/300(54.7%), 부정 136/300(45.3%), 진정 0/300. 부정 2칸을 긍정으로 전환했습니다.'
+        h46000002g0002g4002g8002g000000000002 = '현재 1중첩. 피격 룰렛: 긍정 162/300(54.0%), 부정 134/300(44.7%), 진정 4/300(1.3%). 부정 4칸을 진정으로 전환했습니다.'
     }
 }
 $referenceLocalizationHandles = $null
+$referenceProxyTooltipKeys = $null
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少本地化源: $language"
@@ -683,8 +738,8 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 646 -and @($handles | Select-Object -Unique).Count -eq 646) `
-        "完整本地化必须包含 646 个唯一文本: $language"
+    Require ($handles.Count -eq 648 -and @($handles | Select-Object -Unique).Count -eq 648) `
+        "完整本地化必须包含 648 个唯一文本: $language"
     Require (-not ($expectedHandles | Where-Object { $handles -notcontains $_ })) `
         "完整本地化缺少起源、身份或掌控混沌文本: $language"
     if ($null -eq $referenceLocalizationHandles) {
@@ -699,16 +754,35 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         Require ($actualText -ceq $expectedText) `
             "掌控混沌本地化正文不匹配: $language / $handle"
     }
-    foreach ($description in $masteryTooltipSpecs.Keys) {
-        $tooltips = @([regex]::Matches([string]$contentsByHandle[$description].InnerText, 'Tooltip="([^"]+)"') | `
-            ForEach-Object { $_.Groups[1].Value } | Sort-Object)
-        $expectedTooltips = @($masteryTooltipSpecs[$description] | Sort-Object)
-        Require ($tooltips.Count -eq $expectedTooltips.Count -and -not (Compare-Object $expectedTooltips $tooltips)) `
-            "掌控混沌 T键链接结构错误: $language / $description"
-        foreach ($tooltip in $tooltips) {
-            Require ($masteryTooltipStatuses -contains $tooltip) `
-                "掌控混沌 T键链接指向不存在的 StatusData: $language / $tooltip"
-        }
+    foreach ($description in $masterySimpleDescriptionHandles) {
+        $descriptionText = [string]$contentsByHandle[$description].InnerText
+        Require (-not $descriptionText.Contains('<LSTag ') -and -not ($descriptionText -match '[AB]=|162\+2A|138-2A-4B|4B')) `
+            "掌控混沌技能说明必须只描述直接效果，不得包含嵌套词条或公式: $language / $description"
+    }
+    $customStatusTooltips = @([regex]::Matches((Get-Content -LiteralPath $path -Raw -Encoding UTF8), 'Type="Status" Tooltip="COS_'))
+    Require ($customStatusTooltips.Count -eq 0) "自定义黄色词条不得继续使用空白的 Status 嵌套目标: $language"
+    $proxyTooltipKeys = @([regex]::Matches((Get-Content -LiteralPath $path -Raw -Encoding UTF8), 'Type="Passive" Tooltip="(COS_TT_[^"]+)"') | `
+        ForEach-Object { $_.Groups[1].Value })
+    $unusedMasteryTooltipPassiveEntries = @(
+        'COS_TT_CHAOS_MASTERY_CALM_INFO',
+        'COS_TT_CHAOS_MASTERY_NEGATIVE_INFO',
+        'COS_TT_CHAOS_MASTERY_POSITIVE_INFO',
+        'COS_TT_CHAOS_MASTERY_RESULT_L01'
+    )
+    $expectedLinkedTooltipKeys = @($tooltipPassiveEntries | Where-Object { $unusedMasteryTooltipPassiveEntries -notcontains $_ })
+    $expectedLinkedTooltipOccurrences = @($expectedLinkedTooltipKeys + 'COS_TT_CHAOS_GENESIS' | Sort-Object)
+    Require ($proxyTooltipKeys.Count -eq 38 -and `
+        -not (Compare-Object $expectedLinkedTooltipOccurrences @($proxyTooltipKeys | Sort-Object))) `
+        "自定义黄色词条必须严格保留37种、38处 Passive 说明代理: $language"
+    foreach ($tooltipKey in $proxyTooltipKeys) {
+        Require ($tooltipPassiveEntries -contains $tooltipKey) "黄色词条指向未注册的说明被动: $language / $tooltipKey"
+    }
+    $uniqueProxyTooltipKeys = @($proxyTooltipKeys | Sort-Object -Unique)
+    if ($null -eq $referenceProxyTooltipKeys) {
+        $referenceProxyTooltipKeys = $uniqueProxyTooltipKeys
+    } else {
+        Require (-not (Compare-Object $referenceProxyTooltipKeys $uniqueProxyTooltipKeys)) `
+            "四语黄色词条代理集合不一致: $language"
     }
 }
 
@@ -1157,7 +1231,7 @@ Require ($actualOriginToggleMappings.Count -eq 7 -and -not (Compare-Object $expe
 foreach ($requiredGoalText in @(
     'LevelGameplayStarted(_, _)',
     'GainedControl(_Character)',
-    'GetHostCharacter(_Character)',
+    'DB_Avatars(_Character)',
     'IsTagged(_Character, _Tag, 0)',
     'SetTag(_Character, _Tag)',
     'ClearTag(_Character, _Tag)',
@@ -1208,9 +1282,13 @@ foreach ($runtimeSensitiveCast in @(
 )) {
     Require ($goal.Contains($runtimeSensitiveCast)) "基础同步缺少当前游戏 Story 头要求的类型转换: $runtimeSensitiveCast"
 }
-foreach ($forbiddenGoalText in @('UserAvatarCreated', 'DB_Avatars', 'COS_AllSkillMastery', 'ProficiencyBonus(Skill', 'ExpertiseBonus', 'MCM', 'TutorialEvent', 'COS_RacialSpells_', 'DB_COS_RacialSpellPassive', 'TogglePassive(')) {
+foreach ($forbiddenGoalText in @('UserAvatarCreated', 'GetHostCharacter', 'COS_AllSkillMastery', 'ProficiencyBonus(Skill', 'ExpertiseBonus', 'MCM', 'TutorialEvent', 'COS_RacialSpells_', 'DB_COS_RacialSpellPassive', 'TogglePassive(')) {
     Require (-not $goal.Contains($forbiddenGoalText)) "基础同步 Goal 包含禁用行为: $forbiddenGoalText"
 }
+Require ([regex]::Matches($goal, '(?ms)IF\r?\nLevelGameplayStarted\(_, _\)\r?\nAND\r?\nDB_Avatars\(_Character\)\r?\nAND\r?\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\r?\nTHEN\r?\nPROC_COS_SyncBaseAfterCreation\(_Character\);').Count -eq 1) `
+    '读档时必须为每个混沌起源玩家角色迁移基础能力和命运改签'
+Require (-not ($goal -match '(?m)^DB_Avatars\([^_]')) `
+    '基础同步只能查询官方玩家角色数据库，不得写入虚构化身事实'
 Require (-not $goal.Contains('DB_COS_CorePassive(1, "COS_ChaosEcho")')) `
     '基础同步不得再授予混沌回响'
 Require ($goal.Contains('RemovePassive(_Character, "COS_ChaosEcho")')) `
@@ -1254,6 +1332,14 @@ foreach ($requiredMechanicsText in @(
 )) {
     Require ($mechanicsGoal.Contains($requiredMechanicsText)) "混沌核心机制缺少: $requiredMechanicsText"
 }
+Require ([regex]::Matches($mechanicsGoal, '(?ms)IF\r?\nLevelGameplayStarted\(_, _\)\r?\nAND\r?\nDB_Avatars\(_Character\)\r?\nAND\r?\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\r?\nTHEN\r?\nPROC_COS_Sync\(_Character\);').Count -eq 1 -and `
+    -not $mechanicsGoal.Contains('GetHostCharacter(')) `
+    '读档时必须为每个混沌起源玩家角色同步核心机制数据'
+Require ([regex]::Matches($mechanicsGoal, '(?ms)^PROC\r?\nPROC_COS_EnsurePowerState\(\(CHARACTER\)_Character\)\r?\nAND\r?\nNOT DB_COS_ConfigMechanic\(_Character, "Power", _\)\r?\nTHEN\r?\nDB_COS_ConfigMechanic\(_Character, "Power", 1\);').Count -eq 1 -and `
+    [regex]::Matches($mechanicsGoal, '(?ms)^PROC\r?\nPROC_COS_EnsurePowerState\(\(CHARACTER\)_Character\)\r?\nAND\r?\nNOT DB_COS_Power\(_Character, _\)\r?\nTHEN\r?\nDB_COS_Power\(_Character, 0\);').Count -eq 1 -and `
+    ($mechanicsGoal.Contains("PROC_COS_MigrateLegacyFatePending(_Character);`r`nPROC_COS_Register(_Character);`r`nPROC_COS_EnsurePowerState(_Character);`r`nPROC_COS_SyncPowerFromDatabase(_Character);") -or `
+     $mechanicsGoal.Contains("PROC_COS_MigrateLegacyFatePending(_Character);`nPROC_COS_Register(_Character);`nPROC_COS_EnsurePowerState(_Character);`nPROC_COS_SyncPowerFromDatabase(_Character);"))) `
+    '核心同步必须明确补齐旧存档缺失的混沌之力配置和数值行'
 foreach ($forbiddenMechanicsText in @(
     'UserAvatarCreated', 'LevelGameplayReady', 'TemplateAddTo', 'TemplateAddedTo', 'TutorialEvent',
     'PROC_COS_ConfigEnsureBook', 'PROC_COS_ConfigSyncOrigins', 'PROC_COS_ConfigSyncRacialPassives',
@@ -1338,6 +1424,12 @@ function Get-MechanicsThenActions([string]$Block) {
     $parts = @([regex]::Split($Block, '(?m)^THEN\r?$'))
     Require ($parts.Count -eq 2) 'Story 过程必须严格包含一个 THEN 动作段'
     return @($parts[1] -split '\r?\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+}
+
+function Get-MechanicsConditions([string]$Block) {
+    $parts = @([regex]::Split($Block, '(?m)^THEN\r?$'))
+    Require ($parts.Count -eq 2) 'Story 规则必须严格包含一个 THEN 动作段'
+    return @($parts[0] -split '\r?\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -notin @('IF', 'PROC', 'AND') })
 }
 
 $requiredWoundProcedures = @(
@@ -1514,26 +1606,15 @@ Require ($finishTrialBlocks.Count -eq 1 -and `
     '受击试炼结束必须先以最佳结果唯一结算，再清空候选池'
 
 $rollWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWound')
-Require ($rollWoundBlocks.Count -eq 2) '受击入口必须严格包含普通和命运改签两个分支'
-$normalWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 0)') })
-$fateWoundRoll = @($rollWoundBlocks | Where-Object { $_.Contains('HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)') })
-$normalWoundRollActions = @(Get-MechanicsThenActions $normalWoundRoll[0])
-$fateWoundRollActions = @(Get-MechanicsThenActions $fateWoundRoll[0])
+$normalWoundRollActions = @(Get-MechanicsThenActions $rollWoundBlocks[0])
 $expectedNormalWoundRollActions = @(
     'PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);'
 )
-$expectedFateWoundRollActions = @(
-    'RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);',
-    'PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);'
-)
-Require ($normalWoundRoll.Count -eq 1 -and `
+Require ($rollWoundBlocks.Count -eq 1 -and `
     (($normalWoundRollActions -join "`n") -ceq ($expectedNormalWoundRollActions -join "`n"))) `
     '普通受击入口必须且只能开始一次单次完整试炼'
-Require ($fateWoundRoll.Count -eq 1 -and $fateWoundRoll[0].Contains('GetLevel(_Character, _Level)') -and `
-    $fateWoundRoll[0].Contains('IntegerMin(_Level, 30, _CappedLevel)') -and `
-    $fateWoundRoll[0].Contains('DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)') -and `
-    (($fateWoundRollActions -join "`n") -ceq ($expectedFateWoundRollActions -join "`n"))) `
-    '命运改签入口必须按等级档取次数，并依次且仅执行移除挂起状态、开始完整试炼'
+Require (-not ($rollWoundBlocks[0] -match 'FATE|FateRolls|_RollCount')) `
+    '命运改签改为攻击触发后，受击轮盘不得再读取或消耗命运状态'
 
 $resolveWoundBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_ResolveWound')
 $giftResolve = @($resolveWoundBlocks | Where-Object { $_.Contains('_Roll == 26') })
@@ -1798,9 +1879,11 @@ function Require-StatsIcon([string]$Entry, [string]$ExpectedIcon) {
 $expectedStatsIcons = @{
     COS_ChaosWound = 'COS_Wound'
     COS_ChaosDuality = 'COS_Duality'
+    COS_FateRevision = 'COS_FateRevision'
     Shout_COS_FateRevision = 'COS_FateRevision'
     COS_CHAOS_FATE_READY = 'COS_FateRevision'
     COS_CHAOS_FATE_PENDING = 'COS_FateRevision'
+    COS_CHAOS_FATE_ENABLED = 'COS_FateRevision'
     COS_ChaosMasteryGuide = 'COS_Mastery'
     COS_ChaosMasteryPointL01 = 'COS_Mastery'
     Shout_COS_ChaosMastery = 'COS_Mastery'
@@ -1826,10 +1909,10 @@ foreach ($entry in $expectedStatsIcons.Keys) {
 foreach ($newIconCount in @{
     COS_Wound = 1
     COS_Duality = 1
-    COS_FateRevision = 3
+    COS_FateRevision = 5
     COS_Mastery = 3
-    COS_MasteryTune = 3
-    COS_MasteryCorrect = 3
+    COS_MasteryTune = 4
+    COS_MasteryCorrect = 4
 }.GetEnumerator()) {
     Require ([regex]::Matches($allStats, '(?m)^data "Icon" "' + [regex]::Escape($newIconCount.Key) + '"\r?$').Count -eq `
         $newIconCount.Value) "Stats新图标引用数量错误: $($newIconCount.Key)"
@@ -1871,17 +1954,197 @@ Require ($mechanicsGoal.Contains('_OldPower >= 10') -and `
     $mechanicsGoal.Contains('IntegerSubtract(_OldPower, 10, _NewPower)') -and `
     $mechanicsGoal.Contains('_Power >= 10')) `
     '混沌开天辟地必须需要并消耗 10 点混沌之力'
-Require ($featuresText.Contains('new entry "Shout_COS_FateRevision"') -and `
-    $featuresText.Contains("HasStatus('COS_CHAOS_FATE_READY',context.Source) and not HasStatus('COS_CHAOS_FATE_PENDING',context.Source)") -and `
-    $featuresText.Contains('ApplyStatus(SELF,COS_CHAOS_FATE_PENDING,100,-1)')) `
-    '命运改签必须是只能挂起一次的待结算能力'
-Require ($mechanicsGoal.Contains('UsingSpell(_Character, "Shout_COS_FateRevision", _, _, _)') -and `
-    $mechanicsGoal.Contains('IntegerSubtract(_OldPower, 1, _NewPower)')) `
-    '命运改签必须消耗 1 点混沌之力'
-Require ($mechanicsGoal.Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);') -and `
-    $mechanicsGoal.Contains('PROC_COS_ContinueWoundTrials') -and `
-    $mechanicsGoal.Contains('_NextRank > _BestRank')) `
-    '命运改签必须重投完整受击结果并保留评级最高的首次结果'
+Require ($passive.Contains('new entry "COS_FateRevision"') -and `
+    $passive.Contains('data "Properties" "IsToggled;ToggledDefaultOn"') -and `
+    $featuresText.Contains('new entry "COS_CHAOS_FATE_ENABLED"')) `
+    '命运改签必须是默认开启、可手动关闭的被动能力'
+Require ($goal.Contains('DB_COS_CorePassive(1, "COS_FateRevision");') -and `
+    -not $goal.Contains('DB_COS_CoreSpell(1, "Shout_COS_FateRevision");') -and `
+    $goal.Contains('RemoveSpell(_Character, "Shout_COS_FateRevision", 0);')) `
+    '命运改签必须授予新被动并清理旧主动技能及其挂起状态'
+Require (-not ($mechanicsGoal -match 'COS_CHAOS_FATE_READY|Shout_COS_FateRevision')) `
+    '命运改签攻击链不得继续依赖旧主动技能、待结算或资源就绪状态'
+Require ([regex]::Matches($mechanicsGoal, 'COS_CHAOS_FATE_PENDING').Count -eq 8) `
+    '旧命运改签待触发状态只能出现在四个互斥的一次性迁移分支中'
+$legacyFateMigrationBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_MigrateLegacyFatePending')
+$legacyFateRefundBlocks = @($legacyFateMigrationBlocks | Where-Object {
+    @(Get-MechanicsConditions $_) -contains 'DB_COS_Power(_Character, _OldPower)'
+})
+$legacyFatePowerOffBlocks = @($legacyFateMigrationBlocks | Where-Object {
+    @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic(_Character, "Power", 0)'
+})
+$legacyFateMissingConfigBlocks = @($legacyFateMigrationBlocks | Where-Object {
+    @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_ConfigMechanic(_Character, "Power", _)'
+})
+$legacyFateMissingPowerBlocks = @($legacyFateMigrationBlocks | Where-Object {
+    @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_Power(_Character, _)'
+})
+Require ($legacyFateMigrationBlocks.Count -eq 4 -and $legacyFateRefundBlocks.Count -eq 1 -and `
+    $legacyFatePowerOffBlocks.Count -eq 1 -and $legacyFateMissingConfigBlocks.Count -eq 1 -and `
+    $legacyFateMissingPowerBlocks.Count -eq 1) `
+    '旧命运改签迁移必须严格区分已扣款、Power关闭、配置缺失和数值缺失'
+$expectedLegacyFateRefundConditions = @(
+    'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
+    'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'DB_COS_ConfigMechanic(_Character, "Power", 1)',
+    'DB_COS_Power(_Character, _OldPower)',
+    'IntegerSum(_OldPower, 1, _NewPower)'
+)
+$expectedLegacyFateRefundActions = @(
+    'RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);',
+    'NOT DB_COS_Power(_Character, _OldPower);',
+    'DB_COS_Power(_Character, _NewPower);'
+)
+$expectedLegacyFateClearAction = @('RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);')
+Require (((Get-MechanicsConditions $legacyFateRefundBlocks[0]) -join "`n") -ceq ($expectedLegacyFateRefundConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $legacyFateRefundBlocks[0]) -join "`n") -ceq ($expectedLegacyFateRefundActions -join "`n")) `
+    '旧主动命运改签的预付1点必须在清除待触发状态时明确返还'
+$expectedLegacyFatePowerOffConditions = @(
+    'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
+    'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'DB_COS_ConfigMechanic(_Character, "Power", 0)'
+)
+$expectedLegacyFateMissingConfigConditions = @(
+    'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
+    'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'NOT DB_COS_ConfigMechanic(_Character, "Power", _)'
+)
+$expectedLegacyFateMissingPowerConditions = @(
+    'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
+    'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'DB_COS_ConfigMechanic(_Character, "Power", 1)',
+    'NOT DB_COS_Power(_Character, _)'
+)
+foreach ($legacyClearCase in @(
+    @($legacyFatePowerOffBlocks[0], $expectedLegacyFatePowerOffConditions, 'Power关闭'),
+    @($legacyFateMissingConfigBlocks[0], $expectedLegacyFateMissingConfigConditions, '配置缺失'),
+    @($legacyFateMissingPowerBlocks[0], $expectedLegacyFateMissingPowerConditions, '数值缺失')
+)) {
+    Require (((Get-MechanicsConditions $legacyClearCase[0]) -join "`n") -ceq (@($legacyClearCase[1]) -join "`n") -and `
+        ((Get-MechanicsThenActions $legacyClearCase[0]) -join "`n") -ceq ($expectedLegacyFateClearAction -join "`n")) `
+        "旧主动命运改签在$($legacyClearCase[2])时只能清理待触发状态，不得赠送资源"
+}
+$mechanicsIfBlocks = @([regex]::Matches($mechanicsGoal.Replace("`r`n", "`n"), '(?ms)^IF$.*?(?=^IF$|^PROC$|\z)') | ForEach-Object { $_.Value })
+$fateArmBlocks = @($mechanicsIfBlocks | Where-Object {
+    $_.Contains('UsingSpell(_Character, _, _, _, _StoryActionID)') -and $_.Contains('COS_FateRevision')
+})
+$expectedFateArmConditions = @(
+    'UsingSpell(_Character, _, _, _, _StoryActionID)',
+    'DB_COS_Character((CHARACTER)_Character)',
+    'HasPassive(_Character, "COS_FateRevision", 1)',
+    'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)'
+)
+$expectedFateArmActions = @(
+    'PROC_COS_ClearFateAction((CHARACTER)_Character);',
+    'DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);'
+)
+Require ($fateArmBlocks.Count -eq 1) '命运改签必须只有一个攻击行动记录入口'
+Require (((Get-MechanicsConditions $fateArmBlocks[0]) -join "`n") -ceq ($expectedFateArmConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fateArmBlocks[0]) -join "`n") -ceq ($expectedFateArmActions -join "`n")) `
+    '命运改签开启后必须用本次攻击的 StoryActionID 建立唯一待处理记录'
+$dualityAttackBlocks = @($mechanicsIfBlocks | Where-Object {
+    $_.Contains('AttackedBy(') -and
+    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)') -and
+    $_.Contains('COS_CHAOS_FATE_ENABLED')
+})
+Require ($dualityAttackBlocks.Count -eq 5) '两仪入口必须严格包含关闭、未记录、禁用资源、资源为0和命运改签五个互斥分支'
+$fateOffBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' })
+$fateUnarmedBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' })
+$fatePowerDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' })
+$fatePowerZeroBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, 0)' })
+$fateDualityBlock = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)' })
+Require ($fateOffBlocks.Count -eq 1 -and $fateUnarmedBlocks.Count -eq 1 -and `
+    $fatePowerDisabledBlocks.Count -eq 1 -and $fatePowerZeroBlocks.Count -eq 1 -and `
+    $fateDualityBlock.Count -eq 1) `
+    '两仪五个攻击分支必须各自唯一且可明确分类'
+$dualityCommonConditions = @(
+    'AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)',
+    '_AttackOwner == _Attacker',
+    'DB_COS_Character((CHARACTER)_AttackOwner)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
+    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)'
+)
+$expectedFateOffConditions = @($dualityCommonConditions + @(
+    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
+))
+$expectedFateUnarmedConditions = @($dualityCommonConditions + @(
+    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
+))
+$expectedFatePowerDisabledConditions = @($dualityCommonConditions + @(
+    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
+))
+$expectedFatePowerZeroConditions = @($dualityCommonConditions + @(
+    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
+    'DB_COS_Power((CHARACTER)_AttackOwner, 0)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
+))
+$expectedFateDualityConditions = @($dualityCommonConditions + @(
+    'HasPassive(_AttackOwner, "COS_FateRevision", 1)',
+    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
+    'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)',
+    '_OldPower >= 1', 'IntegerSubtract(_OldPower, 1, _NewPower)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'GetLevel(_AttackOwner, _Level)',
+    'IntegerMin(_Level, 30, _CappedLevel)',
+    'DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)',
+    '_CappedLevel >= _MinimumLevel', '_CappedLevel < _MaximumLevel',
+    'Random(100, _FirstDualityRoll)', 'IntegerSubtract(_RollCount, 1, _RemainingRolls)'
+))
+$expectedNormalDualityActions = @('PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);')
+$expectedClearedNormalDualityActions = @(
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
+    'PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);'
+)
+Require (((Get-MechanicsConditions $fateOffBlocks[0]) -join "`n") -ceq ($expectedFateOffConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fateOffBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
+    '命运改签关闭分支必须清除旧记录并执行一次普通两仪'
+Require (((Get-MechanicsConditions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedNormalDualityActions -join "`n")) `
+    '命运改签未记录本次攻击时必须执行一次普通两仪且不得消费资源'
+Require (((Get-MechanicsConditions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedFatePowerDisabledConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
+    '混沌之力机制关闭时必须清除本次记录并执行一次普通两仪'
+Require (((Get-MechanicsConditions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedFatePowerZeroConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
+    '混沌之力为0时必须清除本次记录并执行一次普通两仪'
+$fateDualityActions = @(Get-MechanicsThenActions $fateDualityBlock[0])
+$expectedFateDualityActions = @(
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
+    'NOT DB_COS_Power((CHARACTER)_AttackOwner, _OldPower);',
+    'DB_COS_Power((CHARACTER)_AttackOwner, _NewPower);',
+    'PROC_COS_SyncPowerDisplay((CHARACTER)_AttackOwner, _NewPower);',
+    'PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);'
+)
+Require (((Get-MechanicsConditions $fateDualityBlock[0]) -join "`n") -ceq ($expectedFateDualityConditions -join "`n") -and `
+    (($fateDualityActions -join "`n") -ceq ($expectedFateDualityActions -join "`n"))) `
+    '命运改签必须只在同一攻击命中时消耗1点、移除本次记录并开始最优两仪判定'
+$actualFateActionLines = @($mechanicsGoal.Replace("`r`n", "`n") -split "`n" | `
+    ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^(?:NOT )?DB_COS_FateAction\(' } | Sort-Object)
+$expectedFateActionLines = @(
+    'DB_COS_FateAction(_Character, _StoryActionID)',
+    'NOT DB_COS_FateAction(_Character, _StoryActionID);',
+    'DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);',
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
+    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);'
+) | Sort-Object
+Require (($actualFateActionLines -join "`n") -ceq ($expectedFateActionLines -join "`n")) `
+    '命运改签行动记录的全部读写位置必须严格受限于清理、建立和五个结算分支'
+Require (-not $mechanicsGoal.Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);')) `
+    '命运改签改为攻击触发后不得再重投受击轮盘'
 Require ($mechanicsGoal.Contains('Random(100, _FirstDualityRoll)') -and `
     $mechanicsGoal.Contains('PROC_COS_ContinueFateDuality') -and `
     $mechanicsGoal.Contains('IntegerMax(_BestRoll, _NextRoll, _NextBestRoll)')) `

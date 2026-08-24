@@ -49,11 +49,11 @@ DB_COS_CorePassive(1, "COS_ChaosLost");
 DB_COS_CorePassive(1, "COS_ChaosWound");
 DB_COS_CorePassive(1, "COS_ChaosDuality");
 DB_COS_CorePassive(1, "COS_ChaosAllIn");
+DB_COS_CorePassive(1, "COS_FateRevision");
 DB_COS_CorePassive(5, "COS_ChaosAllInUseL5");
 DB_COS_CorePassive(9, "COS_ChaosAllInUseL9");
 DB_COS_CorePassive(12, "COS_ChaosStrike");
 DB_COS_CoreSpell(1, "Shout_COS_ChaosGenesis");
-DB_COS_CoreSpell(1, "Shout_COS_FateRevision");
 DB_COS_CoreSpell(1, "Shout_COS_TestPower100");
 DB_COS_CoreSpell(1, "Shout_COS_TestRestoreAllIn");
 KBSECTION
@@ -82,6 +82,20 @@ AND
 HasPassive(_Character, "COS_ChaosEcho", 1)
 THEN
 RemovePassive(_Character, "COS_ChaosEcho");
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasSpell(_Character, "Shout_COS_FateRevision", 1)
+THEN
+RemoveSpell(_Character, "Shout_COS_FateRevision", 0);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_READY", 1)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_FATE_READY", _Character);
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
@@ -185,7 +199,9 @@ AddPassive(_Character, _FeaturePassive);
 IF
 LevelGameplayStarted(_, _)
 AND
-GetHostCharacter(_Character)
+DB_Avatars(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
 PROC_COS_SyncBaseAfterCreation(_Character);
 
