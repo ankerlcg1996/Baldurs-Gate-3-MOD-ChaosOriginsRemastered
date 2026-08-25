@@ -16,6 +16,7 @@
     "Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt",
     "Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt",
     "Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt",
+    "Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt",
     "Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt",
     "Mods/ChaosOriginsStory/Story/RawFiles/story_header.div",
     "Mods/ChaosOriginsStory/Story/story.div.osi",
@@ -26,6 +27,7 @@
     "Public/ChaosOriginsStory/Content/UI/[PAK]_ChaosOriginsStory/_merged.lsf",
     "Public/ChaosOriginsStory/GUI/Icons_ChaosOrigins.lsx",
     "Public/ChaosOriginsStory/GUI/UIOrigin_Portraits_Chaos.lsx",
+    "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosConfig.txt",
     "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosDamage.txt",
     "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosFeatures.txt",
     "Public/ChaosOriginsStory/Stats/Generated/Data/ChaosMastery.txt",
@@ -33,6 +35,7 @@
     "Public/ChaosOriginsStory/Stats/Generated/Data/Interrupt.txt",
     "Public/ChaosOriginsStory/Stats/Generated/Data/Passive.txt",
     "Public/ChaosOriginsStory/Stats/Generated/Data/Status_BOOST.txt",
-    "Public/ChaosOriginsStory/Tags/2c237035-d1a9-4469-91de-d74d8464c8d5.lsf"
+    "Public/ChaosOriginsStory/Tags/2c237035-d1a9-4469-91de-d74d8464c8d5.lsf",
+    "Public/ChaosOriginsStory/Tutorials/TutorialEvents.lsx"
   ]
 }

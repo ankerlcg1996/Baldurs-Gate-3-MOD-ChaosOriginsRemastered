@@ -145,13 +145,14 @@ $expectedStoryFiles = @(
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/story_header.div',
     'Mods/ChaosOriginsStory/Story/story.div.osi'
 ) | Sort-Object
 $actualStoryFiles = @($actual | Where-Object { $_ -match '/Story/' } | Sort-Object)
 Require (-not (Compare-Object $expectedStoryFiles $actualStoryFiles)) `
-    '原生 Story 包装必须同时包含四个 Goal、当前原始头和编译 Story'
+    '原生 Story 包装必须同时包含五个 Goal、当前原始头和编译 Story'
 Require (-not ($actual | Where-Object { $_ -match 'ScriptExtender|MCM' })) `
     '原生 Story 最终包夹带了 SE 或 MCM 依赖'
 
