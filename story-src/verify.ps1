@@ -65,13 +65,26 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
     $readmeText = Get-Content -LiteralPath $readmePath -Raw -Encoding UTF8
     Require (-not ($readmeText -match '1\.0\.1\.(?:28|44)|23\s*(?:个|/23)|三个\s*(?:Raw\s*)?Goal')) `
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
-    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('33') -and `
-        $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录33文件/4 Goals: $readmePath"
-    foreach ($shellBoundary in @('不读取角色配置', '不发送 TutorialEvent', '不改变玩法')) {
-        Require ($readmeText.Contains($shellBoundary)) `
-            "工程说明必须明确原生菜单空壳边界: $shellBoundary ($readmePath)"
+    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('36') -and `
+        $readmeText.Contains('五个 Goal')) "工程说明必须以version.json为准并记录36文件/5 Goals: $readmePath"
+    foreach ($configBoundary in @(
+        '每角色 Story DB 随存档保存', '旧存档只补缺失键不覆盖',
+        'XAML只发送固定 TutorialEvent不接受任意字符串键', '静态/编译/hash不等于实机验收'
+    )) {
+        Require ($readmeText.Contains($configBoundary)) `
+            "工程说明必须明确原生核心设置边界: $configBoundary ($readmePath)"
     }
 }
+
+$storyPath = Join-Path $root "Mods\$module\Story"
+$configGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_Config.txt'
+$configStatsPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosConfig.txt"
+$tutorialEventsPath = Join-Path $root "Public\$module\Tutorials\TutorialEvents.lsx"
+$missingConfigInputs = @($configGoalPath, $configStatsPath, $tutorialEventsPath | Where-Object {
+    -not (Test-Path -LiteralPath $_ -PathType Leaf)
+})
+Require ($missingConfigInputs.Count -eq 0) (
+    '缺少原生核心设置输入: ' + ($missingConfigInputs -join '; '))
 
 . $buildProcessHelperPath
 . $storyIrAttestationHelperPath
@@ -260,6 +273,7 @@ $expectedPackageFiles = @(
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/story_header.div',
     'Mods/ChaosOriginsStory/Story/story.div.osi',
@@ -272,11 +286,13 @@ $expectedPackageFiles = @(
     'Public/ChaosOriginsStory/GUI/UIOrigin_Portraits_Chaos.lsx',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosDamage.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosFeatures.txt',
+    'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosConfig.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosMastery.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosRuntime.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/Interrupt.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/Passive.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/Status_BOOST.txt',
+    'Public/ChaosOriginsStory/Tutorials/TutorialEvents.lsx',
     'Public/ChaosOriginsStory/Tags/2c237035-d1a9-4469-91de-d74d8464c8d5.lsf'
 ) | Sort-Object
 
@@ -285,8 +301,8 @@ Require (Test-Path -LiteralPath $manifestPath -PathType Leaf) '缺少 package-fi
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
 $manifest = @($manifestDocument.files | Sort-Object)
-Require ($manifest.Count -eq 33 -and @($manifest | Select-Object -Unique).Count -eq 33) `
-    '原生 Story 打包清单必须恰好包含33个唯一文件'
+Require ($manifest.Count -eq 36 -and @($manifest | Select-Object -Unique).Count -eq 36) `
+    '原生 Story 打包清单必须恰好包含36个唯一文件'
 Require (-not (Compare-Object $expectedPackageFiles $manifest)) '原生 Story 打包清单内容错误'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
@@ -802,7 +818,6 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     }
 }
 
-$storyPath = Join-Path $root "Mods\$module\Story"
 $headerPath = Join-Path $storyPath 'RawFiles\story_header.div'
 $goalPath = Join-Path $storyPath 'RawFiles\Goals\COS_BaseAfterCreation.txt'
 Require (Test-Path -LiteralPath $headerPath -PathType Leaf) '缺少 Story 编译头文件'
@@ -817,10 +832,10 @@ $rewardGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_OriginStoryRewards.tx
 $masteryGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMastery.txt'
 $mechanicsGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMechanics.txt'
 $goals = @(Get-ChildItem -LiteralPath (Split-Path $goalPath -Parent) -File -Filter '*.txt')
-Require ($goals.Count -eq 4 -and ($goals.FullName -contains $goalPath) -and `
+Require ($goals.Count -eq 5 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
-    ($goals.FullName -contains $mechanicsGoalPath)) `
-    '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制和起源剧情奖励四个 Goal'
+    ($goals.FullName -contains $mechanicsGoalPath) -and ($goals.FullName -contains $configGoalPath)) `
+    '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制、核心设置和起源剧情奖励五个 Goal'
 $masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
 if ($masteryGoal.EndsWith("`n")) {
     $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
@@ -1172,6 +1187,8 @@ foreach ($runtimeSensitiveRewardCast in @(
     Require ($rewardGoal.Contains($runtimeSensitiveRewardCast)) "剧情奖励缺少当前游戏 Story 头要求的类型转换: $runtimeSensitiveRewardCast"
 }
 $mechanicsGoal = Normalize-LineEndings (Get-Content -LiteralPath $mechanicsGoalPath -Raw -Encoding UTF8)
+$configGoal = Normalize-LineEndings (Get-Content -LiteralPath $configGoalPath -Raw -Encoding UTF8)
+$configStats = Normalize-LineEndings (Get-Content -LiteralPath $configStatsPath -Raw -Encoding UTF8)
 Require (-not $mechanicsGoal.Contains('COS_ChaosMastery')) `
     '一级原生选择切片不得提前修改两仪或受击轮盘逻辑'
 foreach ($requiredMechanicsText in @(
@@ -2053,6 +2070,76 @@ Require (-not $genesisBlock.Contains('ActionResource(ActionPoint')) `
     '混沌开天辟地状态不得额外增加行动点'
 Require ($featuresText.Contains('RestoreResource(ActionPoint,100%,0)')) `
     '混沌开天辟地施放时必须保留行动点恢复'
+$coreMechanicKeys = @('Power', 'Wound', 'KillPower', 'Duality', 'AllIn', 'Fate', 'Genesis', 'Strike', 'Mastery')
+$coreMechanicMirrors = @(
+    'COS_CFG_MECH_POWER', 'COS_CFG_MECH_WOUND', 'COS_CFG_MECH_KILLPOWER',
+    'COS_CFG_MECH_DUALITY', 'COS_CFG_MECH_ALLIN', 'COS_CFG_MECH_FATE',
+    'COS_CFG_MECH_GENESIS', 'COS_CFG_MECH_STRIKE', 'COS_CFG_MECH_MASTERY'
+)
+foreach ($key in $coreMechanicKeys) {
+    Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) `
+        "核心设置缺少默认开启键: $key"
+}
+Require ($configGoal.Contains('NOT DB_COS_ConfigMechanic(_Character, _Key, _)')) `
+    '核心设置初始化必须只补充缺失键，不得覆盖旧存档值'
+foreach ($mirror in $coreMechanicMirrors) {
+    $mirrorBlocks = @([regex]::Matches($configStats,
+        '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)'))
+    Require ($mirrorBlocks.Count -eq 1 -and $mirrorBlocks[0].Value.Contains('data "Properties" "IsHidden"')) `
+        "核心设置回显被动必须唯一且隐藏: $mirror"
+}
+foreach ($forbiddenConfigToken in @('COS_ChaosEcho', 'DB_COS_ConfigRace', 'ConfigRacialPassives', 'NMCM', 'ScriptExtender')) {
+    Require (-not ($configGoal.Contains($forbiddenConfigToken) -or $configStats.Contains($forbiddenConfigToken))) `
+        "核心设置 Goal/Stats 禁止依赖: $forbiddenConfigToken"
+}
+foreach ($writeGate in @(
+    'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
+)) {
+    Require ($configGoal.Contains($writeGate)) "核心设置写入规则缺少门禁: $writeGate"
+}
+Require ($configGoal.Contains('PROC_COS_ResetCore') -and $configGoal.Contains('PROC_COS_SyncMechanicMirrors')) `
+    '核心设置 Goal 必须定义 ResetCore 与 SyncMechanicMirrors'
+Require ([regex]::IsMatch($mechanicsGoal,
+    'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Genesis", 1\)') -and
+    [regex]::IsMatch($mechanicsGoal,
+    'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)')) `
+    '混沌机制必须分别在 Character 开天辟地和 AttackOwner 命运改签规则启用时才触发'
+$masteryConfigGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
+$masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
+    '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
+$masteryCharacterConfigBlocks = @($masteryIfBlocksForConfig | Where-Object {
+    $_ -match $masteryConfigGatePattern -and -not $_.Contains('CastedSpell(')
+})
+$masteryCastCharacterConfigBlocks = @($masteryIfBlocksForConfig | Where-Object {
+    $_ -match $masteryConfigGatePattern -and $_.Contains('CastedSpell(')
+})
+Require ($masteryCharacterConfigBlocks.Count -ge 1 -and $masteryCastCharacterConfigBlocks.Count -ge 1) `
+    '掌控混沌必须在 Character 与 cast-character 规则启用时才触发'
+
+[xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
+$tutorialEventNodes = @($tutorialEventsDocument.SelectNodes('//node[@id="TutorialEvent"]'))
+$expectedTutorialEvents = [ordered]@{
+    COS_CFG_UI_OPENED = '65247962-a3b0-417d-9044-85e4aad38079'
+    COS_CFG_MECH_POWER = '7f818c10-3f23-49f8-838a-d161c57bb35d'
+    COS_CFG_MECH_WOUND = '0574b4b8-549a-4b39-b810-6890c68642b1'
+    COS_CFG_MECH_KILLPOWER = '71abdeef-69d2-4385-8885-4f9ebbd829ca'
+    COS_CFG_MECH_DUALITY = 'aa88abcb-5f2e-452c-bdce-3ca6176db1e0'
+    COS_CFG_MECH_ALLIN = '2dd4ef80-1686-4989-8773-3cf6f12b9a36'
+    COS_CFG_MECH_FATE = 'aff82c28-d71a-4dad-837d-d41d8519051a'
+    COS_CFG_MECH_GENESIS = '063cc1a5-fe65-43e5-8531-d6974a7b1dce'
+    COS_CFG_MECH_STRIKE = '78baf203-f60c-4dac-99ea-a7f5d1339d71'
+    COS_CFG_MECH_MASTERY = '146d28dc-aa94-40e8-9bad-91b069055526'
+    COS_CFG_RESET_CORE = '08c8d67a-ace5-4830-8c2b-38b8c92bb470'
+}
+Require ($tutorialEventNodes.Count -eq 11) 'TutorialEvents 必须且只能包含11个 TutorialEvent node'
+foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
+    $matches = @($tutorialEventNodes | Where-Object {
+        $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
+        $_.SelectSingleNode('./attribute[@id="UUID"]').value -eq $tutorialEvent.Value -and
+        $_.SelectSingleNode('./attribute[@id="EventType"]').value -eq '8'
+    })
+    Require ($matches.Count -eq 1) "TutorialEvent Name/UUID/EventType 不匹配: $($tutorialEvent.Key)"
+}
 $formalFiles = @(
     (Join-Path $root "Mods\$module\meta.lsx"),
     $goalPath,
@@ -2086,8 +2173,6 @@ foreach ($relative in $guiRelativePaths) {
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少原生菜单空壳: $relative"
     $guiText = Get-Content -LiteralPath $path -Raw -Encoding UTF8
     [void][xml]$guiText
-    Require (-not ($guiText -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|DB_COS_Config|COS_CFG_MECH_|TabMECH|NMCM')) `
-        "最终 GUI 文件不得绑定角色或真实设置: $relative"
 }
 
 $stateMachineSpecs = @(
@@ -2182,6 +2267,22 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     Require ($returnButtons.Count -eq 1) "空壳页返回按钮必须发送 CloseWidget: $pageName"
     Require ($returnButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}') `
         "空壳页返回按钮必须绑定 CustomEvent: $pageName"
+    $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
+    Require ($tutorialActions.Count -eq 11) "核心设置页必须有11个固定 TutorialEvent 调用: $pageName"
+    Require ($page.Contains('CurrentPlayer.SelectedCharacter.Stats.Passives')) `
+        "核心设置页必须绑定 CurrentPlayer.SelectedCharacter.Stats.Passives: $pageName"
+    foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
+        Require ($page.Contains($tutorialEvent.Value)) `
+            "核心设置页不得漏发固定 TutorialEvent UUID: $pageName / $($tutorialEvent.Key)"
+    }
+    $mirrorTriggers = @($pageDocument.SelectNodes('//*[local-name()="DataTrigger"]') | Where-Object {
+        $_.GetAttribute('Value') -in $coreMechanicMirrors
+    })
+    Require ($mirrorTriggers.Count -eq 9) "核心设置页必须恰好有九个机制回显 DataTrigger: $pageName"
+    foreach ($mirror in $coreMechanicMirrors) {
+        Require (@($mirrorTriggers | Where-Object { $_.GetAttribute('Value') -eq $mirror }).Count -eq 1) `
+            "核心设置页缺少唯一回显 DataTrigger: $pageName / $mirror"
+    }
     Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
