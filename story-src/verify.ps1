@@ -2108,6 +2108,8 @@ foreach ($entrySpec in $entrySpecs) {
         Where-Object { $_.GetAttribute('CommandParameter') -eq 'OpenCOSConfig' })
     Require ($openConfigButtons.Count -eq 1) `
         "暂停菜单入口必须由唯一 LSButton 发送 OpenCOSConfig: $($entrySpec.Path)"
+    Require ($openConfigButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}') `
+        "暂停菜单入口必须由 LSButton 绑定 CustomEvent: $($entrySpec.Path)"
     $entryTitleBinding = $openConfigButtons[0].GetAttribute('Content') + $openConfigButtons[0].GetAttribute('Tag')
     Require ($entryTitleBinding.Contains('hc05fd001g0000g4000g8000g000000000000')) `
         "暂停菜单入口必须绑定既有四语标题: $($entrySpec.Path)"
@@ -2126,10 +2128,14 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $cancelBindings = @($pageDocument.SelectNodes('//*[local-name()="LSInputBinding"]') |
         Where-Object { $_.GetAttribute('BoundEvent') -eq 'UICancel' -and $_.GetAttribute('CommandParameter') -eq 'CloseWidget' })
     Require ($cancelBindings.Count -eq 1) "空壳页必须用 UICancel 发送 CloseWidget: $pageName"
+    Require ($cancelBindings[0].GetAttribute('Command') -eq '{Binding CustomEvent}') `
+        "空壳页的 UICancel 必须绑定 CustomEvent: $pageName"
     $returnButtons = @($pageDocument.SelectNodes('//*[local-name()="LSButton"]') |
         Where-Object { $_.GetAttribute('Content').Contains('hc05fd010g0000g4000g8000g000000000000') -and
             $_.GetAttribute('CommandParameter') -eq 'CloseWidget' })
     Require ($returnButtons.Count -eq 1) "空壳页返回按钮必须发送 CloseWidget: $pageName"
+    Require ($returnButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}') `
+        "空壳页返回按钮必须绑定 CustomEvent: $pageName"
     Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
