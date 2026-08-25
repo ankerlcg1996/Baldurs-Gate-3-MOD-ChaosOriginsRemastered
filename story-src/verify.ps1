@@ -2081,6 +2081,10 @@ function Get-StoryBlocks([string]$Story, [string]$Kind, [string]$Name) {
         '\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)'
     return @([regex]::Matches($Story, $pattern) | ForEach-Object { $_.Value })
 }
+function Get-AllStoryBlocks([string]$Story) {
+    return @([regex]::Matches($Story,
+        '(?ms)^(?:PROC|IF)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
+}
 function Require-StoryGate([string]$Block, [string]$Gate, [string]$Message) {
     Require ($Block -match $Gate) $Message
 }
@@ -2169,6 +2173,36 @@ $resetBlocks = @($configIfBlocks | Where-Object {
 })
 $configProcedureBlocks = @([regex]::Matches($configGoal,
     '(?ms)^PROC\n[A-Za-z0-9_]+\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
+$configAllBlocks = @($configIfBlocks + $configProcedureBlocks)
+$configSyncCharacterBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncCharacter')
+Require ($configSyncCharacterBlocks.Count -eq 1) '核心设置必须且只能定义一个 PROC_COS_ConfigSyncCharacter'
+$configSyncCharacterBlock = $configSyncCharacterBlocks[0]
+foreach ($syncAction in @(
+    'PROC_COS_ConfigEnsureMechanics(_Character);',
+    'PROC_COS_ConfigEnableEvents(_Character);',
+    'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
+)) {
+    Require ((Get-StoryThen $configSyncCharacterBlock).Contains($syncAction)) `
+        "ConfigSyncCharacter 必须同块调用: $syncAction"
+}
+$configEnsureCallBlocks = @($configAllBlocks | Where-Object {
+    (Get-StoryThen $_).Contains('PROC_COS_ConfigEnsureMechanics(_Character);')
+})
+Require ($configEnsureCallBlocks.Count -eq 1 -and $configEnsureCallBlocks[0] -eq $configSyncCharacterBlock) `
+    'Config Goal 内 EnsureMechanics 只能由 ConfigSyncCharacter 调用'
+$mechanicsAllBlocksForConfig = @(Get-AllStoryBlocks $mechanicsGoal)
+$registerBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_Register')
+$mechanicsEnsureCallBlocks = @($mechanicsAllBlocksForConfig | Where-Object {
+    (Get-StoryThen $_).Contains('PROC_COS_ConfigEnsureMechanics(_Character);')
+})
+Require ($registerBlocks.Count -eq 1 -and $registerBlocks[0].Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and
+    $mechanicsEnsureCallBlocks.Count -eq 1 -and $mechanicsEnsureCallBlocks[0] -eq $registerBlocks[0]) `
+    'Config Goal 外 EnsureMechanics 只能由带 OriginMarker 注册链的 COS_ChaosMechanics Register 调用'
+foreach ($otherGoal in @($goal, $masteryGoal, $rewardGoal)) {
+    Require (-not (@(Get-AllStoryBlocks $otherGoal | Where-Object {
+        (Get-StoryThen $_).Contains('PROC_COS_ConfigEnsureMechanics(_Character);')
+    }).Count)) '除 COS_ChaosMechanics Register 外，其他 Goal 不得调用 EnsureMechanics'
+}
 $configMechanicWritePattern = '(?m)^(?:NOT )?DB_COS_ConfigMechanic\('
 foreach ($configIfBlock in $configIfBlocks) {
     Require (-not ((Get-StoryThen $configIfBlock) -match $configMechanicWritePattern)) `
@@ -2233,11 +2267,31 @@ Require ([regex]::Matches($configGoal,
     $uiOpenedBlocks.Count -eq 1) 'UI_OPENED 必须只用固定 TutorialEvent 映射到一个读取入口'
 $uiOpenedActions = @((Get-StoryThen $uiOpenedBlocks[0]).Replace("`r`n", "`n") -split "`n" |
     ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
-Require ($uiOpenedActions.Count -eq 2 -and -not (Compare-Object $uiOpenedActions @(
-    'PROC_COS_ConfigEnsureMechanics(_Character);', 'PROC_COS_SyncMechanicMirrors(_Character);'
-))) 'UI_OPENED 只允许确保配置和同步镜像，不得写配置值'
+Require ($uiOpenedBlocks[0].Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and
+    $uiOpenedBlocks[0].Contains('IsControlled(_Character, 1)') -and
+    $uiOpenedActions.Count -eq 1 -and $uiOpenedActions[0] -eq 'PROC_COS_ConfigSyncCharacter(_Character);') `
+    'UI_OPENED 只允许受控混沌角色通过 ConfigSyncCharacter 初始化和同步，不得直接写配置值'
+$allStoryBlocksForConfigSync = @(
+    @(Get-AllStoryBlocks $configGoal) + $mechanicsAllBlocksForConfig +
+    @(Get-AllStoryBlocks $goal) + @(Get-AllStoryBlocks $masteryGoal) + @(Get-AllStoryBlocks $rewardGoal)
+)
+$allConfigSyncCallBlocks = @($allStoryBlocksForConfigSync | Where-Object {
+    (Get-StoryThen $_).Contains('PROC_COS_ConfigSyncCharacter(_Character);')
+})
+$lifecycleSyncSpecs = @(
+    'LevelGameplayStarted(_, _)', 'GainedControl(_Character)', 'LeveledUp(_Character)', 'RespecCompleted(_Character)'
+)
+foreach ($lifecycleEvent in $lifecycleSyncSpecs) {
+    $lifecycleSyncBlocks = @($allConfigSyncCallBlocks | Where-Object {
+        $_.StartsWith("IF`n") -and $_.Contains($lifecycleEvent) -and
+        $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)')
+    })
+    Require ($lifecycleSyncBlocks.Count -eq 1) "ConfigSyncCharacter 必须只由带 OriginMarker 的生命周期事件调用: $lifecycleEvent"
+}
+Require ($allConfigSyncCallBlocks.Count -eq 5 -and $allConfigSyncCallBlocks -contains $uiOpenedBlocks[0]) `
+    'ConfigSyncCharacter 的外部调用必须且只能是四个生命周期块和 UI_OPENED'
 Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ResetCore').Count -ge 1 -and
-    (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_SyncMechanicMirrors').Count -ge 1) `
+    (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors').Count -ge 1) `
     '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
 
 foreach ($forbiddenConfigPattern in @(
@@ -2268,27 +2322,46 @@ $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
     '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
 $masteryRelevantBlocks = @(
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMastery') +
+    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMasteryStatuses') +
+    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ApplyMasteryRouteStatus') +
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_UpdateMasterySpell') +
+    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ConsumeMasteryAvailable') +
     @($masteryIfBlocksForConfig | Where-Object {
         $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryTune"') -or
         $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect"')
     })
 )
-Require ($masteryRelevantBlocks.Count -ge 4) '掌控混沌必须覆盖 Sync、Update、Tune 和 Correct 的所有相关块'
-$masteryGoalPauseBlocks = @($masteryRelevantBlocks | Where-Object { $_ -match $masteryDisabledGatePattern })
-$masteryEnabledBlocks = @($masteryRelevantBlocks | Where-Object { $_ -notmatch $masteryDisabledGatePattern })
-foreach ($masteryEnabledBlock in $masteryEnabledBlocks) {
+$masteryRelevantBlocks += Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_RollWoundTrial'
+$masteryRelevantBlocks += Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_AddMasteryGiftWoundCandidates'
+Require ($masteryRelevantBlocks.Count -ge 11) '掌控混沌必须覆盖 Sync、显示、消费、Tune、Correct、轮盘和掌控赠礼激活块'
+foreach ($masteryEnabledBlock in $masteryRelevantBlocks) {
     Require-StoryGate $masteryEnabledBlock $masteryEnabledGatePattern `
-        '掌控混沌显示、消费和生效块必须精确具有 Mastery=1 开关门禁'
+        '掌控混沌显示、消费、生效、轮盘和赠礼块必须精确具有 Mastery=1 开关门禁'
+    Require (-not ($masteryEnabledBlock -match $masteryDisabledGatePattern)) `
+        '掌控混沌显示、消费、生效、轮盘和赠礼块不得出现 Mastery=0'
 }
 $masterySuspendBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSuspendMastery')
-$masteryPauseBlocks = @($masteryGoalPauseBlocks + $masterySuspendBlocks)
-foreach ($masteryPauseBlock in $masteryPauseBlocks) {
-    Require ($masteryPauseBlock -match $masteryDisabledGatePattern -and
-        $masteryPauseBlock.Contains('RemoveSpell(_Character, "Shout_COS_ChaosMastery", 0);')) `
-        'Mastery=0 只能出现在暂停选择技能的明确关闭分支'
+Require ($masterySuspendBlocks.Count -eq 1) '核心设置必须且只能定义一个 PROC_COS_ConfigSuspendMastery'
+$masterySuspendBlock = $masterySuspendBlocks[0]
+$masterySuspendActions = @((Get-StoryThen $masterySuspendBlock).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$expectedMasterySuspendActions = @(
+    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
+    'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
+    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);'
+)
+Require ($masterySuspendActions.Count -eq 3 -and
+    -not (Compare-Object ($expectedMasterySuspendActions | Sort-Object) ($masterySuspendActions | Sort-Object))) `
+    'ConfigSuspendMastery 的 THEN 只能清理路线显示和掌控选择技能'
+foreach ($forbiddenSuspendToken in @('DB_COS_Mastery', 'Consume', 'ApplyStatus', 'AddSpell', 'CastedSpell')) {
+    Require (-not $masterySuspendBlock.Contains($forbiddenSuspendToken)) `
+        "ConfigSuspendMastery 禁止删除账本、消费、施加状态或施法: $forbiddenSuspendToken"
 }
-Require ($masteryPauseBlocks.Count -ge 1) '掌控混沌关闭分支必须暂停选择技能而不删除成长账本'
+$applyMechanicBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigApplyMechanic')
+$masterySuspendIsGated = $masterySuspendBlock -match $masteryDisabledGatePattern -or @($applyMechanicBlocks | Where-Object {
+    $_ -match $masteryDisabledGatePattern -and (Get-StoryThen $_).Contains('PROC_COS_ConfigSuspendMastery(_Character);')
+}).Count -ge 1
+Require $masterySuspendIsGated 'ConfigSuspendMastery 必须由 Mastery=0 或 ConfigApplyMechanic 的明确关闭分支调用'
 
 [xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
 $tutorialEventNodes = @($tutorialEventsDocument.SelectNodes('//node[@id="TutorialEvent"]'))
