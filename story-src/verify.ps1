@@ -1913,6 +1913,7 @@ $fateArmBlocks = @($mechanicsIfBlocks | Where-Object {
 $expectedFateArmConditions = @(
     'UsingSpell(_Character, _, _, _, _StoryActionID)',
     'DB_COS_Character((CHARACTER)_Character)',
+    'DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)',
     'HasPassive(_Character, "COS_FateRevision", 1)',
     'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)'
 )
@@ -1944,6 +1945,7 @@ $dualityCommonConditions = @(
     '_AttackOwner == _Attacker',
     'DB_COS_Character((CHARACTER)_AttackOwner)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
     'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)'
 )
 $expectedFateOffConditions = @($dualityCommonConditions + @(
@@ -2088,7 +2090,11 @@ function Get-AllStoryBlocks([string]$Story) {
         '(?ms)^(?:PROC|IF)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
 }
 function Require-StoryGate([string]$Block, [string]$Gate, [string]$Message) {
-    Require ($Block -match $Gate) $Message
+    $normalizedBlock = Normalize-LineEndings $Block
+    $thenIndex = $normalizedBlock.IndexOf("`nTHEN`n", [StringComparison]::Ordinal)
+    Require ($thenIndex -ge 0) 'Story block 缺少 THEN 区'
+    $conditions = $normalizedBlock.Substring(0, $thenIndex)
+    Require ($conditions -match ('(?m)^' + $Gate + '$')) $Message
 }
 function Get-StoryThen([string]$Block) {
     $then = [regex]::Match($Block, '(?ms)^THEN\n(?<Actions>.*)$')
@@ -2103,6 +2109,30 @@ foreach ($storyBlockSource in $storyBlockSources.GetEnumerator()) {
     Require ((Get-AllStoryBlocks $storyBlockSource.Value).Count -gt 0) `
         "Story block 解析不得为空: $($storyBlockSource.Key)"
 }
+
+$storyGateProbe = "IF`nDB_COS_ConfigMechanic((CHARACTER)_Character, ""Genesis"", 1)`nTHEN`nPROC_COS_Test(_Character);"
+Require-StoryGate $storyGateProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_Character, "Genesis", 1\)' `
+    'Require-StoryGate 必须接受 THEN 前的完整条件行'
+$storyGateThenOnlyProbe = "IF`nDB_COS_Character((CHARACTER)_Character)`nTHEN`nDB_COS_ConfigMechanic((CHARACTER)_Character, ""Genesis"", 1);"
+$storyGateThenOnlyRejected = $false
+try {
+    Require-StoryGate $storyGateThenOnlyProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_Character, "Genesis", 1\)' `
+        'THEN 动作段中的同名门禁不得被接受'
+} catch {
+    $storyGateThenOnlyRejected = $true
+}
+Require $storyGateThenOnlyRejected 'Require-StoryGate 不得把 THEN 动作段误判为条件门禁'
+
+$fateArmProbe = "IF`n" + ($expectedFateArmConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_Character);"
+Require (((Get-MechanicsConditions $fateArmProbe) -join "`n") -ceq ($expectedFateArmConditions -join "`n")) `
+    '命运改签武装探针必须满足旧精确条件数组'
+Require-StoryGate $fateArmProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_Character, "Fate", 1\)' `
+    '命运改签武装探针必须满足 _Character Fate=1 门禁'
+$fateAttackProbe = "IF`n" + ($expectedFateOffConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_AttackOwner);"
+Require (((Get-MechanicsConditions $fateAttackProbe) -join "`n") -ceq ($expectedFateOffConditions -join "`n")) `
+    '命运改签攻击探针必须满足旧精确条件数组'
+Require-StoryGate $fateAttackProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_AttackOwner, "Fate", 1\)' `
+    '命运改签攻击探针必须满足 _AttackOwner Fate=1 门禁'
 
 $expectedCoreMirrors = [ordered]@{
     Power = 'COS_CFG_MECH_POWER'; Wound = 'COS_CFG_MECH_WOUND'; KillPower = 'COS_CFG_MECH_KILLPOWER'
@@ -2319,11 +2349,13 @@ $genesisUseBlocks = @($mechanicsIfBlocks | Where-Object {
 Require ($genesisUseBlocks.Count -eq 1) '开天辟地必须只有一个 UsingSpell 触发块'
 Require-StoryGate $genesisUseBlocks[0] $genesisGatePattern '开天辟地 UsingSpell 触发块必须要求 Genesis=1'
 
-$fateGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
+$fateArmGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Fate", 1\)'
+$fateAttackGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
 $fateRelevantBlocks = @($fateArmBlocks + $dualityAttackBlocks)
 Require ($fateRelevantBlocks.Count -eq 6) '命运改签必须保留一个武装和五个攻击多投相关块'
-foreach ($fateRelevantBlock in $fateRelevantBlocks) {
-    Require-StoryGate $fateRelevantBlock $fateGatePattern '命运改签武装/攻击多投块必须全部要求 Fate=1'
+Require-StoryGate $fateArmBlocks[0] $fateArmGatePattern '命运改签武装块必须用 _Character 要求 Fate=1'
+foreach ($fateAttackBlock in $dualityAttackBlocks) {
+    Require-StoryGate $fateAttackBlock $fateAttackGatePattern '命运改签攻击多投块必须用 _AttackOwner 要求 Fate=1'
 }
 
 $masteryEnabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
@@ -2507,6 +2539,79 @@ foreach ($entrySpec in $entrySpecs) {
     }
 }
 
+$xamlNamespace = 'http://schemas.microsoft.com/winfx/2006/xaml'
+$tutorialEventCommandBinding = '{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}'
+$expectedConfigRows = [ordered]@{
+    Power = @{ Uuid = '7f818c10-3f23-49f8-838a-d161c57bb35d'; Mirror = 'COS_CFG_MECH_POWER' }
+    Wound = @{ Uuid = '0574b4b8-549a-4b39-b810-6890c68642b1'; Mirror = 'COS_CFG_MECH_WOUND' }
+    KillPower = @{ Uuid = '71abdeef-69d2-4385-8885-4f9ebbd829ca'; Mirror = 'COS_CFG_MECH_KILLPOWER' }
+    Duality = @{ Uuid = 'aa88abcb-5f2e-452c-bdce-3ca6176db1e0'; Mirror = 'COS_CFG_MECH_DUALITY' }
+    AllIn = @{ Uuid = '2dd4ef80-1686-4989-8773-3cf6f12b9a36'; Mirror = 'COS_CFG_MECH_ALLIN' }
+    Fate = @{ Uuid = 'aff82c28-d71a-4dad-837d-d41d8519051a'; Mirror = 'COS_CFG_MECH_FATE' }
+    Genesis = @{ Uuid = '063cc1a5-fe65-43e5-8531-d6974a7b1dce'; Mirror = 'COS_CFG_MECH_GENESIS' }
+    Strike = @{ Uuid = '78baf203-f60c-4dac-99ea-a7f5d1339d71'; Mirror = 'COS_CFG_MECH_STRIKE' }
+    Mastery = @{ Uuid = '146d28dc-aa94-40e8-9bad-91b069055526'; Mirror = 'COS_CFG_MECH_MASTERY' }
+}
+function Get-XamlNamedNodes([xml]$Document, [string]$Name) {
+    return @($Document.SelectNodes('//*') | Where-Object {
+        $_.GetAttribute('Name', $xamlNamespace) -eq $Name
+    })
+}
+function Require-TutorialEventAction([System.Xml.XmlElement]$Action, [string]$Uuid, [string]$Message) {
+    Require ($Action.GetAttribute('CommandParameter') -eq $Uuid -and
+        $Action.GetAttribute('Command') -eq $tutorialEventCommandBinding) $Message
+}
+function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [string]$Mirror, [string]$PageName) {
+    $rowNodes = @(Get-XamlNamedNodes $Document "COSConfigRow$Key")
+    Require ($rowNodes.Count -eq 1) "核心设置行必须唯一命名为 COSConfigRow${Key}: $PageName"
+    $row = $rowNodes[0]
+    $rowActions = @($row.SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($rowActions.Count -eq 1) "核心设置行必须恰好一个 InvokeCommandAction: COSConfigRow$Key/$PageName"
+    Require-TutorialEventAction $rowActions[0] $Uuid "核心设置行必须绑定固定 TutorialEvent UUID: COSConfigRow$Key/$PageName"
+
+    $buttonNodes = @($row.SelectNodes('.//*') | Where-Object {
+        $_.GetAttribute('Name', $xamlNamespace) -eq "COSConfigToggle$Key"
+    })
+    Require ($buttonNodes.Count -eq 1) "核心设置事件按钮必须唯一命名为 COSConfigToggle${Key}: $PageName"
+    $buttonActions = @($buttonNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($buttonActions.Count -eq 1 -and [object]::ReferenceEquals($rowActions[0], $buttonActions[0])) `
+        "核心设置事件按钮必须承载本行唯一 InvokeCommandAction: COSConfigToggle$Key/$PageName"
+
+    $rowItemsControls = @($row.SelectNodes('.//*[local-name()="ItemsControl"]'))
+    Require ($rowItemsControls.Count -eq 1) "核心设置行必须恰好一个镜像 ItemsControl: COSConfigRow$Key/$PageName"
+    $mirrorNodes = @($rowItemsControls | Where-Object {
+        $_.GetAttribute('Name', $xamlNamespace) -eq "COSConfigMirror$Key"
+    })
+    Require ($mirrorNodes.Count -eq 1) "核心设置镜像必须唯一命名为 COSConfigMirror${Key}: $PageName"
+    $mirrorNode = $mirrorNodes[0]
+    Require ($mirrorNode.GetAttribute('ItemsSource') -eq '{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}') `
+        "核心设置镜像必须精确绑定 SelectedCharacter Passives: COSConfigMirror$Key/$PageName"
+    $mirrorTriggers = @($mirrorNode.SelectNodes('.//*[local-name()="DataTrigger"]'))
+    Require ($mirrorTriggers.Count -eq 1 -and
+        $mirrorTriggers[0].GetAttribute('Value') -eq $Mirror -and
+        $mirrorTriggers[0].GetAttribute('Binding') -eq '{Binding Name.Str}') `
+        "核心设置镜像必须用唯一 Name.Str DataTrigger 回显 ${Mirror}: COSConfigMirror$Key/$PageName"
+}
+function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message) {
+    [xml]$mutationDocument = $Markup
+    $rejected = $false
+    try {
+        Test-ConfigRowContract $mutationDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存变异探针'
+    } catch {
+        $rejected = $true
+    }
+    Require $rejected $Message
+}
+$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"><Grid x:Name="COSConfigRowPower"><Button x:Name="COSConfigTogglePower"><InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></Button><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER" /></ItemsControl></Grid></Root>'
+[xml]$configRowProbeDocument = $configRowProbe
+Test-ConfigRowContract $configRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存正向探针'
+Require-ConfigRowMutationRejected ($configRowProbe -replace '<Button x:Name="COSConfigTogglePower">.*?</Button>', '<Button x:Name="COSConfigTogglePower" />') `
+    '未附着在命名设置行上的 InvokeCommandAction 必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'CurrentPlayer\.SelectedCharacter\.Stats\.Passives', 'CurrentPlayer\.Stats\.Passives') `
+    '错误的镜像 ItemsSource 必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace '\{Binding Name\.Str\}', '{Binding DisplayName}') `
+    '错误的镜像 DataTrigger Binding 必须被拒绝'
+
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
     [xml]$pageDocument = $page
@@ -2531,9 +2636,29 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "核心设置页必须恰好调用11个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {
-        Require ($tutorialAction.GetAttribute('Command') -match '^\{Binding DataContext\.TutorialEvent(?:[,}])') `
+        Require ($tutorialAction.GetAttribute('Command') -eq $tutorialEventCommandBinding) `
             "核心设置页 InvokeCommandAction 必须精确绑定 DataContext.TutorialEvent: $pageName"
     }
+    foreach ($configRow in $expectedConfigRows.GetEnumerator()) {
+        Test-ConfigRowContract $pageDocument $configRow.Key $configRow.Value.Uuid $configRow.Value.Mirror $pageName
+    }
+    $loadedTriggers = @($pageDocument.SelectNodes('//*[local-name()="EventTrigger"]') |
+        Where-Object { $_.GetAttribute('EventName') -eq 'Loaded' })
+    Require ($loadedTriggers.Count -eq 1) "核心设置页必须恰好一个 Loaded 事件: $pageName"
+    $loadedActions = @($loadedTriggers[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    $namedLoadedActions = @($loadedActions | Where-Object {
+        $_.GetAttribute('Name', $xamlNamespace) -eq 'COSConfigOpenOnLoaded'
+    })
+    Require ($loadedActions.Count -eq 1 -and $namedLoadedActions.Count -eq 1) `
+        "核心设置页 Loaded 打开事件必须唯一命名为 COSConfigOpenOnLoaded: $pageName"
+    Require-TutorialEventAction $namedLoadedActions[0] $expectedTutorialEvents.COS_CFG_UI_OPENED `
+        "核心设置页 Loaded 打开事件必须发送 COS_CFG_UI_OPENED: $pageName"
+    $resetButtons = @(Get-XamlNamedNodes $pageDocument 'COSConfigResetCore')
+    Require ($resetButtons.Count -eq 1) "核心设置页重置按钮必须唯一命名为 COSConfigResetCore: $pageName"
+    $resetActions = @($resetButtons[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($resetActions.Count -eq 1) "核心设置页重置按钮必须恰好一个 InvokeCommandAction: $pageName"
+    Require-TutorialEventAction $resetActions[0] $expectedTutorialEvents.COS_CFG_RESET_CORE `
+        "核心设置页重置按钮必须发送 COS_CFG_RESET_CORE: $pageName"
     Require ($page.Contains('CurrentPlayer.SelectedCharacter.Stats.Passives')) `
         "核心设置页必须绑定 CurrentPlayer.SelectedCharacter.Stats.Passives: $pageName"
     $mirrorTriggers = @($pageDocument.SelectNodes('//*[local-name()="DataTrigger"]') | Where-Object {
