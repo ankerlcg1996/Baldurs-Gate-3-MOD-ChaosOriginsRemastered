@@ -1114,7 +1114,7 @@ foreach ($runtimeSensitiveRewardCast in @(
 )) {
     Require ($rewardGoal.Contains($runtimeSensitiveRewardCast)) "剧情奖励缺少当前游戏 Story 头要求的类型转换: $runtimeSensitiveRewardCast"
 }
-$mechanicsGoal = Get-Content -LiteralPath $mechanicsGoalPath -Raw -Encoding UTF8
+$mechanicsGoal = Normalize-LineEndings (Get-Content -LiteralPath $mechanicsGoalPath -Raw -Encoding UTF8)
 Require (-not $mechanicsGoal.Contains('COS_ChaosMastery')) `
     '一级原生选择切片不得提前修改两仪或受击轮盘逻辑'
 foreach ($requiredMechanicsText in @(
@@ -1286,7 +1286,13 @@ Require ($beginTrialBlocks.Count -eq 1 -and $beginTrialBlocks[0].Contains('_Roll
     '受击试炼必须从无最佳结果状态开始且只调用一次首轮试炼'
 $rollTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWoundTrial')
 $rollTrialActions = @(Get-MechanicsThenActions $rollTrialBlocks[0])
-$tuneCellMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerProduct\(_TuneCount, (\d+), _TuneCells\)$'))
+$tuneCellPattern = '(?m)^IntegerProduct\(_TuneCount, (\d+), _TuneCells\)$'
+$tuneCellMatches = @([regex]::Matches($rollTrialBlocks[0], $tuneCellPattern))
+$crlfEquivalentTuneCellMatches = @([regex]::Matches(
+    (Normalize-LineEndings ($rollTrialBlocks[0].Replace("`n", "`r`n"))), $tuneCellPattern))
+Require ($crlfEquivalentTuneCellMatches.Count -eq $tuneCellMatches.Count -and
+    $crlfEquivalentTuneCellMatches[0].Groups[1].Value -eq $tuneCellMatches[0].Groups[1].Value) `
+    '受击试炼规则在 CRLF 与 LF 下必须解析为相同的调律格数'
 $calmCellMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerProduct\(_CorrectCount, (\d+), _CalmCells\)$'))
 $positiveBaseMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\((\d+), _TuneCells, _PositiveEnd\)$'))
 $calmEndMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\(_PositiveEnd, _CalmCells, _CalmEnd\)$'))
