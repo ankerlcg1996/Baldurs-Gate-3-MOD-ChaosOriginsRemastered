@@ -2084,6 +2084,11 @@ function Get-StoryBlocks([string]$Story, [string]$Kind, [string]$Name) {
 function Require-StoryGate([string]$Block, [string]$Gate, [string]$Message) {
     Require ($Block -match $Gate) $Message
 }
+function Get-StoryThen([string]$Block) {
+    $then = [regex]::Match($Block, '(?ms)^THEN\n(?<Actions>.*)$')
+    Require $then.Success 'Story block 缺少 THEN 区'
+    return $then.Groups['Actions'].Value
+}
 
 $expectedCoreMirrors = [ordered]@{
     Power = 'COS_CFG_MECH_POWER'; Wound = 'COS_CFG_MECH_WOUND'; KillPower = 'COS_CFG_MECH_KILLPOWER'
@@ -2162,6 +2167,44 @@ $mechanicToggleBlocks = @($configIfBlocks | Where-Object {
 $resetBlocks = @($configIfBlocks | Where-Object {
     $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ResetCore')
 })
+$configProcedureBlocks = @([regex]::Matches($configGoal,
+    '(?ms)^PROC\n[A-Za-z0-9_]+\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
+$configMechanicWritePattern = '(?m)^(?:NOT )?DB_COS_ConfigMechanic\('
+foreach ($configIfBlock in $configIfBlocks) {
+    Require (-not ((Get-StoryThen $configIfBlock) -match $configMechanicWritePattern)) `
+        'IF 的 THEN 区不得直接增加或删除 DB_COS_ConfigMechanic，必须调用受白名单约束的 PROC'
+}
+$configMechanicWriteProcedures = @(
+    'PROC_COS_ConfigEnsureMechanics', 'PROC_COS_ConfigToggleMechanic', 'PROC_COS_ConfigResetCore'
+)
+foreach ($configProcedureBlock in $configProcedureBlocks) {
+    $procedureName = [regex]::Match($configProcedureBlock, '(?m)^PROC\n(?<Name>[A-Za-z0-9_]+)\(').Groups['Name'].Value
+    if ((Get-StoryThen $configProcedureBlock) -match $configMechanicWritePattern) {
+        Require ($configMechanicWriteProcedures -contains $procedureName) `
+            "只有白名单配置 PROC 可以写 DB_COS_ConfigMechanic: $procedureName"
+    }
+}
+$configWriteProcedureCalls = @('PROC_COS_ConfigToggleMechanic', 'PROC_COS_ConfigResetCore')
+foreach ($writeProcedure in $configWriteProcedureCalls) {
+    $externalCallIfBlocks = @($configIfBlocks | Where-Object { $_.Contains($writeProcedure) })
+    $expectedExternalBlocks = if ($writeProcedure -eq 'PROC_COS_ConfigToggleMechanic') {
+        $mechanicToggleBlocks
+    } else {
+        $resetBlocks
+    }
+    Require ($externalCallIfBlocks.Count -eq 1 -and $externalCallIfBlocks[0] -eq $expectedExternalBlocks[0]) `
+        "$writeProcedure 的外部调用必须且只能来自对应 TutorialEvent IF 块"
+}
+$whitelistedProcedurePattern = '^(?:PROC_COS_ConfigEnsureMechanics|PROC_COS_ConfigToggleMechanic|PROC_COS_ConfigResetCore)$'
+foreach ($configProcedureBlock in $configProcedureBlocks) {
+    $procedureName = [regex]::Match($configProcedureBlock, '(?m)^PROC\n(?<Name>[A-Za-z0-9_]+)\(').Groups['Name'].Value
+    $calledWriteProcedures = @([regex]::Matches((Get-StoryThen $configProcedureBlock),
+        '(?m)^PROC_COS_Config(?:ToggleMechanic|ResetCore)\(') | ForEach-Object {
+            $_.Value.Split('(')[0]
+        })
+    Require ($calledWriteProcedures.Count -eq 0 -or $procedureName -match $whitelistedProcedurePattern) `
+        "只有白名单配置 PROC 可以互调写入过程: $procedureName"
+}
 foreach ($eventWriteBlock in $mechanicToggleBlocks) {
     Require ($eventWriteBlock.Contains('DB_COS_ConfigMechanicEvent(_Event, _Key)')) `
         '机制切换 TutorialEvent 写入必须通过固定事件映射，不得接受任意字符串键'
@@ -2182,12 +2225,23 @@ foreach ($eventWriteBlock in $resetBlocks) {
 }
 Require ($mechanicToggleBlocks.Count -eq 1 -and $resetBlocks.Count -eq 1) `
     '核心设置必须各有一个带完整门禁的机制切换和恢复默认 TutorialEvent 写入块'
+$uiOpenedBlocks = @($configIfBlocks | Where-Object {
+    $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('DB_COS_ConfigUiOpenedEvent(_Event)')
+})
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigUiOpenedEvent\("65247962-a3b0-417d-9044-85e4aad38079"\);$').Count -eq 1 -and
+    $uiOpenedBlocks.Count -eq 1) 'UI_OPENED 必须只用固定 TutorialEvent 映射到一个读取入口'
+$uiOpenedActions = @((Get-StoryThen $uiOpenedBlocks[0]).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
+Require ($uiOpenedActions.Count -eq 2 -and -not (Compare-Object $uiOpenedActions @(
+    'PROC_COS_ConfigEnsureMechanics(_Character);', 'PROC_COS_SyncMechanicMirrors(_Character);'
+))) 'UI_OPENED 只允许确保配置和同步镜像，不得写配置值'
 Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ResetCore').Count -ge 1 -and
     (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_SyncMechanicMirrors').Count -ge 1) `
     '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
 
 foreach ($forbiddenConfigPattern in @(
-    '(?i)ChaosEcho', '(?i)\bDB_COS_Echo', '(?i)ConfigRace', '(?i)Racial', '(?i)RaceIdentity',
+    '(?i)[A-Za-z0-9_]*(Echo|Racial|Race)[A-Za-z0-9_]*',
     '(?i)Script\s*Extender', '(?i)\bNMCM\b', '(?i)\bMCM\b'
 )) {
     Require (-not ($configGoal -match $forbiddenConfigPattern -or $configStats -match $forbiddenConfigPattern)) `
@@ -2208,7 +2262,8 @@ foreach ($fateRelevantBlock in $fateRelevantBlocks) {
     Require-StoryGate $fateRelevantBlock $fateGatePattern '命运改签武装/攻击多投块必须全部要求 Fate=1'
 }
 
-$masteryGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", (?<Enabled>[01])\)'
+$masteryEnabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
+$masteryDisabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 0\)'
 $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
     '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
 $masteryRelevantBlocks = @(
@@ -2220,13 +2275,19 @@ $masteryRelevantBlocks = @(
     })
 )
 Require ($masteryRelevantBlocks.Count -ge 4) '掌控混沌必须覆盖 Sync、Update、Tune 和 Correct 的所有相关块'
-foreach ($masteryRelevantBlock in $masteryRelevantBlocks) {
-    Require-StoryGate $masteryRelevantBlock $masteryGatePattern '掌控混沌显示、消费和生效块必须全部具有 Mastery 开关门禁'
+$masteryGoalPauseBlocks = @($masteryRelevantBlocks | Where-Object { $_ -match $masteryDisabledGatePattern })
+$masteryEnabledBlocks = @($masteryRelevantBlocks | Where-Object { $_ -notmatch $masteryDisabledGatePattern })
+foreach ($masteryEnabledBlock in $masteryEnabledBlocks) {
+    Require-StoryGate $masteryEnabledBlock $masteryEnabledGatePattern `
+        '掌控混沌显示、消费和生效块必须精确具有 Mastery=1 开关门禁'
 }
-$masteryPauseBlocks = @($masteryRelevantBlocks | Where-Object {
-    $_ -match 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 0\)' -and
-    $_.Contains('RemoveSpell(_Character, "Shout_COS_ChaosMastery", 0);')
-})
+$masterySuspendBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSuspendMastery')
+$masteryPauseBlocks = @($masteryGoalPauseBlocks + $masterySuspendBlocks)
+foreach ($masteryPauseBlock in $masteryPauseBlocks) {
+    Require ($masteryPauseBlock -match $masteryDisabledGatePattern -and
+        $masteryPauseBlock.Contains('RemoveSpell(_Character, "Shout_COS_ChaosMastery", 0);')) `
+        'Mastery=0 只能出现在暂停选择技能的明确关闭分支'
+}
 Require ($masteryPauseBlocks.Count -ge 1) '掌控混沌关闭分支必须暂停选择技能而不删除成长账本'
 
 [xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
