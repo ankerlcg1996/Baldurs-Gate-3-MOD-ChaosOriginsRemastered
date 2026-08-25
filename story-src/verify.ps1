@@ -2076,45 +2076,158 @@ $coreMechanicMirrors = @(
     'COS_CFG_MECH_DUALITY', 'COS_CFG_MECH_ALLIN', 'COS_CFG_MECH_FATE',
     'COS_CFG_MECH_GENESIS', 'COS_CFG_MECH_STRIKE', 'COS_CFG_MECH_MASTERY'
 )
+function Get-StoryBlocks([string]$Story, [string]$Kind, [string]$Name) {
+    $pattern = '(?ms)^' + [regex]::Escape($Kind) + '\n' + [regex]::Escape($Name) +
+        '\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)'
+    return @([regex]::Matches($Story, $pattern) | ForEach-Object { $_.Value })
+}
+function Require-StoryGate([string]$Block, [string]$Gate, [string]$Message) {
+    Require ($Block -match $Gate) $Message
+}
+
+$expectedCoreMirrors = [ordered]@{
+    Power = 'COS_CFG_MECH_POWER'; Wound = 'COS_CFG_MECH_WOUND'; KillPower = 'COS_CFG_MECH_KILLPOWER'
+    Duality = 'COS_CFG_MECH_DUALITY'; AllIn = 'COS_CFG_MECH_ALLIN'; Fate = 'COS_CFG_MECH_FATE'
+    Genesis = 'COS_CFG_MECH_GENESIS'; Strike = 'COS_CFG_MECH_STRIKE'; Mastery = 'COS_CFG_MECH_MASTERY'
+}
+$defaultMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigMechanicDefault\("(?<Key>[^"]+)", (?<Value>\d+)\);$'))
+$defaultPairs = @($defaultMatches | ForEach-Object { "$($_.Groups['Key'].Value)=$($_.Groups['Value'].Value)" })
+$expectedDefaultPairs = @($coreMechanicKeys | ForEach-Object { "$_=1" })
+Require ($defaultMatches.Count -eq 9 -and @($defaultPairs | Sort-Object -Unique).Count -eq 9 -and
+    -not (Compare-Object ($expectedDefaultPairs | Sort-Object) ($defaultPairs | Sort-Object))) `
+    '核心设置默认值必须恰好是九个唯一键且全部为1'
 foreach ($key in $coreMechanicKeys) {
-    Require ($configGoal.Contains("DB_COS_ConfigMechanicDefault(`"$key`", 1);")) `
-        "核心设置缺少默认开启键: $key"
+    Require (-not $configGoal.Contains("DB_COS_ConfigMechanic(_Character, `"$key`", 1);")) `
+        "核心设置不得绕过 EnsureMechanics 重复写入显式默认值: $key"
 }
-Require ($configGoal.Contains('NOT DB_COS_ConfigMechanic(_Character, _Key, _)')) `
-    '核心设置初始化必须只补充缺失键，不得覆盖旧存档值'
+
+$mirrorMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigMechanicMirror\("(?<Key>[^"]+)", "(?<Mirror>COS_CFG_MECH_[A-Z]+)"\);$'))
+$mirrorPairs = @($mirrorMatches | ForEach-Object { "$($_.Groups['Key'].Value)=$($_.Groups['Mirror'].Value)" })
+$expectedMirrorPairs = @($expectedCoreMirrors.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" })
+Require ($mirrorMatches.Count -eq 9 -and @($mirrorPairs | Sort-Object -Unique).Count -eq 9 -and
+    -not (Compare-Object ($expectedMirrorPairs | Sort-Object) ($mirrorPairs | Sort-Object))) `
+    '核心设置镜像必须恰好九个唯一键并一一映射到九个回显被动'
+
+$expectedCoreEventMappings = [ordered]@{
+    '7f818c10-3f23-49f8-838a-d161c57bb35d' = 'Power'
+    '0574b4b8-549a-4b39-b810-6890c68642b1' = 'Wound'
+    '71abdeef-69d2-4385-8885-4f9ebbd829ca' = 'KillPower'
+    'aa88abcb-5f2e-452c-bdce-3ca6176db1e0' = 'Duality'
+    '2dd4ef80-1686-4989-8773-3cf6f12b9a36' = 'AllIn'
+    'aff82c28-d71a-4dad-837d-d41d8519051a' = 'Fate'
+    '063cc1a5-fe65-43e5-8531-d6974a7b1dce' = 'Genesis'
+    '78baf203-f60c-4dac-99ea-a7f5d1339d71' = 'Strike'
+    '146d28dc-aa94-40e8-9bad-91b069055526' = 'Mastery'
+}
+$eventMappingMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigMechanicEvent\("(?<Event>[0-9a-f-]+)", "(?<Key>[^"]+)"\);$'))
+$eventMappingPairs = @($eventMappingMatches | ForEach-Object { "$($_.Groups['Event'].Value)=$($_.Groups['Key'].Value)" })
+$expectedEventMappingPairs = @($expectedCoreEventMappings.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" })
+Require ($eventMappingMatches.Count -eq 9 -and @($eventMappingPairs | Sort-Object -Unique).Count -eq 9 -and
+    -not (Compare-Object ($expectedEventMappingPairs | Sort-Object) ($eventMappingPairs | Sort-Object))) `
+    '核心设置必须把九个固定 TutorialEvent UUID 唯一映射到九个机制键'
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigResetCoreEvent\("08c8d67a-ace5-4830-8c2b-38b8c92bb470"\);$').Count -eq 1) `
+    '恢复默认必须只注册一个固定 TutorialEvent UUID'
+
+$configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
+    ForEach-Object { $_.Groups[1].Value })
+Require ($configPassiveEntries.Count -eq 9 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 9 -and
+    -not (Compare-Object ($coreMechanicMirrors | Sort-Object) ($configPassiveEntries | Sort-Object))) `
+    'ChaosConfig.txt 必须且只能定义九个核心机制回显被动'
 foreach ($mirror in $coreMechanicMirrors) {
-    $mirrorBlocks = @([regex]::Matches($configStats,
-        '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)'))
-    Require ($mirrorBlocks.Count -eq 1 -and $mirrorBlocks[0].Value.Contains('data "Properties" "IsHidden"')) `
-        "核心设置回显被动必须唯一且隐藏: $mirror"
+    $mirrorBlock = [regex]::Match($configStats,
+        '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
+    Require ($mirrorBlock.Contains('data "Properties" "IsHidden"')) "核心设置回显被动必须隐藏: $mirror"
 }
-foreach ($forbiddenConfigToken in @('COS_ChaosEcho', 'DB_COS_ConfigRace', 'ConfigRacialPassives', 'NMCM', 'ScriptExtender')) {
-    Require (-not ($configGoal.Contains($forbiddenConfigToken) -or $configStats.Contains($forbiddenConfigToken))) `
-        "核心设置 Goal/Stats 禁止依赖: $forbiddenConfigToken"
+
+$configEnsureBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigEnsureMechanics')
+Require ($configEnsureBlocks.Count -eq 1) '核心设置必须且只能定义一个 PROC_COS_ConfigEnsureMechanics'
+$configEnsureBlock = $configEnsureBlocks[0]
+Require ($configEnsureBlock -match 'DB_COS_ConfigMechanicDefault\(_Key, _Default\)' -and
+    $configEnsureBlock -match 'NOT DB_COS_ConfigMechanic\(_Character, _Key, _\)' -and
+    $configEnsureBlock -match 'THEN\nDB_COS_ConfigMechanic\(_Character, _Key, _Default\);') `
+    '核心设置初始化必须在同一 EnsureMechanics PROC 内由默认表只补缺失值'
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigMechanic\(_Character, _Key, _Default\);$').Count -eq 1) `
+    '核心设置默认值写入必须只有 EnsureMechanics 的唯一受门禁入口'
+
+$configIfBlocks = @([regex]::Matches($configGoal,
+    '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
+$mechanicToggleBlocks = @($configIfBlocks | Where-Object {
+    $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ConfigToggleMechanic')
+})
+$resetBlocks = @($configIfBlocks | Where-Object {
+    $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ResetCore')
+})
+foreach ($eventWriteBlock in $mechanicToggleBlocks) {
+    Require ($eventWriteBlock.Contains('DB_COS_ConfigMechanicEvent(_Event, _Key)')) `
+        '机制切换 TutorialEvent 写入必须通过固定事件映射，不得接受任意字符串键'
+    foreach ($writeGate in @(
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
+    )) {
+        Require ($eventWriteBlock.Contains($writeGate)) "TutorialEvent 配置写入缺少同块门禁: $writeGate"
+    }
 }
-foreach ($writeGate in @(
-    'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
+foreach ($eventWriteBlock in $resetBlocks) {
+    Require ($eventWriteBlock.Contains('DB_COS_ConfigResetCoreEvent(_Event)')) `
+        '恢复默认 TutorialEvent 写入必须通过固定事件映射，不得接受任意字符串键'
+    foreach ($writeGate in @(
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
+    )) {
+        Require ($eventWriteBlock.Contains($writeGate)) "恢复默认 TutorialEvent 写入缺少同块门禁: $writeGate"
+    }
+}
+Require ($mechanicToggleBlocks.Count -eq 1 -and $resetBlocks.Count -eq 1) `
+    '核心设置必须各有一个带完整门禁的机制切换和恢复默认 TutorialEvent 写入块'
+Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ResetCore').Count -ge 1 -and
+    (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_SyncMechanicMirrors').Count -ge 1) `
+    '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
+
+foreach ($forbiddenConfigPattern in @(
+    '(?i)ChaosEcho', '(?i)\bDB_COS_Echo', '(?i)ConfigRace', '(?i)Racial', '(?i)RaceIdentity',
+    '(?i)Script\s*Extender', '(?i)\bNMCM\b', '(?i)\bMCM\b'
 )) {
-    Require ($configGoal.Contains($writeGate)) "核心设置写入规则缺少门禁: $writeGate"
+    Require (-not ($configGoal -match $forbiddenConfigPattern -or $configStats -match $forbiddenConfigPattern)) `
+        "核心设置 Goal/Stats 禁止依赖: $forbiddenConfigPattern"
 }
-Require ($configGoal.Contains('PROC_COS_ResetCore') -and $configGoal.Contains('PROC_COS_SyncMechanicMirrors')) `
-    '核心设置 Goal 必须定义 ResetCore 与 SyncMechanicMirrors'
-Require ([regex]::IsMatch($mechanicsGoal,
-    'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Genesis", 1\)') -and
-    [regex]::IsMatch($mechanicsGoal,
-    'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)')) `
-    '混沌机制必须分别在 Character 开天辟地和 AttackOwner 命运改签规则启用时才触发'
-$masteryConfigGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
+
+$genesisGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Genesis", 1\)'
+$genesisUseBlocks = @($mechanicsIfBlocks | Where-Object {
+    $_.Contains('UsingSpell(_Character, "Shout_COS_ChaosGenesis"')
+})
+Require ($genesisUseBlocks.Count -eq 1) '开天辟地必须只有一个 UsingSpell 触发块'
+Require-StoryGate $genesisUseBlocks[0] $genesisGatePattern '开天辟地 UsingSpell 触发块必须要求 Genesis=1'
+
+$fateGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
+$fateRelevantBlocks = @($fateArmBlocks + $dualityAttackBlocks)
+Require ($fateRelevantBlocks.Count -eq 6) '命运改签必须保留一个武装和五个攻击多投相关块'
+foreach ($fateRelevantBlock in $fateRelevantBlocks) {
+    Require-StoryGate $fateRelevantBlock $fateGatePattern '命运改签武装/攻击多投块必须全部要求 Fate=1'
+}
+
+$masteryGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", (?<Enabled>[01])\)'
 $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
     '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
-$masteryCharacterConfigBlocks = @($masteryIfBlocksForConfig | Where-Object {
-    $_ -match $masteryConfigGatePattern -and -not $_.Contains('CastedSpell(')
+$masteryRelevantBlocks = @(
+    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMastery') +
+    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_UpdateMasterySpell') +
+    @($masteryIfBlocksForConfig | Where-Object {
+        $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryTune"') -or
+        $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect"')
+    })
+)
+Require ($masteryRelevantBlocks.Count -ge 4) '掌控混沌必须覆盖 Sync、Update、Tune 和 Correct 的所有相关块'
+foreach ($masteryRelevantBlock in $masteryRelevantBlocks) {
+    Require-StoryGate $masteryRelevantBlock $masteryGatePattern '掌控混沌显示、消费和生效块必须全部具有 Mastery 开关门禁'
+}
+$masteryPauseBlocks = @($masteryRelevantBlocks | Where-Object {
+    $_ -match 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 0\)' -and
+    $_.Contains('RemoveSpell(_Character, "Shout_COS_ChaosMastery", 0);')
 })
-$masteryCastCharacterConfigBlocks = @($masteryIfBlocksForConfig | Where-Object {
-    $_ -match $masteryConfigGatePattern -and $_.Contains('CastedSpell(')
-})
-Require ($masteryCharacterConfigBlocks.Count -ge 1 -and $masteryCastCharacterConfigBlocks.Count -ge 1) `
-    '掌控混沌必须在 Character 与 cast-character 规则启用时才触发'
+Require ($masteryPauseBlocks.Count -ge 1) '掌控混沌关闭分支必须暂停选择技能而不删除成长账本'
 
 [xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
 $tutorialEventNodes = @($tutorialEventsDocument.SelectNodes('//node[@id="TutorialEvent"]'))
@@ -2268,21 +2381,24 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     Require ($returnButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}') `
         "空壳页返回按钮必须绑定 CustomEvent: $pageName"
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
-    Require ($tutorialActions.Count -eq 11) "核心设置页必须有11个固定 TutorialEvent 调用: $pageName"
+    $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
+    $expectedTutorialUuids = @($expectedTutorialEvents.Values)
+    Require ($tutorialActions.Count -eq 11 -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq 11 -and
+        -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
+        "核心设置页必须恰好调用11个唯一固定 TutorialEvent UUID: $pageName"
+    foreach ($tutorialAction in $tutorialActions) {
+        Require ($tutorialAction.GetAttribute('Command') -match '^\{Binding DataContext\.TutorialEvent(?:[,}])') `
+            "核心设置页 InvokeCommandAction 必须精确绑定 DataContext.TutorialEvent: $pageName"
+    }
     Require ($page.Contains('CurrentPlayer.SelectedCharacter.Stats.Passives')) `
         "核心设置页必须绑定 CurrentPlayer.SelectedCharacter.Stats.Passives: $pageName"
-    foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
-        Require ($page.Contains($tutorialEvent.Value)) `
-            "核心设置页不得漏发固定 TutorialEvent UUID: $pageName / $($tutorialEvent.Key)"
-    }
     $mirrorTriggers = @($pageDocument.SelectNodes('//*[local-name()="DataTrigger"]') | Where-Object {
-        $_.GetAttribute('Value') -in $coreMechanicMirrors
+        $_.GetAttribute('Value') -match '^COS_CFG_MECH_'
     })
-    Require ($mirrorTriggers.Count -eq 9) "核心设置页必须恰好有九个机制回显 DataTrigger: $pageName"
-    foreach ($mirror in $coreMechanicMirrors) {
-        Require (@($mirrorTriggers | Where-Object { $_.GetAttribute('Value') -eq $mirror }).Count -eq 1) `
-            "核心设置页缺少唯一回显 DataTrigger: $pageName / $mirror"
-    }
+    $mirrorTriggerValues = @($mirrorTriggers | ForEach-Object { $_.GetAttribute('Value') })
+    Require ($mirrorTriggers.Count -eq 9 -and @($mirrorTriggerValues | Sort-Object -Unique).Count -eq 9 -and
+        -not (Compare-Object ($coreMechanicMirrors | Sort-Object) ($mirrorTriggerValues | Sort-Object))) `
+        "核心设置页必须恰好有九个唯一机制回显 DataTrigger，且不得夹带额外 COS_CFG_MECH_*: $pageName"
     Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
