@@ -103,11 +103,12 @@ $toggleActionsEarly = @([regex]::Match($toggleBlockEarly, '(?ms)\nTHEN\n(?<Actio
 $expectedToggleActionsEarly = @(
     'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
     'DB_COS_ConfigMechanic(_Character, _Key, _Next);',
-    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);'
+    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);',
+    'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
 )
-Require ($toggleActionsEarly.Count -eq 3 -and
+Require ($toggleActionsEarly.Count -eq 4 -and
     ($toggleActionsEarly -join "`n") -ceq ($expectedToggleActionsEarly -join "`n")) `
-    '核心设置切换 THEN 必须且只能删除当前值、写入反值并应用反值'
+    '核心设置切换 THEN 必须且只能删除当前值、写入反值、应用反值并同步一次镜像'
 Require (-not ($toggleBlockEarly -match '(?m)^(?:NOT )?DB_COS_ConfigMechanic\(_Character, _Key, [01]\);?$')) `
     '核心设置切换不得恢复字面量0/1双规则'
 
@@ -1345,9 +1346,10 @@ Require ($positiveCandidateBlocks.Count -eq 1 -and $positiveCandidateBlocks[0].C
     '正面候选只能按正面目录权重和层数加入'
 $giftCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddMasteryGiftWoundCandidates')
 Require ($giftCandidateBlocks.Count -eq 1 -and $giftCandidateBlocks[0].Contains('GetLevel(_Character, _Level)') -and `
+    $giftCandidateBlocks[0].Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)') -and `
     $giftCandidateBlocks[0].Contains('DB_COS_MasteryGift(_MinimumLevel, _Outcome, _Weight, _Rank)') -and `
     $giftCandidateBlocks[0].Contains('_Level >= _MinimumLevel') -and $giftCandidateBlocks[0].Contains('_Layer <= _Weight')) `
-    '掌控混沌礼物候选必须按等级和权重加入'
+    '掌控混沌礼物候选必须在 Mastery=1 时按等级和权重加入'
 $negativeCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddEnabledNegativeWoundCandidates')
 Require ($negativeCandidateBlocks.Count -eq 1 -and $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWound(_Character, _Key, 1)') -and `
     $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWoundOutcome(_Key, _Outcome)') -and `
@@ -1384,20 +1386,31 @@ Require ($beginTrialBlocks.Count -eq 1 -and $beginTrialBlocks[0].Contains('_Roll
     $beginTrialActions[0] -ceq 'PROC_COS_RollWoundTrial(_Character, _Damage, _PowerEligible, _RollCount, 0, 0, 0);') `
     '受击试炼必须从无最佳结果状态开始且只调用一次首轮试炼'
 $rollTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RollWoundTrial')
-$rollTrialActions = @(Get-MechanicsThenActions $rollTrialBlocks[0])
+$enabledRollTrialBlocks = @($rollTrialBlocks | Where-Object {
+    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)')
+})
+$disabledRollTrialBlocks = @($rollTrialBlocks | Where-Object {
+    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 0)')
+})
+Require ($rollTrialBlocks.Count -eq 2 -and $enabledRollTrialBlocks.Count -eq 1 -and `
+    $disabledRollTrialBlocks.Count -eq 1) `
+    '受击试炼必须严格包含 Mastery=1 与 Mastery=0 两个互斥同签名分支'
+$enabledRollTrialBlock = $enabledRollTrialBlocks[0]
+$disabledRollTrialBlock = $disabledRollTrialBlocks[0]
+$rollTrialActions = @(Get-MechanicsThenActions $enabledRollTrialBlock)
 $tuneCellPattern = '(?m)^IntegerProduct\(_TuneCount, (\d+), _TuneCells\)$'
-$tuneCellMatches = @([regex]::Matches($rollTrialBlocks[0], $tuneCellPattern))
+$tuneCellMatches = @([regex]::Matches($enabledRollTrialBlock, $tuneCellPattern))
 $crlfEquivalentTuneCellMatches = @([regex]::Matches(
-    (Normalize-LineEndings ($rollTrialBlocks[0].Replace("`n", "`r`n"))), $tuneCellPattern))
+    (Normalize-LineEndings ($enabledRollTrialBlock.Replace("`n", "`r`n"))), $tuneCellPattern))
 Require ($tuneCellMatches.Count -eq 1) `
     '每次调律的 LF 试炼规则必须解析为唯一正面格定义'
 Require ($crlfEquivalentTuneCellMatches.Count -eq 1) `
     '每次调律的 CRLF 试炼规则必须解析为唯一正面格定义'
 Require ($crlfEquivalentTuneCellMatches[0].Groups[1].Value -eq $tuneCellMatches[0].Groups[1].Value) `
     '受击试炼规则在 CRLF 与 LF 下必须解析为相同的调律格数'
-$calmCellMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerProduct\(_CorrectCount, (\d+), _CalmCells\)$'))
-$positiveBaseMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\((\d+), _TuneCells, _PositiveEnd\)$'))
-$calmEndMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\(_PositiveEnd, _CalmCells, _CalmEnd\)$'))
+$calmCellMatches = @([regex]::Matches($enabledRollTrialBlock, '(?m)^IntegerProduct\(_CorrectCount, (\d+), _CalmCells\)$'))
+$positiveBaseMatches = @([regex]::Matches($enabledRollTrialBlock, '(?m)^IntegerSum\((\d+), _TuneCells, _PositiveEnd\)$'))
+$calmEndMatches = @([regex]::Matches($enabledRollTrialBlock, '(?m)^IntegerSum\(_PositiveEnd, _CalmCells, _CalmEnd\)$'))
 Require ([int]$tuneCellMatches[0].Groups[1].Value -eq 2) `
     '每次调律必须从实际受击试炼规则解析为2个正面格'
 Require ($calmCellMatches.Count -eq 1 -and [int]$calmCellMatches[0].Groups[1].Value -eq 4) `
@@ -1429,15 +1442,40 @@ Require (($positiveBase + $tuneCellsPerTune * 6) -eq 174 -and `
 Require ($positiveBase -eq 162 -and (300 - $positiveBase - ($calmCellsPerCorrection * 12)) -eq 90 -and `
     ($calmCellsPerCorrection * 12) -eq 48) `
     '实际Story在0次调律、12次校准时必须严格为162/90/48格'
-Require ($rollTrialBlocks.Count -eq 1 -and ([regex]::Matches($rollTrialBlocks[0], 'Random\(300, _CategoryRoll\)').Count -eq 1) -and `
-    $rollTrialBlocks[0].Contains('DB_COS_MasteryTuneCount(_Character, _TuneCount)') -and `
-    $rollTrialBlocks[0].Contains('DB_COS_MasteryCorrectCount(_Character, _CorrectCount)') -and `
-    $rollTrialBlocks[0].Contains('IntegerProduct(_TuneCount, 2, _TuneCells)') -and `
-    $rollTrialBlocks[0].Contains('IntegerProduct(_CorrectCount, 4, _CalmCells)') -and `
+Require (([regex]::Matches($enabledRollTrialBlock, 'Random\(300, _CategoryRoll\)').Count -eq 1) -and `
+    $enabledRollTrialBlock.Contains('DB_COS_MasteryTuneCount(_Character, _TuneCount)') -and `
+    $enabledRollTrialBlock.Contains('DB_COS_MasteryCorrectCount(_Character, _CorrectCount)') -and `
+    $enabledRollTrialBlock.Contains('IntegerProduct(_TuneCount, 2, _TuneCells)') -and `
+    $enabledRollTrialBlock.Contains('IntegerProduct(_CorrectCount, 4, _CalmCells)') -and `
     $rollTrialActions.Count -eq 1 -and `
     $rollTrialActions[0] -ceq 'PROC_COS_DispatchWoundCategory(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _CategoryRoll, _PositiveEnd, _CalmEnd);') `
-    '每次受击试炼必须只生成一次300格类别随机并交给分类过程'
-Require ([regex]::Matches($mechanicsGoal, 'Random\(300').Count -eq 1) '受击机制全文必须且只能有一次Random(300)调用'
+    'Mastery=1 受击试炼必须读取路线计数、只生成一次300格类别随机并交给动态边界分类'
+function Test-DisabledMasteryWoundBlock([string]$Block) {
+    $normalizedBlock = Normalize-LineEndings $Block
+    $actions = @(Get-MechanicsThenActions $normalizedBlock)
+    return $normalizedBlock.Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 0)') -and
+        ([regex]::Matches($normalizedBlock, 'Random\(300, _CategoryRoll\)').Count -eq 1) -and
+        -not $normalizedBlock.Contains('DB_COS_MasteryTuneCount') -and
+        -not $normalizedBlock.Contains('DB_COS_MasteryCorrectCount') -and
+        -not $normalizedBlock.Contains('_TuneCells') -and
+        -not $normalizedBlock.Contains('_CalmCells') -and
+        $actions.Count -eq 1 -and
+        $actions[0] -ceq 'PROC_COS_DispatchWoundCategory(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _CategoryRoll, 162, 162);'
+}
+Require (Test-DisabledMasteryWoundBlock $disabledRollTrialBlock) `
+    'Mastery=0 受击试炼必须不读取路线账本，只随机一次并以固定162/162边界分类'
+Require ([regex]::Matches(($rollTrialBlocks -join "`n"), 'Random\(300, _CategoryRoll\)').Count -eq 2 -and `
+    [regex]::Matches($mechanicsGoal, 'Random\(300').Count -eq 2) `
+    '受击机制全文必须且只能由两个 Mastery 互斥分支各调用一次 Random(300)'
+
+$disabledWoundReadsCountsMutation = $disabledRollTrialBlock.Replace(
+    "`nRandom(300, _CategoryRoll)",
+    "`nDB_COS_MasteryTuneCount(_Character, _TuneCount)`nAND`nRandom(300, _CategoryRoll)")
+Require (-not (Test-DisabledMasteryWoundBlock $disabledWoundReadsCountsMutation)) `
+    'Mastery=0 轮盘 mutation probe 必须拒绝读取路线计数'
+$disabledWoundBoundaryMutation = $disabledRollTrialBlock.Replace(', _CategoryRoll, 162, 162);', ', _CategoryRoll, 161, 162);')
+Require (-not (Test-DisabledMasteryWoundBlock $disabledWoundBoundaryMutation)) `
+    'Mastery=0 轮盘 mutation probe 必须拒绝非162/162固定边界'
 
 $dispatchBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_DispatchWoundCategory')
 Require ($dispatchBlocks.Count -eq 3 -and -not (($dispatchBlocks -join "`n").Contains('Random('))) `
@@ -1969,33 +2007,36 @@ $dualityCommonConditions = @(
     'AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)',
     '_AttackOwner == _Attacker',
     'DB_COS_Character((CHARACTER)_AttackOwner)',
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)'
+)
+$dualityFateEnabledConditions = @($dualityCommonConditions + @(
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
     'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)'
-)
+))
 $expectedFateOffConditions = @($dualityCommonConditions + @(
+    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
 ))
-$expectedFateUnarmedConditions = @($dualityCommonConditions + @(
+$expectedFateUnarmedConditions = @($dualityFateEnabledConditions + @(
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
     'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
 ))
-$expectedFatePowerDisabledConditions = @($dualityCommonConditions + @(
+$expectedFatePowerDisabledConditions = @($dualityFateEnabledConditions + @(
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
     'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
 ))
-$expectedFatePowerZeroConditions = @($dualityCommonConditions + @(
+$expectedFatePowerZeroConditions = @($dualityFateEnabledConditions + @(
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
     'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
     'DB_COS_Power((CHARACTER)_AttackOwner, 0)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
 ))
-$expectedFateDualityConditions = @($dualityCommonConditions + @(
+$expectedFateDualityConditions = @($dualityFateEnabledConditions + @(
     'HasPassive(_AttackOwner, "COS_FateRevision", 1)',
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
     'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
@@ -2153,8 +2194,8 @@ Require (((Get-MechanicsConditions $fateArmProbe) -join "`n") -ceq ($expectedFat
     '命运改签武装探针必须满足旧精确条件数组'
 Require-StoryGate $fateArmProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_Character, "Fate", 1\)' `
     '命运改签武装探针必须满足 _Character Fate=1 门禁'
-$fateAttackProbe = "IF`n" + ($expectedFateOffConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_AttackOwner);"
-Require (((Get-MechanicsConditions $fateAttackProbe) -join "`n") -ceq ($expectedFateOffConditions -join "`n")) `
+$fateAttackProbe = "IF`n" + ($expectedFateUnarmedConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_AttackOwner);"
+Require (((Get-MechanicsConditions $fateAttackProbe) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n")) `
     '命运改签攻击探针必须满足旧精确条件数组'
 Require-StoryGate $fateAttackProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_AttackOwner, "Fate", 1\)' `
     '命运改签攻击探针必须满足 _AttackOwner Fate=1 门禁'
@@ -2245,6 +2286,8 @@ $configSyncCharacterBlock = $configSyncCharacterBlocks[0]
 foreach ($syncAction in @(
     'PROC_COS_ConfigEnsureMechanics(_Character);',
     'PROC_COS_ConfigEnableEvents(_Character);',
+    'PROC_COS_AccrueMastery(_Character);',
+    'PROC_COS_SyncMastery(_Character);',
     'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
 )) {
     Require ((Get-StoryThen $configSyncCharacterBlock).Contains($syncAction)) `
@@ -2376,37 +2419,101 @@ Require-StoryGate $genesisUseBlocks[0] $genesisGatePattern '开天辟地 UsingSp
 
 $fateArmGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Fate", 1\)'
 $fateAttackGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
-$fateRelevantBlocks = @($fateArmBlocks + $dualityAttackBlocks)
-Require ($fateRelevantBlocks.Count -eq 6) '命运改签必须保留一个武装和五个攻击多投相关块'
+$fateEffectAttackBlocks = @($dualityAttackBlocks | Where-Object {
+    $_.Contains('HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)') -and
+    $_.Contains('DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)')
+})
+$fateRelevantBlocks = @($fateArmBlocks + $fateEffectAttackBlocks)
+Require ($fateRelevantBlocks.Count -eq 5 -and $fateEffectAttackBlocks.Count -eq 4) `
+    '命运改签必须保留一个武装和四个已启用/记录/多投相关攻击块'
 Require-StoryGate $fateArmBlocks[0] $fateArmGatePattern '命运改签武装块必须用 _Character 要求 Fate=1'
-foreach ($fateAttackBlock in $dualityAttackBlocks) {
+foreach ($fateAttackBlock in $fateEffectAttackBlocks) {
     Require-StoryGate $fateAttackBlock $fateAttackGatePattern '命运改签攻击多投块必须用 _AttackOwner 要求 Fate=1'
 }
+Require (-not ($fateOffBlocks[0] -match $fateAttackGatePattern)) `
+    'FATE_ENABLED=0 的普通单次 Duality 块不得要求 Fate=1'
+
+function Test-FateEffectAttackBlock([string]$Block) {
+    return $Block.Contains('AttackedBy(') -and
+        $Block.Contains('HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)') -and
+        $Block.Contains('DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)')
+}
+$fateOffWithGateProbe = $fateOffBlocks[0].Replace(
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
+    "DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Duality`", 1)`nAND`nDB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Fate`", 1)")
+Require (-not (Test-FateEffectAttackBlock $fateOffBlocks[0]) -and `
+    -not (Test-FateEffectAttackBlock $fateOffWithGateProbe)) `
+    '普通 FATE_ENABLED=0 Duality 块无论是否插入 Fate 行都不得被效果块选择器误选'
+$fateGateRemovalProbe = $fateEffectAttackBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Fate`", 1)", '')
+$fateGateRemovalRejected = $false
+try {
+    Require-StoryGate $fateGateRemovalProbe $fateAttackGatePattern '真实 Fate 效果块删除门禁后必须失败'
+} catch {
+    $fateGateRemovalRejected = $true
+}
+Require $fateGateRemovalRejected 'Fate mutation probe 必须拒绝真实效果块缺失 Fate=1'
 
 $masteryEnabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
 $masteryDisabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 0\)'
 $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
     '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
+$masterySyncEffectBlocks = @(Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMastery' | Where-Object {
+    (Get-StoryThen $_).Contains('PROC_COS_SyncMasteryStatuses(_Character);')
+})
 $masteryRelevantBlocks = @(
-    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMastery') +
+    $masterySyncEffectBlocks +
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMasteryStatuses') +
-    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ApplyMasteryRouteStatus') +
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_UpdateMasterySpell') +
-    (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ConsumeMasteryAvailable') +
     @($masteryIfBlocksForConfig | Where-Object {
         $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryTune"') -or
         $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect"')
     })
 )
-$masteryRelevantBlocks += Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_RollWoundTrial'
+$masteryRelevantBlocks += $enabledRollTrialBlocks
 $masteryRelevantBlocks += Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_AddMasteryGiftWoundCandidates'
-Require ($masteryRelevantBlocks.Count -ge 11) '掌控混沌必须覆盖 Sync、显示、消费、Tune、Correct、轮盘和掌控赠礼激活块'
+Require ($masterySyncEffectBlocks.Count -eq 1 -and $masteryRelevantBlocks.Count -eq 8) `
+    '掌控混沌必须严格覆盖状态 Sync、选择技能显示、Tune、Correct、启用轮盘和掌控赠礼效果块'
 foreach ($masteryEnabledBlock in $masteryRelevantBlocks) {
     Require-StoryGate $masteryEnabledBlock $masteryEnabledGatePattern `
-        '掌控混沌显示、消费、生效、轮盘和赠礼块必须精确具有 Mastery=1 开关门禁'
+        '掌控混沌显示、生效、轮盘和赠礼块必须精确具有 Mastery=1 开关门禁'
     Require (-not ($masteryEnabledBlock -match $masteryDisabledGatePattern)) `
-        '掌控混沌显示、消费、生效、轮盘和赠礼块不得出现 Mastery=0'
+        '掌控混沌显示、生效、轮盘和赠礼块不得出现 Mastery=0'
 }
+$masteryAccountingProcedureNames = @(
+    'PROC_COS_EnsureMasteryCounts', 'PROC_COS_AccrueMastery', 'PROC_COS_MigrateMasterySchema46To47',
+    'PROC_COS_SyncMasteryAfterSchema47', 'PROC_COS_IncrementMasteryAvailable',
+    'PROC_COS_GrantMasteryFrom', 'PROC_COS_ResetMastery', 'PROC_COS_ResetMasteryCarrier'
+)
+$masteryAccountingBlocks = @($masteryAccountingProcedureNames | ForEach-Object {
+    Get-StoryBlocks $masteryGoal 'PROC' $_
+})
+Require ($masteryAccountingBlocks.Count -ge 12 -and `
+    -not (($masteryAccountingBlocks -join "`n") -match $masteryEnabledGatePattern) -and `
+    -not (($masteryAccountingBlocks -join "`n") -match $masteryDisabledGatePattern)) `
+    '掌控混沌迁移、升级、Grant、可用点与Respec账本过程不得依赖 Mastery 开关'
+
+$masteryAccountingProbe = (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_GrantMasteryFrom')[0]
+Require (-not ($masteryAccountingProbe -match $masteryEnabledGatePattern)) `
+    'Mastery accounting probe 必须允许 GrantMasteryFrom 无 Mastery=1 门禁'
+$masteryGateRemovalProbe = $masteryRelevantBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Mastery`", 1)", '')
+$masteryGateRemovalRejected = $false
+try {
+    Require-StoryGate $masteryGateRemovalProbe $masteryEnabledGatePattern 'Mastery 效果块删除门禁后必须失败'
+} catch {
+    $masteryGateRemovalRejected = $true
+}
+Require $masteryGateRemovalRejected 'Mastery mutation probe 必须拒绝效果块缺失 Mastery=1'
+$enabledWoundGateRemovalProbe = $enabledRollTrialBlock.Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Mastery`", 1)", '')
+$enabledWoundGateRemovalRejected = $false
+try {
+    Require-StoryGate $enabledWoundGateRemovalProbe $masteryEnabledGatePattern 'Mastery=1 轮盘删除门禁后必须失败'
+} catch {
+    $enabledWoundGateRemovalRejected = $true
+}
+Require $enabledWoundGateRemovalRejected 'Mastery enabled wound mutation probe 必须拒绝缺失 Mastery=1'
 $masterySuspendBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSuspendMastery')
 Require ($masterySuspendBlocks.Count -eq 1) '核心设置必须且只能定义一个 PROC_COS_ConfigSuspendMastery'
 $masterySuspendBlock = $masterySuspendBlocks[0]

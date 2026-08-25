@@ -92,12 +92,63 @@ PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
 PROC_COS_ConfigEnsureMechanics(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
+PROC_COS_AccrueMastery(_Character);
+PROC_COS_SyncMastery(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
 PROC
-PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+PROC_COS_ConfigSuspendMastery((CHARACTER)_Character)
 THEN
-PROC_COS_ConfigSyncMechanicMirrors(_Character);
+RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
+RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
+RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Fate"
+AND
+_Enabled == 0
+THEN
+PROC_COS_ClearFateAction(_Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Genesis"
+AND
+_Enabled == 0
+THEN
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Genesis"
+AND
+_Enabled == 1
+AND
+DB_COS_Power(_Character, _Power)
+THEN
+PROC_COS_SyncPowerDisplay(_Character, _Power);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Mastery"
+AND
+_Enabled == 0
+THEN
+PROC_COS_ConfigSuspendMastery(_Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Mastery"
+AND
+_Enabled == 1
+THEN
+PROC_COS_SyncMastery(_Character);
 
 PROC
 PROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)
@@ -109,6 +160,7 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Next);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
 PROC
 PROC_COS_ConfigResetCore((CHARACTER)_Character)
@@ -157,6 +209,7 @@ AND
 IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigResetCore(_Character);
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
 IF
 LevelGameplayStarted(_, _)

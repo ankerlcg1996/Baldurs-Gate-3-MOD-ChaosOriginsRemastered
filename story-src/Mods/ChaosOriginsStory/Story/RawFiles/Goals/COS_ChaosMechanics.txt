@@ -269,6 +269,8 @@ ApplyStatus(_Character, "COS_CHAOS_POWER_STACK", -1.0, 100, _Character);
 PROC
 PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
+AND
 _Power >= 10
 THEN
 ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);
@@ -619,6 +621,8 @@ PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 PROC
 PROC_COS_AddMasteryGiftWoundCandidates((CHARACTER)_Character)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 GetLevel(_Character, _Level)
 AND
 DB_COS_MasteryGift(_MinimumLevel, _Outcome, _Weight, _Rank)
@@ -673,6 +677,8 @@ PROC_COS_RollWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Power
 AND
 _Remaining > 0
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 DB_COS_MasteryTuneCount(_Character, _TuneCount)
 AND
 DB_COS_MasteryCorrectCount(_Character, _CorrectCount)
@@ -688,6 +694,17 @@ AND
 Random(300, _CategoryRoll)
 THEN
 PROC_COS_DispatchWoundCategory(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _CategoryRoll, _PositiveEnd, _CalmEnd);
+
+PROC
+PROC_COS_RollWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
+AND
+_Remaining > 0
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 0)
+AND
+Random(300, _CategoryRoll)
+THEN
+PROC_COS_DispatchWoundCategory(_Character, _Damage, _PowerEligible, _Remaining, _HasBest, _BestOutcome, _BestRank, _CategoryRoll, 162, 162);
 
 PROC
 PROC_COS_DispatchWoundCategory((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank, (INTEGER)_CategoryRoll, (INTEGER)_PositiveEnd, (INTEGER)_CalmEnd)
@@ -1110,6 +1127,8 @@ PROC_COS_Sync(_Character);
 IF
 UsingSpell(_Character, "Shout_COS_ChaosGenesis", _, _, _)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
 AND
 DB_COS_Power((CHARACTER)_Character, _OldPower)
@@ -1127,6 +1146,8 @@ IF
 UsingSpell(_Character, _, _, _, _StoryActionID)
 AND
 DB_COS_Character((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)
 AND
 HasPassive(_Character, "COS_FateRevision", 1)
 AND
@@ -1315,6 +1336,8 @@ DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)
@@ -1337,6 +1360,8 @@ AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
 AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND
@@ -1363,6 +1388,8 @@ AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
 AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND
@@ -1391,6 +1418,8 @@ AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
 AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND

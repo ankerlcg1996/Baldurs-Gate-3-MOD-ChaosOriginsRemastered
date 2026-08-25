@@ -40,6 +40,8 @@ DB_COS_MasteryCorrectCount(_Character, 0);
 PROC
 PROC_COS_ApplyMasteryRouteStatus((CHARACTER)_Character, (STRING)_Status, (INTEGER)_Count)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 _Count > 0
 AND
 IntegerProduct(_Count, 6, _DurationSeconds)
@@ -51,6 +53,8 @@ ApplyStatus(_Character, _Status, _Duration, 100, _Character);
 PROC
 PROC_COS_SyncMasteryStatuses((CHARACTER)_Character)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 DB_COS_MasteryTuneCount(_Character, _TuneCount)
 AND
 DB_COS_MasteryCorrectCount(_Character, _CorrectCount)
@@ -61,16 +65,7 @@ PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _TuneCoun
 PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);
 
 PROC
-PROC_COS_SyncMastery((CHARACTER)_Character)
-AND
-DB_COS_MasteryTuneCount(_Character, _)
-AND
-DB_COS_MasteryCorrectCount(_Character, _)
-THEN
-PROC_COS_SyncMasteryStatuses(_Character);
-
-PROC
-PROC_COS_SyncMastery((CHARACTER)_Character)
+PROC_COS_AccrueMastery((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -79,7 +74,7 @@ THEN
 AddPassive(_Character, "COS_ChaosMasteryGuide");
 
 PROC
-PROC_COS_SyncMastery((CHARACTER)_Character)
+PROC_COS_AccrueMastery((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -88,13 +83,25 @@ THEN
 PROC_COS_SyncMasteryAfterSchema47(_Character);
 
 PROC
-PROC_COS_SyncMastery((CHARACTER)_Character)
+PROC_COS_AccrueMastery((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 NOT DB_COS_MasterySchema46To47(_Character)
 THEN
 PROC_COS_MigrateMasterySchema46To47(_Character);
+
+PROC
+PROC_COS_SyncMastery((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
+DB_COS_MasteryTuneCount(_Character, _)
+AND
+DB_COS_MasteryCorrectCount(_Character, _)
+THEN
+PROC_COS_SyncMasteryStatuses(_Character);
+PROC_COS_UpdateMasterySpell(_Character);
 
 PROC
 PROC_COS_MigrateMasterySchema46To47((CHARACTER)_Character)
@@ -127,6 +134,8 @@ DB_COS_MasteryAvailableCount(_Character, _Next);
 
 PROC
 PROC_COS_ConsumeMasteryAvailable((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryAvailableCount(_Character, _Count)
 AND
@@ -177,6 +186,8 @@ PROC_COS_UpdateMasterySpell(_Character);
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 DB_COS_MasteryAvailableCount(_Character, _Count)
 AND
 _Count > 0
@@ -187,6 +198,8 @@ AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1);
 
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryAvailableCount(_Character, 0)
 AND
@@ -270,6 +283,8 @@ CastedSpell(_Character, "Shout_COS_ChaosMasteryTune", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
+AND
 DB_COS_MasteryTuneCount((CHARACTER)_Character, _Count)
 AND
 IntegerSum(_Count, 1, _Next)
@@ -283,6 +298,8 @@ IF
 CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryCorrectCount((CHARACTER)_Character, _Count)
 AND
