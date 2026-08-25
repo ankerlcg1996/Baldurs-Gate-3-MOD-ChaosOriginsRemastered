@@ -947,6 +947,40 @@ THEN
 ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
 
 PROC
+PROC_COS_AddDelayedTargetTotal((CHARACTER)_Target, (INTEGER)_Amount)
+AND
+DB_COS_DualityDelayedTargetTotal(_Target, _OldAmount)
+AND
+IntegerSum(_OldAmount, _Amount, _NewAmount)
+THEN
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _OldAmount);
+DB_COS_DualityDelayedTargetTotal(_Target, _NewAmount);
+
+PROC
+PROC_COS_AddDelayedTargetTotal((CHARACTER)_Target, (INTEGER)_Amount)
+AND
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _)
+THEN
+DB_COS_DualityDelayedTargetTotal(_Target, _Amount);
+
+PROC
+PROC_COS_AddDelayedOwnerTotal((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount)
+AND
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _OldAmount)
+AND
+IntegerSum(_OldAmount, _Amount, _NewAmount)
+THEN
+NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _OldAmount);
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _NewAmount);
+
+PROC
+PROC_COS_AddDelayedOwnerTotal((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount)
+AND
+NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _)
+THEN
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Amount);
+
+PROC
 PROC_COS_QueueDelayedDualityDamage((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
 AND
 DB_COS_DualityDelaySerial(_Serial)
@@ -957,6 +991,8 @@ NOT DB_COS_DualityDelaySerial(_Serial);
 DB_COS_DualityDelaySerial(_NextSerial);
 DB_COS_DualityDelayed(_Target, _NextSerial, _Amount, _DamageType, _LogStatus);
 DB_COS_DualityDelayedOwner(_Owner, _Target, _NextSerial);
+PROC_COS_AddDelayedTargetTotal(_Target, _Amount);
+PROC_COS_AddDelayedOwnerTotal(_Owner, _Target, _Amount);
 ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", -1.0, 100, _Target);
 
 PROC
@@ -1081,7 +1117,14 @@ THEN
 PROC_COS_ResolveDuality(_Owner, _Target, _Damage, _BestRoll);
 
 PROC
-PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)
+PROC_COS_SyncDualityDelayedMarker((CHARACTER)_Target)
+AND
+NOT DB_COS_DualityDelayed(_Target, _, _, _, _)
+THEN
+RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+
+PROC
+PROC_COS_ClearDelayedDualityRowsForOwner((CHARACTER)_Owner, (CHARACTER)_Target)
 AND
 DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
 AND
@@ -1089,7 +1132,68 @@ DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)
 THEN
 NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
 NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
-RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+PROC_COS_SyncDualityDelayedMarker(_Target);
+
+PROC
+PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)
+AND
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)
+AND
+DB_COS_DualityDelayedTargetTotal(_Target, _Total)
+AND
+IntegerSubtract(_Total, _Contribution, _Remaining)
+AND
+_Remaining != 0
+THEN
+NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _Total);
+DB_COS_DualityDelayedTargetTotal(_Target, _Remaining);
+PROC_COS_ClearDelayedDualityRowsForOwner(_Owner, _Target);
+
+PROC
+PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)
+AND
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)
+AND
+DB_COS_DualityDelayedTargetTotal(_Target, _Total)
+AND
+IntegerSubtract(_Total, _Contribution, _Remaining)
+AND
+_Remaining == 0
+THEN
+NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _Total);
+PROC_COS_ClearDelayedDualityRowsForOwner(_Owner, _Target);
+
+PROC
+PROC_COS_ResolveDelayedDualityRows((CHARACTER)_Target)
+AND
+DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)
+AND
+DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
+ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
+PROC_COS_SyncDualityDelayedMarker(_Target);
+
+PROC
+PROC_COS_ClearDelayedDualityRowsForTarget((CHARACTER)_Target)
+AND
+DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)
+AND
+DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
+PROC_COS_SyncDualityDelayedMarker(_Target);
+
+PROC
+PROC_COS_ClearDelayedDualityOwnerTotalsForTarget((CHARACTER)_Target)
+AND
+DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)
+THEN
+NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);
 
 IF
 ObjectTimerFinished(_Target, "COS_DualityApplyDamage")
@@ -1103,11 +1207,7 @@ ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
 IF
 TurnStarted(_Target)
 AND
-DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
-AND
-DB_COS_DualityDelayedOwner((CHARACTER)_Owner, (CHARACTER)_Target, _Serial)
-AND
-DB_COS_ConfigMechanic((CHARACTER)_Owner, "Duality", 1)
+DB_COS_DualityDelayedTargetTotal((CHARACTER)_Target, _Amount)
 AND
 GetHitpoints(_Target, _Hitpoints)
 AND
@@ -1115,22 +1215,21 @@ IntegerSubtract(_Hitpoints, _Amount, _ReducedHitpoints)
 AND
 IntegerMax(_ReducedHitpoints, 0, _FinalHitpoints)
 THEN
-NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
-NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _Amount);
 SetHitpoints(_Target, _FinalHitpoints, "Guaranteed");
-ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
-RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+PROC_COS_ResolveDelayedDualityRows(_Target);
+PROC_COS_ClearDelayedDualityOwnerTotalsForTarget(_Target);
+PROC_COS_SyncDualityDelayedMarker(_Target);
 
 IF
 Died(_Target)
 AND
-DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
-AND
-DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
+DB_COS_DualityDelayedTargetTotal((CHARACTER)_Target, _Amount)
 THEN
-NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
-NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
-RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+NOT DB_COS_DualityDelayedTargetTotal(_Target, _Amount);
+PROC_COS_ClearDelayedDualityRowsForTarget(_Target);
+PROC_COS_ClearDelayedDualityOwnerTotalsForTarget(_Target);
+PROC_COS_SyncDualityDelayedMarker(_Target);
 
 IF
 LevelGameplayStarted(_, _)
@@ -1140,7 +1239,7 @@ AND
 NOT DB_COS_DualityDelayedOwner(_, _Target, _Serial)
 THEN
 NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
-RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+PROC_COS_SyncDualityDelayedMarker(_Target);
 
 IF
 LevelGameplayStarted(_, _)

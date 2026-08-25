@@ -2601,6 +2601,8 @@ function Test-DualityOwnerPropagation([string]$Story) {
         'DB_COS_DualityDelaySerial(_NextSerial);',
         'DB_COS_DualityDelayed(_Target, _NextSerial, _Amount, _DamageType, _LogStatus);',
         'DB_COS_DualityDelayedOwner(_Owner, _Target, _NextSerial);',
+        'PROC_COS_AddDelayedTargetTotal(_Target, _Amount);',
+        'PROC_COS_AddDelayedOwnerTotal(_Owner, _Target, _Amount);',
         'ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", -1.0, 100, _Target);'
     )
     return ($queueConditions -join "`n") -ceq ($expectedQueueConditions -join "`n") -and
@@ -2620,72 +2622,238 @@ Require ($dualityOwnerMapDeletionMutation -cne $mechanicsGoal -and
     -not (Test-DualityOwnerPropagation $dualityOwnerMapDeletionMutation)) `
     '延迟两仪 mutation probe 必须拒绝 Queue 缺失 owner map'
 
-$clearDelayedOwnerBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_ClearDelayedDualityForOwner')
-$expectedClearDelayedOwnerConditions = @(
-    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
-    'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)',
-    'DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)'
+function Test-ExactDualityContracts([string]$Story, [string]$Kind, [string]$Name, [object[]]$Contracts) {
+    $blocks = @(Get-StoryBlocks $Story $Kind $Name)
+    if ($blocks.Count -ne $Contracts.Count) { return $false }
+    foreach ($contract in $Contracts) {
+        $matches = @($blocks | Where-Object {
+            ((Get-MechanicsConditions $_) -join "`n") -ceq ($contract.Conditions -join "`n") -and
+            ((Get-MechanicsThenActions $_) -join "`n") -ceq ($contract.Actions -join "`n")
+        })
+        if ($matches.Count -ne 1) { return $false }
+    }
+    return $true
+}
+
+$targetTotalContracts = @(
+    @{
+        Conditions = @(
+            'PROC_COS_AddDelayedTargetTotal((CHARACTER)_Target, (INTEGER)_Amount)',
+            'DB_COS_DualityDelayedTargetTotal(_Target, _OldAmount)',
+            'IntegerSum(_OldAmount, _Amount, _NewAmount)'
+        )
+        Actions = @(
+            'NOT DB_COS_DualityDelayedTargetTotal(_Target, _OldAmount);',
+            'DB_COS_DualityDelayedTargetTotal(_Target, _NewAmount);'
+        )
+    },
+    @{
+        Conditions = @(
+            'PROC_COS_AddDelayedTargetTotal((CHARACTER)_Target, (INTEGER)_Amount)',
+            'NOT DB_COS_DualityDelayedTargetTotal(_Target, _)'
+        )
+        Actions = @('DB_COS_DualityDelayedTargetTotal(_Target, _Amount);')
+    }
 )
-$expectedClearDelayedOwnerActions = @(
-    'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
-    'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
-    'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+$ownerTotalContracts = @(
+    @{
+        Conditions = @(
+            'PROC_COS_AddDelayedOwnerTotal((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount)',
+            'DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _OldAmount)',
+            'IntegerSum(_OldAmount, _Amount, _NewAmount)'
+        )
+        Actions = @(
+            'NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _OldAmount);',
+            'DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _NewAmount);'
+        )
+    },
+    @{
+        Conditions = @(
+            'PROC_COS_AddDelayedOwnerTotal((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount)',
+            'NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _)'
+        )
+        Actions = @('DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Amount);')
+    }
 )
+function Test-DualityAggregateWriteContract([string]$Story) {
+    return (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_AddDelayedTargetTotal' $targetTotalContracts) -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_AddDelayedOwnerTotal' $ownerTotalContracts) -and
+        (Test-DualityOwnerPropagation $Story)
+}
+Require (Test-DualityAggregateWriteContract $mechanicsGoal) `
+    '延迟两仪 Queue 必须用互斥 helper 累加唯一 TargetTotal 与 OwnerTotal'
+$targetTotalDeletionMutation = $mechanicsGoal.Replace('PROC_COS_AddDelayedTargetTotal(_Target, _Amount);', '')
+Require ($targetTotalDeletionMutation -cne $mechanicsGoal -and
+    -not (Test-DualityAggregateWriteContract $targetTotalDeletionMutation)) `
+    '延迟两仪 mutation probe 必须拒绝 Queue 漏写 TargetTotal'
+$ownerTotalDeletionMutation = $mechanicsGoal.Replace('PROC_COS_AddDelayedOwnerTotal(_Owner, _Target, _Amount);', '')
+Require ($ownerTotalDeletionMutation -cne $mechanicsGoal -and
+    -not (Test-DualityAggregateWriteContract $ownerTotalDeletionMutation)) `
+    '延迟两仪 mutation probe 必须拒绝 Queue 漏写 OwnerTotal'
+$totalAccumulationMutation = $mechanicsGoal.Replace(
+    'IntegerSum(_OldAmount, _Amount, _NewAmount)',
+    'IntegerSum(_OldAmount, 0, _NewAmount)')
+Require ($totalAccumulationMutation -cne $mechanicsGoal -and
+    -not (Test-DualityAggregateWriteContract $totalAccumulationMutation)) `
+    '延迟两仪 mutation probe 必须拒绝 totals 漏累加 Amount'
+
+$markerContracts = @(@{
+    Conditions = @(
+        'PROC_COS_SyncDualityDelayedMarker((CHARACTER)_Target)',
+        'NOT DB_COS_DualityDelayed(_Target, _, _, _, _)'
+    )
+    Actions = @('RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);')
+})
+function Test-DualityMarkerContract([string]$Story) {
+    $markerRemovalCount = [regex]::Matches($Story,
+        '(?m)^RemoveStatus\(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target\);$').Count
+    return $markerRemovalCount -eq 1 -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_SyncDualityDelayedMarker' $markerContracts)
+}
+Require (Test-DualityMarkerContract $mechanicsGoal) `
+    '延迟两仪 marker 只能在不存在任何 individual debt 时由唯一 Sync PROC 移除'
+$markerNotDeletionMutation = $mechanicsGoal.Replace(
+    'NOT DB_COS_DualityDelayed(_Target, _, _, _, _)',
+    'DB_COS_DualityDelayed(_Target, _, _, _, _)')
+Require ($markerNotDeletionMutation -cne $mechanicsGoal -and
+    -not (Test-DualityMarkerContract $markerNotDeletionMutation)) `
+    '延迟两仪 marker mutation probe 必须拒绝 Sync 缺失 NOT'
+$directMarkerRemovalMutation = $mechanicsGoal.Replace(
+    'PROC_COS_SyncDualityDelayedMarker(_Target);',
+    'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);')
+Require ($directMarkerRemovalMutation -cne $mechanicsGoal -and
+    -not (Test-DualityMarkerContract $directMarkerRemovalMutation)) `
+    '延迟两仪 marker mutation probe 必须拒绝清理流程直接无条件 RemoveStatus'
+
+$clearOwnerContracts = @(
+    @{
+        Conditions = @(
+            'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
+            'DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)',
+            'DB_COS_DualityDelayedTargetTotal(_Target, _Total)',
+            'IntegerSubtract(_Total, _Contribution, _Remaining)',
+            '_Remaining != 0'
+        )
+        Actions = @(
+            'NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);',
+            'NOT DB_COS_DualityDelayedTargetTotal(_Target, _Total);',
+            'DB_COS_DualityDelayedTargetTotal(_Target, _Remaining);',
+            'PROC_COS_ClearDelayedDualityRowsForOwner(_Owner, _Target);'
+        )
+    },
+    @{
+        Conditions = @(
+            'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
+            'DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)',
+            'DB_COS_DualityDelayedTargetTotal(_Target, _Total)',
+            'IntegerSubtract(_Total, _Contribution, _Remaining)',
+            '_Remaining == 0'
+        )
+        Actions = @(
+            'NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);',
+            'NOT DB_COS_DualityDelayedTargetTotal(_Target, _Total);',
+            'PROC_COS_ClearDelayedDualityRowsForOwner(_Owner, _Target);'
+        )
+    }
+)
+$clearOwnerRowsContracts = @(@{
+    Conditions = @(
+        'PROC_COS_ClearDelayedDualityRowsForOwner((CHARACTER)_Owner, (CHARACTER)_Target)',
+        'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)',
+        'DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)'
+    )
+    Actions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
+    )
+})
 function Test-ClearDelayedOwnerContract([string]$Story) {
-    $blocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ClearDelayedDualityForOwner')
-    return $blocks.Count -eq 1 -and
-        ((Get-MechanicsConditions $blocks[0]) -join "`n") -ceq ($expectedClearDelayedOwnerConditions -join "`n") -and
-        ((Get-MechanicsThenActions $blocks[0]) -join "`n") -ceq ($expectedClearDelayedOwnerActions -join "`n")
+    return (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_ClearDelayedDualityForOwner' $clearOwnerContracts) -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_ClearDelayedDualityRowsForOwner' $clearOwnerRowsContracts)
 }
 Require (Test-ClearDelayedOwnerContract $mechanicsGoal) `
-    '关闭两仪必须按 Owner 精确清理其映射债务和目标日志状态'
+    '关闭两仪必须只减去该 Owner 对各 Target 的总贡献，并只清该 Owner 的 individual rows'
+$clearOwnerTargetTotalMutation = $mechanicsGoal.Replace(
+    'IntegerSubtract(_Total, _Contribution, _Remaining)',
+    'IntegerSubtract(_Total, 0, _Remaining)')
+Require ($clearOwnerTargetTotalMutation -cne $mechanicsGoal -and
+    -not (Test-ClearDelayedOwnerContract $clearOwnerTargetTotalMutation)) `
+    '延迟两仪 mutation probe 必须拒绝清 Owner 时未从 TargetTotal 减去贡献'
 $globalDelayedClearMutation = $mechanicsGoal.Replace(
-    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
-    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_IgnoredOwner)').Replace(
     'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)',
     'DB_COS_DualityDelayedOwner(_OtherOwner, _Target, _Serial)')
 Require ($globalDelayedClearMutation -cne $mechanicsGoal -and
     -not (Test-ClearDelayedOwnerContract $globalDelayedClearMutation)) `
-    '双 Owner 静态合同必须拒绝关闭一名角色时全局清理另一名角色债务'
+    '双 Owner 静态合同必须拒绝关闭 A 时删除 B 的 individual rows'
 
+$resolveRowsContracts = @(@{
+    Conditions = @(
+        'PROC_COS_ResolveDelayedDualityRows((CHARACTER)_Target)',
+        'DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)',
+        'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)'
+    )
+    Actions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);',
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
+    )
+})
+$clearTargetRowsContracts = @(@{
+    Conditions = @(
+        'PROC_COS_ClearDelayedDualityRowsForTarget((CHARACTER)_Target)',
+        'DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)',
+        'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)'
+    )
+    Actions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
+    )
+})
+$clearTargetOwnerTotalsContracts = @(@{
+    Conditions = @(
+        'PROC_COS_ClearDelayedDualityOwnerTotalsForTarget((CHARACTER)_Target)',
+        'DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution)'
+    )
+    Actions = @('NOT DB_COS_DualityDelayedOwnerTotal(_Owner, _Target, _Contribution);')
+})
 function Test-DualityDelayedLifecycleContract([string]$Story) {
     $blocks = @(Get-AllStoryBlocks $Story)
-    $turnBlocks = @($blocks | Where-Object {
-        $_.StartsWith("IF`nTurnStarted(_Target)") -and $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
-    })
+    $turnBlocks = @($blocks | Where-Object { $_.StartsWith("IF`nTurnStarted(_Target)") })
+    $turnHpBlocks = @($turnBlocks | Where-Object { (Get-StoryThen $_).Contains('SetHitpoints(') })
     $diedBlocks = @($blocks | Where-Object {
-        $_.StartsWith("IF`nDied(_Target)") -and $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
+        $_.StartsWith("IF`nDied(_Target)") -and $_.Contains('DB_COS_DualityDelayedTargetTotal(')
     })
     $migrationBlocks = @($blocks | Where-Object {
         $_.StartsWith("IF`nLevelGameplayStarted(_, _)") -and
         $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
     })
-    if ($turnBlocks.Count -ne 1 -or $diedBlocks.Count -ne 1 -or $migrationBlocks.Count -ne 1) { return $false }
+    if ($turnHpBlocks.Count -ne 1 -or $diedBlocks.Count -ne 1 -or $migrationBlocks.Count -ne 1) { return $false }
     $expectedTurnConditions = @(
         'TurnStarted(_Target)',
-        'DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)',
-        'DB_COS_DualityDelayedOwner((CHARACTER)_Owner, (CHARACTER)_Target, _Serial)',
-        'DB_COS_ConfigMechanic((CHARACTER)_Owner, "Duality", 1)',
+        'DB_COS_DualityDelayedTargetTotal((CHARACTER)_Target, _Amount)',
         'GetHitpoints(_Target, _Hitpoints)',
         'IntegerSubtract(_Hitpoints, _Amount, _ReducedHitpoints)',
         'IntegerMax(_ReducedHitpoints, 0, _FinalHitpoints)'
     )
     $expectedTurnActions = @(
-        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
-        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'NOT DB_COS_DualityDelayedTargetTotal(_Target, _Amount);',
         'SetHitpoints(_Target, _FinalHitpoints, "Guaranteed");',
-        'ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);',
-        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+        'PROC_COS_ResolveDelayedDualityRows(_Target);',
+        'PROC_COS_ClearDelayedDualityOwnerTotalsForTarget(_Target);',
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
     )
     $expectedDiedConditions = @(
         'Died(_Target)',
-        'DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)',
-        'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)'
+        'DB_COS_DualityDelayedTargetTotal((CHARACTER)_Target, _Amount)'
     )
     $expectedDiedActions = @(
-        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
-        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
-        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+        'NOT DB_COS_DualityDelayedTargetTotal(_Target, _Amount);',
+        'PROC_COS_ClearDelayedDualityRowsForTarget(_Target);',
+        'PROC_COS_ClearDelayedDualityOwnerTotalsForTarget(_Target);',
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
     )
     $expectedMigrationConditions = @(
         'LevelGameplayStarted(_, _)',
@@ -2694,28 +2862,61 @@ function Test-DualityDelayedLifecycleContract([string]$Story) {
     )
     $expectedMigrationActions = @(
         'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
-        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+        'PROC_COS_SyncDualityDelayedMarker(_Target);'
     )
-    return ((Get-MechanicsConditions $turnBlocks[0]) -join "`n") -ceq ($expectedTurnConditions -join "`n") -and
-        ((Get-MechanicsThenActions $turnBlocks[0]) -join "`n") -ceq ($expectedTurnActions -join "`n") -and
+    $individualHpBlocks = @($blocks | Where-Object {
+        $_.Contains('DB_COS_DualityDelayed(') -and (Get-StoryThen $_).Contains('SetHitpoints(')
+    })
+    return $individualHpBlocks.Count -eq 0 -and
+        ((Get-MechanicsConditions $turnHpBlocks[0]) -join "`n") -ceq ($expectedTurnConditions -join "`n") -and
+        ((Get-MechanicsThenActions $turnHpBlocks[0]) -join "`n") -ceq ($expectedTurnActions -join "`n") -and
         ((Get-MechanicsConditions $diedBlocks[0]) -join "`n") -ceq ($expectedDiedConditions -join "`n") -and
         ((Get-MechanicsThenActions $diedBlocks[0]) -join "`n") -ceq ($expectedDiedActions -join "`n") -and
         ((Get-MechanicsConditions $migrationBlocks[0]) -join "`n") -ceq ($expectedMigrationConditions -join "`n") -and
-        ((Get-MechanicsThenActions $migrationBlocks[0]) -join "`n") -ceq ($expectedMigrationActions -join "`n")
+        ((Get-MechanicsThenActions $migrationBlocks[0]) -join "`n") -ceq ($expectedMigrationActions -join "`n") -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_ResolveDelayedDualityRows' $resolveRowsContracts) -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_ClearDelayedDualityRowsForTarget' $clearTargetRowsContracts) -and
+        (Test-ExactDualityContracts $Story 'PROC' 'PROC_COS_ClearDelayedDualityOwnerTotalsForTarget' $clearTargetOwnerTotalsContracts)
 }
 Require (Test-DualityDelayedLifecycleContract $mechanicsGoal) `
-    '延迟两仪结算必须联结 owner map、检查 Owner 的 Duality=1、同步清债；旧无映射债务必须只迁移清理'
-$dualityDelayedConfigGateMutation = $mechanicsGoal.Replace(
-    "`nDB_COS_ConfigMechanic((CHARACTER)_Owner, `"Duality`", 1)", '')
-Require ($dualityDelayedConfigGateMutation -cne $mechanicsGoal -and
-    -not (Test-DualityDelayedLifecycleContract $dualityDelayedConfigGateMutation)) `
-    '延迟两仪 mutation probe 必须拒绝 TurnStarted 删除 Owner Config gate'
+    '延迟两仪必须按 TargetTotal 只扣血一次，再逐 individual 清债/日志并清 totals；Died/legacy 必须安全清理'
+$individualSetHpMutation = $mechanicsGoal.Replace(
+    'PROC_COS_SyncDualityDelayedMarker(_Target);',
+    "SetHitpoints(_Target, _FinalHitpoints, `"Guaranteed`" );`nPROC_COS_SyncDualityDelayedMarker(_Target);")
+Require ($individualSetHpMutation -cne $mechanicsGoal -and
+    -not (Test-DualityDelayedLifecycleContract $individualSetHpMutation)) `
+    '同一 TurnStarted materialization mutation probe 必须拒绝 individual cleanup 再次 SetHitpoints'
 $mappedDebtMigrationMutation = $mechanicsGoal.Replace(
     'NOT DB_COS_DualityDelayedOwner(_, _Target, _Serial)',
     'DB_COS_DualityDelayedOwner(_, _Target, _Serial)')
 Require ($mappedDebtMigrationMutation -cne $mechanicsGoal -and
     -not (Test-DualityDelayedLifecycleContract $mappedDebtMigrationMutation)) `
     '旧债迁移 mutation probe 必须拒绝误清已有 owner map 的债务'
+
+Require ((Test-DualityAggregateWriteContract $mechanicsGoal) -and
+    (Test-ClearDelayedOwnerContract $mechanicsGoal) -and
+    (Test-DualityDelayedLifecycleContract $mechanicsGoal) -and
+    (Test-DualityMarkerContract $mechanicsGoal)) '两仪内存语义 probe 前必须先闭合源码聚合合同'
+$semanticHp = 100
+$semanticTargetTotal = 30
+$semanticOwnerTotals = @{ A = 10; B = 20 }
+$semanticDebts = @(@{ Owner = 'A'; Amount = 10 }, @{ Owner = 'B'; Amount = 20 })
+$semanticMarker = $true
+$semanticTargetTotal -= $semanticOwnerTotals.A
+$semanticOwnerTotals.Remove('A')
+$semanticDebts = @($semanticDebts | Where-Object { $_.Owner -ne 'A' })
+$semanticMarker = $semanticDebts.Count -gt 0
+Require ($semanticTargetTotal -eq 20 -and $semanticOwnerTotals.Count -eq 1 -and
+    $semanticOwnerTotals.B -eq 20 -and $semanticDebts.Count -eq 1 -and $semanticMarker) `
+    '两仪内存语义 probe：HP100、A10+B20 时清 A 后 TargetTotal 必须为20且 marker 保持'
+$semanticHp = [Math]::Max(0, $semanticHp - $semanticTargetTotal)
+$semanticTargetTotal = 0
+$semanticOwnerTotals.Clear()
+$semanticDebts = @()
+$semanticMarker = $semanticDebts.Count -gt 0
+Require ($semanticHp -eq 80 -and $semanticTargetTotal -eq 0 -and
+    $semanticOwnerTotals.Count -eq 0 -and -not $semanticMarker) `
+    '两仪内存语义 probe：结算 B 后必须只扣总额20到HP80并清 marker'
 
 $fateArmGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Fate", 1\)'
 $fateAttackGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
