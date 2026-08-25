@@ -209,17 +209,15 @@ PROC
 PROC_COS_Register((CHARACTER)_Character)
 AND
 NOT DB_COS_Character(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
 DB_COS_Character(_Character);
 DB_COS_LostCount(_Character, 0);
 DB_COS_Power(_Character, 0);
 DB_COS_KillCount(_Character, 0);
-DB_COS_ConfigMechanic(_Character, "Power", 1);
-DB_COS_ConfigMechanic(_Character, "Wound", 1);
-DB_COS_ConfigMechanic(_Character, "KillPower", 1);
-DB_COS_ConfigMechanic(_Character, "Duality", 1);
-DB_COS_ConfigMechanic(_Character, "AllIn", 1);
-DB_COS_ConfigMechanic(_Character, "Strike", 1);
+PROC_COS_ConfigEnsureMechanics(_Character);
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
 DB_COS_ConfigWound(_Character, "AttackMinus1", 1);
 DB_COS_ConfigWound(_Character, "AttackMinus2", 1);
 DB_COS_ConfigWound(_Character, "AttackMinus3", 1);

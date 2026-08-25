@@ -1,0 +1,199 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+DB_COS_ConfigMechanicDefault("Power", 1);
+DB_COS_ConfigMechanicDefault("Wound", 1);
+DB_COS_ConfigMechanicDefault("KillPower", 1);
+DB_COS_ConfigMechanicDefault("Duality", 1);
+DB_COS_ConfigMechanicDefault("AllIn", 1);
+DB_COS_ConfigMechanicDefault("Fate", 1);
+DB_COS_ConfigMechanicDefault("Genesis", 1);
+DB_COS_ConfigMechanicDefault("Strike", 1);
+DB_COS_ConfigMechanicDefault("Mastery", 1);
+DB_COS_ConfigMechanicMirror("Power", "COS_CFG_MECH_POWER");
+DB_COS_ConfigMechanicMirror("Wound", "COS_CFG_MECH_WOUND");
+DB_COS_ConfigMechanicMirror("KillPower", "COS_CFG_MECH_KILLPOWER");
+DB_COS_ConfigMechanicMirror("Duality", "COS_CFG_MECH_DUALITY");
+DB_COS_ConfigMechanicMirror("AllIn", "COS_CFG_MECH_ALLIN");
+DB_COS_ConfigMechanicMirror("Fate", "COS_CFG_MECH_FATE");
+DB_COS_ConfigMechanicMirror("Genesis", "COS_CFG_MECH_GENESIS");
+DB_COS_ConfigMechanicMirror("Strike", "COS_CFG_MECH_STRIKE");
+DB_COS_ConfigMechanicMirror("Mastery", "COS_CFG_MECH_MASTERY");
+DB_COS_ConfigMechanicEvent("7f818c10-3f23-49f8-838a-d161c57bb35d", "Power");
+DB_COS_ConfigMechanicEvent("0574b4b8-549a-4b39-b810-6890c68642b1", "Wound");
+DB_COS_ConfigMechanicEvent("71abdeef-69d2-4385-8885-4f9ebbd829ca", "KillPower");
+DB_COS_ConfigMechanicEvent("aa88abcb-5f2e-452c-bdce-3ca6176db1e0", "Duality");
+DB_COS_ConfigMechanicEvent("2dd4ef80-1686-4989-8773-3cf6f12b9a36", "AllIn");
+DB_COS_ConfigMechanicEvent("aff82c28-d71a-4dad-837d-d41d8519051a", "Fate");
+DB_COS_ConfigMechanicEvent("063cc1a5-fe65-43e5-8531-d6974a7b1dce", "Genesis");
+DB_COS_ConfigMechanicEvent("78baf203-f60c-4dac-99ea-a7f5d1339d71", "Strike");
+DB_COS_ConfigMechanicEvent("146d28dc-aa94-40e8-9bad-91b069055526", "Mastery");
+DB_COS_ConfigUiOpenedEvent("65247962-a3b0-417d-9044-85e4aad38079");
+DB_COS_ConfigResetCoreEvent("08c8d67a-ace5-4830-8c2b-38b8c92bb470");
+KBSECTION
+PROC
+PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _Default)
+AND
+NOT DB_COS_ConfigMechanic(_Character, _Key, _)
+THEN
+DB_COS_ConfigMechanic(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicEvent(_Event, _Key)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigUiOpenedEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigResetCoreEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigRemoveMechanicMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicMirror(_Key, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigAddMechanicMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 1)
+AND
+DB_COS_ConfigMechanicMirror(_Key, _Passive)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSyncMechanicMirrors((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigRemoveMechanicMirrors(_Character);
+PROC_COS_ConfigAddMechanicMirrors(_Character);
+
+PROC
+PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigEnsureMechanics(_Character);
+PROC_COS_ConfigEnableEvents(_Character);
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+THEN
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
+
+PROC
+PROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+THEN
+NOT DB_COS_ConfigMechanic(_Character, _Key, 0);
+DB_COS_ConfigMechanic(_Character, _Key, 1);
+PROC_COS_ConfigApplyMechanic(_Character, _Key, 1);
+
+PROC
+PROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 1)
+THEN
+NOT DB_COS_ConfigMechanic(_Character, _Key, 1);
+DB_COS_ConfigMechanic(_Character, _Key, 0);
+PROC_COS_ConfigApplyMechanic(_Character, _Key, 0);
+
+PROC
+PROC_COS_ConfigResetCore((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _Default)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _Enabled)
+THEN
+NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
+DB_COS_ConfigMechanic(_Character, _Key, _Default);
+PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigUiOpenedEvent(_Event)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+THEN
+PROC_COS_ConfigSyncCharacter(_Character);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigMechanicEvent(_Event, _Key)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigToggleMechanic(_Character, _Key);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigResetCoreEvent(_Event)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigResetCore(_Character);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_Avatars(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_ConfigSyncCharacter(_Character);
+
+IF
+GainedControl(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_ConfigSyncCharacter(_Character);
+
+IF
+LeveledUp(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_ConfigSyncCharacter(_Character);
+
+IF
+RespecCompleted(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_ConfigSyncCharacter(_Character);
+
+EXITSECTION
+ENDEXITSECTION

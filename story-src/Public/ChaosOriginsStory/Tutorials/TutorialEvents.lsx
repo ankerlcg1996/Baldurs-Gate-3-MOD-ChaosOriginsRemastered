@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="0" revision="10" build="200"/>
+    <region id="TutorialEvents">
+        <node id="root">
+            <children>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_UI_OPENED"/>
+                    <attribute id="UUID" type="guid" value="65247962-a3b0-417d-9044-85e4aad38079"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_POWER"/>
+                    <attribute id="UUID" type="guid" value="7f818c10-3f23-49f8-838a-d161c57bb35d"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_WOUND"/>
+                    <attribute id="UUID" type="guid" value="0574b4b8-549a-4b39-b810-6890c68642b1"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_KILLPOWER"/>
+                    <attribute id="UUID" type="guid" value="71abdeef-69d2-4385-8885-4f9ebbd829ca"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_DUALITY"/>
+                    <attribute id="UUID" type="guid" value="aa88abcb-5f2e-452c-bdce-3ca6176db1e0"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_ALLIN"/>
+                    <attribute id="UUID" type="guid" value="2dd4ef80-1686-4989-8773-3cf6f12b9a36"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_FATE"/>
+                    <attribute id="UUID" type="guid" value="aff82c28-d71a-4dad-837d-d41d8519051a"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_GENESIS"/>
+                    <attribute id="UUID" type="guid" value="063cc1a5-fe65-43e5-8531-d6974a7b1dce"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_STRIKE"/>
+                    <attribute id="UUID" type="guid" value="78baf203-f60c-4dac-99ea-a7f5d1339d71"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_MECH_MASTERY"/>
+                    <attribute id="UUID" type="guid" value="146d28dc-aa94-40e8-9bad-91b069055526"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_RESET_CORE"/>
+                    <attribute id="UUID" type="guid" value="08c8d67a-ace5-4830-8c2b-38b8c92bb470"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>
