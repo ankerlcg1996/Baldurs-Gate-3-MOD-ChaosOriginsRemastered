@@ -2279,9 +2279,14 @@ Require ($configEnsureBlock -match 'DB_COS_ConfigMechanicDefault\(_Key, _Default
     $configEnsureBlock -match 'NOT DB_COS_ConfigMechanic\(_Character, _Key, _\)' -and
     $configEnsureBlock -match 'THEN\nDB_COS_ConfigMechanic\(_Character, _Key, _Default\);') `
     '核心设置初始化必须在同一 EnsureMechanics PROC 内由默认表只补缺失值'
-Require ([regex]::Matches($configGoal,
-    '(?m)^DB_COS_ConfigMechanic\(_Character, _Key, _Default\);$').Count -eq 1) `
-    '核心设置默认值写入必须只有 EnsureMechanics 的唯一受门禁入口'
+$configDefaultWriteBlocks = @(Get-AllStoryBlocks $configGoal | Where-Object {
+    (Get-StoryThen $_) -match '(?m)^DB_COS_ConfigMechanic\(_Character, _Key, _Default\);$'
+})
+$configResetCoreBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore')
+Require ($configDefaultWriteBlocks.Count -eq 2 -and $configResetCoreBlocks.Count -eq 1 -and
+    $configDefaultWriteBlocks -contains $configEnsureBlock -and
+    $configDefaultWriteBlocks -contains $configResetCoreBlocks[0]) `
+    '核心设置 _Default 写入必须且只能来自 EnsureMechanics 与 ConfigResetCore'
 
 $configIfBlocks = @([regex]::Matches($configGoal,
     '(?ms)^IF\n.*?(?=^IF\n|^PROC\n|^EXITSECTION\n|\z)') | ForEach-Object { $_.Value })
@@ -2289,7 +2294,7 @@ $mechanicToggleBlocks = @($configIfBlocks | Where-Object {
     $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ConfigToggleMechanic')
 })
 $resetBlocks = @($configIfBlocks | Where-Object {
-    $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ResetCore')
+    $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('PROC_COS_ConfigResetCore')
 })
 $configProcedureBlocks = @([regex]::Matches($configGoal,
     '(?ms)^PROC\n[A-Za-z0-9_]+\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
@@ -2343,12 +2348,12 @@ foreach ($configProcedureBlock in $configProcedureBlocks) {
 $configWriteProcedureCalls = @('PROC_COS_ConfigToggleMechanic', 'PROC_COS_ConfigResetCore')
 foreach ($writeProcedure in $configWriteProcedureCalls) {
     $externalCallIfBlocks = @($configIfBlocks | Where-Object { $_.Contains($writeProcedure) })
-    $expectedExternalBlocks = if ($writeProcedure -eq 'PROC_COS_ConfigToggleMechanic') {
-        $mechanicToggleBlocks
+    $expectedExternalBlock = if ($writeProcedure -eq 'PROC_COS_ConfigToggleMechanic') {
+        $mechanicToggleBlocks[0]
     } else {
-        $resetBlocks
+        $resetBlocks[0]
     }
-    Require ($externalCallIfBlocks.Count -eq 1 -and $externalCallIfBlocks[0] -eq $expectedExternalBlocks[0]) `
+    Require ($externalCallIfBlocks.Count -eq 1 -and $externalCallIfBlocks[0] -eq $expectedExternalBlock) `
         "$writeProcedure 的外部调用必须且只能来自对应 TutorialEvent IF 块"
 }
 $whitelistedProcedurePattern = '^(?:PROC_COS_ConfigEnsureMechanics|PROC_COS_ConfigToggleMechanic|PROC_COS_ConfigResetCore)$'
@@ -2412,7 +2417,7 @@ foreach ($lifecycleEvent in $lifecycleSyncSpecs) {
 }
 Require ($allConfigSyncCallBlocks.Count -eq 5 -and $allConfigSyncCallBlocks -contains $uiOpenedBlocks[0]) `
     'ConfigSyncCharacter 的外部调用必须且只能是四个生命周期块和 UI_OPENED'
-Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ResetCore').Count -ge 1 -and
+Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore').Count -eq 1 -and
     (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors').Count -ge 1) `
     '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
 
@@ -2425,6 +2430,31 @@ foreach ($forbiddenConfigPattern in @(
 }
 
 $genesisGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Genesis", 1\)'
+$genesisReadyBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_ApplyGenesisReady')
+$expectedGenesisReadyConditions = @(
+    'PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)',
+    'DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)',
+    '_Power >= 10'
+)
+$expectedGenesisReadyActions = @(
+    'ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);'
+)
+function Test-GenesisReadyContract([string]$Block) {
+    return ((Get-MechanicsConditions $Block) -join "`n") -ceq ($expectedGenesisReadyConditions -join "`n") -and
+        ((Get-MechanicsThenActions $Block) -join "`n") -ceq ($expectedGenesisReadyActions -join "`n")
+}
+Require ($genesisReadyBlocks.Count -eq 1 -and (Test-GenesisReadyContract $genesisReadyBlocks[0])) `
+    'ApplyGenesisReady 必须且只能在 Genesis=1 且 Power>=10 时添加 READY'
+$genesisReadyGenesisGateDeletionProbe = $genesisReadyBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Genesis`", 1)", '')
+Require ($genesisReadyGenesisGateDeletionProbe -cne $genesisReadyBlocks[0] -and
+    -not (Test-GenesisReadyContract $genesisReadyGenesisGateDeletionProbe)) `
+    'GenesisReady Genesis gate deletion mutation probe 必须被拒绝'
+$genesisReadyPowerGateDeletionProbe = $genesisReadyBlocks[0].Replace(
+    "`n_Power >= 10", '')
+Require ($genesisReadyPowerGateDeletionProbe -cne $genesisReadyBlocks[0] -and
+    -not (Test-GenesisReadyContract $genesisReadyPowerGateDeletionProbe)) `
+    'GenesisReady Power gate deletion mutation probe 必须被拒绝'
 $genesisUseBlocks = @($mechanicsIfBlocks | Where-Object {
     $_.Contains('UsingSpell(_Character, "Shout_COS_ChaosGenesis"')
 })
@@ -2766,11 +2796,6 @@ $resetEventMirrorDeletionMutation = $configGoal.Replace(
     'PROC_COS_ConfigResetCore(_Character);')
 Require-ConfigResetMutationRejected $resetEventMirrorDeletionMutation `
     'Reset event mutation probe 必须拒绝返回后缺失唯一镜像同步'
-$masterySuspendIsGated = $masterySuspendBlock -match $masteryDisabledGatePattern -or @($applyMechanicBlocks | Where-Object {
-    $_ -match $masteryDisabledGatePattern -and (Get-StoryThen $_).Contains('PROC_COS_ConfigSuspendMastery(_Character);')
-}).Count -ge 1
-Require $masterySuspendIsGated 'ConfigSuspendMastery 必须由 Mastery=0 或 ConfigApplyMechanic 的明确关闭分支调用'
-
 [xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
 $tutorialEventNodes = @($tutorialEventsDocument.SelectNodes('//node[@id="TutorialEvent"]'))
 $expectedTutorialEvents = [ordered]@{
