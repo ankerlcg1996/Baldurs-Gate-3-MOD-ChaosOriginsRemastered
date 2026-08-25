@@ -2077,11 +2077,13 @@ $coreMechanicMirrors = @(
     'COS_CFG_MECH_GENESIS', 'COS_CFG_MECH_STRIKE', 'COS_CFG_MECH_MASTERY'
 )
 function Get-StoryBlocks([string]$Story, [string]$Kind, [string]$Name) {
+    $Story = Normalize-LineEndings $Story
     $pattern = '(?ms)^' + [regex]::Escape($Kind) + '\n' + [regex]::Escape($Name) +
         '\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)'
     return @([regex]::Matches($Story, $pattern) | ForEach-Object { $_.Value })
 }
 function Get-AllStoryBlocks([string]$Story) {
+    $Story = Normalize-LineEndings $Story
     return @([regex]::Matches($Story,
         '(?ms)^(?:PROC|IF)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') | ForEach-Object { $_.Value })
 }
@@ -2092,6 +2094,14 @@ function Get-StoryThen([string]$Block) {
     $then = [regex]::Match($Block, '(?ms)^THEN\n(?<Actions>.*)$')
     Require $then.Success 'Story block 缺少 THEN 区'
     return $then.Groups['Actions'].Value
+}
+
+$storyBlockSources = [ordered]@{
+    Base = $goal; Reward = $rewardGoal; Mechanics = $mechanicsGoal; Mastery = $masteryGoal; Config = $configGoal
+}
+foreach ($storyBlockSource in $storyBlockSources.GetEnumerator()) {
+    Require ((Get-AllStoryBlocks $storyBlockSource.Value).Count -gt 0) `
+        "Story block 解析不得为空: $($storyBlockSource.Key)"
 }
 
 $expectedCoreMirrors = [ordered]@{
