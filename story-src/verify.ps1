@@ -931,6 +931,7 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
 
     $applyRouteStatus = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ApplyMasteryRouteStatus')
     if ($applyRouteStatus.Count -ne 1 -or
+        -not $applyRouteStatus[0].Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)') -or
         -not $applyRouteStatus[0].Contains('_Count > 0') -or
         -not $applyRouteStatus[0].Contains('IntegerProduct(_Count, 6, _DurationSeconds)') -or
         -not $applyRouteStatus[0].Contains('IntegerToReal(_DurationSeconds, _Duration)') -or
@@ -955,7 +956,20 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
     })
     if ($syncStatusEntry.Count -ne 1 -or
         -not (Test-MasteryActions $syncStatusEntry[0] @(
-            'PROC_COS_SyncMasteryStatuses(_Character);'
+            'PROC_COS_SyncMasteryStatuses(_Character);',
+            'PROC_COS_UpdateMasterySpell(_Character);'
+        ))) { return $false }
+
+    $consumeAvailable = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ConsumeMasteryAvailable')
+    if ($consumeAvailable.Count -ne 1 -or
+        -not $consumeAvailable[0].Contains('DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)') -or
+        -not $consumeAvailable[0].Contains('DB_COS_MasteryAvailableCount(_Character, _Count)') -or
+        -not $consumeAvailable[0].Contains('_Count > 0') -or
+        -not $consumeAvailable[0].Contains('IntegerSubtract(_Count, 1, _Next)') -or
+        -not (Test-MasteryActions $consumeAvailable[0] @(
+            'NOT DB_COS_MasteryAvailableCount(_Character, _Count);',
+            'DB_COS_MasteryAvailableCount(_Character, _Next);',
+            'PROC_COS_UpdateMasterySpell(_Character);'
         ))) { return $false }
 
     $grantBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_GrantMasteryFrom')
@@ -2461,9 +2475,23 @@ $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
 $masterySyncEffectBlocks = @(Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMastery' | Where-Object {
     (Get-StoryThen $_).Contains('PROC_COS_SyncMasteryStatuses(_Character);')
 })
+$expectedMasterySyncEffectActions = @(
+    'PROC_COS_SyncMasteryStatuses(_Character);',
+    'PROC_COS_UpdateMasterySpell(_Character);'
+)
+function Test-MasterySyncEffectContract([string]$Block) {
+    $actions = @((Get-StoryThen $Block).Replace("`r`n", "`n") -split "`n" |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    return $actions.Count -eq 2 -and
+        ($actions -join "`n") -ceq ($expectedMasterySyncEffectActions -join "`n")
+}
+$masteryApplyRouteBlocks = @(Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ApplyMasteryRouteStatus')
+$masteryConsumeBlocks = @(Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_ConsumeMasteryAvailable')
 $masteryRelevantBlocks = @(
     $masterySyncEffectBlocks +
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_SyncMasteryStatuses') +
+    $masteryApplyRouteBlocks +
+    $masteryConsumeBlocks +
     (Get-StoryBlocks $masteryGoal 'PROC' 'PROC_COS_UpdateMasterySpell') +
     @($masteryIfBlocksForConfig | Where-Object {
         $_.Contains('CastedSpell(_Character, "Shout_COS_ChaosMasteryTune"') -or
@@ -2472,14 +2500,63 @@ $masteryRelevantBlocks = @(
 )
 $masteryRelevantBlocks += $enabledRollTrialBlocks
 $masteryRelevantBlocks += Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_AddMasteryGiftWoundCandidates'
-Require ($masterySyncEffectBlocks.Count -eq 1 -and $masteryRelevantBlocks.Count -eq 8) `
-    '掌控混沌必须严格覆盖状态 Sync、选择技能显示、Tune、Correct、启用轮盘和掌控赠礼效果块'
+Require ($masterySyncEffectBlocks.Count -eq 1 -and `
+    (Test-MasterySyncEffectContract $masterySyncEffectBlocks[0])) `
+    'PROC_COS_SyncMastery 效果分支必须且只能依次同步路线状态和选择技能'
+Require ($masteryApplyRouteBlocks.Count -eq 1 -and $masteryConsumeBlocks.Count -eq 1 -and `
+    $masteryRelevantBlocks.Count -eq 10) `
+    '掌控混沌必须严格覆盖状态 Sync、路线状态应用、可用点消费、选择技能显示、施放、轮盘和赠礼效果块'
 foreach ($masteryEnabledBlock in $masteryRelevantBlocks) {
     Require-StoryGate $masteryEnabledBlock $masteryEnabledGatePattern `
         '掌控混沌显示、生效、轮盘和赠礼块必须精确具有 Mastery=1 开关门禁'
     Require (-not ($masteryEnabledBlock -match $masteryDisabledGatePattern)) `
         '掌控混沌显示、生效、轮盘和赠礼块不得出现 Mastery=0'
 }
+$masteryApplyRouteActions = @((Get-StoryThen $masteryApplyRouteBlocks[0]).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ })
+Require ($masteryApplyRouteActions.Count -eq 1 -and
+    $masteryApplyRouteActions[0] -ceq 'ApplyStatus(_Character, _Status, _Duration, 100, _Character);' -and
+    -not ($masteryApplyRouteBlocks[0] -match '(?m)^(?:NOT )?DB_COS_Mastery')) `
+    'ApplyMasteryRouteStatus 只能在 Mastery=1 时应用计算后的路线状态，不得写账本'
+$masteryConsumeActions = @((Get-StoryThen $masteryConsumeBlocks[0]).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$expectedMasteryConsumeActions = @(
+    'NOT DB_COS_MasteryAvailableCount(_Character, _Count);',
+    'DB_COS_MasteryAvailableCount(_Character, _Next);',
+    'PROC_COS_UpdateMasterySpell(_Character);'
+)
+Require ($masteryConsumeBlocks[0].Contains('_Count > 0') -and
+    $masteryConsumeBlocks[0].Contains('IntegerSubtract(_Count, 1, _Next)') -and
+    $masteryConsumeActions.Count -eq 3 -and
+    ($masteryConsumeActions -join "`n") -ceq ($expectedMasteryConsumeActions -join "`n")) `
+    'ConsumeMasteryAvailable 只能在 Mastery=1 且可用点大于0时减一并同步选择技能'
+
+$masterySyncUpdateRemovalProbe = $masterySyncEffectBlocks[0].Replace(
+    "`nPROC_COS_UpdateMasterySpell(_Character);", '')
+Require (-not (Test-MasterySyncEffectContract $masterySyncUpdateRemovalProbe)) `
+    'SyncMastery UpdateMasterySpell deletion mutation probe 必须被拒绝'
+$applyMasteryRouteGateRemovalProbe = $masteryApplyRouteBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Mastery`", 1)", '')
+$applyMasteryRouteGateRemovalRejected = $false
+try {
+    Require-StoryGate $applyMasteryRouteGateRemovalProbe $masteryEnabledGatePattern `
+        'ApplyMasteryRouteStatus 删除门禁后必须失败'
+} catch {
+    $applyMasteryRouteGateRemovalRejected = $true
+}
+Require $applyMasteryRouteGateRemovalRejected `
+    'ApplyMasteryRouteStatus mutation probe 必须拒绝真实 Mastery=1 gate 被删除'
+$consumeMasteryGateRemovalProbe = $masteryConsumeBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Mastery`", 1)", '')
+$consumeMasteryGateRemovalRejected = $false
+try {
+    Require-StoryGate $consumeMasteryGateRemovalProbe $masteryEnabledGatePattern `
+        'ConsumeMasteryAvailable 删除门禁后必须失败'
+} catch {
+    $consumeMasteryGateRemovalRejected = $true
+}
+Require $consumeMasteryGateRemovalRejected `
+    'ConsumeMasteryAvailable mutation probe 必须拒绝真实 Mastery=1 gate 被删除'
 $masteryAccountingProcedureNames = @(
     'PROC_COS_EnsureMasteryCounts', 'PROC_COS_AccrueMastery', 'PROC_COS_MigrateMasterySchema46To47',
     'PROC_COS_SyncMasteryAfterSchema47', 'PROC_COS_IncrementMasteryAvailable',
@@ -2527,11 +2604,168 @@ $expectedMasterySuspendActions = @(
 Require ($masterySuspendActions.Count -eq 3 -and
     -not (Compare-Object ($expectedMasterySuspendActions | Sort-Object) ($masterySuspendActions | Sort-Object))) `
     'ConfigSuspendMastery 的 THEN 只能清理路线显示和掌控选择技能'
-foreach ($forbiddenSuspendToken in @('DB_COS_Mastery', 'Consume', 'ApplyStatus', 'AddSpell', 'CastedSpell')) {
+$masterySuspendCarrierMutation = $masterySuspendBlock.Replace(
+    'RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);',
+    "RemoveSpell(_Character, `"Shout_COS_ChaosMastery`", 1);`nRemovePassive(_Character, `"COS_ChaosMasteryGuide`");")
+$masterySuspendCarrierMutationActions = @((Get-StoryThen $masterySuspendCarrierMutation).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ })
+Require ($masterySuspendCarrierMutation -cne $masterySuspendBlock -and
+    ($masterySuspendCarrierMutationActions -join "`n") -cne ($expectedMasterySuspendActions -join "`n")) `
+    'ConfigSuspendMastery mutation probe 必须拒绝移除 carriers 或 guide'
+foreach ($forbiddenSuspendToken in @(
+    'DB_COS_Mastery', 'Consume', 'ApplyStatus', 'AddSpell', 'CastedSpell',
+    'RemovePassive', 'COS_ChaosMasteryPoint', 'COS_ChaosMasteryGuide'
+)) {
     Require (-not $masterySuspendBlock.Contains($forbiddenSuspendToken)) `
         "ConfigSuspendMastery 禁止删除账本、消费、施加状态或施法: $forbiddenSuspendToken"
 }
 $applyMechanicBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigApplyMechanic')
+function Test-ConfigStoryBlockExact([string]$Block, [string[]]$ExpectedConditions, [string[]]$ExpectedActions) {
+    $actualConditions = @(Get-MechanicsConditions $Block)
+    $actualActions = @((Get-StoryThen $Block).Replace("`r`n", "`n") -split "`n" |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    return ($actualConditions -join "`n") -ceq ($ExpectedConditions -join "`n") -and
+        ($actualActions -join "`n") -ceq ($ExpectedActions -join "`n")
+}
+$configApplySignature = 'PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)'
+$expectedConfigApplyContracts = @(
+    @{
+        Conditions = @($configApplySignature, '_Key == "Fate"', '_Enabled == 0')
+        Actions = @('PROC_COS_ClearFateAction(_Character);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Genesis"', '_Enabled == 0')
+        Actions = @('RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Genesis"', '_Enabled == 1', 'DB_COS_Power(_Character, _Power)')
+        Actions = @('PROC_COS_SyncPowerDisplay(_Character, _Power);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Mastery"', '_Enabled == 0')
+        Actions = @('PROC_COS_ConfigSuspendMastery(_Character);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Mastery"', '_Enabled == 1')
+        Actions = @('PROC_COS_SyncMastery(_Character);')
+    }
+)
+function Test-ConfigApplyMechanicContract([string]$Story) {
+    $blocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ConfigApplyMechanic')
+    if ($blocks.Count -ne $expectedConfigApplyContracts.Count) { return $false }
+    foreach ($contract in $expectedConfigApplyContracts) {
+        $matches = @($blocks | Where-Object {
+            Test-ConfigStoryBlockExact $_ $contract.Conditions $contract.Actions
+        })
+        if ($matches.Count -ne 1) { return $false }
+    }
+    return $true
+}
+Require (Test-ConfigApplyMechanicContract $configGoal) `
+    'ConfigApplyMechanic 必须严格只有 Fate0、Genesis0/1、Mastery0/1 五个具体副作用分支'
+Require (-not (($applyMechanicBlocks -join "`n") -match 'COS_CHAOS_FATE_ENABLED') -and
+    -not (($applyMechanicBlocks -join "`n") -match '(?m)^PROC_COS_ConfigSyncMechanicMirrors\(') -and
+    -not (($applyMechanicBlocks -join "`n") -match '(?m)^(?:NOT )?DB_COS_Mastery')) `
+    'ConfigApplyMechanic 不得删除用户 Fate 状态、逐键同步镜像或写 Mastery 账本'
+
+$resetCoreBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore')
+$resetCoreConditions = @(
+    'PROC_COS_ConfigResetCore((CHARACTER)_Character)',
+    'DB_COS_ConfigMechanicDefault(_Key, _Default)',
+    'DB_COS_ConfigMechanic(_Character, _Key, _Enabled)'
+)
+$resetCoreActions = @(
+    'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
+    'DB_COS_ConfigMechanic(_Character, _Key, _Default);',
+    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);'
+)
+$resetEventConditions = @(
+    'TutorialEvent(_Character, _Event)',
+    'DB_COS_ConfigResetCoreEvent(_Event)',
+    'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
+    'IsControlled(_Character, 1)',
+    'IsInCombat(_Character, 0)'
+)
+$resetEventActions = @(
+    'PROC_COS_ConfigResetCore(_Character);',
+    'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
+)
+function Test-ConfigResetStoryContract([string]$Story) {
+    $procBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ConfigResetCore')
+    $eventBlocks = @(Get-AllStoryBlocks $Story | Where-Object {
+        $_.StartsWith("IF`n") -and $_.Contains('DB_COS_ConfigResetCoreEvent(_Event)')
+    })
+    return $procBlocks.Count -eq 1 -and $eventBlocks.Count -eq 1 -and
+        (Test-ConfigStoryBlockExact $procBlocks[0] $resetCoreConditions $resetCoreActions) -and
+        (Test-ConfigStoryBlockExact $eventBlocks[0] $resetEventConditions $resetEventActions)
+}
+Require (Test-ConfigResetStoryContract $configGoal) `
+    'ResetCore 必须逐键写默认值并 Apply，且固定事件返回后只同步一次镜像'
+
+function Require-ConfigApplyMutationRejected([string]$Mutation, [string]$Message) {
+    Require ($Mutation -cne $configGoal -and -not (Test-ConfigApplyMechanicContract $Mutation)) $Message
+}
+function Require-ConfigResetMutationRejected([string]$Mutation, [string]$Message) {
+    Require ($Mutation -cne $configGoal -and -not (Test-ConfigResetStoryContract $Mutation)) $Message
+}
+$configApplyFateDeletionMutation = $configGoal.Replace(
+    "THEN`nPROC_COS_ClearFateAction(_Character);",
+    'THEN')
+Require-ConfigApplyMutationRejected $configApplyFateDeletionMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Fate0 缺失 ClearFateAction'
+$configApplyFateStatusMutation = $configGoal.Replace(
+    'PROC_COS_ClearFateAction(_Character);',
+    "PROC_COS_ClearFateAction(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_FATE_ENABLED`", _Character);")
+Require-ConfigApplyMutationRejected $configApplyFateStatusMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Fate0 删除用户 FATE_ENABLED 状态'
+$configApplyGenesisPowerMutation = $configGoal.Replace(
+    "AND`nDB_COS_Power(_Character, _Power)`nTHEN`nPROC_COS_SyncPowerDisplay(_Character, _Power);",
+    "THEN`nPROC_COS_SyncPowerDisplay(_Character, _Power);")
+Require-ConfigApplyMutationRejected $configApplyGenesisPowerMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Genesis1 缺失当前 Power 条件'
+$configApplyGenesisReadyDeletionMutation = $configGoal.Replace(
+    "THEN`nRemoveStatus(_Character, `"COS_CHAOS_GENESIS_READY`", _Character);",
+    'THEN')
+Require-ConfigApplyMutationRejected $configApplyGenesisReadyDeletionMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Genesis0 缺失 ready 清理'
+$configApplyMasteryLedgerMutation = $configGoal.Replace(
+    'PROC_COS_ConfigSuspendMastery(_Character);',
+    'NOT DB_COS_MasteryTuneCount(_Character, _Count);')
+Require-ConfigApplyMutationRejected $configApplyMasteryLedgerMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Mastery0 写路线账本'
+$configApplyMasterySyncDeletionMutation = $configGoal.Replace(
+    "_Key == `"Mastery`"`nAND`n_Enabled == 1`nTHEN`nPROC_COS_SyncMastery(_Character);",
+    "_Key == `"Mastery`"`nAND`n_Enabled == 1`nTHEN")
+Require-ConfigApplyMutationRejected $configApplyMasterySyncDeletionMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Mastery1 缺失 SyncMastery'
+$genericApplyMirrorBlock = @"
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+THEN
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
+
+"@
+$configApplyGenericMirrorMutation = $configGoal.Replace(
+    "PROC`nPROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)",
+    $genericApplyMirrorBlock + "PROC`nPROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)")
+Require-ConfigApplyMutationRejected $configApplyGenericMirrorMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝恢复 generic per-key mirror 分支'
+
+$resetApplyDeletionMutation = $configGoal.Replace(
+    "`nPROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);",
+    '')
+Require-ConfigResetMutationRejected $resetApplyDeletionMutation `
+    'ResetCore mutation probe 必须拒绝逐键缺失 ApplyMechanic'
+$resetPerKeyMirrorMutation = $configGoal.Replace(
+    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);',
+    "PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);`nPROC_COS_ConfigSyncMechanicMirrors(_Character);")
+Require-ConfigResetMutationRejected $resetPerKeyMirrorMutation `
+    'ResetCore mutation probe 必须拒绝逐键同步镜像'
+$resetEventMirrorDeletionMutation = $configGoal.Replace(
+    "PROC_COS_ConfigResetCore(_Character);`nPROC_COS_ConfigSyncMechanicMirrors(_Character);",
+    'PROC_COS_ConfigResetCore(_Character);')
+Require-ConfigResetMutationRejected $resetEventMirrorDeletionMutation `
+    'Reset event mutation probe 必须拒绝返回后缺失唯一镜像同步'
 $masterySuspendIsGated = $masterySuspendBlock -match $masteryDisabledGatePattern -or @($applyMechanicBlocks | Where-Object {
     $_ -match $masteryDisabledGatePattern -and (Get-StoryThen $_).Contains('PROC_COS_ConfigSuspendMastery(_Character);')
 }).Count -ge 1
