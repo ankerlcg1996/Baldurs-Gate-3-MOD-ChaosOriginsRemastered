@@ -612,10 +612,6 @@
 	<content contentuid="h89ec3cdbg1097g4f7cg8c7ag840fe7eefd6d" version="1">Devours 80% of the wheel half, for about 0.6x total damage.</content>
 	<content contentuid="h10c0f722gb73eg4319g8dd7g9d2f8ec8da33" version="1">Duality Devour: 100%</content>
 	<content contentuid="h2fba4f13g5d17g411cg80bbg38ea340450bb" version="1">Devours the entire wheel half, for about 0.5x total damage.</content>
-	<content contentuid="hb6537e8cg9428g4fd3g9af1gfd1e3f258ec7" version="1">Test: Gain 100 Chaos Power</content>
-	<content contentuid="hae5f271agdd7cg4353gb02bga5d4ede408e6" version="1">Testing only. No cost or cooldown; grants 100 Chaos Power.</content>
-	<content contentuid="h1a80c312g8552g4430gb0b2g115b7a43e6a9" version="1">Test: Restore Chaos All-In Charges</content>
-	<content contentuid="hab0e6d02gcc1fg4a4egb59dg85a8d9f4f8dd" version="1">Testing only. No cost or cooldown; restores all Chaos All-In charges available at the current level.</content>
 	<content contentuid="h71000001g0001g4001g8001g000000000001" version="1">Chaos Experience</content>
 	<content contentuid="h71000002g0002g4002g8002g000000000002" version="1">Level-based story and exploration growth: +1 to all Skill Checks and raw Ability Checks. Grants no proficiency or expertise and does not affect attacks, saves, or spell DC.</content>
 	<content contentuid="h71000003g0003g4003g8003g000000000003" version="1">Level-based story and exploration growth: +2 to all Skill Checks and raw Ability Checks. Grants no proficiency or expertise and does not affect attacks, saves, or spell DC.</content>

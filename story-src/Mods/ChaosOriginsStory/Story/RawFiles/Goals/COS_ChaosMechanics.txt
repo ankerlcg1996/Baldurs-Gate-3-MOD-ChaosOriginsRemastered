@@ -1298,13 +1298,6 @@ PROC_COS_ClearFateAction((CHARACTER)_Character);
 DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);
 
 IF
-UsingSpell(_Character, "Shout_COS_TestPower100", _, _, _)
-AND
-DB_COS_Character((CHARACTER)_Character)
-THEN
-PROC_COS_AddPower((CHARACTER)_Character, 100);
-
-IF
 StatusApplied(_Character, "COS_CHAOS_ALLIN_TOGGLE", _, _)
 AND
 DB_COS_Character((CHARACTER)_Character)
@@ -1727,13 +1720,5 @@ DB_COS_WoundConsumed((CHARACTER)_Character)
 THEN
 NOT DB_COS_WoundConsumed((CHARACTER)_Character);
 
-IF
-RestorePartyFinished()
-AND
-DB_COS_Character(_Character)
-AND
-DB_COS_ConfigMechanic(_Character, "AllIn", 1)
-THEN
-ApplyStatus(_Character, "COS_CHAOS_RESTORE_ALLIN", 0.1, 100, _Character);
 EXITSECTION
 ENDEXITSECTION

@@ -612,10 +612,6 @@
 	<content contentuid="h89ec3cdbg1097g4f7cg8c7ag840fe7eefd6d" version="1">輪の半分を80%吞噬し、合計ダメージを約0.6倍にする。</content>
 	<content contentuid="h10c0f722gb73eg4319g8dd7g9d2f8ec8da33" version="1">両儀吞噬：100%</content>
 	<content contentuid="h2fba4f13g5d17g411cg80bbg38ea340450bb" version="1">輪の半分を完全に吞噬し、合計ダメージを約0.5倍にする。</content>
-	<content contentuid="hb6537e8cg9428g4fd3g9af1gfd1e3f258ec7" version="1">テスト：混沌の力を100獲得</content>
-	<content contentuid="hae5f271agdd7cg4353gb02bga5d4ede408e6" version="1">テスト専用。コストとクールダウンなしで混沌の力を100獲得する。</content>
-	<content contentuid="h1a80c312g8552g4430gb0b2g115b7a43e6a9" version="1">テスト：混沌の総力チャージ回復</content>
-	<content contentuid="hab0e6d02gcc1fg4a4egb59dg85a8d9f4f8dd" version="1">テスト専用。コストとクールダウンなしで、現在レベルの混沌の総力チャージをすべて回復する。</content>
 	<content contentuid="h71000001g0001g4001g8001g000000000001" version="1">混沌の経験</content>
 	<content contentuid="h71000002g0002g4002g8002g000000000002" version="1">レベル成長による物語・探索能力：すべての技能判定と能力値判定+1。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。</content>
 	<content contentuid="h71000003g0003g4003g8003g000000000003" version="1">レベル成長による物語・探索能力：すべての技能判定と能力値判定+2。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。</content>

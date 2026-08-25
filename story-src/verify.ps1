@@ -796,8 +796,14 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 663 -and @($handles | Select-Object -Unique).Count -eq 663) `
-        "完整本地化必须包含 663 个唯一文本: $language"
+    Require ($handles.Count -eq 659 -and @($handles | Select-Object -Unique).Count -eq 659) `
+        "完整本地化必须包含 659 个唯一文本: $language"
+    Require (-not ($handles | Where-Object { $_ -in @(
+        'hb6537e8cg9428g4fd3g9af1gfd1e3f258ec7',
+        'hae5f271agdd7cg4353gb02bga5d4ede408e6',
+        'h1a80c312g8552g4430gb0b2g115b7a43e6a9',
+        'hab0e6d02gcc1fg4a4egb59dg85a8d9f4f8dd'
+    ) })) "本地化不得保留测试技能文本: $language"
     Require (-not ($expectedHandles | Where-Object { $handles -notcontains $_ })) `
         "完整本地化缺少起源、身份或掌控混沌文本: $language"
     if ($null -eq $referenceLocalizationHandles) {
@@ -1234,8 +1240,7 @@ Require (-not $mechanicsGoal.Contains('COS_ChaosMastery')) `
 foreach ($requiredMechanicsText in @(
     'PROC_COS_RollWound', 'PROC_COS_ResolveDuality', 'PROC_COS_AddPower', 'PROC_COS_AddLost',
     'Shout_COS_ChaosGenesis', 'AttackedBy(', 'TurnStarted(', 'EnteredCombat(', 'LeftCombat(',
-    'UsingSpell(_Character, "Shout_COS_TestPower100"', 'PROC_COS_AddPower((CHARACTER)_Character, 100)',
-    'RestorePartyFinished()', 'COS_CHAOS_RESTORE_ALLIN', 'Random(100, _DualityRoll)',
+    'Random(100, _DualityRoll)',
     'PROC_COS_QueueDualityDamage', 'RealtimeObjectTimerLaunch(_Target, "COS_DualityApplyDamage", 50)',
     'ObjectTimerFinished(_Target, "COS_DualityApplyDamage")', 'DB_COS_DualityDamagePending',
     'PROC_COS_QueueDelayedDualityDamage', 'DB_COS_DualityDelayed', 'DB_COS_DualityDelaySerial',
@@ -1895,12 +1900,21 @@ Require (-not ($allStats -match 'COS_ChaosEcho|COS_CHAOS_ECHO_LOG_|COS_CHAOS_SEN
     '完整 Stats 不得保留混沌回响定义'
 $featuresPath = Join-Path $root "Public\$module\Stats\Generated\Data\ChaosFeatures.txt"
 $featuresText = Get-Content -LiteralPath $featuresPath -Raw -Encoding UTF8
-Require ($featuresText.Contains('new entry "Shout_COS_TestPower100"') -and `
-    $featuresText.Contains('data "UseCosts" ""')) `
-    '测试阶段必须提供无消耗的100点混沌之力技能'
-Require ($featuresText.Contains('new entry "Shout_COS_TestRestoreAllIn"') -and `
-    $featuresText.Contains('ApplyStatus(SELF,COS_CHAOS_RESTORE_ALLIN,100,0.1)')) `
-    '测试阶段必须提供恢复全部孤注充能的技能'
+Require (-not $featuresText.Contains('new entry "Shout_COS_TestPower100"') -and `
+    -not $featuresText.Contains('new entry "Shout_COS_TestRestoreAllIn"') -and `
+    -not $allStats.Contains('new entry "COS_CHAOS_RESTORE_ALLIN"')) `
+    '发行版不得包含测试混沌之力、测试孤注充能技能或其专用状态'
+Require (-not $goal.Contains('DB_COS_CoreSpell(1, "Shout_COS_TestPower100");') -and `
+    -not $goal.Contains('DB_COS_CoreSpell(1, "Shout_COS_TestRestoreAllIn");')) `
+    '基础同步不得再授予两个测试技能'
+Require ($goal.Contains('HasSpell(_Character, "Shout_COS_TestPower100", 1)') -and `
+    $goal.Contains('RemoveSpell(_Character, "Shout_COS_TestPower100", 0);') -and `
+    $goal.Contains('HasSpell(_Character, "Shout_COS_TestRestoreAllIn", 1)') -and `
+    $goal.Contains('RemoveSpell(_Character, "Shout_COS_TestRestoreAllIn", 0);')) `
+    '基础同步必须清理旧存档已经获得的两个测试技能'
+Require (-not $mechanicsGoal.Contains('UsingSpell(_Character, "Shout_COS_TestPower100"') -and `
+    -not $mechanicsGoal.Contains('COS_CHAOS_RESTORE_ALLIN')) `
+    '混沌机制不得保留测试技能处理规则'
 Require ($featuresText.Contains('data "StackType" "Additive"') -and `
     $featuresText.Contains('StatusImmunity(COS_CHAOS_SENTINEL_POWER)') -and `
     $featuresText.Contains('IgnoreResting;FreezeDuration')) `
