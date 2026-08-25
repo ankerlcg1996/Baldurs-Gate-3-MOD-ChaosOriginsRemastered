@@ -164,6 +164,12 @@ $build.Flags = [LSLib.LS.PackageFlags]0
 $build.Hash = $true
 $build.ExcludeHidden = $true
 $build.Priority = 0
+foreach ($relative in $actual) {
+    $inputFile = [LSLib.LS.PackageBuildInputFile]::new()
+    $inputFile.Path = $relative
+    $inputFile.FilesystemPath = Join-Path $stage ($relative.Replace('/', '\\'))
+    [void]$build.Files.Add($inputFile)
+}
 $packager = [LSLib.LS.Packager]::new()
 $packager.CreatePackage($pak, $stage, $build).GetAwaiter().GetResult()
 Require (Test-Path -LiteralPath $pak -PathType Leaf) 'PAK 创建失败'
