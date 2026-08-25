@@ -1301,13 +1301,16 @@ $tuneCellPattern = '(?m)^IntegerProduct\(_TuneCount, (\d+), _TuneCells\)$'
 $tuneCellMatches = @([regex]::Matches($rollTrialBlocks[0], $tuneCellPattern))
 $crlfEquivalentTuneCellMatches = @([regex]::Matches(
     (Normalize-LineEndings ($rollTrialBlocks[0].Replace("`n", "`r`n"))), $tuneCellPattern))
-Require ($crlfEquivalentTuneCellMatches.Count -eq $tuneCellMatches.Count -and
-    $crlfEquivalentTuneCellMatches[0].Groups[1].Value -eq $tuneCellMatches[0].Groups[1].Value) `
+Require ($tuneCellMatches.Count -eq 1) `
+    '每次调律的 LF 试炼规则必须解析为唯一正面格定义'
+Require ($crlfEquivalentTuneCellMatches.Count -eq 1) `
+    '每次调律的 CRLF 试炼规则必须解析为唯一正面格定义'
+Require ($crlfEquivalentTuneCellMatches[0].Groups[1].Value -eq $tuneCellMatches[0].Groups[1].Value) `
     '受击试炼规则在 CRLF 与 LF 下必须解析为相同的调律格数'
 $calmCellMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerProduct\(_CorrectCount, (\d+), _CalmCells\)$'))
 $positiveBaseMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\((\d+), _TuneCells, _PositiveEnd\)$'))
 $calmEndMatches = @([regex]::Matches($rollTrialBlocks[0], '(?m)^IntegerSum\(_PositiveEnd, _CalmCells, _CalmEnd\)$'))
-Require ($tuneCellMatches.Count -eq 1 -and [int]$tuneCellMatches[0].Groups[1].Value -eq 2) `
+Require ([int]$tuneCellMatches[0].Groups[1].Value -eq 2) `
     '每次调律必须从实际受击试炼规则解析为2个正面格'
 Require ($calmCellMatches.Count -eq 1 -and [int]$calmCellMatches[0].Groups[1].Value -eq 4) `
     '每次校准必须从实际受击试炼规则解析为4个平静格'
@@ -2035,7 +2038,10 @@ $guiRelativePaths = @(
 foreach ($relative in $guiRelativePaths) {
     $path = Join-Path $guiRoot $relative
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少原生菜单空壳: $relative"
-    [void][xml](Get-Content -LiteralPath $path -Raw -Encoding UTF8)
+    $guiText = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    [void][xml]$guiText
+    Require (-not ($guiText -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|DB_COS_Config|COS_CFG_MECH_|TabMECH|NMCM')) `
+        "最终 GUI 文件不得绑定角色或真实设置: $relative"
 }
 
 $stateMachineSpecs = @(
@@ -2045,7 +2051,6 @@ $stateMachineSpecs = @(
 foreach ($stateMachineSpec in $stateMachineSpecs) {
     $stateMachinePath = Join-Path $guiRoot $stateMachineSpec.Path
     $stateText = [IO.File]::ReadAllText($stateMachinePath)
-    Require (-not $stateText.Contains('NMCM')) "最终状态机不得保留 NMCM 标识: $($stateMachineSpec.Path)"
     [xml]$stateMachineDocument = $stateText
     $states = @($stateMachineDocument.SelectNodes('//*[local-name()="State"]'))
     $actualStateNames = @($states | ForEach-Object { $_.GetAttribute('Name') } | Sort-Object)
@@ -2081,18 +2086,36 @@ foreach ($stateMachineSpec in $stateMachineSpecs) {
     Require ($openConfigSubstates.Count -eq 1 -and
         $openConfigSubstates[0].GetAttribute('Name') -eq 'COS_CFG_MENU') `
         "OpenCOSConfig 必须只打开 COS_CFG_MENU: $($stateMachineSpec.Path)"
+    $closeEvents = @($configMenuState[0].SelectNodes('./*[local-name()="State.Events"]/*[local-name()="StateEvent"]') |
+        Where-Object { $_.GetAttribute('Name') -in @('CloseWidget', 'CloseAll') })
+    foreach ($closeEventName in @('CloseWidget', 'CloseAll')) {
+        $closeEvent = @($closeEvents | Where-Object { $_.GetAttribute('Name') -eq $closeEventName })
+        Require ($closeEvent.Count -eq 1) `
+            "COS_CFG_MENU 必须定义唯一 $closeEventName 关闭事件: $($stateMachineSpec.Path)"
+        $closeActions = @($closeEvent[0].SelectNodes('./*[local-name()="StateEvent.Actions"]/*'))
+        Require ($closeActions.Count -eq 1 -and $closeActions[0].LocalName -eq 'RemoveState') `
+            "COS_CFG_MENU 的 $closeEventName 必须只有一个直接 RemoveState 动作: $($stateMachineSpec.Path)"
+    }
 }
 
-$keyboardEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton.xaml'))
-$controllerEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton_c.xaml'))
-foreach ($entry in @($keyboardEntry, $controllerEntry)) {
-    Require ($entry.Contains('CommandParameter="OpenCOSConfig"')) `
-        '暂停菜单入口未发送固定 OpenCOSConfig 事件'
-    Require ($entry.Contains('hc05fd001g0000g4000g8000g000000000000')) `
-        '暂停菜单入口未使用既有四语标题'
+$entrySpecs = @(
+    @{ Path = 'Pages\COS_ConfigEscButton.xaml'; IsController = $false },
+    @{ Path = 'Pages\COS_ConfigEscButton_c.xaml'; IsController = $true }
+)
+foreach ($entrySpec in $entrySpecs) {
+    [xml]$entryDocument = Get-Content -LiteralPath (Join-Path $guiRoot $entrySpec.Path) -Raw -Encoding UTF8
+    $openConfigButtons = @($entryDocument.SelectNodes('//*[local-name()="LSButton"]') |
+        Where-Object { $_.GetAttribute('CommandParameter') -eq 'OpenCOSConfig' })
+    Require ($openConfigButtons.Count -eq 1) `
+        "暂停菜单入口必须由唯一 LSButton 发送 OpenCOSConfig: $($entrySpec.Path)"
+    $entryTitleBinding = $openConfigButtons[0].GetAttribute('Content') + $openConfigButtons[0].GetAttribute('Tag')
+    Require ($entryTitleBinding.Contains('hc05fd001g0000g4000g8000g000000000000')) `
+        "暂停菜单入口必须绑定既有四语标题: $($entrySpec.Path)"
+    if ($entrySpec.IsController) {
+        Require ($openConfigButtons[0].GetAttribute('BoundEvent') -eq 'UIShowInfo') `
+            '手柄入口必须由实际 LSButton 绑定 UIShowInfo'
+    }
 }
-Require ($controllerEntry.Contains('BoundEvent="UIShowInfo"')) `
-    '手柄入口必须使用原生 UIShowInfo'
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
@@ -2111,8 +2134,6 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
         "空壳页缺少标题、说明或返回文本: $pageName"
-    Require (-not ($page -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|COS_CFG_MECH_|TabMECH|DB_COS_Config')) `
-        "第一阶段空壳不得读取角色配置或发送 Story 请求: $pageName"
 }
 
 $guiMetadataSourcePath = Join-Path $root 'resource-src\Mods\ChaosOriginsStory\GUI\metadata.lsf.lsx'
