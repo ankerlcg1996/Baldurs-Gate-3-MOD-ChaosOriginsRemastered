@@ -2004,19 +2004,19 @@ Require (((Get-MechanicsConditions $fateArmBlocks[0]) -join "`n") -ceq ($expecte
     '命运改签开启后必须用本次攻击的 StoryActionID 建立唯一待处理记录'
 $dualityAttackBlocks = @($mechanicsIfBlocks | Where-Object {
     $_.Contains('AttackedBy(') -and
-    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)') -and
-    $_.Contains('COS_CHAOS_FATE_ENABLED')
+    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)')
 })
-Require ($dualityAttackBlocks.Count -eq 5) '两仪入口必须严格包含关闭、未记录、禁用资源、资源为0和命运改签五个互斥分支'
+Require ($dualityAttackBlocks.Count -eq 6) '两仪入口必须严格包含 Fate 关闭、状态关闭、未记录、禁用资源、资源为0和命运改签六个互斥分支'
+$fateDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)' })
 $fateOffBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' })
 $fateUnarmedBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' })
 $fatePowerDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' })
 $fatePowerZeroBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, 0)' })
 $fateDualityBlock = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)' })
-Require ($fateOffBlocks.Count -eq 1 -and $fateUnarmedBlocks.Count -eq 1 -and `
+Require ($fateDisabledBlocks.Count -eq 1 -and $fateOffBlocks.Count -eq 1 -and $fateUnarmedBlocks.Count -eq 1 -and `
     $fatePowerDisabledBlocks.Count -eq 1 -and $fatePowerZeroBlocks.Count -eq 1 -and `
     $fateDualityBlock.Count -eq 1) `
-    '两仪五个攻击分支必须各自唯一且可明确分类'
+    '两仪六个攻击分支必须各自唯一且可明确分类'
 $dualityCommonConditions = @(
     'AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)',
     '_AttackOwner == _Attacker',
@@ -2027,7 +2027,13 @@ $dualityFateEnabledConditions = @($dualityCommonConditions + @(
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
     'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)'
 ))
+$expectedFateDisabledConditions = @($dualityCommonConditions + @(
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)',
+    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
+    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
+))
 $expectedFateOffConditions = @($dualityCommonConditions + @(
+    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
     'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
@@ -2068,9 +2074,12 @@ $expectedClearedNormalDualityActions = @(
     'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
     'PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);'
 )
+Require (((Get-MechanicsConditions $fateDisabledBlocks[0]) -join "`n") -ceq ($expectedFateDisabledConditions -join "`n") -and `
+    ((Get-MechanicsThenActions $fateDisabledBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
+    'Fate 配置关闭时必须不依赖 FATE_ENABLED、清除旧记录并执行一次普通两仪'
 Require (((Get-MechanicsConditions $fateOffBlocks[0]) -join "`n") -ceq ($expectedFateOffConditions -join "`n") -and `
     ((Get-MechanicsThenActions $fateOffBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
-    '命运改签关闭分支必须清除旧记录并执行一次普通两仪'
+    'Fate 配置开启但命运改签状态关闭时必须清除旧记录并执行一次普通两仪'
 Require (((Get-MechanicsConditions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n") -and `
     ((Get-MechanicsThenActions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedNormalDualityActions -join "`n")) `
     '命运改签未记录本次攻击时必须执行一次普通两仪且不得消费资源'
@@ -2106,7 +2115,7 @@ $expectedFateActionLines = @(
     'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);'
 ) | Sort-Object
 Require (($actualFateActionLines -join "`n") -ceq ($expectedFateActionLines -join "`n")) `
-    '命运改签行动记录的全部读写位置必须严格受限于清理、建立和五个结算分支'
+    '命运改签行动记录的全部读写位置必须严格受限于清理、建立和六个结算分支'
 Require (-not $mechanicsGoal.Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);')) `
     '命运改签改为攻击触发后不得再重投受击轮盘'
 Require ($mechanicsGoal.Contains('Random(100, _FirstDualityRoll)') -and `
@@ -2474,20 +2483,79 @@ Require-StoryGate $fateArmBlocks[0] $fateArmGatePattern '命运改签武装块�
 foreach ($fateAttackBlock in $fateEffectAttackBlocks) {
     Require-StoryGate $fateAttackBlock $fateAttackGatePattern '命运改签攻击多投块必须用 _AttackOwner 要求 Fate=1'
 }
-Require (-not ($fateOffBlocks[0] -match $fateAttackGatePattern)) `
-    'FATE_ENABLED=0 的普通单次 Duality 块不得要求 Fate=1'
+Require-StoryGate $fateOffBlocks[0] $fateAttackGatePattern `
+    'FATE_ENABLED=0 的普通单次 Duality 块必须要求 Fate=1，与 Fate=0 通路互斥'
+Require (-not $fateDisabledBlocks[0].Contains('COS_CHAOS_FATE_ENABLED')) `
+    'Fate=0 的普通单次 Duality 块不得依赖用户 FATE_ENABLED 状态'
 
 function Test-FateEffectAttackBlock([string]$Block) {
     return $Block.Contains('AttackedBy(') -and
         $Block.Contains('HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)') -and
         $Block.Contains('DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)')
 }
-$fateOffWithGateProbe = $fateOffBlocks[0].Replace(
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)',
-    "DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Duality`", 1)`nAND`nDB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Fate`", 1)")
-Require (-not (Test-FateEffectAttackBlock $fateOffBlocks[0]) -and `
-    -not (Test-FateEffectAttackBlock $fateOffWithGateProbe)) `
-    '普通 FATE_ENABLED=0 Duality 块无论是否插入 Fate 行都不得被效果块选择器误选'
+function Get-FateDualityRouteBlocks([string]$StoryText) {
+    $ifBlocks = @([regex]::Matches($StoryText.Replace("`r`n", "`n"), '(?ms)^IF$.*?(?=^IF$|^PROC$|\z)') | `
+        ForEach-Object { $_.Value })
+    return @($ifBlocks | Where-Object {
+        $_.Contains('AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)') -and
+        $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)')
+    })
+}
+
+function Test-FateRouteMatchesState(
+    [string]$Block,
+    [int]$FateEnabled,
+    [int]$StatusEnabled,
+    [bool]$HasAction,
+    [int]$PowerEnabled,
+    [int]$Power
+) {
+    $conditions = @(Get-MechanicsConditions $Block)
+    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)' -and $FateEnabled -ne 0) { return $false }
+    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)' -and $FateEnabled -ne 1) { return $false }
+    if ($conditions -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' -and $StatusEnabled -ne 0) { return $false }
+    if ($conditions -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)' -and $StatusEnabled -ne 1) { return $false }
+    if ($conditions -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' -and $HasAction) { return $false }
+    if ($conditions -contains 'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' -and -not $HasAction) { return $false }
+    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' -and $PowerEnabled -ne 0) { return $false }
+    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)' -and $PowerEnabled -ne 1) { return $false }
+    if ($conditions -contains 'DB_COS_Power((CHARACTER)_AttackOwner, 0)' -and $Power -ne 0) { return $false }
+    if ($conditions -contains '_OldPower >= 1' -and $Power -lt 1) { return $false }
+    return $true
+}
+
+function Test-FateRouteTruthTable([string]$StoryText) {
+    $routeBlocks = @(Get-FateDualityRouteBlocks $StoryText)
+    if ($routeBlocks.Count -ne 6) { return $false }
+    foreach ($fateEnabled in @(0, 1)) {
+        foreach ($statusEnabled in @(0, 1)) {
+            foreach ($hasAction in @($false, $true)) {
+                foreach ($powerEnabled in @(0, 1)) {
+                    foreach ($power in @(0, 1)) {
+                        $matchCount = @($routeBlocks | Where-Object {
+                            Test-FateRouteMatchesState $_ $fateEnabled $statusEnabled $hasAction $powerEnabled $power
+                        }).Count
+                        if ($matchCount -ne 1) { return $false }
+                    }
+                }
+            }
+        }
+    }
+    return $true
+}
+Require (Test-FateRouteTruthTable $mechanicsGoal) `
+    'Fate 配置/用户状态/记录/资源的32个真值组合必须各自恰好匹配一个 Duality 攻击路径'
+$fateDisabledDeletionMutation = $mechanicsGoal.Replace($fateDisabledBlocks[0], '')
+Require ($fateDisabledDeletionMutation -cne $mechanicsGoal -and
+    -not (Test-FateRouteTruthTable $fateDisabledDeletionMutation)) `
+    'Fate=0 普通路径删除 mutation 必须被真值表拒绝'
+$fateDisabledStatusMutationBlock = $fateDisabledBlocks[0].Replace(
+    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
+    "HasPassive(_AttackOwner, `"COS_ChaosDuality`", 1)`nAND`nHasActiveStatus(_AttackOwner, `"COS_CHAOS_FATE_ENABLED`", 0)")
+$fateDisabledStatusMutation = $mechanicsGoal.Replace($fateDisabledBlocks[0], $fateDisabledStatusMutationBlock)
+Require ($fateDisabledStatusMutation -cne $mechanicsGoal -and
+    -not (Test-FateRouteTruthTable $fateDisabledStatusMutation)) `
+    'Fate=0 普通路径错误依赖 FATE_ENABLED mutation 必须被真值表拒绝'
 $fateGateRemovalProbe = $fateEffectAttackBlocks[0].Replace(
     "`nDB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Fate`", 1)", '')
 $fateGateRemovalRejected = $false

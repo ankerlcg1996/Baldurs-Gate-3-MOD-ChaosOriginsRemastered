@@ -1314,6 +1314,30 @@ DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)
