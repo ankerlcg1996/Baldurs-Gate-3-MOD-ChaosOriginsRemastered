@@ -2572,10 +2572,22 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     $buttonNodes = @($row.SelectNodes('.//*') | Where-Object {
         $_.GetAttribute('Name', $xamlNamespace) -eq "COSConfigToggle$Key"
     })
-    Require ($buttonNodes.Count -eq 1) "核心设置事件按钮必须唯一命名为 COSConfigToggle${Key}: $PageName"
-    $buttonActions = @($buttonNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($buttonNodes.Count -eq 1 -and $buttonNodes[0].LocalName -eq 'LSButton') `
+        "核心设置事件按钮必须是唯一命名的 LSButton: COSConfigToggle${Key}: $PageName"
+    $button = $buttonNodes[0]
+    $buttonTriggers = @($button.SelectNodes('.//*[local-name()="EventTrigger"]'))
+    Require ($buttonTriggers.Count -eq 1 -and $buttonTriggers[0].GetAttribute('EventName') -eq 'Click') `
+        "核心设置 LSButton 必须只用 Click EventTrigger: COSConfigToggle$Key/$PageName"
+    $buttonActions = @($buttonTriggers[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
     Require ($buttonActions.Count -eq 1 -and [object]::ReferenceEquals($rowActions[0], $buttonActions[0])) `
-        "核心设置事件按钮必须承载本行唯一 InvokeCommandAction: COSConfigToggle$Key/$PageName"
+        "核心设置 LSButton 的 Click EventTrigger 必须承载本行唯一 InvokeCommandAction: COSConfigToggle$Key/$PageName"
+    if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
+        Require ($button.GetAttribute('BoundEvent') -eq 'UIAccept') `
+            "手柄核心设置 LSButton 必须绑定 UIAccept: COSConfigToggle$Key/$PageName"
+    } else {
+        Require (-not $button.HasAttribute('BoundEvent')) `
+            "键鼠核心设置 LSButton 不得伪造 BoundEvent 激活: COSConfigToggle$Key/$PageName"
+    }
 
     $rowItemsControls = @($row.SelectNodes('.//*[local-name()="ItemsControl"]'))
     Require ($rowItemsControls.Count -eq 1) "核心设置行必须恰好一个镜像 ItemsControl: COSConfigRow$Key/$PageName"
@@ -2586,31 +2598,60 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     $mirrorNode = $mirrorNodes[0]
     Require ($mirrorNode.GetAttribute('ItemsSource') -eq '{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}') `
         "核心设置镜像必须精确绑定 SelectedCharacter Passives: COSConfigMirror$Key/$PageName"
-    $mirrorTriggers = @($mirrorNode.SelectNodes('.//*[local-name()="DataTrigger"]'))
-    Require ($mirrorTriggers.Count -eq 1 -and
+    $itemTemplateNodes = @($mirrorNode.SelectNodes('./*[local-name()="ItemsControl.ItemTemplate"]'))
+    Require ($itemTemplateNodes.Count -eq 1) `
+        "核心设置镜像必须有唯一 ItemsControl.ItemTemplate: COSConfigMirror$Key/$PageName"
+    $dataTemplateNodes = @($itemTemplateNodes[0].SelectNodes('./*[local-name()="DataTemplate"]'))
+    Require ($dataTemplateNodes.Count -eq 1) `
+        "核心设置镜像 ItemTemplate 必须有唯一 DataTemplate: COSConfigMirror$Key/$PageName"
+    $dataTemplateTriggersNodes = @($dataTemplateNodes[0].SelectNodes('./*[local-name()="DataTemplate.Triggers"]'))
+    Require ($dataTemplateTriggersNodes.Count -eq 1) `
+        "核心设置镜像 DataTemplate 必须有唯一 DataTemplate.Triggers: COSConfigMirror$Key/$PageName"
+    $mirrorTriggers = @($dataTemplateTriggersNodes[0].SelectNodes('./*[local-name()="DataTrigger"]'))
+    $allMirrorTriggers = @($mirrorNode.SelectNodes('.//*[local-name()="DataTrigger"]'))
+    Require ($mirrorTriggers.Count -eq 1 -and $allMirrorTriggers.Count -eq 1 -and
         $mirrorTriggers[0].GetAttribute('Value') -eq $Mirror -and
         $mirrorTriggers[0].GetAttribute('Binding') -eq '{Binding Name.Str}') `
-        "核心设置镜像必须用唯一 Name.Str DataTrigger 回显 ${Mirror}: COSConfigMirror$Key/$PageName"
+        "核心设置镜像必须只在 DataTemplate.Triggers 中用 Name.Str DataTrigger 回显 ${Mirror}: COSConfigMirror$Key/$PageName"
+    $triggerSetters = @($mirrorTriggers[0].SelectNodes('.//*[local-name()="Setter"]'))
+    Require ($triggerSetters.Count -eq 1 -and
+        $triggerSetters[0].GetAttribute('TargetName') -eq 'EnabledState' -and
+        $triggerSetters[0].GetAttribute('Property') -eq 'Visibility' -and
+        $triggerSetters[0].GetAttribute('Value') -eq 'Visible') `
+        "核心设置镜像 DataTrigger 必须唯一显示 EnabledState: COSConfigMirror$Key/$PageName"
 }
-function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message) {
+function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message, [string]$PageName = 'COS_ConfigMenu.xaml') {
     [xml]$mutationDocument = $Markup
     $rejected = $false
     try {
-        Test-ConfigRowContract $mutationDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存变异探针'
+        Test-ConfigRowContract $mutationDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' $PageName
     } catch {
         $rejected = $true
     }
     Require $rejected $Message
 }
-$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"><Grid x:Name="COSConfigRowPower"><Button x:Name="COSConfigTogglePower"><InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></Button><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER" /></ItemsControl></Grid></Root>'
+$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSButton x:Name="COSConfigTogglePower"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
 [xml]$configRowProbeDocument = $configRowProbe
 Test-ConfigRowContract $configRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存正向探针'
-Require-ConfigRowMutationRejected ($configRowProbe -replace '<Button x:Name="COSConfigTogglePower">.*?</Button>', '<Button x:Name="COSConfigTogglePower" />') `
-    '未附着在命名设置行上的 InvokeCommandAction 必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'EventName="Click"', 'EventName="MouseEnter"') `
+    'MouseEnter 不得替代 LSButton 的 Click 激活'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'ls:LSButton', 'Button') `
+    '普通 Button 不得替代命名 LSButton'
 Require-ConfigRowMutationRejected ($configRowProbe -replace 'CurrentPlayer\.SelectedCharacter\.Stats\.Passives', 'CurrentPlayer\.Stats\.Passives') `
     '错误的镜像 ItemsSource 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace '\{Binding Name\.Str\}', '{Binding DisplayName}') `
     '错误的镜像 DataTrigger Binding 必须被拒绝'
+Require-ConfigRowMutationRejected (($configRowProbe -replace '<ItemsControl.ItemTemplate><DataTemplate><DataTemplate.Triggers>', '') `
+    -replace '</DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>', '') `
+    '裸放在 ItemsControl 下的 DataTrigger 必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'TargetName="EnabledState"', 'TargetName="WrongState"') `
+    '错误 Setter 必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace '<DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters>', '') `
+    '缺失 Setter 必须被拒绝'
+$configControllerRowProbe = $configRowProbe -replace '<ls:LSButton ', '<ls:LSButton BoundEvent="UIAccept" '
+[xml]$configControllerRowProbeDocument = $configControllerRowProbe
+Test-ConfigRowContract $configControllerRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected $configRowProbe '手柄 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
