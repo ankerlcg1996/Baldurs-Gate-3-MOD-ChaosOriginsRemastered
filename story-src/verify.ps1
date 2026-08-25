@@ -796,8 +796,8 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 648 -and @($handles | Select-Object -Unique).Count -eq 648) `
-        "完整本地化必须包含 648 个唯一文本: $language"
+    Require ($handles.Count -eq 663 -and @($handles | Select-Object -Unique).Count -eq 663) `
+        "完整本地化必须包含 663 个唯一文本: $language"
     Require (-not ($expectedHandles | Where-Object { $handles -notcontains $_ })) `
         "完整本地化缺少起源、身份或掌控混沌文本: $language"
     if ($null -eq $referenceLocalizationHandles) {
@@ -3033,8 +3033,21 @@ function Test-ConfigResetContract([xml]$Document, [string]$PageName) {
     Require-TutorialEventAction $resetActions[0] $expectedTutorialEvents.COS_CFG_RESET_CORE `
         "核心设置重置按钮必须发送 COS_CFG_RESET_CORE: $PageName"
     if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
+        $resetRows = @(Get-XamlNamedNodes $Document 'COSConfigResetRow')
+        Require ($resetRows.Count -eq 1 -and $resetRows[0].LocalName -eq 'ContentControl' -and
+            [object]::ReferenceEquals($resetRows[0], $resetButton.ParentNode)) `
+            "手柄核心设置重置必须由唯一命名的父 ContentControl 承载: $PageName"
+        Require ($resetRows[0].GetAttribute('Focusable') -eq 'True' -and
+            $resetRows[0].GetAttribute('ls:MoveFocus.Focusable') -eq 'True') `
+            "手柄核心设置重置父行必须参与焦点移动: $PageName"
         Require ($resetButton.GetAttribute('BoundEvent') -eq 'UIAccept') `
             "手柄核心设置重置 LSButton 必须绑定 UIAccept: $PageName"
+        Require ($resetButton.GetAttribute('Focusable') -eq 'False' -and
+            $resetButton.GetAttribute('ls:MoveFocus.Focusable') -eq 'False') `
+            "手柄核心设置重置子按钮不得参与焦点移动: $PageName"
+        Require ($resetButton.GetAttribute('IsEnabled') -eq
+            '{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigResetRow}') `
+            "手柄核心设置重置子按钮必须只在父行聚焦时启用: $PageName"
     } else {
         Require (-not $resetButton.HasAttribute('BoundEvent')) `
             "键鼠核心设置重置 LSButton 不得伪造 BoundEvent 激活: $PageName"
@@ -3044,6 +3057,12 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     $rowNodes = @(Get-XamlNamedNodes $Document "COSConfigRow$Key")
     Require ($rowNodes.Count -eq 1) "核心设置行必须唯一命名为 COSConfigRow${Key}: $PageName"
     $row = $rowNodes[0]
+    if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
+        Require ($row.LocalName -eq 'ContentControl' -and
+            $row.GetAttribute('Focusable') -eq 'True' -and
+            $row.GetAttribute('ls:MoveFocus.Focusable') -eq 'True') `
+            "手柄核心设置父行必须是可聚焦 ContentControl: COSConfigRow$Key/$PageName"
+    }
     $rowActions = @($row.SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
     Require ($rowActions.Count -eq 1) "核心设置行必须恰好一个 InvokeCommandAction: COSConfigRow$Key/$PageName"
     Require-TutorialEventAction $rowActions[0] $Uuid "核心设置行必须绑定固定 TutorialEvent UUID: COSConfigRow$Key/$PageName"
@@ -3063,6 +3082,12 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
         Require ($button.GetAttribute('BoundEvent') -eq 'UIAccept') `
             "手柄核心设置 LSButton 必须绑定 UIAccept: COSConfigToggle$Key/$PageName"
+        Require ($button.GetAttribute('Focusable') -eq 'False' -and
+            $button.GetAttribute('ls:MoveFocus.Focusable') -eq 'False') `
+            "手柄核心设置子 LSButton 不得参与焦点移动: COSConfigToggle$Key/$PageName"
+        Require ($button.GetAttribute('IsEnabled') -eq
+            "{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigRow$Key}") `
+            "手柄核心设置子 LSButton 必须只在对应父行聚焦时启用: COSConfigToggle$Key/$PageName"
     } else {
         Require (-not $button.HasAttribute('BoundEvent')) `
             "键鼠核心设置 LSButton 不得伪造 BoundEvent 激活: COSConfigToggle$Key/$PageName"
@@ -3083,6 +3108,16 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     $dataTemplateNodes = @($itemTemplateNodes[0].SelectNodes('./*[local-name()="DataTemplate"]'))
     Require ($dataTemplateNodes.Count -eq 1) `
         "核心设置镜像 ItemTemplate 必须有唯一 DataTemplate: COSConfigMirror$Key/$PageName"
+    $enabledStateNodes = @($dataTemplateNodes[0].SelectNodes('.//*') | Where-Object {
+        $_.GetAttribute('Name', $xamlNamespace) -eq 'EnabledState'
+    })
+    Require ($enabledStateNodes.Count -eq 1 -and
+        $enabledStateNodes[0].LocalName -eq 'Border' -and
+        $enabledStateNodes[0].GetAttribute('Visibility') -eq 'Collapsed' -and
+        $enabledStateNodes[0].GetAttribute('Width') -eq '180' -and
+        $enabledStateNodes[0].GetAttribute('Height') -eq '62' -and
+        $enabledStateNodes[0].GetAttribute('Background') -match '^#FF[0-9A-Fa-f]{6}$') `
+        "核心设置开启回显必须用180x62不透明 Border 覆盖默认关闭文本: COSConfigMirror$Key/$PageName"
     $dataTemplateTriggersNodes = @($dataTemplateNodes[0].SelectNodes('./*[local-name()="DataTemplate.Triggers"]'))
     Require ($dataTemplateTriggersNodes.Count -eq 1) `
         "核心设置镜像 DataTemplate 必须有唯一 DataTemplate.Triggers: COSConfigMirror$Key/$PageName"
@@ -3098,6 +3133,24 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
         $triggerSetters[0].GetAttribute('Property') -eq 'Visibility' -and
         $triggerSetters[0].GetAttribute('Value') -eq 'Visible') `
         "核心设置镜像 DataTrigger 必须唯一显示 EnabledState: COSConfigMirror$Key/$PageName"
+}
+function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]$PageName) {
+    $rootNodes = @(Get-XamlNamedNodes $Document 'COS_ConfigMenu_c')
+    Require ($rootNodes.Count -eq 1 -and $rootNodes[0].LocalName -eq 'UIWidget') `
+        "手柄核心设置页必须保留唯一命名根控件: $PageName"
+    $setFocusActions = @($Document.SelectNodes('//*[local-name()="SetMoveFocusAction"]'))
+    $loadedTriggers = @($Document.SelectNodes('//*[local-name()="EventTrigger"]') |
+        Where-Object { $_.GetAttribute('EventName') -eq 'Loaded' })
+    $loadedFocusActions = if ($loadedTriggers.Count -eq 1) {
+        @($loadedTriggers[0].SelectNodes('.//*[local-name()="SetMoveFocusAction"]'))
+    } else { @() }
+    Require ($setFocusActions.Count -eq 1 -and $loadedFocusActions.Count -eq 1 -and
+        $setFocusActions[0].GetAttribute('TargetName') -eq 'COS_ConfigMenu_c') `
+        "手柄核心设置页 Loaded 必须唯一把初始焦点交给根控件: $PageName"
+    foreach ($forbiddenResource in @('PageHeaderHeight', 'PageHeader', 'BrownButtonStyle', 'BigBrownButtonStyle')) {
+        Require (-not $PageText.Contains("{StaticResource $forbiddenResource}")) `
+            "手柄核心设置页不得引用键鼠专属资源 ${forbiddenResource}: $PageName"
+    }
 }
 function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message, [string]$PageName = 'COS_ConfigMenu.xaml') {
     [xml]$mutationDocument = $Markup
@@ -3119,7 +3172,17 @@ function Require-ConfigResetMutationRejected([string]$Markup, [string]$Message, 
     }
     Require $rejected $Message
 }
-$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSButton x:Name="COSConfigTogglePower"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
+function Require-ControllerPageMutationRejected([string]$Markup, [string]$Message) {
+    [xml]$mutationDocument = $Markup
+    $rejected = $false
+    try {
+        Test-ControllerPageContract $mutationDocument $Markup 'COS_ConfigMenu_c.xaml'
+    } catch {
+        $rejected = $true
+    }
+    Require $rejected $Message
+}
+$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSButton x:Name="COSConfigTogglePower"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Border x:Name="EnabledState" Width="180" Height="62" Background="#FF15110E" Visibility="Collapsed"><TextBlock /></Border><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
 [xml]$configRowProbeDocument = $configRowProbe
 Test-ConfigRowContract $configRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存正向探针'
 Require-ConfigRowMutationRejected ($configRowProbe -replace 'EventName="Click"', 'EventName="MouseEnter"') `
@@ -3130,21 +3193,33 @@ Require-ConfigRowMutationRejected ($configRowProbe -replace 'CurrentPlayer\.Sele
     '错误的镜像 ItemsSource 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace '\{Binding Name\.Str\}', '{Binding DisplayName}') `
     '错误的镜像 DataTrigger Binding 必须被拒绝'
-Require-ConfigRowMutationRejected (($configRowProbe -replace '<ItemsControl.ItemTemplate><DataTemplate><DataTemplate.Triggers>', '') `
-    -replace '</DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate>', '') `
+Require-ConfigRowMutationRejected (($configRowProbe -replace '<ItemsControl.ItemTemplate><DataTemplate>', '') `
+    -replace '</DataTemplate></ItemsControl.ItemTemplate>', '') `
     '裸放在 ItemsControl 下的 DataTrigger 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace 'TargetName="EnabledState"', 'TargetName="WrongState"') `
     '错误 Setter 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace '<DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters>', '') `
     '缺失 Setter 必须被拒绝'
-$configControllerRowProbe = $configRowProbe -replace '<ls:LSButton ', '<ls:LSButton BoundEvent="UIAccept" '
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'Background="#FF15110E"', 'Background="#0015110E"') `
+    '透明开启回显背景必须被拒绝'
+Require-ConfigRowMutationRejected ($configRowProbe -replace ' Background="#FF15110E"', '') `
+    '缺失开启回显背景必须被拒绝'
+$configControllerRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ContentControl x:Name="COSConfigRowPower" Focusable="True" ls:MoveFocus.Focusable="True"><Grid><ls:LSButton x:Name="COSConfigTogglePower" Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent="UIAccept" IsEnabled="{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigRowPower}"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Border x:Name="EnabledState" Width="180" Height="62" Background="#FF15110E" Visibility="Collapsed"><TextBlock /></Border><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></ContentControl></Root>'
 [xml]$configControllerRowProbeDocument = $configControllerRowProbe
 Test-ConfigRowContract $configControllerRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' 'COS_ConfigMenu_c.xaml'
 Require-ConfigRowMutationRejected $configRowProbe '手柄 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected ($configControllerRowProbe -replace ' IsEnabled="\{Binding Path=\(ls:MoveFocus.IsFocused\), ElementName=COSConfigRowPower\}"', '') `
+    '手柄子按钮缺失父焦点启用门控必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected ($configControllerRowProbe -replace 'ElementName=COSConfigRowPower', 'ElementName=COSConfigRowWound') `
+    '手柄子按钮绑定错误父行必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected ($configControllerRowProbe -replace 'Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent', 'Focusable="True" ls:MoveFocus.Focusable="False" BoundEvent') `
+    '手柄子按钮不得重新参与标准焦点' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected ($configControllerRowProbe -replace 'Focusable="False" BoundEvent', 'Focusable="True" BoundEvent') `
+    '手柄子按钮不得重新参与 MoveFocus' 'COS_ConfigMenu_c.xaml'
 $configResetProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ls:LSButton x:Name="COSConfigResetCore"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="08c8d67a-ace5-4830-8c2b-38b8c92bb470" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton></Root>'
 [xml]$configResetProbeDocument = $configResetProbe
 Test-ConfigResetContract $configResetProbeDocument 'COS_ConfigMenu.xaml'
-$configControllerResetProbe = $configResetProbe -replace '<ls:LSButton ', '<ls:LSButton BoundEvent="UIAccept" '
+$configControllerResetProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ContentControl x:Name="COSConfigResetRow" Focusable="True" ls:MoveFocus.Focusable="True"><ls:LSButton x:Name="COSConfigResetCore" Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent="UIAccept" IsEnabled="{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigResetRow}"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="08c8d67a-ace5-4830-8c2b-38b8c92bb470" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton></ContentControl></Root>'
 [xml]$configControllerResetProbeDocument = $configControllerResetProbe
 Test-ConfigResetContract $configControllerResetProbeDocument 'COS_ConfigMenu_c.xaml'
 Require-ConfigResetMutationRejected ($configResetProbe -replace 'ls:LSButton', 'Grid') `
@@ -3152,10 +3227,55 @@ Require-ConfigResetMutationRejected ($configResetProbe -replace 'ls:LSButton', '
 Require-ConfigResetMutationRejected ($configResetProbe -replace 'EventName="Click"', 'EventName="MouseEnter"') `
     'MouseEnter 不得替代重置 LSButton 的 Click 激活'
 Require-ConfigResetMutationRejected $configResetProbe '手柄重置 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigResetMutationRejected ($configControllerResetProbe -replace ' IsEnabled="\{Binding Path=\(ls:MoveFocus.IsFocused\), ElementName=COSConfigResetRow\}"', '') `
+    '手柄重置子按钮缺失父焦点启用门控必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigResetMutationRejected ($configControllerResetProbe -replace 'ElementName=COSConfigResetRow', 'ElementName=COSConfigRowPower') `
+    '手柄重置子按钮绑定错误父行必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigResetMutationRejected ($configControllerResetProbe -replace 'Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent', 'Focusable="True" ls:MoveFocus.Focusable="False" BoundEvent') `
+    '手柄重置子按钮不得重新参与标准焦点' 'COS_ConfigMenu_c.xaml'
+$configControllerPageProbe = '<ls:UIWidget x:Name="COS_ConfigMenu_c" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="clr-namespace:ls;assembly=Code" xmlns:b="http://schemas.microsoft.com/xaml/behaviors"><b:Interaction.Triggers><b:EventTrigger EventName="Loaded"><b:InvokeCommandAction/><ls:SetMoveFocusAction TargetName="COS_ConfigMenu_c"/></b:EventTrigger></b:Interaction.Triggers><ls:UIWidget.Template><ControlTemplate><Grid/></ControlTemplate></ls:UIWidget.Template></ls:UIWidget>'
+[xml]$configControllerPageProbeDocument = $configControllerPageProbe
+Test-ControllerPageContract $configControllerPageProbeDocument $configControllerPageProbe 'COS_ConfigMenu_c.xaml'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<ls:SetMoveFocusAction TargetName="COS_ConfigMenu_c"/>', '') `
+    '手柄页缺失 Loaded 初始焦点动作必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'TargetName="COS_ConfigMenu_c"', 'TargetName="WrongRoot"') `
+    '手柄页初始焦点指向错误根控件必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<Grid/>', '<Grid Height="{StaticResource PageHeaderHeight}"/>') `
+    '手柄页重新引用 PageHeaderHeight 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<Grid/>', '<Grid Tag="{StaticResource PageHeader}"/>') `
+    '手柄页重新引用 PageHeader 必须被拒绝'
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
     [xml]$pageDocument = $page
+    if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
+        Test-ControllerPageContract $pageDocument $page $pageName
+        $expectedControllerFocusOrder = @(
+            'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
+            'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
+            'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
+            'COSConfigResetRow', 'COSConfigCloseCore'
+        )
+        $controllerFocusableNodes = @($pageDocument.SelectNodes('//*') | Where-Object {
+            $_.GetAttribute('Focusable') -eq 'True' -and
+            $_.GetAttribute('ls:MoveFocus.Focusable') -eq 'True'
+        })
+        $controllerFocusOrder = @($controllerFocusableNodes | ForEach-Object {
+            $_.GetAttribute('Name', $xamlNamespace)
+        })
+        Require (($controllerFocusOrder -join '|') -eq ($expectedControllerFocusOrder -join '|')) `
+            "手柄焦点顺序必须是九行、重置、关闭，且不得存在额外焦点消费者: $pageName"
+        $closeButtons = @(Get-XamlNamedNodes $pageDocument 'COSConfigCloseCore')
+        Require ($closeButtons.Count -eq 1 -and $closeButtons[0].LocalName -eq 'LSButton' -and
+            $closeButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}' -and
+            $closeButtons[0].GetAttribute('CommandParameter') -eq 'CloseWidget') `
+            "手柄关闭控件必须是焦点序列最后的原生 LSButton: $pageName"
+    } else {
+        $keyboardBoundButtons = @($pageDocument.SelectNodes('//*[local-name()="LSButton"]') |
+            Where-Object { $_.HasAttribute('BoundEvent') })
+        Require ($keyboardBoundButtons.Count -eq 0) `
+            "键鼠核心设置页的 LSButton 不得绑定手柄 BoundEvent: $pageName"
+    }
     $optionsBackgrounds = @($pageDocument.SelectNodes('//*[local-name()="Image"]') |
         Where-Object { $_.GetAttribute('Source') -eq '{StaticResource OptionsBackground}' })
     Require ($optionsBackgrounds.Count -eq 1) "空壳页必须使用 OptionsBackground: $pageName"
