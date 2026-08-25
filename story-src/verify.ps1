@@ -2260,15 +2260,18 @@ $expectedCoreEventMappings = [ordered]@{
     '146d28dc-aa94-40e8-9bad-91b069055526' = 'Mastery'
 }
 $eventMappingMatches = @([regex]::Matches($configGoal,
-    '(?m)^DB_COS_ConfigMechanicEvent\("(?<Event>[0-9a-f-]+)", "(?<Key>[^"]+)"\);$'))
+    '(?m)^DB_COS_ConfigMechanicEvent\(\(TUTORIALEVENT\)[A-Z0-9_]+_(?<Event>[0-9a-f-]{36}), "(?<Key>[^"]+)"\);$'))
 $eventMappingPairs = @($eventMappingMatches | ForEach-Object { "$($_.Groups['Event'].Value)=$($_.Groups['Key'].Value)" })
 $expectedEventMappingPairs = @($expectedCoreEventMappings.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" })
 Require ($eventMappingMatches.Count -eq 9 -and @($eventMappingPairs | Sort-Object -Unique).Count -eq 9 -and
     -not (Compare-Object ($expectedEventMappingPairs | Sort-Object) ($eventMappingPairs | Sort-Object))) `
     '核心设置必须把九个固定 TutorialEvent UUID 唯一映射到九个机制键'
 Require ([regex]::Matches($configGoal,
-    '(?m)^DB_COS_ConfigResetCoreEvent\("08c8d67a-ace5-4830-8c2b-38b8c92bb470"\);$').Count -eq 1) `
+    '(?m)^DB_COS_ConfigResetCoreEvent\(\(TUTORIALEVENT\)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470\);$').Count -eq 1) `
     '恢复默认必须只注册一个固定 TutorialEvent UUID'
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_Config(?:MechanicEvent|UiOpenedEvent|ResetCoreEvent)\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}(?:, "[^"]+")?\);$').Count -eq 11) `
+    '全部11个原生设置事件必须按游戏 Story 头声明为 TUTORIALEVENT，不能使用普通 STRING'
 
 $configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
     ForEach-Object { $_.Groups[1].Value })
@@ -2399,7 +2402,7 @@ $uiOpenedBlocks = @($configIfBlocks | Where-Object {
     $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains('DB_COS_ConfigUiOpenedEvent(_Event)')
 })
 Require ([regex]::Matches($configGoal,
-    '(?m)^DB_COS_ConfigUiOpenedEvent\("65247962-a3b0-417d-9044-85e4aad38079"\);$').Count -eq 1 -and
+    '(?m)^DB_COS_ConfigUiOpenedEvent\(\(TUTORIALEVENT\)COS_CFG_UI_OPENED_65247962-a3b0-417d-9044-85e4aad38079\);$').Count -eq 1 -and
     $uiOpenedBlocks.Count -eq 1) 'UI_OPENED 必须只用固定 TutorialEvent 映射到一个读取入口'
 $uiOpenedActions = @((Get-StoryThen $uiOpenedBlocks[0]).Replace("`r`n", "`n") -split "`n" |
     ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })

@@ -19,17 +19,17 @@ DB_COS_ConfigMechanicMirror("Fate", "COS_CFG_MECH_FATE");
 DB_COS_ConfigMechanicMirror("Genesis", "COS_CFG_MECH_GENESIS");
 DB_COS_ConfigMechanicMirror("Strike", "COS_CFG_MECH_STRIKE");
 DB_COS_ConfigMechanicMirror("Mastery", "COS_CFG_MECH_MASTERY");
-DB_COS_ConfigMechanicEvent("7f818c10-3f23-49f8-838a-d161c57bb35d", "Power");
-DB_COS_ConfigMechanicEvent("0574b4b8-549a-4b39-b810-6890c68642b1", "Wound");
-DB_COS_ConfigMechanicEvent("71abdeef-69d2-4385-8885-4f9ebbd829ca", "KillPower");
-DB_COS_ConfigMechanicEvent("aa88abcb-5f2e-452c-bdce-3ca6176db1e0", "Duality");
-DB_COS_ConfigMechanicEvent("2dd4ef80-1686-4989-8773-3cf6f12b9a36", "AllIn");
-DB_COS_ConfigMechanicEvent("aff82c28-d71a-4dad-837d-d41d8519051a", "Fate");
-DB_COS_ConfigMechanicEvent("063cc1a5-fe65-43e5-8531-d6974a7b1dce", "Genesis");
-DB_COS_ConfigMechanicEvent("78baf203-f60c-4dac-99ea-a7f5d1339d71", "Strike");
-DB_COS_ConfigMechanicEvent("146d28dc-aa94-40e8-9bad-91b069055526", "Mastery");
-DB_COS_ConfigUiOpenedEvent("65247962-a3b0-417d-9044-85e4aad38079");
-DB_COS_ConfigResetCoreEvent("08c8d67a-ace5-4830-8c2b-38b8c92bb470");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_POWER_7f818c10-3f23-49f8-838a-d161c57bb35d, "Power");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_WOUND_0574b4b8-549a-4b39-b810-6890c68642b1, "Wound");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_KILLPOWER_71abdeef-69d2-4385-8885-4f9ebbd829ca, "KillPower");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_DUALITY_aa88abcb-5f2e-452c-bdce-3ca6176db1e0, "Duality");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_ALLIN_2dd4ef80-1686-4989-8773-3cf6f12b9a36, "AllIn");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_FATE_aff82c28-d71a-4dad-837d-d41d8519051a, "Fate");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_GENESIS_063cc1a5-fe65-43e5-8531-d6974a7b1dce, "Genesis");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_STRIKE_78baf203-f60c-4dac-99ea-a7f5d1339d71, "Strike");
+DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_MASTERY_146d28dc-aa94-40e8-9bad-91b069055526, "Mastery");
+DB_COS_ConfigUiOpenedEvent((TUTORIALEVENT)COS_CFG_UI_OPENED_65247962-a3b0-417d-9044-85e4aad38079);
+DB_COS_ConfigResetCoreEvent((TUTORIALEVENT)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470);
 KBSECTION
 PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
