@@ -2561,6 +2561,26 @@ function Require-TutorialEventAction([System.Xml.XmlElement]$Action, [string]$Uu
     Require ($Action.GetAttribute('CommandParameter') -eq $Uuid -and
         $Action.GetAttribute('Command') -eq $tutorialEventCommandBinding) $Message
 }
+function Test-ConfigResetContract([xml]$Document, [string]$PageName) {
+    $resetButtons = @(Get-XamlNamedNodes $Document 'COSConfigResetCore')
+    Require ($resetButtons.Count -eq 1 -and $resetButtons[0].LocalName -eq 'LSButton') `
+        "核心设置重置控件必须是唯一命名的 LSButton: $PageName"
+    $resetButton = $resetButtons[0]
+    $resetTriggers = @($resetButton.SelectNodes('.//*[local-name()="EventTrigger"]'))
+    Require ($resetTriggers.Count -eq 1 -and $resetTriggers[0].GetAttribute('EventName') -eq 'Click') `
+        "核心设置重置 LSButton 必须只用 Click EventTrigger: $PageName"
+    $resetActions = @($resetTriggers[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($resetActions.Count -eq 1) "核心设置重置 Click EventTrigger 必须恰好一个 InvokeCommandAction: $PageName"
+    Require-TutorialEventAction $resetActions[0] $expectedTutorialEvents.COS_CFG_RESET_CORE `
+        "核心设置重置按钮必须发送 COS_CFG_RESET_CORE: $PageName"
+    if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
+        Require ($resetButton.GetAttribute('BoundEvent') -eq 'UIAccept') `
+            "手柄核心设置重置 LSButton 必须绑定 UIAccept: $PageName"
+    } else {
+        Require (-not $resetButton.HasAttribute('BoundEvent')) `
+            "键鼠核心设置重置 LSButton 不得伪造 BoundEvent 激活: $PageName"
+    }
+}
 function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [string]$Mirror, [string]$PageName) {
     $rowNodes = @(Get-XamlNamedNodes $Document "COSConfigRow$Key")
     Require ($rowNodes.Count -eq 1) "核心设置行必须唯一命名为 COSConfigRow${Key}: $PageName"
@@ -2630,6 +2650,16 @@ function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message, [s
     }
     Require $rejected $Message
 }
+function Require-ConfigResetMutationRejected([string]$Markup, [string]$Message, [string]$PageName = 'COS_ConfigMenu.xaml') {
+    [xml]$mutationDocument = $Markup
+    $rejected = $false
+    try {
+        Test-ConfigResetContract $mutationDocument $PageName
+    } catch {
+        $rejected = $true
+    }
+    Require $rejected $Message
+}
 $configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSButton x:Name="COSConfigTogglePower"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
 [xml]$configRowProbeDocument = $configRowProbe
 Test-ConfigRowContract $configRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存正向探针'
@@ -2652,6 +2682,17 @@ $configControllerRowProbe = $configRowProbe -replace '<ls:LSButton ', '<ls:LSBut
 [xml]$configControllerRowProbeDocument = $configControllerRowProbe
 Test-ConfigRowContract $configControllerRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' 'COS_ConfigMenu_c.xaml'
 Require-ConfigRowMutationRejected $configRowProbe '手柄 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
+$configResetProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ls:LSButton x:Name="COSConfigResetCore"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="08c8d67a-ace5-4830-8c2b-38b8c92bb470" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton></Root>'
+[xml]$configResetProbeDocument = $configResetProbe
+Test-ConfigResetContract $configResetProbeDocument 'COS_ConfigMenu.xaml'
+$configControllerResetProbe = $configResetProbe -replace '<ls:LSButton ', '<ls:LSButton BoundEvent="UIAccept" '
+[xml]$configControllerResetProbeDocument = $configControllerResetProbe
+Test-ConfigResetContract $configControllerResetProbeDocument 'COS_ConfigMenu_c.xaml'
+Require-ConfigResetMutationRejected ($configResetProbe -replace 'ls:LSButton', 'Grid') `
+    'Grid 不得替代命名重置 LSButton'
+Require-ConfigResetMutationRejected ($configResetProbe -replace 'EventName="Click"', 'EventName="MouseEnter"') `
+    'MouseEnter 不得替代重置 LSButton 的 Click 激活'
+Require-ConfigResetMutationRejected $configResetProbe '手柄重置 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
@@ -2694,12 +2735,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         "核心设置页 Loaded 打开事件必须唯一命名为 COSConfigOpenOnLoaded: $pageName"
     Require-TutorialEventAction $namedLoadedActions[0] $expectedTutorialEvents.COS_CFG_UI_OPENED `
         "核心设置页 Loaded 打开事件必须发送 COS_CFG_UI_OPENED: $pageName"
-    $resetButtons = @(Get-XamlNamedNodes $pageDocument 'COSConfigResetCore')
-    Require ($resetButtons.Count -eq 1) "核心设置页重置按钮必须唯一命名为 COSConfigResetCore: $pageName"
-    $resetActions = @($resetButtons[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
-    Require ($resetActions.Count -eq 1) "核心设置页重置按钮必须恰好一个 InvokeCommandAction: $pageName"
-    Require-TutorialEventAction $resetActions[0] $expectedTutorialEvents.COS_CFG_RESET_CORE `
-        "核心设置页重置按钮必须发送 COS_CFG_RESET_CORE: $pageName"
+    Test-ConfigResetContract $pageDocument $pageName
     Require ($page.Contains('CurrentPlayer.SelectedCharacter.Stats.Passives')) `
         "核心设置页必须绑定 CurrentPlayer.SelectedCharacter.Stats.Passives: $pageName"
     $mirrorTriggers = @($pageDocument.SelectNodes('//*[local-name()="DataTrigger"]') | Where-Object {
