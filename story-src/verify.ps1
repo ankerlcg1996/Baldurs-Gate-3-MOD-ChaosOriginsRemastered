@@ -3138,6 +3138,10 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
     $rootNodes = @(Get-XamlNamedNodes $Document 'COS_ConfigMenu_c')
     Require ($rootNodes.Count -eq 1 -and $rootNodes[0].LocalName -eq 'UIWidget') `
         "手柄核心设置页必须保留唯一命名根控件: $PageName"
+    Require ($rootNodes[0].GetAttribute('FocusDown') -eq 'UIDown' -and
+        $rootNodes[0].GetAttribute('FocusUp') -eq 'UIUp' -and
+        $rootNodes[0].GetAttribute('ls:MoveFocus.FocusMovementMode') -eq 'MainAxisTunnel') `
+        "手柄核心设置根控件必须保留上下导航和 MainAxisTunnel: $PageName"
     $setFocusActions = @($Document.SelectNodes('//*[local-name()="SetMoveFocusAction"]'))
     $loadedTriggers = @($Document.SelectNodes('//*[local-name()="EventTrigger"]') |
         Where-Object { $_.GetAttribute('EventName') -eq 'Loaded' })
@@ -3151,6 +3155,20 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
         Require (-not $PageText.Contains("{StaticResource $forbiddenResource}")) `
             "手柄核心设置页不得引用键鼠专属资源 ${forbiddenResource}: $PageName"
     }
+}
+function Test-ControllerAcceptContract([xml]$Document, [string]$PageName) {
+    $expectedAcceptNames = @($expectedConfigRows.Keys | ForEach-Object { "COSConfigToggle$_" }) +
+        @('COSConfigResetCore')
+    $acceptButtons = @($Document.SelectNodes('//*[local-name()="LSButton"]') | Where-Object {
+        $_.GetAttribute('BoundEvent') -eq 'UIAccept'
+    })
+    $acceptNames = @($acceptButtons | ForEach-Object {
+        $_.GetAttribute('Name', $xamlNamespace)
+    })
+    Require ($acceptButtons.Count -eq 10 -and
+        @($acceptNames | Select-Object -Unique).Count -eq 10 -and
+        -not (Compare-Object ($expectedAcceptNames | Sort-Object) ($acceptNames | Sort-Object))) `
+        "手柄核心设置页只能由九个切换按钮和重置按钮消费 UIAccept: $PageName"
 }
 function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message, [string]$PageName = 'COS_ConfigMenu.xaml') {
     [xml]$mutationDocument = $Markup
@@ -3177,6 +3195,16 @@ function Require-ControllerPageMutationRejected([string]$Markup, [string]$Messag
     $rejected = $false
     try {
         Test-ControllerPageContract $mutationDocument $Markup 'COS_ConfigMenu_c.xaml'
+    } catch {
+        $rejected = $true
+    }
+    Require $rejected $Message
+}
+function Require-ControllerAcceptMutationRejected([string]$Markup, [string]$Message) {
+    [xml]$mutationDocument = $Markup
+    $rejected = $false
+    try {
+        Test-ControllerAcceptContract $mutationDocument 'COS_ConfigMenu_c.xaml'
     } catch {
         $rejected = $true
     }
@@ -3233,7 +3261,7 @@ Require-ConfigResetMutationRejected ($configControllerResetProbe -replace 'Eleme
     '手柄重置子按钮绑定错误父行必须被拒绝' 'COS_ConfigMenu_c.xaml'
 Require-ConfigResetMutationRejected ($configControllerResetProbe -replace 'Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent', 'Focusable="True" ls:MoveFocus.Focusable="False" BoundEvent') `
     '手柄重置子按钮不得重新参与标准焦点' 'COS_ConfigMenu_c.xaml'
-$configControllerPageProbe = '<ls:UIWidget x:Name="COS_ConfigMenu_c" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="clr-namespace:ls;assembly=Code" xmlns:b="http://schemas.microsoft.com/xaml/behaviors"><b:Interaction.Triggers><b:EventTrigger EventName="Loaded"><b:InvokeCommandAction/><ls:SetMoveFocusAction TargetName="COS_ConfigMenu_c"/></b:EventTrigger></b:Interaction.Triggers><ls:UIWidget.Template><ControlTemplate><Grid/></ControlTemplate></ls:UIWidget.Template></ls:UIWidget>'
+$configControllerPageProbe = '<ls:UIWidget x:Name="COS_ConfigMenu_c" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="clr-namespace:ls;assembly=Code" xmlns:b="http://schemas.microsoft.com/xaml/behaviors" FocusDown="UIDown" FocusUp="UIUp" ls:MoveFocus.FocusMovementMode="MainAxisTunnel"><b:Interaction.Triggers><b:EventTrigger EventName="Loaded"><b:InvokeCommandAction/><ls:SetMoveFocusAction TargetName="COS_ConfigMenu_c"/></b:EventTrigger></b:Interaction.Triggers><ls:UIWidget.Template><ControlTemplate><Grid/></ControlTemplate></ls:UIWidget.Template></ls:UIWidget>'
 [xml]$configControllerPageProbeDocument = $configControllerPageProbe
 Test-ControllerPageContract $configControllerPageProbeDocument $configControllerPageProbe 'COS_ConfigMenu_c.xaml'
 Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<ls:SetMoveFocusAction TargetName="COS_ConfigMenu_c"/>', '') `
@@ -3244,12 +3272,32 @@ Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<Gr
     '手柄页重新引用 PageHeaderHeight 必须被拒绝'
 Require-ControllerPageMutationRejected ($configControllerPageProbe -replace '<Grid/>', '<Grid Tag="{StaticResource PageHeader}"/>') `
     '手柄页重新引用 PageHeader 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace ' FocusDown="UIDown"', '') `
+    '手柄页缺失 FocusDown 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'FocusDown="UIDown"', 'FocusDown="WrongDown"') `
+    '手柄页错误 FocusDown 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace ' FocusUp="UIUp"', '') `
+    '手柄页缺失 FocusUp 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'FocusUp="UIUp"', 'FocusUp="WrongUp"') `
+    '手柄页错误 FocusUp 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace ' ls:MoveFocus.FocusMovementMode="MainAxisTunnel"', '') `
+    '手柄页缺失 FocusMovementMode 必须被拒绝'
+Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'FocusMovementMode="MainAxisTunnel"', 'FocusMovementMode="Cycle"') `
+    '手柄页错误 FocusMovementMode 必须被拒绝'
+$configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleFate" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
+[xml]$configControllerAcceptProbeDocument = $configControllerAcceptProbe
+Test-ControllerAcceptContract $configControllerAcceptProbeDocument '内存正向探针'
+Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace '</Root>', '<ls:LSButton x:Name="AlwaysOn" BoundEvent="UIAccept" IsEnabled="True"/></Root>') `
+    '手柄页注入第十一个始终启用 UIAccept 必须被拒绝'
+Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace 'x:Name="COSConfigCloseCore"', 'x:Name="COSConfigCloseCore" BoundEvent="UIAccept"') `
+    '手柄关闭或任意额外控件不得消费 UIAccept'
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
     [xml]$pageDocument = $page
     if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
         Test-ControllerPageContract $pageDocument $page $pageName
+        Test-ControllerAcceptContract $pageDocument $pageName
         $expectedControllerFocusOrder = @(
             'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
