@@ -648,4 +648,19 @@
 	<content contentuid="hf1437f68g6231g4f22gb12ega9bcfc6189d8" version="1">숨겨진 자원입니다. 혼돈 기원은 레벨마다 1점을 얻으며 최대 12점까지 보유합니다. 휴식으로 회복되지 않습니다.</content>
 	<content contentuid="h02971056gdde9g4363g80d5gdaf480557af7" version="1">혼돈 진정</content>
 	<content contentuid="h8fae3635gba76g4614ga776gf8054d011d82" version="1">이번 피격 룰렛은 진정되었습니다. 긍정 또는 부정 결과를 적용하지 않고 혼돈 상실도 증가시키지 않습니다.</content>
+	<content contentuid="h73000001g0001g4001g8001g000000000001" version="1">핵심 메커니즘</content>
+	<content contentuid="h73000002g0002g4002g8002g000000000002" version="1">활성</content>
+	<content contentuid="h73000003g0003g4003g8003g000000000003" version="1">비활성</content>
+	<content contentuid="h73000004g0004g4004g8004g000000000004" version="1">기본값 복원</content>
+	<content contentuid="h73000005g0005g4005g8005g000000000005" version="1">비전투 상태에서만 현재 조작 중인 혼돈 기원 캐릭터를 변경할 수 있습니다. 변경 사항은 즉시 적용되고 저장 파일에 보존됩니다.</content>
+	<content contentuid="h73000006g0006g4006g8006g000000000006" version="1">전환</content>
+	<content contentuid="h73000011g0011g4011g8011g000000000011" version="1">혼돈의 힘</content>
+	<content contentuid="h73000012g0012g4012g8012g000000000012" version="1">피격 룰렛</content>
+	<content contentuid="h73000013g0013g4013g8013g000000000013" version="1">처치로 혼돈의 힘 획득</content>
+	<content contentuid="h73000014g0014g4014g8014g000000000014" version="1">양의</content>
+	<content contentuid="h73000015g0015g4015g8015g000000000015" version="1">혼돈의 승부수</content>
+	<content contentuid="h73000016g0016g4016g8016g000000000016" version="1">운명 개정</content>
+	<content contentuid="h73000017g0017g4017g8017g000000000017" version="1">혼돈의 천지개벽</content>
+	<content contentuid="h73000018g0018g4018g8018g000000000018" version="1">혼돈의 판결</content>
+	<content contentuid="h73000019g0019g4019g8019g000000000019" version="1">혼돈 통제</content>
 </contentList>

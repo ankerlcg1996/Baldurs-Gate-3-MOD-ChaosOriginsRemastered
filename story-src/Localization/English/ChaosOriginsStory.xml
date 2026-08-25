@@ -648,4 +648,19 @@
 	<content contentuid="hf1437f68g6231g4f22gb12ega9bcfc6189d8" version="1">Hidden resource. Chaos Origin gains 1 point per level, up to 12 points; resting does not restore it.</content>
 	<content contentuid="h02971056gdde9g4363g80d5gdaf480557af7" version="1">Chaos Calmed</content>
 	<content contentuid="h8fae3635gba76g4614ga776gf8054d011d82" version="1">This Wound wheel trial is calmed: it applies no positive or negative result and adds no Chaos Lost.</content>
+	<content contentuid="h73000001g0001g4001g8001g000000000001" version="1">Core Mechanics</content>
+	<content contentuid="h73000002g0002g4002g8002g000000000002" version="1">Enabled</content>
+	<content contentuid="h73000003g0003g4003g8003g000000000003" version="1">Disabled</content>
+	<content contentuid="h73000004g0004g4004g8004g000000000004" version="1">Reset Defaults</content>
+	<content contentuid="h73000005g0005g4005g8005g000000000005" version="1">Only out of combat, you can modify the currently controlled Chaos Origin character. Changes take effect immediately and are saved with the game.</content>
+	<content contentuid="h73000006g0006g4006g8006g000000000006" version="1">Toggle</content>
+	<content contentuid="h73000011g0011g4011g8011g000000000011" version="1">Chaos Power</content>
+	<content contentuid="h73000012g0012g4012g8012g000000000012" version="1">Wound Wheel</content>
+	<content contentuid="h73000013g0013g4013g8013g000000000013" version="1">Chaos Power from Kills</content>
+	<content contentuid="h73000014g0014g4014g8014g000000000014" version="1">Duality</content>
+	<content contentuid="h73000015g0015g4015g8015g000000000015" version="1">Chaos All-In</content>
+	<content contentuid="h73000016g0016g4016g8016g000000000016" version="1">Fate Revision</content>
+	<content contentuid="h73000017g0017g4017g8017g000000000017" version="1">Chaos Genesis</content>
+	<content contentuid="h73000018g0018g4018g8018g000000000018" version="1">Chaos Verdict</content>
+	<content contentuid="h73000019g0019g4019g8019g000000000019" version="1">Chaos Mastery</content>
 </contentList>
