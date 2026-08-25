@@ -65,8 +65,8 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
     $readmeText = Get-Content -LiteralPath $readmePath -Raw -Encoding UTF8
     Require (-not ($readmeText -match '1\.0\.1\.(?:28|44)|23\s*(?:个|/23)|三个\s*(?:Raw\s*)?Goal')) `
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
-    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('26') -and `
-        $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录26文件/4 Goals: $readmePath"
+    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('33') -and `
+        $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录33文件/4 Goals: $readmePath"
 }
 
 . $buildProcessHelperPath
@@ -245,6 +245,13 @@ $expectedPackageFiles = @(
     'Localization/English/ChaosOriginsStory.loca',
     'Localization/Japanese/ChaosOriginsStory.loca',
     'Localization/Korean/ChaosOriginsStory.loca',
+    'Mods/ChaosOriginsStory/GUI/metadata.lsf',
+    'Mods/ChaosOriginsStory/GUI/Pages/COS_ConfigEscButton.xaml',
+    'Mods/ChaosOriginsStory/GUI/Pages/COS_ConfigEscButton_c.xaml',
+    'Mods/ChaosOriginsStory/GUI/Pages/COS_ConfigMenu.xaml',
+    'Mods/ChaosOriginsStory/GUI/Pages/COS_ConfigMenu_c.xaml',
+    'Mods/ChaosOriginsStory/GUI/StateMachines/Controller.xaml',
+    'Mods/ChaosOriginsStory/GUI/StateMachines/Keyboard.xaml',
     'Mods/ChaosOriginsStory/meta.lsx',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt',
@@ -274,8 +281,8 @@ Require (Test-Path -LiteralPath $manifestPath -PathType Leaf) '缺少 package-fi
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
 $manifest = @($manifestDocument.files | Sort-Object)
-Require ($manifest.Count -eq 26 -and @($manifest | Select-Object -Unique).Count -eq 26) `
-    '原生 Story 打包清单必须恰好包含 26 个唯一文件'
+Require ($manifest.Count -eq 33 -and @($manifest | Select-Object -Unique).Count -eq 33) `
+    '原生 Story 打包清单必须恰好包含33个唯一文件'
 Require (-not (Compare-Object $expectedPackageFiles $manifest)) '原生 Story 打包清单内容错误'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
@@ -2012,9 +2019,66 @@ foreach ($file in $formalFiles) {
 
 $textureBankSourcePath = Join-Path $root 'resource-src\Public\ChaosOriginsStory\Content\UI\[PAK]_ChaosOriginsStory\_merged.lsf.lsx'
 $resourceSources = @(Get-ChildItem -LiteralPath (Join-Path $root 'resource-src') -Recurse -File -Filter '*.lsx')
-Require ($resourceSources.Count -eq 2 -and $resourceSources.FullName -contains $tagPath -and `
-    $resourceSources.FullName -contains $textureBankSourcePath) `
-    '资源源目录必须只包含起源标签和技能图标 TextureBank'
+$guiRoot = Join-Path $root "Mods\$module\GUI"
+$guiRelativePaths = @(
+    'Pages/COS_ConfigEscButton.xaml',
+    'Pages/COS_ConfigEscButton_c.xaml',
+    'Pages/COS_ConfigMenu.xaml',
+    'Pages/COS_ConfigMenu_c.xaml',
+    'StateMachines/Keyboard.xaml',
+    'StateMachines/Controller.xaml'
+)
+foreach ($relative in $guiRelativePaths) {
+    $path = Join-Path $guiRoot $relative
+    Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少原生菜单空壳: $relative"
+    [void][xml](Get-Content -LiteralPath $path -Raw -Encoding UTF8)
+}
+
+$keyboardState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Keyboard.xaml'))
+$controllerState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Controller.xaml'))
+foreach ($state in @($keyboardState, $controllerState)) {
+    Require ($state -match 'Name\s*=\s*"Paused"\s+ModType\s*=\s*"Extend"') `
+        '暂停状态必须只使用 ModType=Extend'
+    Require ($state -match 'Name\s*=\s*"SystemUIs"\s+ModType\s*=\s*"Extend"') `
+        'SystemUIs 状态必须只使用 ModType=Extend'
+    Require ($state.Contains('Name="OpenCOSConfig"') -and
+        $state.Contains('Name="COS_CFG_MENU"')) '状态机缺少独立菜单事件或状态'
+    Require (-not $state.Contains('NMCM')) '最终状态机不得保留 NMCM 标识'
+}
+Require ($keyboardState.Contains('Filename="COS_ConfigMenu.xaml"')) `
+    '键鼠状态机未引用键鼠空壳页'
+Require ($controllerState.Contains('Filename="COS_ConfigMenu_c.xaml"')) `
+    '手柄状态机未引用手柄空壳页'
+
+$keyboardEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton.xaml'))
+$controllerEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton_c.xaml'))
+foreach ($entry in @($keyboardEntry, $controllerEntry)) {
+    Require ($entry.Contains('CommandParameter="OpenCOSConfig"')) `
+        '暂停菜单入口未发送固定 OpenCOSConfig 事件'
+    Require ($entry.Contains('hc05fd001g0000g4000g8000g000000000000')) `
+        '暂停菜单入口未使用既有四语标题'
+}
+Require ($controllerEntry.Contains('BoundEvent="UIShowInfo"')) `
+    '手柄入口必须使用原生 UIShowInfo'
+
+foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
+    $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
+    Require ($page.Contains('CommandParameter="CloseWidget"')) `
+        "空壳页缺少关闭动作: $pageName"
+    Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
+        $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
+        $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
+        "空壳页缺少标题、说明或返回文本: $pageName"
+    Require (-not ($page -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|COS_CFG_MECH_')) `
+        "第一阶段空壳不得读取角色配置或发送 Story 请求: $pageName"
+}
+
+$guiMetadataSourcePath = Join-Path $root 'resource-src\Mods\ChaosOriginsStory\GUI\metadata.lsf.lsx'
+Require ($resourceSources.Count -eq 3 -and
+    $resourceSources.FullName -contains $tagPath -and
+    $resourceSources.FullName -contains $textureBankSourcePath -and
+    $resourceSources.FullName -contains $guiMetadataSourcePath) `
+    '资源源目录必须只包含起源标签、技能图标 TextureBank 和 GUI metadata'
 [xml]$textureBank = Get-Content -LiteralPath $textureBankSourcePath -Raw -Encoding UTF8
 $atlasUuid = [string]([xml](Get-Content -LiteralPath (Join-Path $root "Public\$module\GUI\Icons_ChaosOrigins.lsx") -Raw -Encoding UTF8)).SelectSingleNode('//node[@id="TextureAtlasPath"]/attribute[@id="UUID"]').value
 $textureResource = $textureBank.SelectSingleNode('//region[@id="TextureBank"]//node[@id="Resource"]')
