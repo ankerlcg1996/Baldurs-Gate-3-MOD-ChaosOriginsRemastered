@@ -271,6 +271,8 @@ PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
+AND
 _Power >= 10
 THEN
 ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);
@@ -337,9 +339,19 @@ RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
 PROC
 PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)
 AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
 DB_COS_Power(_Character, _Power)
 THEN
 PROC_COS_SyncPowerDisplay(_Character, _Power);
+
+PROC
+PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 0)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
 
 PROC
 PROC_COS_ClearLostDisplay((CHARACTER)_Character)
@@ -881,7 +893,7 @@ AND
 IntegerMin(_RestoredRaw, _Maximum, _Restored)
 THEN
 SetHitpoints(_Target, _Restored, "Guaranteed");
-PROC_COS_ResolveDualityOutcome(_Target, _Damage, _Half, _Roll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance);
+PROC_COS_ResolveDualityOutcome(_Owner, _Target, _Damage, _Half, _Roll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance);
 
 PROC
 PROC_COS_ResolveDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Roll)
@@ -917,7 +929,7 @@ AND
 IntegerMin(_RestoredRaw, _Maximum, _Restored)
 THEN
 SetHitpoints(_Target, _Restored, "Guaranteed");
-PROC_COS_ResolveDualityOutcome(_Target, _Damage, _Half, _Roll, 60, 85, _SplitBonus, _DelayBonus, 50);
+PROC_COS_ResolveDualityOutcome(_Owner, _Target, _Damage, _Half, _Roll, 60, 85, _SplitBonus, _DelayBonus, 50);
 
 PROC
 PROC_COS_QueueDualityDamage((CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
@@ -935,7 +947,7 @@ THEN
 ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
 
 PROC
-PROC_COS_QueueDelayedDualityDamage((CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
+PROC_COS_QueueDelayedDualityDamage((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)
 AND
 DB_COS_DualityDelaySerial(_Serial)
 AND
@@ -944,10 +956,11 @@ THEN
 NOT DB_COS_DualityDelaySerial(_Serial);
 DB_COS_DualityDelaySerial(_NextSerial);
 DB_COS_DualityDelayed(_Target, _NextSerial, _Amount, _DamageType, _LogStatus);
+DB_COS_DualityDelayedOwner(_Owner, _Target, _NextSerial);
 ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", -1.0, 100, _Target);
 
 PROC
-PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+PROC_COS_ResolveDualityTiming((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
 AND
 _TimingRoll < _ImmediateEnd
 AND
@@ -964,7 +977,7 @@ THEN
 PROC_COS_QueueDualityDamage(_Target, _ReturnDamage, _DamageType, _LogStatus);
 
 PROC
-PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+PROC_COS_ResolveDualityTiming((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
 AND
 _TimingRoll >= _ImmediateEnd
 AND
@@ -990,10 +1003,10 @@ IntegerSubtract(_ReturnDamage, _ImmediateDamage, _DelayedDamage)
 THEN
 ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_BOOST_80", 0.1, 100, _Target);
 PROC_COS_QueueDualityDamage(_Target, _ImmediateDamage, _DamageType, _LogStatus);
-PROC_COS_QueueDelayedDualityDamage(_Target, _DelayedDamage, _DamageType, _LogStatus);
+PROC_COS_QueueDelayedDualityDamage(_Owner, _Target, _DelayedDamage, _DamageType, _LogStatus);
 
 PROC
-PROC_COS_ResolveDualityTiming((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
+PROC_COS_ResolveDualityTiming((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (STRING)_DamageType, (STRING)_LogStatus)
 AND
 _TimingRoll >= _SplitEnd
 AND
@@ -1011,27 +1024,27 @@ IntegerSubtract(_Damage, _Half, _RetainedDamage)
 AND
 IntegerSubtract(_FinalDamage, _RetainedDamage, _ReturnDamage)
 THEN
-PROC_COS_QueueDelayedDualityDamage(_Target, _ReturnDamage, _DamageType, _LogStatus);
+PROC_COS_QueueDelayedDualityDamage(_Owner, _Target, _ReturnDamage, _DamageType, _LogStatus);
 
 PROC
-PROC_COS_ResolveDualityType((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
+PROC_COS_ResolveDualityType((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
 AND
 _TypeChance < _ForceChance
 THEN
-PROC_COS_ResolveDualityTiming(_Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, "Force", _LogStatus);
+PROC_COS_ResolveDualityTiming(_Owner, _Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, "Force", _LogStatus);
 
 PROC
-PROC_COS_ResolveDualityType((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
+PROC_COS_ResolveDualityType((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Percent, (INTEGER)_TimingRoll, (INTEGER)_TypeChance, (INTEGER)_DamageTypeRoll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance, (STRING)_LogStatus)
 AND
 _TypeChance >= _ForceChance
 AND
 DB_COS_WoundDamageType(_DamageTypeRoll, _DamageType, _)
 THEN
 ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_ELEMENTAL", 0.1, 100, _Target);
-PROC_COS_ResolveDualityTiming(_Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _DamageType, _LogStatus);
+PROC_COS_ResolveDualityTiming(_Owner, _Target, _Damage, _Half, _Percent, _TimingRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _DamageType, _LogStatus);
 
 PROC
-PROC_COS_ResolveDualityOutcome((CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Roll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance)
+PROC_COS_ResolveDualityOutcome((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_Half, (INTEGER)_Roll, (INTEGER)_ImmediateEnd, (INTEGER)_SplitEnd, (INTEGER)_SplitBonus, (INTEGER)_DelayBonus, (INTEGER)_ForceChance)
 AND
 DB_COS_DualityBand(_Minimum, _Maximum, _Percent, _LogStatus)
 AND
@@ -1045,7 +1058,7 @@ Random(100, _TypeChance)
 AND
 Random(10, _DamageTypeRoll)
 THEN
-PROC_COS_ResolveDualityType(_Target, _Damage, _Half, _Percent, _TimingRoll, _TypeChance, _DamageTypeRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance, _LogStatus);
+PROC_COS_ResolveDualityType(_Owner, _Target, _Damage, _Half, _Percent, _TimingRoll, _TypeChance, _DamageTypeRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance, _LogStatus);
 
 PROC
 PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_RemainingRolls, (INTEGER)_BestRoll)
@@ -1067,6 +1080,17 @@ _RemainingRolls == 0
 THEN
 PROC_COS_ResolveDuality(_Owner, _Target, _Damage, _BestRoll);
 
+PROC
+PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)
+AND
+DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
+AND
+DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
+RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+
 IF
 ObjectTimerFinished(_Target, "COS_DualityApplyDamage")
 AND
@@ -1081,6 +1105,10 @@ TurnStarted(_Target)
 AND
 DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
 AND
+DB_COS_DualityDelayedOwner((CHARACTER)_Owner, (CHARACTER)_Target, _Serial)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Owner, "Duality", 1)
+AND
 GetHitpoints(_Target, _Hitpoints)
 AND
 IntegerSubtract(_Hitpoints, _Amount, _ReducedHitpoints)
@@ -1088,6 +1116,7 @@ AND
 IntegerMax(_ReducedHitpoints, 0, _FinalHitpoints)
 THEN
 NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
 SetHitpoints(_Target, _FinalHitpoints, "Guaranteed");
 ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);
 RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
@@ -1096,6 +1125,19 @@ IF
 Died(_Target)
 AND
 DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
+AND
+DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)
+THEN
+NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
+NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);
+RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)
+AND
+NOT DB_COS_DualityDelayedOwner(_, _Target, _Serial)
 THEN
 NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);
 RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);

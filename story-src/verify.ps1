@@ -2443,6 +2443,7 @@ $genesisReadyBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_ApplyGen
 $expectedGenesisReadyConditions = @(
     'PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)',
+    'DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)',
     '_Power >= 10'
 )
 $expectedGenesisReadyActions = @(
@@ -2459,16 +2460,262 @@ $genesisReadyGenesisGateDeletionProbe = $genesisReadyBlocks[0].Replace(
 Require ($genesisReadyGenesisGateDeletionProbe -cne $genesisReadyBlocks[0] -and
     -not (Test-GenesisReadyContract $genesisReadyGenesisGateDeletionProbe)) `
     'GenesisReady Genesis gate deletion mutation probe 必须被拒绝'
+$genesisReadyPowerConfigGateDeletionProbe = $genesisReadyBlocks[0].Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Power`", 1)", '')
+Require ($genesisReadyPowerConfigGateDeletionProbe -cne $genesisReadyBlocks[0] -and
+    -not (Test-GenesisReadyContract $genesisReadyPowerConfigGateDeletionProbe)) `
+    'GenesisReady Power config gate deletion mutation probe 必须被拒绝'
 $genesisReadyPowerGateDeletionProbe = $genesisReadyBlocks[0].Replace(
     "`n_Power >= 10", '')
 Require ($genesisReadyPowerGateDeletionProbe -cne $genesisReadyBlocks[0] -and
     -not (Test-GenesisReadyContract $genesisReadyPowerGateDeletionProbe)) `
     'GenesisReady Power gate deletion mutation probe 必须被拒绝'
+$powerSyncBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_SyncPowerFromDatabase')
+$expectedPowerSyncEnabledConditions = @(
+    'PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)',
+    'DB_COS_ConfigMechanic(_Character, "Power", 1)',
+    'DB_COS_Power(_Character, _Power)'
+)
+$expectedPowerSyncDisabledConditions = @(
+    'PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)',
+    'DB_COS_ConfigMechanic(_Character, "Power", 0)'
+)
+$expectedPowerSyncDisabledActions = @(
+    'RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);',
+    'RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);'
+)
+function Test-PowerSyncContract([string]$Story) {
+    $blocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_SyncPowerFromDatabase')
+    if ($blocks.Count -ne 2) { return $false }
+    $enabled = @($blocks | Where-Object {
+        ((Get-MechanicsConditions $_) -join "`n") -ceq ($expectedPowerSyncEnabledConditions -join "`n") -and
+        ((Get-MechanicsThenActions $_) -join "`n") -ceq 'PROC_COS_SyncPowerDisplay(_Character, _Power);'
+    })
+    $disabled = @($blocks | Where-Object {
+        ((Get-MechanicsConditions $_) -join "`n") -ceq ($expectedPowerSyncDisabledConditions -join "`n") -and
+        ((Get-MechanicsThenActions $_) -join "`n") -ceq ($expectedPowerSyncDisabledActions -join "`n")
+    })
+    return $enabled.Count -eq 1 -and $disabled.Count -eq 1
+}
+Require (Test-PowerSyncContract $mechanicsGoal) `
+    'SyncPowerFromDatabase 必须在 Power=1 时同步账本，在 Power=0 时只清 Power/Genesis 显示且保留账本'
+$powerSyncEnabledGateMutation = $mechanicsGoal.Replace(
+    "DB_COS_ConfigMechanic(_Character, `"Power`", 1)`nAND`nDB_COS_Power(_Character, _Power)",
+    'DB_COS_Power(_Character, _Power)')
+Require ($powerSyncEnabledGateMutation -cne $mechanicsGoal -and -not (Test-PowerSyncContract $powerSyncEnabledGateMutation)) `
+    'SyncPowerFromDatabase mutation probe 必须拒绝启用分支缺失 Power=1'
+$powerSyncLedgerDeletionMutation = $mechanicsGoal.Replace(
+    'RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);',
+    "RemoveStatus(_Character, `"COS_CHAOS_GENESIS_READY`", _Character);`nNOT DB_COS_Power(_Character, _Power);")
+Require ($powerSyncLedgerDeletionMutation -cne $mechanicsGoal -and -not (Test-PowerSyncContract $powerSyncLedgerDeletionMutation)) `
+    'SyncPowerFromDatabase mutation probe 必须拒绝 Power=0 删除账本'
 $genesisUseBlocks = @($mechanicsIfBlocks | Where-Object {
     $_.Contains('UsingSpell(_Character, "Shout_COS_ChaosGenesis"')
 })
 Require ($genesisUseBlocks.Count -eq 1) '开天辟地必须只有一个 UsingSpell 触发块'
 Require-StoryGate $genesisUseBlocks[0] $genesisGatePattern '开天辟地 UsingSpell 触发块必须要求 Genesis=1'
+
+function Get-StatsEntryBlock([string]$Text, [string]$Name) {
+    $pattern = '(?ms)^new entry "' + [regex]::Escape($Name) + '"\r?\n.*?(?=^new entry |\z)'
+    $matches = @([regex]::Matches($Text, $pattern))
+    Require ($matches.Count -eq 1) "Stats 条目必须全局唯一: $Name"
+    return $matches[0].Value
+}
+function Test-StatsField([string]$Block, [string]$Field, [string]$Expected) {
+    $matches = @([regex]::Matches($Block, '(?m)^data "' + [regex]::Escape($Field) + '" "([^"]*)"\r?$'))
+    return $matches.Count -eq 1 -and $matches[0].Groups[1].Value -ceq $Expected
+}
+$genesisSpellBlock = Get-StatsEntryBlock $featuresText 'Shout_COS_ChaosGenesis'
+$expectedGenesisRequirements = "HasStatus('COS_CHAOS_GENESIS_READY',context.Source) and HasPassive('COS_CFG_MECH_POWER',context.Source) and HasPassive('COS_CFG_MECH_GENESIS',context.Source)"
+Require (Test-StatsField $genesisSpellBlock 'RequirementConditions' $expectedGenesisRequirements) `
+    '开天辟地 Stats 必须同时要求 READY、Power 镜像和 Genesis 镜像'
+foreach ($genesisPassiveGate in @('COS_CFG_MECH_POWER', 'COS_CFG_MECH_GENESIS')) {
+    $mutation = $genesisSpellBlock.Replace(" and HasPassive('$genesisPassiveGate',context.Source)", '')
+    Require ($mutation -cne $genesisSpellBlock -and
+        -not (Test-StatsField $mutation 'RequirementConditions' $expectedGenesisRequirements)) `
+        "开天辟地 Stats mutation probe 必须拒绝删除 $genesisPassiveGate"
+}
+$allInSpellBlock = Get-StatsEntryBlock $featuresText 'Shout_COS_ChaosAllIn'
+$expectedAllInRequirements = "not HasStatus('COS_CHAOS_ALLIN_TOGGLE',context.Source) and HasPassive('COS_CFG_MECH_ALLIN',context.Source)"
+Require (Test-StatsField $allInSpellBlock 'RequirementConditions' $expectedAllInRequirements) `
+    '混沌孤注 Stats 必须保持未激活条件并要求 AllIn 镜像'
+$allInGateMutation = $allInSpellBlock.Replace(" and HasPassive('COS_CFG_MECH_ALLIN',context.Source)", '')
+Require ($allInGateMutation -cne $allInSpellBlock -and
+    -not (Test-StatsField $allInGateMutation 'RequirementConditions' $expectedAllInRequirements)) `
+    '混沌孤注 Stats mutation probe 必须拒绝删除 AllIn 镜像门禁'
+$interruptText = Get-Content -LiteralPath (Join-Path $root "Public\$module\Stats\Generated\Data\Interrupt.txt") -Raw -Encoding UTF8
+$strikeInterruptBlock = Get-StatsEntryBlock $interruptText 'Interrupt_COS_ChaosStrike'
+$expectedStrikeConditions = "IsAbleToReact(context.Observer) and Self(context.Source,context.Observer) and ((HasInterruptedAttack() and (IsWeaponAttack() or IsSpell())) or (HasInterruptedSavingThrow() and IsSpell() and HasFunctor(StatsFunctorType.DealDamage))) and not HasStatus('COS_CHAOS_STRIKE_ACTIVE',context.Observer) and not AnyEntityIsItem() and HasPassive('COS_CFG_MECH_STRIKE',context.Observer)"
+$expectedStrikeEnableCondition = "HasActionResource('COS_ChaosStrike',1,0,false,false,context.Source) and not HasStatus('COS_CHAOS_STRIKE_ACTIVE',context.Source) and HasPassive('COS_CFG_MECH_STRIKE',context.Source)"
+Require (Test-StatsField $strikeInterruptBlock 'Conditions' $expectedStrikeConditions) `
+    '混沌裁决 Interrupt Conditions 必须要求 Observer 的 Strike 镜像'
+Require (Test-StatsField $strikeInterruptBlock 'EnableCondition' $expectedStrikeEnableCondition) `
+    '混沌裁决 Interrupt EnableCondition 必须要求 Source 的 Strike 镜像'
+Require (Test-StatsField $strikeInterruptBlock 'Properties' "IF(HasInterruptedAttack()):SetRoll(20);IF(HasInterruptedSavingThrow()):SetRoll(1);IF(HasInterruptedSavingThrow()):AdjustRoll(-99,All);ApplyStatus(OBSERVER_OBSERVER,COS_CHAOS_STRIKE_ACTIVE,100,1)") `
+    '混沌裁决不得改写原 SetRoll/状态效果'
+Require (Test-StatsField $strikeInterruptBlock 'Cost' 'ReactionActionPoint:1;COS_ChaosStrike:1') `
+    '混沌裁决不得改写原 Cost'
+foreach ($strikeGateSpec in @(
+    @('Conditions', " and HasPassive('COS_CFG_MECH_STRIKE',context.Observer)", $expectedStrikeConditions),
+    @('EnableCondition', " and HasPassive('COS_CFG_MECH_STRIKE',context.Source)", $expectedStrikeEnableCondition)
+)) {
+    $mutation = $strikeInterruptBlock.Replace($strikeGateSpec[1], '')
+    Require ($mutation -cne $strikeInterruptBlock -and
+        -not (Test-StatsField $mutation $strikeGateSpec[0] $strikeGateSpec[2])) `
+        "混沌裁决 mutation probe 必须拒绝删除 $($strikeGateSpec[0]) 镜像门禁"
+}
+
+function Test-DualityOwnerPropagation([string]$Story) {
+    $resolveBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ResolveDuality')
+    $outcomeBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ResolveDualityOutcome')
+    $typeBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ResolveDualityType')
+    $timingBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ResolveDualityTiming')
+    $queueBlocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_QueueDelayedDualityDamage')
+    if ($resolveBlocks.Count -ne 2 -or $outcomeBlocks.Count -ne 1 -or $typeBlocks.Count -ne 2 -or
+        $timingBlocks.Count -ne 3 -or $queueBlocks.Count -ne 1) { return $false }
+    if (@($resolveBlocks | Where-Object {
+        (Get-StoryThen $_).Contains('PROC_COS_ResolveDualityOutcome(_Owner, _Target,')
+    }).Count -ne 2) { return $false }
+    if (-not $outcomeBlocks[0].Contains('PROC_COS_ResolveDualityOutcome((CHARACTER)_Owner, (CHARACTER)_Target,') -or
+        -not (Get-StoryThen $outcomeBlocks[0]).Contains('PROC_COS_ResolveDualityType(_Owner, _Target,')) { return $false }
+    if (@($typeBlocks | Where-Object {
+        $_.Contains('PROC_COS_ResolveDualityType((CHARACTER)_Owner, (CHARACTER)_Target,') -and
+        (Get-StoryThen $_).Contains('PROC_COS_ResolveDualityTiming(_Owner, _Target,')
+    }).Count -ne 2) { return $false }
+    if (@($timingBlocks | Where-Object {
+        $_.Contains('PROC_COS_ResolveDualityTiming((CHARACTER)_Owner, (CHARACTER)_Target,')
+    }).Count -ne 3) { return $false }
+    $delayedCalls = @([regex]::Matches(
+        ($timingBlocks | ForEach-Object { Get-StoryThen $_ }) -join "`n",
+        '(?m)^PROC_COS_QueueDelayedDualityDamage\(_Owner, _Target, [^\r\n]+\);$'))
+    if ($delayedCalls.Count -ne 2) { return $false }
+    $queueConditions = @(Get-MechanicsConditions $queueBlocks[0])
+    $queueActions = @(Get-MechanicsThenActions $queueBlocks[0])
+    $expectedQueueConditions = @(
+        'PROC_COS_QueueDelayedDualityDamage((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Amount, (STRING)_DamageType, (STRING)_LogStatus)',
+        'DB_COS_DualityDelaySerial(_Serial)',
+        'IntegerSum(_Serial, 1, _NextSerial)'
+    )
+    $expectedQueueActions = @(
+        'NOT DB_COS_DualityDelaySerial(_Serial);',
+        'DB_COS_DualityDelaySerial(_NextSerial);',
+        'DB_COS_DualityDelayed(_Target, _NextSerial, _Amount, _DamageType, _LogStatus);',
+        'DB_COS_DualityDelayedOwner(_Owner, _Target, _NextSerial);',
+        'ApplyStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", -1.0, 100, _Target);'
+    )
+    return ($queueConditions -join "`n") -ceq ($expectedQueueConditions -join "`n") -and
+        ($queueActions -join "`n") -ceq ($expectedQueueActions -join "`n")
+}
+Require (Test-DualityOwnerPropagation $mechanicsGoal) `
+    '延迟两仪必须沿 ResolveDuality→Outcome→Type→Timing→Queue 传递 Owner，并同时写旧债务与 owner map'
+$dualityOwnerPropagationMutation = $mechanicsGoal.Replace(
+    'PROC_COS_ResolveDualityOutcome(_Owner, _Target,',
+    'PROC_COS_ResolveDualityOutcome(_Target,')
+Require ($dualityOwnerPropagationMutation -cne $mechanicsGoal -and
+    -not (Test-DualityOwnerPropagation $dualityOwnerPropagationMutation)) `
+    '延迟两仪 mutation probe 必须拒绝删除 Owner 传播'
+$dualityOwnerMapDeletionMutation = $mechanicsGoal.Replace(
+    "`nDB_COS_DualityDelayedOwner(_Owner, _Target, _NextSerial);", '')
+Require ($dualityOwnerMapDeletionMutation -cne $mechanicsGoal -and
+    -not (Test-DualityOwnerPropagation $dualityOwnerMapDeletionMutation)) `
+    '延迟两仪 mutation probe 必须拒绝 Queue 缺失 owner map'
+
+$clearDelayedOwnerBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_ClearDelayedDualityForOwner')
+$expectedClearDelayedOwnerConditions = @(
+    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
+    'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)',
+    'DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus)'
+)
+$expectedClearDelayedOwnerActions = @(
+    'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+    'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+    'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+)
+function Test-ClearDelayedOwnerContract([string]$Story) {
+    $blocks = @(Get-StoryBlocks $Story 'PROC' 'PROC_COS_ClearDelayedDualityForOwner')
+    return $blocks.Count -eq 1 -and
+        ((Get-MechanicsConditions $blocks[0]) -join "`n") -ceq ($expectedClearDelayedOwnerConditions -join "`n") -and
+        ((Get-MechanicsThenActions $blocks[0]) -join "`n") -ceq ($expectedClearDelayedOwnerActions -join "`n")
+}
+Require (Test-ClearDelayedOwnerContract $mechanicsGoal) `
+    '关闭两仪必须按 Owner 精确清理其映射债务和目标日志状态'
+$globalDelayedClearMutation = $mechanicsGoal.Replace(
+    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_Owner)',
+    'PROC_COS_ClearDelayedDualityForOwner((CHARACTER)_IgnoredOwner)').Replace(
+    'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)',
+    'DB_COS_DualityDelayedOwner(_OtherOwner, _Target, _Serial)')
+Require ($globalDelayedClearMutation -cne $mechanicsGoal -and
+    -not (Test-ClearDelayedOwnerContract $globalDelayedClearMutation)) `
+    '双 Owner 静态合同必须拒绝关闭一名角色时全局清理另一名角色债务'
+
+function Test-DualityDelayedLifecycleContract([string]$Story) {
+    $blocks = @(Get-AllStoryBlocks $Story)
+    $turnBlocks = @($blocks | Where-Object {
+        $_.StartsWith("IF`nTurnStarted(_Target)") -and $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
+    })
+    $diedBlocks = @($blocks | Where-Object {
+        $_.StartsWith("IF`nDied(_Target)") -and $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
+    })
+    $migrationBlocks = @($blocks | Where-Object {
+        $_.StartsWith("IF`nLevelGameplayStarted(_, _)") -and
+        $_.Contains('DB_COS_DualityDelayed((CHARACTER)_Target,')
+    })
+    if ($turnBlocks.Count -ne 1 -or $diedBlocks.Count -ne 1 -or $migrationBlocks.Count -ne 1) { return $false }
+    $expectedTurnConditions = @(
+        'TurnStarted(_Target)',
+        'DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)',
+        'DB_COS_DualityDelayedOwner((CHARACTER)_Owner, (CHARACTER)_Target, _Serial)',
+        'DB_COS_ConfigMechanic((CHARACTER)_Owner, "Duality", 1)',
+        'GetHitpoints(_Target, _Hitpoints)',
+        'IntegerSubtract(_Hitpoints, _Amount, _ReducedHitpoints)',
+        'IntegerMax(_ReducedHitpoints, 0, _FinalHitpoints)'
+    )
+    $expectedTurnActions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'SetHitpoints(_Target, _FinalHitpoints, "Guaranteed");',
+        'ApplyStatus(_Target, _LogStatus, 0.1, 100, _Target);',
+        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+    )
+    $expectedDiedConditions = @(
+        'Died(_Target)',
+        'DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)',
+        'DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial)'
+    )
+    $expectedDiedActions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'NOT DB_COS_DualityDelayedOwner(_Owner, _Target, _Serial);',
+        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+    )
+    $expectedMigrationConditions = @(
+        'LevelGameplayStarted(_, _)',
+        'DB_COS_DualityDelayed((CHARACTER)_Target, _Serial, _Amount, _DamageType, _LogStatus)',
+        'NOT DB_COS_DualityDelayedOwner(_, _Target, _Serial)'
+    )
+    $expectedMigrationActions = @(
+        'NOT DB_COS_DualityDelayed(_Target, _Serial, _Amount, _DamageType, _LogStatus);',
+        'RemoveStatus(_Target, "COS_CHAOS_DUALITY_LOG_DEVOUR_40", _Target);'
+    )
+    return ((Get-MechanicsConditions $turnBlocks[0]) -join "`n") -ceq ($expectedTurnConditions -join "`n") -and
+        ((Get-MechanicsThenActions $turnBlocks[0]) -join "`n") -ceq ($expectedTurnActions -join "`n") -and
+        ((Get-MechanicsConditions $diedBlocks[0]) -join "`n") -ceq ($expectedDiedConditions -join "`n") -and
+        ((Get-MechanicsThenActions $diedBlocks[0]) -join "`n") -ceq ($expectedDiedActions -join "`n") -and
+        ((Get-MechanicsConditions $migrationBlocks[0]) -join "`n") -ceq ($expectedMigrationConditions -join "`n") -and
+        ((Get-MechanicsThenActions $migrationBlocks[0]) -join "`n") -ceq ($expectedMigrationActions -join "`n")
+}
+Require (Test-DualityDelayedLifecycleContract $mechanicsGoal) `
+    '延迟两仪结算必须联结 owner map、检查 Owner 的 Duality=1、同步清债；旧无映射债务必须只迁移清理'
+$dualityDelayedConfigGateMutation = $mechanicsGoal.Replace(
+    "`nDB_COS_ConfigMechanic((CHARACTER)_Owner, `"Duality`", 1)", '')
+Require ($dualityDelayedConfigGateMutation -cne $mechanicsGoal -and
+    -not (Test-DualityDelayedLifecycleContract $dualityDelayedConfigGateMutation)) `
+    '延迟两仪 mutation probe 必须拒绝 TurnStarted 删除 Owner Config gate'
+$mappedDebtMigrationMutation = $mechanicsGoal.Replace(
+    'NOT DB_COS_DualityDelayedOwner(_, _Target, _Serial)',
+    'DB_COS_DualityDelayedOwner(_, _Target, _Serial)')
+Require ($mappedDebtMigrationMutation -cne $mechanicsGoal -and
+    -not (Test-DualityDelayedLifecycleContract $mappedDebtMigrationMutation)) `
+    '旧债迁移 mutation probe 必须拒绝误清已有 owner map 的债务'
 
 $fateArmGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Fate", 1\)'
 $fateAttackGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
@@ -2732,12 +2979,38 @@ $expectedConfigApplyContracts = @(
         Actions = @('PROC_COS_ClearFateAction(_Character);')
     },
     @{
+        Conditions = @($configApplySignature, '_Key == "Power"', '_Enabled == 0')
+        Actions = @(
+            'RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);',
+            'RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);'
+        )
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Power"', '_Enabled == 1', 'DB_COS_Power(_Character, _Power)')
+        Actions = @('PROC_COS_SyncPowerDisplay(_Character, _Power);')
+    },
+    @{
         Conditions = @($configApplySignature, '_Key == "Genesis"', '_Enabled == 0')
         Actions = @('RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);')
     },
     @{
-        Conditions = @($configApplySignature, '_Key == "Genesis"', '_Enabled == 1', 'DB_COS_Power(_Character, _Power)')
+        Conditions = @(
+            $configApplySignature, '_Key == "Genesis"', '_Enabled == 1',
+            'DB_COS_ConfigMechanic(_Character, "Power", 1)', 'DB_COS_Power(_Character, _Power)'
+        )
         Actions = @('PROC_COS_SyncPowerDisplay(_Character, _Power);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "AllIn"', '_Enabled == 0')
+        Actions = @('PROC_COS_ClearAllIn(_Character);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Duality"', '_Enabled == 0')
+        Actions = @('PROC_COS_ClearDelayedDualityForOwner(_Character);')
+    },
+    @{
+        Conditions = @($configApplySignature, '_Key == "Strike"', '_Enabled == 0')
+        Actions = @('RemoveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", _Character);')
     },
     @{
         Conditions = @($configApplySignature, '_Key == "Mastery"', '_Enabled == 0')
@@ -2760,7 +3033,7 @@ function Test-ConfigApplyMechanicContract([string]$Story) {
     return $true
 }
 Require (Test-ConfigApplyMechanicContract $configGoal) `
-    'ConfigApplyMechanic 必须严格只有 Fate0、Genesis0/1、Mastery0/1 五个具体副作用分支'
+    'ConfigApplyMechanic 必须严格只有 Fate0、Power0/1、Genesis0/1、AllIn0、Duality0、Strike0、Mastery0/1 十个具体副作用分支'
 Require (-not (($applyMechanicBlocks -join "`n") -match 'COS_CHAOS_FATE_ENABLED') -and
     -not (($applyMechanicBlocks -join "`n") -match '(?m)^PROC_COS_ConfigSyncMechanicMirrors\(') -and
     -not (($applyMechanicBlocks -join "`n") -match '(?m)^(?:NOT )?DB_COS_Mastery')) `
@@ -2816,6 +3089,16 @@ $configApplyFateStatusMutation = $configGoal.Replace(
     "PROC_COS_ClearFateAction(_Character);`nRemoveStatus(_Character, `"COS_CHAOS_FATE_ENABLED`", _Character);")
 Require-ConfigApplyMutationRejected $configApplyFateStatusMutation `
     'ConfigApplyMechanic mutation probe 必须拒绝 Fate0 删除用户 FATE_ENABLED 状态'
+$configApplyPowerCleanupMutation = $configGoal.Replace(
+    "RemoveStatus(_Character, `"COS_CHAOS_POWER_STACK`", _Character);`nRemoveStatus(_Character, `"COS_CHAOS_GENESIS_READY`", _Character);",
+    'RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);')
+Require-ConfigApplyMutationRejected $configApplyPowerCleanupMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Power0 未同时清理 Power 与 READY 显示'
+$configApplyPowerSyncMutation = $configGoal.Replace(
+    "_Key == `"Power`"`nAND`n_Enabled == 1`nAND`nDB_COS_Power(_Character, _Power)`nTHEN`nPROC_COS_SyncPowerDisplay(_Character, _Power);",
+    "_Key == `"Power`"`nAND`n_Enabled == 1`nAND`nDB_COS_Power(_Character, _Power)`nTHEN")
+Require-ConfigApplyMutationRejected $configApplyPowerSyncMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Power1 缺失账本显示同步'
 $configApplyGenesisPowerMutation = $configGoal.Replace(
     "AND`nDB_COS_Power(_Character, _Power)`nTHEN`nPROC_COS_SyncPowerDisplay(_Character, _Power);",
     "THEN`nPROC_COS_SyncPowerDisplay(_Character, _Power);")
@@ -2826,6 +3109,26 @@ $configApplyGenesisReadyDeletionMutation = $configGoal.Replace(
     'THEN')
 Require-ConfigApplyMutationRejected $configApplyGenesisReadyDeletionMutation `
     'ConfigApplyMechanic mutation probe 必须拒绝 Genesis0 缺失 ready 清理'
+$configApplyGenesisPowerConfigMutation = $configGoal.Replace(
+    "_Key == `"Genesis`"`nAND`n_Enabled == 1`nAND`nDB_COS_ConfigMechanic(_Character, `"Power`", 1)",
+    "_Key == `"Genesis`"`nAND`n_Enabled == 1")
+Require-ConfigApplyMutationRejected $configApplyGenesisPowerConfigMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Genesis1 缺失 Power=1'
+$configApplyAllInCleanupMutation = $configGoal.Replace(
+    "_Key == `"AllIn`"`nAND`n_Enabled == 0`nTHEN`nPROC_COS_ClearAllIn(_Character);",
+    "_Key == `"AllIn`"`nAND`n_Enabled == 0`nTHEN")
+Require-ConfigApplyMutationRejected $configApplyAllInCleanupMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 AllIn0 缺失当前孤注状态清理'
+$configApplyDualityCleanupMutation = $configGoal.Replace(
+    "_Key == `"Duality`"`nAND`n_Enabled == 0`nTHEN`nPROC_COS_ClearDelayedDualityForOwner(_Character);",
+    "_Key == `"Duality`"`nAND`n_Enabled == 0`nTHEN")
+Require-ConfigApplyMutationRejected $configApplyDualityCleanupMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Duality0 缺失本角色延迟债务清理'
+$configApplyStrikeCleanupMutation = $configGoal.Replace(
+    "_Key == `"Strike`"`nAND`n_Enabled == 0`nTHEN`nRemoveStatus(_Character, `"COS_CHAOS_STRIKE_ACTIVE`", _Character);",
+    "_Key == `"Strike`"`nAND`n_Enabled == 0`nTHEN")
+Require-ConfigApplyMutationRejected $configApplyStrikeCleanupMutation `
+    'ConfigApplyMechanic mutation probe 必须拒绝 Strike0 缺失当前裁决状态清理'
 $configApplyMasteryLedgerMutation = $configGoal.Replace(
     'PROC_COS_ConfigSuspendMastery(_Character);',
     'NOT DB_COS_MasteryTuneCount(_Character, _Count);')

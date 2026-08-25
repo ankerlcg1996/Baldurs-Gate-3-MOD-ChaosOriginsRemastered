@@ -115,6 +115,27 @@ PROC_COS_ClearFateAction(_Character);
 PROC
 PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
 AND
+_Key == "Power"
+AND
+_Enabled == 0
+THEN
+RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Power"
+AND
+_Enabled == 1
+AND
+DB_COS_Power(_Character, _Power)
+THEN
+PROC_COS_SyncPowerDisplay(_Character, _Power);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
 _Key == "Genesis"
 AND
 _Enabled == 0
@@ -128,9 +149,38 @@ _Key == "Genesis"
 AND
 _Enabled == 1
 AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
 DB_COS_Power(_Character, _Power)
 THEN
 PROC_COS_SyncPowerDisplay(_Character, _Power);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "AllIn"
+AND
+_Enabled == 0
+THEN
+PROC_COS_ClearAllIn(_Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Duality"
+AND
+_Enabled == 0
+THEN
+PROC_COS_ClearDelayedDualityForOwner(_Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "Strike"
+AND
+_Enabled == 0
+THEN
+RemoveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", _Character);
 
 PROC
 PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
