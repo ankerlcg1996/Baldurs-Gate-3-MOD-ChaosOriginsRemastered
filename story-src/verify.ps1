@@ -86,6 +86,31 @@ $missingConfigInputs = @($configGoalPath, $configStatsPath, $tutorialEventsPath 
 Require ($missingConfigInputs.Count -eq 0) (
     '缺少原生核心设置输入: ' + ($missingConfigInputs -join '; '))
 
+$configGoalEarly = (Get-Content -LiteralPath $configGoalPath -Raw -Encoding UTF8).Replace("`r`n", "`n")
+$toggleBlocksEarly = @([regex]::Matches($configGoalEarly,
+    '(?ms)^PROC\nPROC_COS_ConfigToggleMechanic\([^\n]*\)\n.*?(?=^(?:PROC|IF|EXITSECTION)\n|\z)') |
+    ForEach-Object { $_.Value })
+Require ($toggleBlocksEarly.Count -eq 1) `
+    '核心设置切换必须且只能定义一个单规则 PROC_COS_ConfigToggleMechanic'
+$toggleBlockEarly = $toggleBlocksEarly[0]
+$toggleConditionsEarly = $toggleBlockEarly.Substring(
+    0, $toggleBlockEarly.IndexOf("`nTHEN`n", [StringComparison]::Ordinal))
+Require ($toggleConditionsEarly -match '(?m)^DB_COS_ConfigMechanic\(_Character, _Key, _Enabled\)$' -and
+    $toggleConditionsEarly -match '(?m)^IntegerSubtract\(1, _Enabled, _Next\)$') `
+    '核心设置切换必须从唯一当前值计算 1 - Enabled'
+$toggleActionsEarly = @([regex]::Match($toggleBlockEarly, '(?ms)\nTHEN\n(?<Actions>.*)$').Groups['Actions'].Value -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$expectedToggleActionsEarly = @(
+    'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
+    'DB_COS_ConfigMechanic(_Character, _Key, _Next);',
+    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);'
+)
+Require ($toggleActionsEarly.Count -eq 3 -and
+    ($toggleActionsEarly -join "`n") -ceq ($expectedToggleActionsEarly -join "`n")) `
+    '核心设置切换 THEN 必须且只能删除当前值、写入反值并应用反值'
+Require (-not ($toggleBlockEarly -match '(?m)^(?:NOT )?DB_COS_ConfigMechanic\(_Character, _Key, [01]\);?$')) `
+    '核心设置切换不得恢复字面量0/1双规则'
+
 . $buildProcessHelperPath
 . $storyIrAttestationHelperPath
 

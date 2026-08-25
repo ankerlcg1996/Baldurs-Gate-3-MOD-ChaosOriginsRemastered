@@ -102,20 +102,13 @@ PROC_COS_ConfigSyncMechanicMirrors(_Character);
 PROC
 PROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)
 AND
-DB_COS_ConfigMechanic(_Character, _Key, 0)
-THEN
-NOT DB_COS_ConfigMechanic(_Character, _Key, 0);
-DB_COS_ConfigMechanic(_Character, _Key, 1);
-PROC_COS_ConfigApplyMechanic(_Character, _Key, 1);
-
-PROC
-PROC_COS_ConfigToggleMechanic((CHARACTER)_Character, (STRING)_Key)
+DB_COS_ConfigMechanic(_Character, _Key, _Enabled)
 AND
-DB_COS_ConfigMechanic(_Character, _Key, 1)
+IntegerSubtract(1, _Enabled, _Next)
 THEN
-NOT DB_COS_ConfigMechanic(_Character, _Key, 1);
-DB_COS_ConfigMechanic(_Character, _Key, 0);
-PROC_COS_ConfigApplyMechanic(_Character, _Key, 0);
+NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
+DB_COS_ConfigMechanic(_Character, _Key, _Next);
+PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);
 
 PROC
 PROC_COS_ConfigResetCore((CHARACTER)_Character)
