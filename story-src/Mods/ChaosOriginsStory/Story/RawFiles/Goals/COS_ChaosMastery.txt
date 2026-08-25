@@ -38,6 +38,38 @@ THEN
 DB_COS_MasteryCorrectCount(_Character, 0);
 
 PROC
+PROC_COS_ApplyMasteryRouteStatus((CHARACTER)_Character, (STRING)_Status, (INTEGER)_Count)
+AND
+_Count > 0
+AND
+IntegerProduct(_Count, 6, _DurationSeconds)
+AND
+IntegerToReal(_DurationSeconds, _Duration)
+THEN
+ApplyStatus(_Character, _Status, _Duration, 100, _Character);
+
+PROC
+PROC_COS_SyncMasteryStatuses((CHARACTER)_Character)
+AND
+DB_COS_MasteryTuneCount(_Character, _TuneCount)
+AND
+DB_COS_MasteryCorrectCount(_Character, _CorrectCount)
+THEN
+RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
+RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
+PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _TuneCount);
+PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);
+
+PROC
+PROC_COS_SyncMastery((CHARACTER)_Character)
+AND
+DB_COS_MasteryTuneCount(_Character, _)
+AND
+DB_COS_MasteryCorrectCount(_Character, _)
+THEN
+PROC_COS_SyncMasteryStatuses(_Character);
+
+PROC
 PROC_COS_SyncMastery((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
@@ -244,6 +276,7 @@ IntegerSum(_Count, 1, _Next)
 THEN
 NOT DB_COS_MasteryTuneCount((CHARACTER)_Character, _Count);
 DB_COS_MasteryTuneCount((CHARACTER)_Character, _Next);
+PROC_COS_SyncMasteryStatuses((CHARACTER)_Character);
 PROC_COS_ConsumeMasteryAvailable((CHARACTER)_Character);
 
 IF
@@ -257,6 +290,7 @@ IntegerSum(_Count, 1, _Next)
 THEN
 NOT DB_COS_MasteryCorrectCount((CHARACTER)_Character, _Count);
 DB_COS_MasteryCorrectCount((CHARACTER)_Character, _Next);
+PROC_COS_SyncMasteryStatuses((CHARACTER)_Character);
 PROC_COS_ConsumeMasteryAvailable((CHARACTER)_Character);
 
 IF

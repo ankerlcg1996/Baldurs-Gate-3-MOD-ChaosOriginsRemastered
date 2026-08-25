@@ -406,8 +406,8 @@ $masteryRequiredLines = @{
     COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Mastery"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
     COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Mastery"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,1,0)"')
     Shout_COS_ChaosMastery = @('type "SpellData"', 'using "Shout_ActionSurge"', 'data "SpellType" "Shout"', 'data "Level" "0"', 'data "ContainerSpells" "Shout_COS_ChaosMasteryTune;Shout_COS_ChaosMasteryCorrect"', 'data "AIFlags" "CanNotUse"', 'data "TargetConditions" "Self()"', 'data "Icon" "COS_Mastery"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "UseCosts" ""', 'data "SpellFlags" "IsLinkedSpellContainer"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" ""', 'data "Requirements" ""', 'data "Cooldown" ""')
-    Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryTune"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_TUNE,100,1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
-    Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryCorrect"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" "ApplyStatus(SELF,COS_CHAOS_MASTERY_CORRECT,100,1)"', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    Shout_COS_ChaosMasteryTune = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryTune"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h0cf72805gf1e4g4f89gbc8fgb4eb4561d859;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_TUNE,100,1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
+    Shout_COS_ChaosMasteryCorrect = @('type "SpellData"', 'using "Shout_COS_ChaosMastery"', 'data "SpellContainerID" "Shout_COS_ChaosMastery"', 'data "ContainerSpells" ""', 'data "Icon" "COS_MasteryCorrect"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h0a9761a0g8ebeg4517ga88bgc9605641ea43;1"', 'data "UseCosts" "COS_ChaosMasteryPoint:1"', 'data "SpellProperties" ""', 'data "TooltipStatusApply" "ApplyStatus(COS_CHAOS_MASTERY_CORRECT,100,1)"', 'data "SpellFlags" ""', 'data "AIFlags" ""', 'data "Requirements" ""', 'data "Cooldown" ""', 'data "TargetConditions" "Self()"')
     COS_CHAOS_MASTERY_TUNE = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "hbfabec61g3070g4e70g8e71gc20633da5d52;1"', 'data "Description" "h46000001g0001g4001g8001g000000000001;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_TUNE"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration;MultiplyEffectsByDuration"')
     COS_CHAOS_MASTERY_CORRECT = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h03a4fec8gb0efg45f9g8c5fgfd91d085f127;1"', 'data "Description" "h46000002g0002g4002g8002g000000000002;1"', 'data "Icon" "COS_MasteryCorrect"', 'data "StackId" "COS_CHAOS_MASTERY_CORRECT"', 'data "StackType" "Additive"', 'data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;IgnoreResting;FreezeDuration;MultiplyEffectsByDuration"')
     COS_CHAOS_MASTERY_POSITIVE_INFO = @('type "StatusData"', 'using "COS_CHAOS_RACE_TEMPLATE"', 'data "DisplayName" "h5a27b995g2d15g4a0ega6a1g0e3a96807685;1"', 'data "Description" "hfb12183cg2eefg4c66g88cbg1d4452ea0277;1"', 'data "Icon" "COS_MasteryTune"', 'data "StackId" "COS_CHAOS_MASTERY_POSITIVE_INFO"')
@@ -846,7 +846,7 @@ function Test-MasteryActions([string]$Block, [string[]]$Expected) {
 }
 
 function Test-COSMasteryLevelSemantics([string]$Story) {
-    if ($Story -match 'GetActionResourceValuePersonal|TimerLaunch|SetEntityEvent|ParentTargetEdge|ApplyStatus\(') {
+    if ($Story -match 'GetActionResourceValuePersonal|TimerLaunch|SetEntityEvent|ParentTargetEdge') {
         return $false
     }
 
@@ -886,6 +886,35 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
         -not (Test-MasteryActions $syncAfter[0] @(
             'PROC_COS_EnsureMasteryCounts(_Character);',
             'PROC_COS_GrantMasteryFrom(_Character, 1, _Cap);'
+        ))) { return $false }
+
+    $applyRouteStatus = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_ApplyMasteryRouteStatus')
+    if ($applyRouteStatus.Count -ne 1 -or
+        -not $applyRouteStatus[0].Contains('_Count > 0') -or
+        -not $applyRouteStatus[0].Contains('IntegerProduct(_Count, 6, _DurationSeconds)') -or
+        -not $applyRouteStatus[0].Contains('IntegerToReal(_DurationSeconds, _Duration)') -or
+        -not (Test-MasteryActions $applyRouteStatus[0] @(
+            'ApplyStatus(_Character, _Status, _Duration, 100, _Character);'
+        ))) { return $false }
+
+    $syncStatuses = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_SyncMasteryStatuses')
+    if ($syncStatuses.Count -ne 1 -or
+        -not $syncStatuses[0].Contains('DB_COS_MasteryTuneCount(_Character, _TuneCount)') -or
+        -not $syncStatuses[0].Contains('DB_COS_MasteryCorrectCount(_Character, _CorrectCount)') -or
+        -not (Test-MasteryActions $syncStatuses[0] @(
+            'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
+            'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
+            'PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _TuneCount);',
+            'PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);'
+        ))) { return $false }
+
+    $syncStatusEntry = @(@(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_SyncMastery') | Where-Object {
+        $_.Contains('DB_COS_MasteryTuneCount(_Character, _)') -and
+        $_.Contains('DB_COS_MasteryCorrectCount(_Character, _)')
+    })
+    if ($syncStatusEntry.Count -ne 1 -or
+        -not (Test-MasteryActions $syncStatusEntry[0] @(
+            'PROC_COS_SyncMasteryStatuses(_Character);'
         ))) { return $false }
 
     $grantBlocks = @(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_GrantMasteryFrom')
@@ -943,9 +972,12 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
             -not (Test-MasteryActions $block @(
                 ('NOT ' + $route.Count + '((CHARACTER)_Character, _Count);'),
                 ($route.Count + '((CHARACTER)_Character, _Next);'),
+                'PROC_COS_SyncMasteryStatuses((CHARACTER)_Character);',
                 'PROC_COS_ConsumeMasteryAvailable((CHARACTER)_Character);'
             ))) { return $false }
     }
+
+    if ([regex]::Matches($Story, '(?m)^ApplyStatus\(').Count -ne 1) { return $false }
 
     return $true
 }
@@ -968,6 +1000,20 @@ $masteryGrantMutant = $masteryGoal.Replace('PROC_COS_IncrementMasteryAvailable(_
 Require ($masteryGrantMutant -cne $masteryGoal -and -not (Test-COSMasteryLevelSemantics $masteryGrantMutant)) `
     '掌控混沌静态变异检查未拒绝升级后未增加可用点数'
 
+$masteryStatusApplyMutant = $masteryGoal.Replace(
+    'ApplyStatus(_Character, _Status, _Duration, 100, _Character);',
+    ''
+)
+Require ($masteryStatusApplyMutant -cne $masteryGoal -and -not (Test-COSMasteryLevelSemantics $masteryStatusApplyMutant)) `
+    '掌控混沌静态变异检查未拒绝路线状态未按数据库层数重建'
+
+$masteryCastStatusSyncMutant = $masteryGoal.Replace(
+    'PROC_COS_SyncMasteryStatuses((CHARACTER)_Character);',
+    ''
+)
+Require ($masteryCastStatusSyncMutant -cne $masteryGoal -and -not (Test-COSMasteryLevelSemantics $masteryCastStatusSyncMutant)) `
+    '掌控混沌静态变异检查未拒绝选择后未刷新状态栏层数'
+
 foreach ($eventPattern in @(
     '(?ms)IF\nLevelGameplayStarted\(_, _\)\nAND\nDB_Avatars\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
     '(?ms)IF\nGainedControl\(_Character\)\nAND\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\nTHEN\nPROC_COS_SyncMastery\(_Character\);',
@@ -985,7 +1031,7 @@ Require ((-not ($masteryGoal -match '(?m)^DB_Avatars\([^_\r\n]')) -and `
 foreach ($forbiddenMasteryStoryPattern in @(
     '(?m)^UsingSpell\(', '(?m)^CastSpell\(', '(?i)Preview', 'TimerLaunch', 'SetEntityEvent',
     'ParentTargetEdge', 'ScriptExtender', '(?i)\bSE\b', '(?i)\bN?MCM\b',
-    '(?i)Dialog(?:ue)?', '(?i)Default', 'ApplyStatus\('
+    '(?i)Dialog(?:ue)?', '(?i)Default'
 )) {
     Require (-not ($masteryGoal -match $forbiddenMasteryStoryPattern)) `
         "掌控混沌 Story 包含禁用延迟、外部依赖、自动路线或回退: $forbiddenMasteryStoryPattern"
