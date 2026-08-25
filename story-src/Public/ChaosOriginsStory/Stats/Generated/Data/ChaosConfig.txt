@@ -1,44 +1,35 @@
 new entry "COS_CFG_MECH_POWER"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_WOUND"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_KILLPOWER"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_DUALITY"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_ALLIN"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_FATE"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_GENESIS"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_STRIKE"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"
 
 new entry "COS_CFG_MECH_MASTERY"
 type "PassiveData"
-data "Properties" "IsHidden"
 data "Icon" "PassiveFeature_Generic_Threat"

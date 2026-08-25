@@ -2281,7 +2281,8 @@ Require ($configPassiveEntries.Count -eq 9 -and @($configPassiveEntries | Sort-O
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
-    Require ($mirrorBlock.Contains('data "Properties" "IsHidden"')) "核心设置回显被动必须隐藏: $mirror"
+    Require (-not $mirrorBlock.Contains('data "Properties" "IsHidden"')) `
+        "核心设置回显被动必须能被 Stats.Passives 枚举，不能使用 IsHidden: $mirror"
 }
 
 $configEnsureBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigEnsureMechanics')
@@ -3834,6 +3835,14 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $optionsBackgrounds = @($pageDocument.SelectNodes('//*[local-name()="Image"]') |
         Where-Object { $_.GetAttribute('Source') -eq '{StaticResource OptionsBackground}' })
     Require ($optionsBackgrounds.Count -eq 1) "空壳页必须使用 OptionsBackground: $pageName"
+    $rowsViewports = @(Get-XamlNamedNodes $pageDocument 'COSConfigRowsViewport')
+    Require ($rowsViewports.Count -eq 1 -and $rowsViewports[0].LocalName -eq 'Viewbox' -and
+        $rowsViewports[0].GetAttribute('Grid.Row') -eq '2' -and
+        $rowsViewports[0].GetAttribute('Stretch') -eq 'Uniform' -and
+        $rowsViewports[0].GetAttribute('StretchDirection') -eq 'DownOnly') `
+        "核心设置九行必须放在可向下缩放的 Viewbox 中，避免低分辨率裁切: $pageName"
+    Require (-not $page.Contains('Margin="180,80"') -and -not $page.Contains('Width="1180"')) `
+        "核心设置页不得保留导致低分辨率越界的固定外边距或1180宽度: $pageName"
     $cancelBindings = @($pageDocument.SelectNodes('//*[local-name()="LSInputBinding"]') |
         Where-Object { $_.GetAttribute('BoundEvent') -eq 'UICancel' -and $_.GetAttribute('CommandParameter') -eq 'CloseWidget' })
     Require ($cancelBindings.Count -eq 1) "空壳页必须用 UICancel 发送 CloseWidget: $pageName"
