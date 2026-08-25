@@ -67,6 +67,10 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
     Require ($readmeText.Contains('version.json') -and $readmeText.Contains('33') -and `
         $readmeText.Contains('四个 Goal')) "工程说明必须以version.json为准并记录33文件/4 Goals: $readmePath"
+    foreach ($shellBoundary in @('不读取角色配置', '不发送 TutorialEvent', '不改变玩法')) {
+        Require ($readmeText.Contains($shellBoundary)) `
+            "工程说明必须明确原生菜单空壳边界: $shellBoundary ($readmePath)"
+    }
 }
 
 . $buildProcessHelperPath
@@ -2034,21 +2038,50 @@ foreach ($relative in $guiRelativePaths) {
     [void][xml](Get-Content -LiteralPath $path -Raw -Encoding UTF8)
 }
 
-$keyboardState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Keyboard.xaml'))
-$controllerState = [IO.File]::ReadAllText((Join-Path $guiRoot 'StateMachines\Controller.xaml'))
-foreach ($state in @($keyboardState, $controllerState)) {
-    Require ($state -match 'Name\s*=\s*"Paused"\s+ModType\s*=\s*"Extend"') `
-        '暂停状态必须只使用 ModType=Extend'
-    Require ($state -match 'Name\s*=\s*"SystemUIs"\s+ModType\s*=\s*"Extend"') `
-        'SystemUIs 状态必须只使用 ModType=Extend'
-    Require ($state.Contains('Name="OpenCOSConfig"') -and
-        $state.Contains('Name="COS_CFG_MENU"')) '状态机缺少独立菜单事件或状态'
-    Require (-not $state.Contains('NMCM')) '最终状态机不得保留 NMCM 标识'
+$stateMachineSpecs = @(
+    @{ Path = 'StateMachines\Keyboard.xaml'; Entry = 'COS_ConfigEscButton.xaml'; Page = 'COS_ConfigMenu.xaml' },
+    @{ Path = 'StateMachines\Controller.xaml'; Entry = 'COS_ConfigEscButton_c.xaml'; Page = 'COS_ConfigMenu_c.xaml' }
+)
+foreach ($stateMachineSpec in $stateMachineSpecs) {
+    $stateMachinePath = Join-Path $guiRoot $stateMachineSpec.Path
+    $stateText = [IO.File]::ReadAllText($stateMachinePath)
+    Require (-not $stateText.Contains('NMCM')) "最终状态机不得保留 NMCM 标识: $($stateMachineSpec.Path)"
+    [xml]$stateMachineDocument = $stateText
+    $states = @($stateMachineDocument.SelectNodes('//*[local-name()="State"]'))
+    $actualStateNames = @($states | ForEach-Object { $_.GetAttribute('Name') } | Sort-Object)
+    $expectedStateNames = @('COS_CFG_MENU', 'Paused', 'SystemUIs')
+    Require ($states.Count -eq 3 -and -not (Compare-Object $expectedStateNames $actualStateNames)) `
+        "状态机必须且只能定义 Paused、SystemUIs 和 COS_CFG_MENU: $($stateMachineSpec.Path)"
+    $pausedState = @($states | Where-Object { $_.GetAttribute('Name') -eq 'Paused' })
+    $systemUisState = @($states | Where-Object { $_.GetAttribute('Name') -eq 'SystemUIs' })
+    $configMenuState = @($states | Where-Object { $_.GetAttribute('Name') -eq 'COS_CFG_MENU' })
+    Require ($pausedState.Count -eq 1 -and $pausedState[0].GetAttribute('ModType') -eq 'Extend' -and
+        $systemUisState.Count -eq 1 -and $systemUisState[0].GetAttribute('ModType') -eq 'Extend') `
+        "Paused 和 SystemUIs 必须使用 ModType=Extend: $($stateMachineSpec.Path)"
+    $extendedStateNames = @($states | Where-Object { $_.GetAttribute('ModType') -eq 'Extend' } | ForEach-Object { $_.GetAttribute('Name') } | Sort-Object)
+    Require ($extendedStateNames.Count -eq 2 -and -not (Compare-Object @('Paused', 'SystemUIs') $extendedStateNames)) `
+        "只有 Paused 和 SystemUIs 可以使用 ModType=Extend: $($stateMachineSpec.Path)"
+    Require ($configMenuState.Count -eq 1 -and $configMenuState[0].GetAttribute('ModType') -ne 'Extend' -and
+        $configMenuState[0].GetAttribute('Layout') -eq 'Common' -and
+        $configMenuState[0].GetAttribute('Owner') -eq 'All' -and
+        $configMenuState[0].GetAttribute('DisableStatesBelow') -eq 'True' -and
+        $configMenuState[0].GetAttribute('IsModal') -eq 'True' -and
+        $configMenuState[0].GetAttribute('HideStatesBelow') -eq 'True') `
+        "COS_CFG_MENU 必须是独立 Common/All 模态状态: $($stateMachineSpec.Path)"
+    $entryWidgets = @($pausedState[0].SelectNodes('.//*[local-name()="StateWidget"]') |
+        Where-Object { $_.GetAttribute('Filename') -eq $stateMachineSpec.Entry })
+    Require ($entryWidgets.Count -eq 1) "暂停状态未引用正确入口: $($stateMachineSpec.Path)"
+    $pageWidgets = @($configMenuState[0].SelectNodes('.//*[local-name()="StateWidget"]') |
+        Where-Object { $_.GetAttribute('Filename') -eq $stateMachineSpec.Page })
+    Require ($pageWidgets.Count -eq 1) "COS_CFG_MENU 未引用正确空壳页: $($stateMachineSpec.Path)"
+    $openConfigEvents = @($systemUisState[0].SelectNodes('.//*[local-name()="StateEvent"]') |
+        Where-Object { $_.GetAttribute('Name') -eq 'OpenCOSConfig' })
+    Require ($openConfigEvents.Count -eq 1) "SystemUIs 必须定义唯一 OpenCOSConfig 事件: $($stateMachineSpec.Path)"
+    $openConfigSubstates = @($openConfigEvents[0].SelectNodes('.//*[local-name()="AddSubstate"]'))
+    Require ($openConfigSubstates.Count -eq 1 -and
+        $openConfigSubstates[0].GetAttribute('Name') -eq 'COS_CFG_MENU') `
+        "OpenCOSConfig 必须只打开 COS_CFG_MENU: $($stateMachineSpec.Path)"
 }
-Require ($keyboardState.Contains('Filename="COS_ConfigMenu.xaml"')) `
-    '键鼠状态机未引用键鼠空壳页'
-Require ($controllerState.Contains('Filename="COS_ConfigMenu_c.xaml"')) `
-    '手柄状态机未引用手柄空壳页'
 
 $keyboardEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton.xaml'))
 $controllerEntry = [IO.File]::ReadAllText((Join-Path $guiRoot 'Pages\COS_ConfigEscButton_c.xaml'))
@@ -2063,17 +2096,43 @@ Require ($controllerEntry.Contains('BoundEvent="UIShowInfo"')) `
 
 foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $page = [IO.File]::ReadAllText((Join-Path $guiRoot "Pages\$pageName"))
-    Require ($page.Contains('CommandParameter="CloseWidget"')) `
-        "空壳页缺少关闭动作: $pageName"
+    [xml]$pageDocument = $page
+    $optionsBackgrounds = @($pageDocument.SelectNodes('//*[local-name()="Image"]') |
+        Where-Object { $_.GetAttribute('Source') -eq '{StaticResource OptionsBackground}' })
+    Require ($optionsBackgrounds.Count -eq 1) "空壳页必须使用 OptionsBackground: $pageName"
+    $cancelBindings = @($pageDocument.SelectNodes('//*[local-name()="LSInputBinding"]') |
+        Where-Object { $_.GetAttribute('BoundEvent') -eq 'UICancel' -and $_.GetAttribute('CommandParameter') -eq 'CloseWidget' })
+    Require ($cancelBindings.Count -eq 1) "空壳页必须用 UICancel 发送 CloseWidget: $pageName"
+    $returnButtons = @($pageDocument.SelectNodes('//*[local-name()="LSButton"]') |
+        Where-Object { $_.GetAttribute('Content').Contains('hc05fd010g0000g4000g8000g000000000000') -and
+            $_.GetAttribute('CommandParameter') -eq 'CloseWidget' })
+    Require ($returnButtons.Count -eq 1) "空壳页返回按钮必须发送 CloseWidget: $pageName"
     Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
         "空壳页缺少标题、说明或返回文本: $pageName"
-    Require (-not ($page -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|COS_CFG_MECH_')) `
+    Require (-not ($page -match 'TutorialEvent|SelectedCharacter|Stats\.Passives|COS_CFG_MECH_|TabMECH|DB_COS_Config')) `
         "第一阶段空壳不得读取角色配置或发送 Story 请求: $pageName"
 }
 
 $guiMetadataSourcePath = Join-Path $root 'resource-src\Mods\ChaosOriginsStory\GUI\metadata.lsf.lsx'
+Require (Test-Path -LiteralPath $guiMetadataSourcePath -PathType Leaf) '缺少 GUI metadata 源文件'
+[xml]$guiMetadataDocument = Get-Content -LiteralPath $guiMetadataSourcePath -Raw -Encoding UTF8
+$guiMetadataVersion = $guiMetadataDocument.SelectSingleNode('/save/version')
+Require ($null -ne $guiMetadataVersion -and
+    $guiMetadataVersion.GetAttribute('major') -eq '4' -and
+    $guiMetadataVersion.GetAttribute('minor') -eq '8' -and
+    $guiMetadataVersion.GetAttribute('revision') -eq '0' -and
+    $guiMetadataVersion.GetAttribute('build') -eq '500') `
+    'GUI metadata 必须使用 v4.8.0.500'
+$guiConfigRegions = @($guiMetadataDocument.SelectNodes('/save/region[@id="config"]'))
+$guiConfigNodes = @($guiMetadataDocument.SelectNodes('/save/region[@id="config"]/node[@id="config"]'))
+$guiEntriesNodes = @($guiMetadataDocument.SelectNodes('/save/region[@id="config"]/node[@id="config"]/children/node[@id="entries"]'))
+Require ($guiConfigRegions.Count -eq 1 -and $guiConfigNodes.Count -eq 1 -and $guiEntriesNodes.Count -eq 1) `
+    'GUI metadata 必须包含 config/entries 空配置节点'
+$guiEntriesChildren = @($guiEntriesNodes[0].SelectNodes('./children'))
+Require ($guiEntriesChildren.Count -eq 1 -and $guiEntriesChildren[0].SelectNodes('./*').Count -eq 0) `
+    'GUI metadata 的 entries children 必须为空'
 Require ($resourceSources.Count -eq 3 -and
     $resourceSources.FullName -contains $tagPath -and
     $resourceSources.FullName -contains $textureBankSourcePath -and
