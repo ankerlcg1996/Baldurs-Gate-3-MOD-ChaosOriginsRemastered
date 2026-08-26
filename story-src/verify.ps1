@@ -2295,9 +2295,36 @@ Require ($configPassiveEntries.Count -eq 9 -and @($configPassiveEntries | Sort-O
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
+    foreach ($requiredField in @('DisplayName', 'Description', 'Icon')) {
+        Require ($mirrorBlock -match '(?m)^data "' + $requiredField + '" "[^"]+"$') `
+            "核心设置回显被动必须提供 ${requiredField}: $mirror"
+    }
     Require (-not $mirrorBlock.Contains('data "Properties" "IsHidden"')) `
         "核心设置回显被动必须能被 Stats.Passives 枚举，不能使用 IsHidden: $mirror"
 }
+
+$configAddMirrorBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigAddEnabledMechanicMirrors')
+Require ($configAddMirrorBlocks.Count -eq 1 -and
+    $configAddMirrorBlocks[0] -match 'DB_COS_ConfigMechanic\(_Character, _Key, 1\)' -and
+    $configAddMirrorBlocks[0] -match 'DB_COS_ConfigMechanicMirror\(_Key, _Passive\)' -and
+    $configAddMirrorBlocks[0] -match 'HasPassive\(_Character, _Passive, 0\)' -and
+    (Get-StoryThen $configAddMirrorBlocks[0]) -match '(?m)^AddPassive\(_Character, _Passive\);$') `
+    '核心设置镜像同步必须只为值为1且尚未拥有的项目增加回显被动'
+$configRemoveMirrorBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigRemoveDisabledMechanicMirrors')
+Require ($configRemoveMirrorBlocks.Count -eq 1 -and
+    $configRemoveMirrorBlocks[0] -match 'DB_COS_ConfigMechanic\(_Character, _Key, 0\)' -and
+    $configRemoveMirrorBlocks[0] -match 'DB_COS_ConfigMechanicMirror\(_Key, _Passive\)' -and
+    $configRemoveMirrorBlocks[0] -match 'HasPassive\(_Character, _Passive, 1\)' -and
+    (Get-StoryThen $configRemoveMirrorBlocks[0]) -match '(?m)^RemovePassive\(_Character, _Passive\);$') `
+    '核心设置镜像同步必须只为值为0且仍然拥有的项目删除回显被动'
+$configMirrorSyncBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors')
+Require ($configMirrorSyncBlocks.Count -eq 1 -and
+    ((Get-StoryThen $configMirrorSyncBlocks[0]) -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) -join "`n" -ceq
+        "PROC_COS_ConfigAddEnabledMechanicMirrors(_Character);`nPROC_COS_ConfigRemoveDisabledMechanicMirrors(_Character);") `
+    '核心设置镜像同步必须按当前值分别补开启项、删关闭项，禁止先清空再重加'
+Require (-not $configGoal.Contains('PROC_COS_ConfigRemoveMechanicMirrors') -and
+    -not $configGoal.Contains('PROC_COS_ConfigAddMechanicMirrors')) `
+    '核心设置不得保留会在同一同步周期清空全部回显的旧过程'
 
 $configEnsureBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigEnsureMechanics')
 Require ($configEnsureBlocks.Count -eq 1) '核心设置必须且只能定义一个 PROC_COS_ConfigEnsureMechanics'
@@ -3592,9 +3619,24 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
     $buttonNodes = @($row.SelectNodes('.//*') | Where-Object {
         $_.GetAttribute('Name', $xamlNamespace) -eq "COSConfigToggle$Key"
     })
-    Require ($buttonNodes.Count -eq 1 -and $buttonNodes[0].LocalName -eq 'LSButton') `
-        "核心设置事件按钮必须是唯一命名的 LSButton: COSConfigToggle${Key}: $PageName"
+    Require ($buttonNodes.Count -eq 1 -and $buttonNodes[0].LocalName -eq 'LSToggleButton') `
+        "核心设置事件控件必须是唯一命名的原生 LSToggleButton: COSConfigToggle${Key}: $PageName"
     $button = $buttonNodes[0]
+    Require ($button.GetAttribute('Width') -ne '160' -and
+        $button.GetAttribute('Style') -notmatch 'BrownButtonStyle') `
+        "核心设置切换框不得使用会被裁切的160宽 BrownButton: COSConfigToggle$Key/$PageName"
+    $boxImages = @($button.SelectNodes('.//*[local-name()="Image"]') | Where-Object {
+        $_.GetAttribute('Source') -eq 'pack://application:,,,/Core;component/Assets/Options/checkBox_d.png'
+    })
+    Require ($boxImages.Count -eq 1) `
+        "核心设置 LSToggleButton 必须显示原生未勾选框: COSConfigToggle$Key/$PageName"
+    $hoverSetters = @($button.SelectNodes('.//*[local-name()="Trigger"]/*[local-name()="Setter"]') | Where-Object {
+        $_.GetAttribute('TargetName') -eq 'ToggleBox' -and
+        $_.GetAttribute('Property') -eq 'Source' -and
+        $_.GetAttribute('Value') -eq 'pack://application:,,,/Core;component/Assets/Options/checkBox_h.png'
+    })
+    Require ($hoverSetters.Count -eq 1) `
+        "核心设置 LSToggleButton 悬停时必须使用原生高亮框: COSConfigToggle$Key/$PageName"
     $buttonTriggers = @($button.SelectNodes('.//*[local-name()="EventTrigger"]'))
     Require ($buttonTriggers.Count -eq 1 -and $buttonTriggers[0].GetAttribute('EventName') -eq 'Click') `
         "核心设置 LSButton 必须只用 Click EventTrigger: COSConfigToggle$Key/$PageName"
@@ -3603,16 +3645,16 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
         "核心设置 LSButton 的 Click EventTrigger 必须承载本行唯一 InvokeCommandAction: COSConfigToggle$Key/$PageName"
     if ($PageName -eq 'COS_ConfigMenu_c.xaml') {
         Require ($button.GetAttribute('BoundEvent') -eq 'UIAccept') `
-            "手柄核心设置 LSButton 必须绑定 UIAccept: COSConfigToggle$Key/$PageName"
+            "手柄核心设置 LSToggleButton 必须绑定 UIAccept: COSConfigToggle$Key/$PageName"
         Require ($button.GetAttribute('Focusable') -eq 'False' -and
             $button.GetAttribute('ls:MoveFocus.Focusable') -eq 'False') `
-            "手柄核心设置子 LSButton 不得参与焦点移动: COSConfigToggle$Key/$PageName"
+            "手柄核心设置子 LSToggleButton 不得参与焦点移动: COSConfigToggle$Key/$PageName"
         Require ($button.GetAttribute('IsEnabled') -eq
             "{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigRow$Key}") `
-            "手柄核心设置子 LSButton 必须只在对应父行聚焦时启用: COSConfigToggle$Key/$PageName"
+            "手柄核心设置子 LSToggleButton 必须只在对应父行聚焦时启用: COSConfigToggle$Key/$PageName"
     } else {
         Require (-not $button.HasAttribute('BoundEvent')) `
-            "键鼠核心设置 LSButton 不得伪造 BoundEvent 激活: COSConfigToggle$Key/$PageName"
+            "键鼠核心设置 LSToggleButton 不得伪造 BoundEvent 激活: COSConfigToggle$Key/$PageName"
     }
 
     $rowItemsControls = @($row.SelectNodes('.//*[local-name()="ItemsControl"]'))
@@ -3634,12 +3676,10 @@ function Test-ConfigRowContract([xml]$Document, [string]$Key, [string]$Uuid, [st
         $_.GetAttribute('Name', $xamlNamespace) -eq 'EnabledState'
     })
     Require ($enabledStateNodes.Count -eq 1 -and
-        $enabledStateNodes[0].LocalName -eq 'Border' -and
+        $enabledStateNodes[0].LocalName -eq 'Image' -and
         $enabledStateNodes[0].GetAttribute('Visibility') -eq 'Collapsed' -and
-        $enabledStateNodes[0].GetAttribute('Width') -eq '180' -and
-        $enabledStateNodes[0].GetAttribute('Height') -eq '62' -and
-        $enabledStateNodes[0].GetAttribute('Background') -match '^#FF[0-9A-Fa-f]{6}$') `
-        "核心设置开启回显必须用180x62不透明 Border 覆盖默认关闭文本: COSConfigMirror$Key/$PageName"
+        $enabledStateNodes[0].GetAttribute('Source') -eq 'pack://application:,,,/Core;component/Assets/Options/ico_check_h.png') `
+        "核心设置开启回显必须使用原生勾选图标: COSConfigMirror$Key/$PageName"
     $dataTemplateTriggersNodes = @($dataTemplateNodes[0].SelectNodes('./*[local-name()="DataTemplate.Triggers"]'))
     Require ($dataTemplateTriggersNodes.Count -eq 1) `
         "核心设置镜像 DataTemplate 必须有唯一 DataTemplate.Triggers: COSConfigMirror$Key/$PageName"
@@ -3681,7 +3721,8 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName) {
     $expectedAcceptNames = @($expectedConfigRows.Keys | ForEach-Object { "COSConfigToggle$_" }) +
         @('COSConfigResetCore')
-    $acceptButtons = @($Document.SelectNodes('//*[local-name()="LSButton"]') | Where-Object {
+    $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
+        ($_.LocalName -eq 'LSButton' -or $_.LocalName -eq 'LSToggleButton') -and
         $_.GetAttribute('BoundEvent') -eq 'UIAccept'
     })
     $acceptNames = @($acceptButtons | ForEach-Object {
@@ -3732,13 +3773,13 @@ function Require-ControllerAcceptMutationRejected([string]$Markup, [string]$Mess
     }
     Require $rejected $Message
 }
-$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSButton x:Name="COSConfigTogglePower"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Border x:Name="EnabledState" Width="180" Height="62" Background="#FF15110E" Visibility="Collapsed"><TextBlock /></Border><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
+$configRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><Grid x:Name="COSConfigRowPower"><ls:LSToggleButton x:Name="COSConfigTogglePower"><ls:LSToggleButton.Template><ControlTemplate><Grid><Image x:Name="ToggleBox" Source="pack://application:,,,/Core;component/Assets/Options/checkBox_d.png" /></Grid><ControlTemplate.Triggers><Trigger><Setter TargetName="ToggleBox" Property="Source" Value="pack://application:,,,/Core;component/Assets/Options/checkBox_h.png" /></Trigger></ControlTemplate.Triggers></ControlTemplate></ls:LSToggleButton.Template><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSToggleButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Image x:Name="EnabledState" Source="pack://application:,,,/Core;component/Assets/Options/ico_check_h.png" Visibility="Collapsed" /><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></Root>'
 [xml]$configRowProbeDocument = $configRowProbe
 Test-ConfigRowContract $configRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' '内存正向探针'
 Require-ConfigRowMutationRejected ($configRowProbe -replace 'EventName="Click"', 'EventName="MouseEnter"') `
-    'MouseEnter 不得替代 LSButton 的 Click 激活'
-Require-ConfigRowMutationRejected ($configRowProbe -replace 'ls:LSButton', 'Button') `
-    '普通 Button 不得替代命名 LSButton'
+    'MouseEnter 不得替代 LSToggleButton 的 Click 激活'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'ls:LSToggleButton', 'Button') `
+    '普通 Button 不得替代命名 LSToggleButton'
 Require-ConfigRowMutationRejected ($configRowProbe -replace 'CurrentPlayer\.SelectedCharacter\.Stats\.Passives', 'CurrentPlayer\.Stats\.Passives') `
     '错误的镜像 ItemsSource 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace '\{Binding Name\.Str\}', '{Binding DisplayName}') `
@@ -3750,14 +3791,12 @@ Require-ConfigRowMutationRejected ($configRowProbe -replace 'TargetName="Enabled
     '错误 Setter 必须被拒绝'
 Require-ConfigRowMutationRejected ($configRowProbe -replace '<DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters>', '') `
     '缺失 Setter 必须被拒绝'
-Require-ConfigRowMutationRejected ($configRowProbe -replace 'Background="#FF15110E"', 'Background="#0015110E"') `
-    '透明开启回显背景必须被拒绝'
-Require-ConfigRowMutationRejected ($configRowProbe -replace ' Background="#FF15110E"', '') `
-    '缺失开启回显背景必须被拒绝'
-$configControllerRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ContentControl x:Name="COSConfigRowPower" Focusable="True" ls:MoveFocus.Focusable="True"><Grid><ls:LSButton x:Name="COSConfigTogglePower" Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent="UIAccept" IsEnabled="{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigRowPower}"><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Border x:Name="EnabledState" Width="180" Height="62" Background="#FF15110E" Visibility="Collapsed"><TextBlock /></Border><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></ContentControl></Root>'
+Require-ConfigRowMutationRejected ($configRowProbe -replace 'ico_check_h.png', 'checkBox_d.png') `
+    '错误的开启回显图标必须被拒绝'
+$configControllerRowProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls" xmlns:b="urn:test-behaviors"><ContentControl x:Name="COSConfigRowPower" Focusable="True" ls:MoveFocus.Focusable="True"><Grid><ls:LSToggleButton x:Name="COSConfigTogglePower" Focusable="False" ls:MoveFocus.Focusable="False" BoundEvent="UIAccept" IsEnabled="{Binding Path=(ls:MoveFocus.IsFocused), ElementName=COSConfigRowPower}"><ls:LSToggleButton.Template><ControlTemplate><Grid><Image x:Name="ToggleBox" Source="pack://application:,,,/Core;component/Assets/Options/checkBox_d.png" /></Grid><ControlTemplate.Triggers><Trigger><Setter TargetName="ToggleBox" Property="Source" Value="pack://application:,,,/Core;component/Assets/Options/checkBox_h.png" /></Trigger></ControlTemplate.Triggers></ControlTemplate></ls:LSToggleButton.Template><b:Interaction.Triggers><b:EventTrigger EventName="Click"><b:InvokeCommandAction Command="{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}" CommandParameter="7f818c10-3f23-49f8-838a-d161c57bb35d" /></b:EventTrigger></b:Interaction.Triggers></ls:LSToggleButton><ItemsControl x:Name="COSConfigMirrorPower" ItemsSource="{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}"><ItemsControl.ItemTemplate><DataTemplate><Image x:Name="EnabledState" Source="pack://application:,,,/Core;component/Assets/Options/ico_check_h.png" Visibility="Collapsed" /><DataTemplate.Triggers><DataTrigger Binding="{Binding Name.Str}" Value="COS_CFG_MECH_POWER"><DataTrigger.Setters><Setter TargetName="EnabledState" Property="Visibility" Value="Visible" /></DataTrigger.Setters></DataTrigger></DataTemplate.Triggers></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid></ContentControl></Root>'
 [xml]$configControllerRowProbeDocument = $configControllerRowProbe
 Test-ConfigRowContract $configControllerRowProbeDocument 'Power' '7f818c10-3f23-49f8-838a-d161c57bb35d' 'COS_CFG_MECH_POWER' 'COS_ConfigMenu_c.xaml'
-Require-ConfigRowMutationRejected $configRowProbe '手柄 LSButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
+Require-ConfigRowMutationRejected $configRowProbe '手柄 LSToggleButton 缺失 UIAccept 必须被拒绝' 'COS_ConfigMenu_c.xaml'
 Require-ConfigRowMutationRejected ($configControllerRowProbe -replace ' IsEnabled="\{Binding Path=\(ls:MoveFocus.IsFocused\), ElementName=COSConfigRowPower\}"', '') `
     '手柄子按钮缺失父焦点启用门控必须被拒绝' 'COS_ConfigMenu_c.xaml'
 Require-ConfigRowMutationRejected ($configControllerRowProbe -replace 'ElementName=COSConfigRowPower', 'ElementName=COSConfigRowWound') `

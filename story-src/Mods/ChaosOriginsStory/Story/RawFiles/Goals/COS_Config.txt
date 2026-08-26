@@ -62,16 +62,7 @@ THEN
 EnableTutorialEvent(_Character, _Event);
 
 PROC
-PROC_COS_ConfigRemoveMechanicMirrors((CHARACTER)_Character)
-AND
-DB_COS_ConfigMechanicMirror(_Key, _Passive)
-AND
-HasPassive(_Character, _Passive, 1)
-THEN
-RemovePassive(_Character, _Passive);
-
-PROC
-PROC_COS_ConfigAddMechanicMirrors((CHARACTER)_Character)
+PROC_COS_ConfigAddEnabledMechanicMirrors((CHARACTER)_Character)
 AND
 DB_COS_ConfigMechanic(_Character, _Key, 1)
 AND
@@ -82,10 +73,21 @@ THEN
 AddPassive(_Character, _Passive);
 
 PROC
+PROC_COS_ConfigRemoveDisabledMechanicMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+AND
+DB_COS_ConfigMechanicMirror(_Key, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
 PROC_COS_ConfigSyncMechanicMirrors((CHARACTER)_Character)
 THEN
-PROC_COS_ConfigRemoveMechanicMirrors(_Character);
-PROC_COS_ConfigAddMechanicMirrors(_Character);
+PROC_COS_ConfigAddEnabledMechanicMirrors(_Character);
+PROC_COS_ConfigRemoveDisabledMechanicMirrors(_Character);
 
 PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
