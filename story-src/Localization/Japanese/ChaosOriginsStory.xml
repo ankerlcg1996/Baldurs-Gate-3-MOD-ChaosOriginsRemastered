@@ -659,4 +659,13 @@
 	<content contentuid="h73000017g0017g4017g8017g000000000017" version="1">混沌開闢</content>
 	<content contentuid="h73000018g0018g4018g8018g000000000018" version="1">混沌の裁定</content>
 	<content contentuid="h73000019g0019g4019g8019g000000000019" version="1">混沌掌握</content>
+	<content contentuid="h73000111g0111g4111g8111g000000000111" version="1">COS_CFG_MECH_POWER</content>
+	<content contentuid="h73000112g0112g4112g8112g000000000112" version="1">COS_CFG_MECH_WOUND</content>
+	<content contentuid="h73000113g0113g4113g8113g000000000113" version="1">COS_CFG_MECH_KILLPOWER</content>
+	<content contentuid="h73000114g0114g4114g8114g000000000114" version="1">COS_CFG_MECH_DUALITY</content>
+	<content contentuid="h73000115g0115g4115g8115g000000000115" version="1">COS_CFG_MECH_ALLIN</content>
+	<content contentuid="h73000116g0116g4116g8116g000000000116" version="1">COS_CFG_MECH_FATE</content>
+	<content contentuid="h73000117g0117g4117g8117g000000000117" version="1">COS_CFG_MECH_GENESIS</content>
+	<content contentuid="h73000118g0118g4118g8118g000000000118" version="1">COS_CFG_MECH_STRIKE</content>
+	<content contentuid="h73000119g0119g4119g8119g000000000119" version="1">COS_CFG_MECH_MASTERY</content>
 </contentList>

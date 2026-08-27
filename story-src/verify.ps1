@@ -653,6 +653,17 @@ $identityHandles = @(
     'h47aa1ba3g2956g5ba5gb309g7e66f6e19d84',
     'hdc7f2089gaa8bg493bg910fg96d1eae6ce0e'
 )
+$configMirrorDisplayHandles = [ordered]@{
+    COS_CFG_MECH_POWER = 'h73000111g0111g4111g8111g000000000111'
+    COS_CFG_MECH_WOUND = 'h73000112g0112g4112g8112g000000000112'
+    COS_CFG_MECH_KILLPOWER = 'h73000113g0113g4113g8113g000000000113'
+    COS_CFG_MECH_DUALITY = 'h73000114g0114g4114g8114g000000000114'
+    COS_CFG_MECH_ALLIN = 'h73000115g0115g4115g8115g000000000115'
+    COS_CFG_MECH_FATE = 'h73000116g0116g4116g8116g000000000116'
+    COS_CFG_MECH_GENESIS = 'h73000117g0117g4117g8117g000000000117'
+    COS_CFG_MECH_STRIKE = 'h73000118g0118g4118g8118g000000000118'
+    COS_CFG_MECH_MASTERY = 'h73000119g0119g4119g8119g000000000119'
+}
 $masteryLocalizationHandles = @(
     'h0d010313gb67fg4c89ga5b9g30c58d4fb2f9',
     'hf1437f68g6231g4f22gb12ega9bcfc6189d8',
@@ -675,7 +686,8 @@ $masteryLocalizationHandles = @(
     'h46000001g0001g4001g8001g000000000001',
     'h46000002g0002g4002g8002g000000000002'
 )
-$expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles + $masteryLocalizationHandles) | Sort-Object
+$expectedHandles = (@($descriptionHandle, $displayHandle) + $identityHandles +
+    $masteryLocalizationHandles + @($configMirrorDisplayHandles.Values)) | Sort-Object
 $masterySimpleDescriptionHandles = @(
     'h11f157e4g81c1g4dc8gbd3eg20fbb820812f',
     'h0cf72805gf1e4g4f89gbc8fgb4eb4561d859',
@@ -793,11 +805,17 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
         Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
         $contentsByHandle[[string]$content.contentuid] = $content
     }
+    foreach ($mirror in $configMirrorDisplayHandles.Keys) {
+        $handle = [string]$configMirrorDisplayHandles[$mirror]
+        Require ($contentsByHandle.ContainsKey($handle) -and
+            [string]$contentsByHandle[$handle].InnerText -ceq $mirror) `
+            "核心设置回显被动的显示名必须在每种语言中严格解析为内部标识: $language / $mirror"
+    }
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 659 -and @($handles | Select-Object -Unique).Count -eq 659) `
-        "完整本地化必须包含 659 个唯一文本: $language"
+    Require ($handles.Count -eq 668 -and @($handles | Select-Object -Unique).Count -eq 668) `
+        "完整本地化必须包含 668 个唯一文本: $language"
     Require (-not ($handles | Where-Object { $_ -in @(
         'hb6537e8cg9428g4fd3g9af1gfd1e3f258ec7',
         'hae5f271agdd7cg4353gb02bga5d4ede408e6',
@@ -2295,6 +2313,11 @@ Require ($configPassiveEntries.Count -eq 9 -and @($configPassiveEntries | Sort-O
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
+    $displayNameMatch = [regex]::Match($mirrorBlock,
+        '(?m)^data "DisplayName" "(?<Handle>h[^";]+)(?:;\d+)?"$')
+    Require ($displayNameMatch.Success -and
+        $displayNameMatch.Groups['Handle'].Value -ceq [string]$configMirrorDisplayHandles[$mirror]) `
+        "核心设置回显被动必须使用只解析为内部标识的专用 DisplayName handle: $mirror"
     foreach ($requiredField in @('DisplayName', 'Description', 'Icon')) {
         Require ($mirrorBlock -match '(?m)^data "' + $requiredField + '" "[^"]+"$') `
             "核心设置回显被动必须提供 ${requiredField}: $mirror"
