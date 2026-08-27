@@ -2307,16 +2307,16 @@ $configAddMirrorBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigAd
 Require ($configAddMirrorBlocks.Count -eq 1 -and
     $configAddMirrorBlocks[0] -match 'DB_COS_ConfigMechanic\(_Character, _Key, 1\)' -and
     $configAddMirrorBlocks[0] -match 'DB_COS_ConfigMechanicMirror\(_Key, _Passive\)' -and
-    $configAddMirrorBlocks[0] -match 'HasPassive\(_Character, _Passive, 0\)' -and
+    -not $configAddMirrorBlocks[0].Contains('HasPassive(_Character, _Passive,') -and
     (Get-StoryThen $configAddMirrorBlocks[0]) -match '(?m)^AddPassive\(_Character, _Passive\);$') `
-    '核心设置镜像同步必须只为值为1且尚未拥有的项目增加回显被动'
+    '核心设置镜像同步必须为值为1的项目无条件重发回显被动，以刷新原生界面数据源'
 $configRemoveMirrorBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigRemoveDisabledMechanicMirrors')
 Require ($configRemoveMirrorBlocks.Count -eq 1 -and
     $configRemoveMirrorBlocks[0] -match 'DB_COS_ConfigMechanic\(_Character, _Key, 0\)' -and
     $configRemoveMirrorBlocks[0] -match 'DB_COS_ConfigMechanicMirror\(_Key, _Passive\)' -and
-    $configRemoveMirrorBlocks[0] -match 'HasPassive\(_Character, _Passive, 1\)' -and
+    -not $configRemoveMirrorBlocks[0].Contains('HasPassive(_Character, _Passive,') -and
     (Get-StoryThen $configRemoveMirrorBlocks[0]) -match '(?m)^RemovePassive\(_Character, _Passive\);$') `
-    '核心设置镜像同步必须只为值为0且仍然拥有的项目删除回显被动'
+    '核心设置镜像同步必须为值为0的项目无条件重发删除，以刷新原生界面数据源'
 $configMirrorSyncBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors')
 Require ($configMirrorSyncBlocks.Count -eq 1 -and
     ((Get-StoryThen $configMirrorSyncBlocks[0]) -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) -join "`n" -ceq

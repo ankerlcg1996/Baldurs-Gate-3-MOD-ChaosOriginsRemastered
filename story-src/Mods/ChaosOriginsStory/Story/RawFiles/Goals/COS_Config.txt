@@ -67,8 +67,6 @@ AND
 DB_COS_ConfigMechanic(_Character, _Key, 1)
 AND
 DB_COS_ConfigMechanicMirror(_Key, _Passive)
-AND
-HasPassive(_Character, _Passive, 0)
 THEN
 AddPassive(_Character, _Passive);
 
@@ -78,8 +76,6 @@ AND
 DB_COS_ConfigMechanic(_Character, _Key, 0)
 AND
 DB_COS_ConfigMechanicMirror(_Key, _Passive)
-AND
-HasPassive(_Character, _Passive, 1)
 THEN
 RemovePassive(_Character, _Passive);
 
