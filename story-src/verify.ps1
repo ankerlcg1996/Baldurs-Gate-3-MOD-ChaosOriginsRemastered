@@ -65,8 +65,18 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
     $readmeText = Get-Content -LiteralPath $readmePath -Raw -Encoding UTF8
     Require (-not ($readmeText -match '1\.0\.1\.(?:28|44)|23\s*(?:个|/23)|三个\s*(?:Raw\s*)?Goal')) `
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
-    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('37') -and `
-        $readmeText.Contains('六个 Goal')) "工程说明必须以version.json为准并记录37文件/6 Goals: $readmePath"
+    Require ($readmeText.Contains('version.json')) "工程说明必须以version.json为准: $readmePath"
+    if ($readmePath -ceq $repositoryReadmePath) {
+        foreach ($repositoryContract in @('37 个正式文件', '六个 Raw Goal', 'DB_Players', '50 倍负重')) {
+            Require ($readmeText.Contains($repositoryContract)) `
+                "根工程说明缺少全体玩家负重精确契约: $repositoryContract"
+        }
+    } else {
+        foreach ($storyContract in @('37 个正式文件和六个 Goal', '全体玩家 50 倍负重')) {
+            Require ($readmeText.Contains($storyContract)) `
+                "Story 工程说明缺少全体玩家负重精确契约: $storyContract"
+        }
+    }
     foreach ($configBoundary in @(
         '每角色 Story DB 随存档保存', '旧存档只补缺失键不覆盖',
         'XAML只发送固定 TutorialEvent不接受任意字符串键', '静态/编译/hash不等于实机验收'
@@ -2657,11 +2667,41 @@ function Test-StatsUsing([string]$Block, [string]$Expected) {
 }
 
 $globalCarryPassiveBlock = Get-StatsEntryBlock $passive 'COS_GlobalCarryCapacity50x'
+$expectedGlobalCarryPassiveBlock = Normalize-LineEndings @'
+new entry "COS_GlobalCarryCapacity50x"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "CarryCapacityMultiplier(50)"
+'@
+function Test-GlobalCarryPassiveContract([string]$Block) {
+    return ((Normalize-LineEndings $Block).Trim() -ceq $expectedGlobalCarryPassiveBlock.Trim())
+}
 Require ((Test-StatsField $globalCarryPassiveBlock 'Properties' 'IsHidden') -and
     (Test-StatsField $globalCarryPassiveBlock 'Boosts' 'CarryCapacityMultiplier(50)')) `
     '全局负重被动必须隐藏并精确提供50倍负重'
 Require ([regex]::Matches($globalCarryPassiveBlock, '(?m)^type "PassiveData"\r?$').Count -eq 1) `
     '全局负重被动必须唯一声明为 PassiveData'
+Require (Test-GlobalCarryPassiveContract $globalCarryPassiveBlock) `
+    '全局负重被动必须大小写敏感地只包含 entry、PassiveData、IsHidden 和 CarryCapacityMultiplier(50) 四行'
+
+$globalCarryExtraTypeMutation = $globalCarryPassiveBlock.Replace(
+    'type "PassiveData"',
+    "type `"PassiveData`"`ntype `"StatusData`"")
+Require ($globalCarryExtraTypeMutation -cne $globalCarryPassiveBlock -and
+    -not (Test-GlobalCarryPassiveContract $globalCarryExtraTypeMutation)) `
+    '全局负重被动变异探针必须拒绝额外 type'
+$globalCarryUsingMutation = $globalCarryPassiveBlock.Replace(
+    'type "PassiveData"',
+    "type `"PassiveData`"`nusing `"SharedPassive`"")
+Require ($globalCarryUsingMutation -cne $globalCarryPassiveBlock -and
+    -not (Test-GlobalCarryPassiveContract $globalCarryUsingMutation)) `
+    '全局负重被动变异探针必须拒绝 using 继承'
+$globalCarryExtraDataMutation = $globalCarryPassiveBlock.Replace(
+    'data "Boosts" "CarryCapacityMultiplier(50)"',
+    "data `"Boosts`" `"CarryCapacityMultiplier(50)`"`ndata `"DisplayName`" `"hcarry;1`"")
+Require ($globalCarryExtraDataMutation -cne $globalCarryPassiveBlock -and
+    -not (Test-GlobalCarryPassiveContract $globalCarryExtraDataMutation)) `
+    '全局负重被动变异探针必须拒绝任意额外 data'
 
 $expectedCoreSpells = @(
     '1|Shout_COS_ChaosGenesis',
