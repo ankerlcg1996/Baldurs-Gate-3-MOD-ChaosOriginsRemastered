@@ -4261,6 +4261,42 @@ Require (Test-StatsField $raspberryStatusBlock 'OnApplyFunctors' 'RegainHitPoint
     '山莓零治疗状态必须唯一执行 RegainHitPoints(0)'
 Require (-not ($raspberryStatusBlock -match 'RegainHitPoints\((?!0\))')) `
     '山莓零治疗状态不得恢复非零生命值'
+$expectedRaspberryZeroHealBlock = Normalize-LineEndings @'
+new entry "COS_RASPBERRY_ZERO_HEAL"
+type "StatusData"
+data "StatusType" "BOOST"
+using "FOOD"
+data "Icon" "Spell_Transmutation_Goodberry"
+data "StackId" "FOOD"
+data "OnApplyFunctors" "RegainHitPoints(0)"
+'@
+function Test-RaspberryZeroHealContract([string]$Block) {
+    return (Normalize-LineEndings $Block).Trim() -ceq $expectedRaspberryZeroHealBlock.Trim()
+}
+Require (Test-RaspberryZeroHealContract $raspberryStatusBlock) `
+    '山莓零治疗状态必须满足完整七行精确契约'
+$raspberryFunctorNeedle = 'data "OnApplyFunctors" "RegainHitPoints(0)"'
+$raspberryWhitespaceDuplicateMutation = $raspberryStatusBlock.Replace(
+    $raspberryFunctorNeedle,
+    "$raspberryFunctorNeedle`n $raspberryFunctorNeedle"
+)
+Require ($raspberryWhitespaceDuplicateMutation -cne $raspberryStatusBlock -and
+    -not (Test-RaspberryZeroHealContract $raspberryWhitespaceDuplicateMutation)) `
+    '山莓零治疗契约变异探针必须拒绝带前导空白的重复 OnApplyFunctors'
+$raspberryOnRemoveMutation = $raspberryStatusBlock.Replace(
+    $raspberryFunctorNeedle,
+    "$raspberryFunctorNeedle`ndata `"OnRemoveFunctors`" `"RegainHitPoints(0)`""
+)
+Require ($raspberryOnRemoveMutation -cne $raspberryStatusBlock -and
+    -not (Test-RaspberryZeroHealContract $raspberryOnRemoveMutation)) `
+    '山莓零治疗契约变异探针必须拒绝 OnRemoveFunctors'
+$raspberryExtraDataMutation = $raspberryStatusBlock.Replace(
+    $raspberryFunctorNeedle,
+    "$raspberryFunctorNeedle`ndata `"Boosts`" `"ArmorClass(1)`""
+)
+Require ($raspberryExtraDataMutation -cne $raspberryStatusBlock -and
+    -not (Test-RaspberryZeroHealContract $raspberryExtraDataMutation)) `
+    '山莓零治疗契约变异探针必须拒绝任意额外 data 字段'
 Require (-not $raspberryTemplate.OuterXml.Contains('FOOD_FRUIT_GOODBERRY') -and
     -not $statusText.Contains('new entry "FOOD_FRUIT_GOODBERRY"')) `
     '山莓覆盖不得修改神莓术生成物的模板或官方状态'
