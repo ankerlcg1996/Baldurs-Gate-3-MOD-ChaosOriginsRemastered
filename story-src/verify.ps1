@@ -2594,10 +2594,11 @@ function Test-StatsField([string]$Block, [string]$Field, [string]$Expected) {
     return $matches.Count -eq 1 -and $matches[0].Groups[1].Value -ceq $Expected
 }
 function Test-StatsUsing([string]$Block, [string]$Expected) {
-    return [regex]::Matches(
+    $matches = @([regex]::Matches(
         $Block,
-        '(?m)^using "' + [regex]::Escape($Expected) + '"\r?$'
-    ).Count -eq 1
+        '(?m)^using "([^"]+)"\r?$'
+    ))
+    return $matches.Count -eq 1 -and $matches[0].Groups[1].Value -ceq $Expected
 }
 
 $expectedCoreSpells = @(
@@ -2612,7 +2613,8 @@ $actualCoreSpells = @([regex]::Matches(
 ) | ForEach-Object {
     "$($_.Groups[1].Value)|$($_.Groups[2].Value)"
 } | Sort-Object)
-Require ($actualCoreSpells.Count -eq 4 -and -not (Compare-Object $expectedCoreSpells $actualCoreSpells)) `
+Require ($actualCoreSpells.Count -eq 4 -and
+    ($actualCoreSpells -join "`n") -ceq ($expectedCoreSpells -join "`n")) `
     '基础同步必须注册开天辟地和三个五级技能'
 
 $coreSpellRemovalPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
@@ -2647,13 +2649,16 @@ foreach ($element in @('Acid', 'Cold', 'Fire', 'Lightning', 'Thunder')) {
 
 $hasteBlock = Get-StatsEntryBlock $featuresText 'Target_COS_Haste'
 Require ((Test-StatsUsing $hasteBlock 'Target_Haste') -and
-    (Test-StatsField $hasteBlock 'UseCosts' 'ActionPoint:1')) `
+    (Test-StatsField $hasteBlock 'UseCosts' 'ActionPoint:1') -and
+    (Test-StatsField $hasteBlock 'MemoryCost' '') -and
+    -not ($hasteBlock -match '(?m)^data "SpellFlags" ')) `
     '加速术必须只消耗一个动作并继承原版专注规则'
 
 $knockBlock = Get-StatsEntryBlock $featuresText 'Target_COS_Knock'
 Require ((Test-StatsUsing $knockBlock 'Target_Knock') -and
     (Test-StatsField $knockBlock 'UseCosts' '') -and
-    (Test-StatsField $knockBlock 'Cooldown' '')) `
+    (Test-StatsField $knockBlock 'Cooldown' '') -and
+    (Test-StatsField $knockBlock 'MemoryCost' '')) `
     '敲击术必须无动作、无资源且无冷却'
 
 $genesisSpellBlock = Get-StatsEntryBlock $featuresText 'Shout_COS_ChaosGenesis'
