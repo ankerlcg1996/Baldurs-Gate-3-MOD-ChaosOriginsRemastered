@@ -1,0 +1,39 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+NOT DB_Players((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
+KBSECTION
+
+PROC
+PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
+AND
+DB_Players(_Character)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
+THEN
+AddPassive(_Character, "COS_GlobalCarryCapacity50x");
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_Players(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+GainedControl(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+CharacterJoinedParty(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+RespecCompleted(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+EXITSECTION
+ENDEXITSECTION

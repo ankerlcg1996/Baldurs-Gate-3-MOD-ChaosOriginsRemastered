@@ -65,8 +65,8 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
     $readmeText = Get-Content -LiteralPath $readmePath -Raw -Encoding UTF8
     Require (-not ($readmeText -match '1\.0\.1\.(?:28|44)|23\s*(?:个|/23)|三个\s*(?:Raw\s*)?Goal')) `
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
-    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('36') -and `
-        $readmeText.Contains('五个 Goal')) "工程说明必须以version.json为准并记录36文件/5 Goals: $readmePath"
+    Require ($readmeText.Contains('version.json') -and $readmeText.Contains('37') -and `
+        $readmeText.Contains('六个 Goal')) "工程说明必须以version.json为准并记录37文件/6 Goals: $readmePath"
     foreach ($configBoundary in @(
         '每角色 Story DB 随存档保存', '旧存档只补缺失键不覆盖',
         'XAML只发送固定 TutorialEvent不接受任意字符串键', '静态/编译/hash不等于实机验收'
@@ -300,6 +300,7 @@ $expectedPackageFiles = @(
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt',
+    'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_GlobalPlayerBenefits.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_OriginStoryRewards.txt',
     'Mods/ChaosOriginsStory/Story/RawFiles/story_header.div',
     'Mods/ChaosOriginsStory/Story/story.div.osi',
@@ -328,8 +329,8 @@ Require (Test-Path -LiteralPath $manifestPath -PathType Leaf) '缺少 package-fi
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
 $manifest = @($manifestDocument.files | Sort-Object)
-Require ($manifest.Count -eq 37 -and @($manifest | Select-Object -Unique).Count -eq 37) `
-    '原生 Story 打包清单必须恰好包含37个唯一文件'
+Require ($manifest.Count -eq 38 -and @($manifest | Select-Object -Unique).Count -eq 38) `
+    '原生 Story 打包清单必须恰好包含38个唯一文件'
 Require (-not (Compare-Object $expectedPackageFiles $manifest)) '原生 Story 打包清单内容错误'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
@@ -556,6 +557,7 @@ $expectedPassiveEntries = @(
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
     'COS_BaseStarterSpells',
+    'COS_GlobalCarryCapacity50x',
     'COS_Origin_Astarion',
     'COS_Origin_Gale',
     'COS_Origin_Laezel',
@@ -568,7 +570,8 @@ $expectedPassiveEntries = @(
 ) + $tooltipPassiveEntries
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
     'Passive.txt 必须且只能定义基础、身份、命运改签与黄色词条代理被动'
-Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 3) '三项基础被动必须全部隐藏'
+Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 4) `
+    '三项基础被动与全局负重被动必须全部隐藏'
 Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
     '起源身份开关基类与命运改签必须在获得时默认开启'
 Require ([regex]::Matches($passive, 'data "ToggleOnFunctors" "ApplyStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
@@ -882,11 +885,62 @@ Require ([regex]::Matches($headerText, '(?m)^alias_type ').Count -eq 25) `
 $rewardGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_OriginStoryRewards.txt'
 $masteryGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMastery.txt'
 $mechanicsGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_ChaosMechanics.txt'
+$globalBenefitsGoalPath = Join-Path $storyPath 'RawFiles\Goals\COS_GlobalPlayerBenefits.txt'
 $goals = @(Get-ChildItem -LiteralPath (Split-Path $goalPath -Parent) -File -Filter '*.txt')
-Require ($goals.Count -eq 5 -and ($goals.FullName -contains $goalPath) -and `
+Require ($goals.Count -eq 6 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $masteryGoalPath) -and ($goals.FullName -contains $rewardGoalPath) -and `
-    ($goals.FullName -contains $mechanicsGoalPath) -and ($goals.FullName -contains $configGoalPath)) `
-    '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制、核心设置和起源剧情奖励五个 Goal'
+    ($goals.FullName -contains $mechanicsGoalPath) -and ($goals.FullName -contains $configGoalPath) -and `
+    ($goals.FullName -contains $globalBenefitsGoalPath)) `
+    '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制、核心设置、起源剧情奖励和全体玩家增益六个 Goal'
+$globalBenefitsGoal = Normalize-LineEndings ([IO.File]::ReadAllText($globalBenefitsGoalPath))
+$expectedGlobalBenefitsGoal = Normalize-LineEndings @'
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+NOT DB_Players((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
+KBSECTION
+
+PROC
+PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
+AND
+DB_Players(_Character)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
+THEN
+AddPassive(_Character, "COS_GlobalCarryCapacity50x");
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_Players(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+GainedControl(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+CharacterJoinedParty(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+IF
+RespecCompleted(_Character)
+THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+EXITSECTION
+ENDEXITSECTION
+'@
+Require ($globalBenefitsGoal.Trim() -ceq $expectedGlobalBenefitsGoal.Trim()) `
+    '全体玩家增益 Goal 必须只按既定四入口和 DB_Players 幂等同步50倍负重'
+Require ([regex]::Matches($globalBenefitsGoal,
+    '(?m)^NOT DB_Players\(\(CHARACTER\)NULL_00000000-0000-0000-0000-000000000000\);$').Count -eq 1) `
+    '独立模块必须用NULL删除声明官方合并Story的DB_Players签名，且不得写入虚构玩家'
+Require (-not $globalBenefitsGoal.Contains('COS_ChaosOriginMarker')) `
+    '全体玩家负重不得依赖混沌起源标记'
 $masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
 if ($masteryGoal.EndsWith("`n")) {
     $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
@@ -2601,6 +2655,13 @@ function Test-StatsUsing([string]$Block, [string]$Expected) {
     ))
     return $matches.Count -eq 1 -and $matches[0].Groups[1].Value -ceq $Expected
 }
+
+$globalCarryPassiveBlock = Get-StatsEntryBlock $passive 'COS_GlobalCarryCapacity50x'
+Require ((Test-StatsField $globalCarryPassiveBlock 'Properties' 'IsHidden') -and
+    (Test-StatsField $globalCarryPassiveBlock 'Boosts' 'CarryCapacityMultiplier(50)')) `
+    '全局负重被动必须隐藏并精确提供50倍负重'
+Require ([regex]::Matches($globalCarryPassiveBlock, '(?m)^type "PassiveData"\r?$').Count -eq 1) `
+    '全局负重被动必须唯一声明为 PassiveData'
 
 $expectedCoreSpells = @(
     '1|Shout_COS_ChaosGenesis',

@@ -12,6 +12,11 @@ type "PassiveData"
 data "Properties" "IsHidden"
 data "Boosts" "UnlockSpell(Target_BoomingBlade_ClassSpell);UnlockSpell(Target_Guidance);UnlockSpell(Target_MageHand,,,,Charisma);UnlockSpell(Target_MinorIllusion,,,,Intelligence);UnlockSpell(Shout_FeatherFall);UnlockSpell(Target_Jump);UnlockSpell(Shout_DisguiseSelf,AddChildren)"
 
+new entry "COS_GlobalCarryCapacity50x"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "CarryCapacityMultiplier(50)"
+
 new entry "COS_Origin_Astarion"
 type "PassiveData"
 data "DisplayName" "hfa05cce9gef4dg570bgbc1fg7187d154129d;1"
