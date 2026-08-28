@@ -2617,6 +2617,15 @@ Require ($actualCoreSpells.Count -eq 4 -and
     ($actualCoreSpells -join "`n") -ceq ($expectedCoreSpells -join "`n")) `
     '基础同步必须注册开天辟地和三个五级技能'
 
+$coreSpellGrantPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
+    'AND\r?\nGetLevel\(_Character, _Level\)\r?\n' +
+    'AND\r?\nDB_COS_CoreSpell\(_RequiredLevel, _CoreSpell\)\r?\n' +
+    'AND\r?\n_Level >= _RequiredLevel\r?\n' +
+    'AND\r?\nHasSpell\(_Character, _CoreSpell, 0\)\r?\n' +
+    'THEN\r?\nAddSpell\(_Character, _CoreSpell, 0, 0\);'
+Require ([regex]::Matches($goal, $coreSpellGrantPattern).Count -eq 1) `
+    '基础同步必须在角色达到需求等级时授予 MOD 专用核心技能'
+
 $coreSpellRemovalPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
     'AND\r?\nGetLevel\(_Character, _Level\)\r?\n' +
     'AND\r?\nDB_COS_CoreSpell\(_RequiredLevel, _CoreSpell\)\r?\n' +
@@ -2625,6 +2634,41 @@ $coreSpellRemovalPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHAR
     'THEN\r?\nRemoveSpell\(_Character, _CoreSpell, 0\);'
 Require ([regex]::Matches($goal, $coreSpellRemovalPattern).Count -eq 1) `
     '基础同步必须在角色低于需求等级时移除 MOD 专用核心技能'
+
+$baseSyncLifecycleSpecs = [ordered]@{
+    'LevelGameplayStarted(_, _)' = @(
+        'LevelGameplayStarted(_, _)',
+        'DB_Avatars(_Character)',
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)'
+    )
+    'GainedControl(_Character)' = @(
+        'GainedControl(_Character)',
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)'
+    )
+    'LeveledUp(_Character)' = @(
+        'LeveledUp(_Character)',
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)'
+    )
+    'RespecCompleted(_Character)' = @(
+        'RespecCompleted(_Character)',
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)'
+    )
+}
+$baseSyncIfBlocks = @(Get-AllStoryBlocks $goal | Where-Object { $_.StartsWith("IF`n") })
+foreach ($lifecycleEvent in $baseSyncLifecycleSpecs.Keys) {
+    $eventBlocks = @($baseSyncIfBlocks | Where-Object {
+        $conditions = @(Get-MechanicsConditions $_)
+        $conditions.Count -gt 0 -and $conditions[0] -ceq $lifecycleEvent
+    })
+    Require ($eventBlocks.Count -eq 1) "基础同步生命周期事件必须唯一: $lifecycleEvent"
+    $eventConditions = @(Get-MechanicsConditions $eventBlocks[0])
+    $baseSyncCalls = @((Get-MechanicsThenActions $eventBlocks[0]) | Where-Object {
+        $_ -ceq 'PROC_COS_SyncBaseAfterCreation(_Character);'
+    })
+    Require (($eventConditions -join "`n") -ceq ($baseSyncLifecycleSpecs[$lifecycleEvent] -join "`n") -and
+        $baseSyncCalls.Count -eq 1) `
+        "基础同步生命周期事件必须保留 OriginMarker 门禁并调用一次同步: $lifecycleEvent"
+}
 
 $draconicRoot = Get-StatsEntryBlock $featuresText 'Target_COS_DraconicElementalWeapon'
 Require (Test-StatsUsing $draconicRoot 'Target_MAG_ElementalWeapon') `
