@@ -54,6 +54,9 @@ DB_COS_CorePassive(5, "COS_ChaosAllInUseL5");
 DB_COS_CorePassive(9, "COS_ChaosAllInUseL9");
 DB_COS_CorePassive(12, "COS_ChaosStrike");
 DB_COS_CoreSpell(1, "Shout_COS_ChaosGenesis");
+DB_COS_CoreSpell(5, "Target_COS_DraconicElementalWeapon");
+DB_COS_CoreSpell(5, "Target_COS_Haste");
+DB_COS_CoreSpell(5, "Target_COS_Knock");
 KBSECTION
 
 PROC
@@ -165,6 +168,19 @@ AND
 HasSpell(_Character, _CoreSpell, 0)
 THEN
 AddSpell(_Character, _CoreSpell, 0, 0);
+
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_CoreSpell(_RequiredLevel, _CoreSpell)
+AND
+_Level < _RequiredLevel
+AND
+HasSpell(_Character, _CoreSpell, 1)
+THEN
+RemoveSpell(_Character, _CoreSpell, 0);
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)

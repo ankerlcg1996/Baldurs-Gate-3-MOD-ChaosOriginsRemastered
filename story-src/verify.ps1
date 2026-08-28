@@ -2593,6 +2593,69 @@ function Test-StatsField([string]$Block, [string]$Field, [string]$Expected) {
     $matches = @([regex]::Matches($Block, '(?m)^data "' + [regex]::Escape($Field) + '" "([^"]*)"\r?$'))
     return $matches.Count -eq 1 -and $matches[0].Groups[1].Value -ceq $Expected
 }
+function Test-StatsUsing([string]$Block, [string]$Expected) {
+    return [regex]::Matches(
+        $Block,
+        '(?m)^using "' + [regex]::Escape($Expected) + '"\r?$'
+    ).Count -eq 1
+}
+
+$expectedCoreSpells = @(
+    '1|Shout_COS_ChaosGenesis',
+    '5|Target_COS_DraconicElementalWeapon',
+    '5|Target_COS_Haste',
+    '5|Target_COS_Knock'
+) | Sort-Object
+$actualCoreSpells = @([regex]::Matches(
+    $goal,
+    '(?m)^DB_COS_CoreSpell\(([0-9]+), "([^"]+)"\);\r?$'
+) | ForEach-Object {
+    "$($_.Groups[1].Value)|$($_.Groups[2].Value)"
+} | Sort-Object)
+Require ($actualCoreSpells.Count -eq 4 -and -not (Compare-Object $expectedCoreSpells $actualCoreSpells)) `
+    '基础同步必须注册开天辟地和三个五级技能'
+
+$coreSpellRemovalPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
+    'AND\r?\nGetLevel\(_Character, _Level\)\r?\n' +
+    'AND\r?\nDB_COS_CoreSpell\(_RequiredLevel, _CoreSpell\)\r?\n' +
+    'AND\r?\n_Level < _RequiredLevel\r?\n' +
+    'AND\r?\nHasSpell\(_Character, _CoreSpell, 1\)\r?\n' +
+    'THEN\r?\nRemoveSpell\(_Character, _CoreSpell, 0\);'
+Require ([regex]::Matches($goal, $coreSpellRemovalPattern).Count -eq 1) `
+    '基础同步必须在角色低于需求等级时移除 MOD 专用核心技能'
+
+$draconicRoot = Get-StatsEntryBlock $featuresText 'Target_COS_DraconicElementalWeapon'
+Require (Test-StatsUsing $draconicRoot 'Target_MAG_ElementalWeapon') `
+    '龙族元素武器必须继承龙息长柄刀技能'
+Require (Test-StatsField $draconicRoot 'ContainerSpells' `
+    'Target_COS_DraconicElementalWeapon_Acid;Target_COS_DraconicElementalWeapon_Cold;Target_COS_DraconicElementalWeapon_Fire;Target_COS_DraconicElementalWeapon_Lightning;Target_COS_DraconicElementalWeapon_Thunder') `
+    '龙族元素武器必须包含五个专用元素子技能'
+Require ((Test-StatsField $draconicRoot 'UseCosts' '') -and
+    (Test-StatsField $draconicRoot 'Cooldown' '')) `
+    '龙族元素武器必须无动作、无资源且无冷却'
+
+foreach ($element in @('Acid', 'Cold', 'Fire', 'Lightning', 'Thunder')) {
+    $childName = "Target_COS_DraconicElementalWeapon_$element"
+    $childBlock = Get-StatsEntryBlock $featuresText $childName
+    Require (Test-StatsUsing $childBlock "Target_MAG_ElementalWeapon_$element") `
+        "龙族元素子技能必须继承官方版本: $element"
+    Require ((Test-StatsField $childBlock 'SpellContainerID' 'Target_COS_DraconicElementalWeapon') -and
+        (Test-StatsField $childBlock 'UseCosts' '') -and
+        (Test-StatsField $childBlock 'Cooldown' '')) `
+        "龙族元素子技能必须绑定专用容器并移除成本: $element"
+}
+
+$hasteBlock = Get-StatsEntryBlock $featuresText 'Target_COS_Haste'
+Require ((Test-StatsUsing $hasteBlock 'Target_Haste') -and
+    (Test-StatsField $hasteBlock 'UseCosts' 'ActionPoint:1')) `
+    '加速术必须只消耗一个动作并继承原版专注规则'
+
+$knockBlock = Get-StatsEntryBlock $featuresText 'Target_COS_Knock'
+Require ((Test-StatsUsing $knockBlock 'Target_Knock') -and
+    (Test-StatsField $knockBlock 'UseCosts' '') -and
+    (Test-StatsField $knockBlock 'Cooldown' '')) `
+    '敲击术必须无动作、无资源且无冷却'
+
 $genesisSpellBlock = Get-StatsEntryBlock $featuresText 'Shout_COS_ChaosGenesis'
 $expectedGenesisRequirements = "HasStatus('COS_CHAOS_GENESIS_READY',context.Source) and HasPassive('COS_CFG_MECH_POWER',context.Source) and HasPassive('COS_CFG_MECH_GENESIS',context.Source)"
 Require (Test-StatsField $genesisSpellBlock 'RequirementConditions' $expectedGenesisRequirements) `
