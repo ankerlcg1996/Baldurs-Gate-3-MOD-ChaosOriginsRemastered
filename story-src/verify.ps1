@@ -4147,6 +4147,11 @@ $expectedStatusEntries = @(
 Require ($statusEntries.Count -eq 8 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
     '必须定义七个起源身份隐藏状态和一个山莓零治疗状态'
 $raspberryStatusBlock = Get-StatsEntryBlock $statusText 'COS_RASPBERRY_ZERO_HEAL'
+$raspberryStatusTypes = @([regex]::Matches($raspberryStatusBlock, '(?m)^type "([^"]+)"\r?$'))
+Require ($raspberryStatusTypes.Count -eq 1 -and $raspberryStatusTypes[0].Groups[1].Value -ceq 'StatusData') `
+    '山莓零治疗状态必须唯一声明为 StatusData'
+Require (Test-StatsField $raspberryStatusBlock 'StatusType' 'BOOST') `
+    '山莓零治疗状态的 StatusType 必须唯一且为 BOOST'
 Require ((Test-StatsUsing $raspberryStatusBlock 'FOOD') -and
     (Test-StatsField $raspberryStatusBlock 'Icon' 'Spell_Transmutation_Goodberry') -and
     (Test-StatsField $raspberryStatusBlock 'StackId' 'FOOD')) `
