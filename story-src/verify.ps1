@@ -4257,9 +4257,10 @@ Require ((Test-StatsUsing $raspberryStatusBlock 'FOOD') -and
     (Test-StatsField $raspberryStatusBlock 'Icon' 'Spell_Transmutation_Goodberry') -and
     (Test-StatsField $raspberryStatusBlock 'StackId' 'FOOD')) `
     '山莓零治疗状态必须继承官方 FOOD 的治疗表现'
-Require (-not $raspberryStatusBlock.Contains('OnApplyFunctors') -and
-    -not $raspberryStatusBlock.Contains('RegainHitPoints')) `
-    '山莓零治疗状态不得包含生命恢复 Functor'
+Require (Test-StatsField $raspberryStatusBlock 'OnApplyFunctors' 'RegainHitPoints(0)') `
+    '山莓零治疗状态必须唯一执行 RegainHitPoints(0)'
+Require (-not ($raspberryStatusBlock -match 'RegainHitPoints\((?!0\))')) `
+    '山莓零治疗状态不得恢复非零生命值'
 Require (-not $raspberryTemplate.OuterXml.Contains('FOOD_FRUIT_GOODBERRY') -and
     -not $statusText.Contains('new entry "FOOD_FRUIT_GOODBERRY"')) `
     '山莓覆盖不得修改神莓术生成物的模板或官方状态'
