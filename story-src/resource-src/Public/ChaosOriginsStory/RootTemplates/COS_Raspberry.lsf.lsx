@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+  <version major="4" minor="7" revision="1" build="3" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+  <region id="Templates">
+    <node id="Templates">
+      <children>
+        <node id="GameObjects">
+          <attribute id="CanShootThrough" type="bool" value="True" />
+          <attribute id="Description" type="TranslatedString" handle="he85f2a8cgf168g4c19gb92bg0eb2ae478896" version="3" />
+          <attribute id="DisplayName" type="TranslatedString" handle="h33f4d0edg28adg4f18g9151gf4a3dddb1ec1" version="2" />
+          <attribute id="Icon" type="FixedString" value="Item_GEN_CONS_Raspberry" />
+          <attribute id="LevelName" type="FixedString" value="" />
+          <attribute id="MapKey" type="FixedString" value="b0943b65-5766-414a-903d-28de8790370a" />
+          <attribute id="Name" type="LSString" value="GEN_CONS_Berry" />
+          <attribute id="ParentTemplateId" type="FixedString" value="2c341835-8a11-44db-9679-4cd0c9c12594" />
+          <attribute id="PhysicsTemplate" type="FixedString" value="fe36c395-1073-7d07-0172-1f0794d7cb82" />
+          <attribute id="Scale" type="float" value="0.7" />
+          <attribute id="ShootThroughType" type="int8" value="6" />
+          <attribute id="Stats" type="FixedString" value="CONS_Berry" />
+          <attribute id="Tooltip" type="uint8" value="2" />
+          <attribute id="Type" type="FixedString" value="item" />
+          <attribute id="VisualTemplate" type="FixedString" value="323d9fcf-e064-a4b0-801f-4f7894442b32" />
+          <attribute id="WalkThrough" type="bool" value="True" />
+          <attribute id="_OriginalFileVersion_" type="int64" value="144115207403209030" />
+          <children>
+            <node id="OnUsePeaceActions">
+              <children>
+                <node id="Action">
+                  <attribute id="ActionType" type="int32" value="7" />
+                  <children>
+                    <node id="Attributes">
+                      <attribute id="Animation" type="FixedString" value="" />
+                      <attribute id="Conditions" type="LSString" value="" />
+                      <attribute id="Consume" type="bool" value="False" />
+                      <attribute id="IsHiddenStatus" type="bool" value="False" />
+                      <attribute id="StatsId" type="FixedString" value="COS_RASPBERRY_ZERO_HEAL" />
+                      <attribute id="StatusDuration" type="int32" value="1" />
+                    </node>
+                  </children>
+                </node>
+              </children>
+            </node>
+          </children>
+        </node>
+      </children>
+    </node>
+  </region>
+</save>

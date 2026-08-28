@@ -310,6 +310,7 @@ $expectedPackageFiles = @(
     'Public/ChaosOriginsStory/Content/UI/[PAK]_ChaosOriginsStory/_merged.lsf',
     'Public/ChaosOriginsStory/GUI/Icons_ChaosOrigins.lsx',
     'Public/ChaosOriginsStory/GUI/UIOrigin_Portraits_Chaos.lsx',
+    'Public/ChaosOriginsStory/RootTemplates/COS_Raspberry.lsf',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosDamage.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosFeatures.txt',
     'Public/ChaosOriginsStory/Stats/Generated/Data/ChaosConfig.txt',
@@ -327,8 +328,8 @@ Require (Test-Path -LiteralPath $manifestPath -PathType Leaf) '缺少 package-fi
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
 $manifest = @($manifestDocument.files | Sort-Object)
-Require ($manifest.Count -eq 36 -and @($manifest | Select-Object -Unique).Count -eq 36) `
-    '原生 Story 打包清单必须恰好包含36个唯一文件'
+Require ($manifest.Count -eq 37 -and @($manifest | Select-Object -Unique).Count -eq 37) `
+    '原生 Story 打包清单必须恰好包含37个唯一文件'
 Require (-not (Compare-Object $expectedPackageFiles $manifest)) '原生 Story 打包清单内容错误'
 
 $metaPath = Join-Path $root "Mods\$module\meta.lsx"
@@ -4083,6 +4084,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
 }
 
 $guiMetadataSourcePath = Join-Path $root 'resource-src\Mods\ChaosOriginsStory\GUI\metadata.lsf.lsx'
+$raspberryTemplateSourcePath = Join-Path $root 'resource-src\Public\ChaosOriginsStory\RootTemplates\COS_Raspberry.lsf.lsx'
 Require (Test-Path -LiteralPath $guiMetadataSourcePath -PathType Leaf) '缺少 GUI metadata 源文件'
 [xml]$guiMetadataDocument = Get-Content -LiteralPath $guiMetadataSourcePath -Raw -Encoding UTF8
 $guiMetadataVersion = $guiMetadataDocument.SelectSingleNode('/save/version')
@@ -4100,11 +4102,32 @@ Require ($guiConfigRegions.Count -eq 1 -and $guiConfigNodes.Count -eq 1 -and $gu
 $guiEntriesChildren = @($guiEntriesNodes[0].SelectNodes('./children'))
 Require ($guiEntriesChildren.Count -eq 1 -and $guiEntriesChildren[0].SelectNodes('./*').Count -eq 0) `
     'GUI metadata 的 entries children 必须为空'
-Require ($resourceSources.Count -eq 3 -and
+Require ($resourceSources.Count -eq 4 -and
     $resourceSources.FullName -contains $tagPath -and
     $resourceSources.FullName -contains $textureBankSourcePath -and
-    $resourceSources.FullName -contains $guiMetadataSourcePath) `
-    '资源源目录必须只包含起源标签、技能图标 TextureBank 和 GUI metadata'
+    $resourceSources.FullName -contains $guiMetadataSourcePath -and
+    $resourceSources.FullName -contains $raspberryTemplateSourcePath) `
+    '资源源目录必须只包含起源标签、技能图标 TextureBank、GUI metadata 和山莓模板'
+Require (Test-Path -LiteralPath $raspberryTemplateSourcePath -PathType Leaf) '缺少山莓 RootTemplate 覆盖源'
+[xml]$raspberryTemplate = Get-Content -LiteralPath $raspberryTemplateSourcePath -Raw -Encoding UTF8
+$raspberryNodes = @($raspberryTemplate.SelectNodes('//node[@id="GameObjects"]'))
+Require ($raspberryNodes.Count -eq 1) '山莓 RootTemplate 必须只有一个 GameObjects 节点'
+$raspberryNode = $raspberryNodes[0]
+Require ([string]$raspberryNode.SelectSingleNode('./attribute[@id="MapKey"]').value -eq
+    'b0943b65-5766-414a-903d-28de8790370a') '山莓 RootTemplate MapKey 错误'
+Require ([string]$raspberryNode.SelectSingleNode('./attribute[@id="Name"]').value -eq 'GEN_CONS_Berry' -and
+    [string]$raspberryNode.SelectSingleNode('./attribute[@id="Stats"]').value -eq 'CONS_Berry') `
+    '山莓覆盖必须保留官方 Name 和 Stats'
+$raspberryActions = @($raspberryNode.SelectNodes('./children/node[@id="OnUsePeaceActions"]/children/node[@id="Action"]'))
+Require ($raspberryActions.Count -eq 1) '山莓必须只有一个和平使用动作'
+$raspberryAction = $raspberryActions[0]
+Require ([string]$raspberryAction.SelectSingleNode('./attribute[@id="ActionType"]').value -eq '7') `
+    '山莓必须继续使用官方 ApplyStatus 动作'
+$raspberryActionAttributes = $raspberryAction.SelectSingleNode('./children/node[@id="Attributes"]')
+Require ([string]$raspberryActionAttributes.SelectSingleNode('./attribute[@id="Consume"]').value -eq 'False' -and
+    [string]$raspberryActionAttributes.SelectSingleNode('./attribute[@id="StatsId"]').value -eq 'COS_RASPBERRY_ZERO_HEAL' -and
+    [string]$raspberryActionAttributes.SelectSingleNode('./attribute[@id="StatusDuration"]').value -eq '1') `
+    '山莓必须不消耗并套用一回合零治疗状态'
 [xml]$textureBank = Get-Content -LiteralPath $textureBankSourcePath -Raw -Encoding UTF8
 $atlasUuid = [string]([xml](Get-Content -LiteralPath (Join-Path $root "Public\$module\GUI\Icons_ChaosOrigins.lsx") -Raw -Encoding UTF8)).SelectSingleNode('//node[@id="TextureAtlasPath"]/attribute[@id="UUID"]').value
 $textureResource = $textureBank.SelectSingleNode('//region[@id="TextureBank"]//node[@id="Resource"]')
@@ -4117,9 +4140,23 @@ Require ($null -ne $textureResource -and `
 $statusPath = Join-Path $root "Public\$module\Stats\Generated\Data\Status_BOOST.txt"
 $statusText = Get-Content -LiteralPath $statusPath -Raw -Encoding UTF8
 $statusEntries = @([regex]::Matches($statusText, 'new entry "([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
-$expectedStatusEntries = @($expectedOriginToggleMappings | ForEach-Object { $_.Split('|')[1] })
-Require ($statusEntries.Count -eq 7 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
-    '必须且只能定义七个起源身份隐藏状态'
+$expectedStatusEntries = @(
+    @($expectedOriginToggleMappings | ForEach-Object { $_.Split('|')[1] }) +
+    'COS_RASPBERRY_ZERO_HEAL'
+)
+Require ($statusEntries.Count -eq 8 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
+    '必须定义七个起源身份隐藏状态和一个山莓零治疗状态'
+$raspberryStatusBlock = Get-StatsEntryBlock $statusText 'COS_RASPBERRY_ZERO_HEAL'
+Require ((Test-StatsUsing $raspberryStatusBlock 'FOOD') -and
+    (Test-StatsField $raspberryStatusBlock 'Icon' 'Spell_Transmutation_Goodberry') -and
+    (Test-StatsField $raspberryStatusBlock 'StackId' 'FOOD')) `
+    '山莓零治疗状态必须继承官方 FOOD 的治疗表现'
+Require (-not $raspberryStatusBlock.Contains('OnApplyFunctors') -and
+    -not $raspberryStatusBlock.Contains('RegainHitPoints')) `
+    '山莓零治疗状态不得包含生命恢复 Functor'
+Require (-not $raspberryTemplate.OuterXml.Contains('FOOD_FRUIT_GOODBERRY') -and
+    -not $statusText.Contains('new entry "FOOD_FRUIT_GOODBERRY"')) `
+    '山莓覆盖不得修改神莓术生成物的模板或官方状态'
 Require ([regex]::Matches($statusText, 'DisableOverhead;DisablePortraitIndicator;IgnoreResting;ApplyToDead').Count -eq 1) `
     '起源身份状态基类必须隐藏头顶和肖像提示并跨休息保留'
 
