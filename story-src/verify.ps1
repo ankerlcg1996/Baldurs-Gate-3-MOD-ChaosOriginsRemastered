@@ -4246,57 +4246,64 @@ $expectedStatusEntries = @(
     'COS_RASPBERRY_ZERO_HEAL'
 )
 Require ($statusEntries.Count -eq 8 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
-    '必须定义七个起源身份隐藏状态和一个山莓零治疗状态'
+    '必须定义七个起源身份隐藏状态和一个山莓1点治疗状态'
 $raspberryStatusBlock = Get-StatsEntryBlock $statusText 'COS_RASPBERRY_ZERO_HEAL'
 $raspberryStatusTypes = @([regex]::Matches($raspberryStatusBlock, '(?m)^type "([^"]+)"\r?$'))
 Require ($raspberryStatusTypes.Count -eq 1 -and $raspberryStatusTypes[0].Groups[1].Value -ceq 'StatusData') `
-    '山莓零治疗状态必须唯一声明为 StatusData'
+    '山莓1点治疗状态必须唯一声明为 StatusData'
 Require (Test-StatsField $raspberryStatusBlock 'StatusType' 'BOOST') `
-    '山莓零治疗状态的 StatusType 必须唯一且为 BOOST'
+    '山莓1点治疗状态的 StatusType 必须唯一且为 BOOST'
 Require ((Test-StatsUsing $raspberryStatusBlock 'FOOD') -and
     (Test-StatsField $raspberryStatusBlock 'Icon' 'Spell_Transmutation_Goodberry') -and
     (Test-StatsField $raspberryStatusBlock 'StackId' 'FOOD')) `
-    '山莓零治疗状态必须继承官方 FOOD 的治疗表现'
-Require (Test-StatsField $raspberryStatusBlock 'OnApplyFunctors' 'RegainHitPoints(0)') `
-    '山莓零治疗状态必须唯一执行 RegainHitPoints(0)'
-Require (-not ($raspberryStatusBlock -match 'RegainHitPoints\((?!0\))')) `
-    '山莓零治疗状态不得恢复非零生命值'
-$expectedRaspberryZeroHealBlock = Normalize-LineEndings @'
+    '山莓1点治疗状态必须继承官方 FOOD 的治疗表现'
+Require (Test-StatsField $raspberryStatusBlock 'OnApplyFunctors' 'RegainHitPoints(1)') `
+    '山莓1点治疗状态必须唯一执行 RegainHitPoints(1)'
+Require (-not ($raspberryStatusBlock -match 'RegainHitPoints\((?!1\))')) `
+    '山莓1点治疗状态不得恢复 1 点以外的生命值'
+$expectedRaspberryOneHealBlock = Normalize-LineEndings @'
 new entry "COS_RASPBERRY_ZERO_HEAL"
 type "StatusData"
 data "StatusType" "BOOST"
 using "FOOD"
 data "Icon" "Spell_Transmutation_Goodberry"
 data "StackId" "FOOD"
-data "OnApplyFunctors" "RegainHitPoints(0)"
+data "OnApplyFunctors" "RegainHitPoints(1)"
 '@
-function Test-RaspberryZeroHealContract([string]$Block) {
-    return (Normalize-LineEndings $Block).Trim() -ceq $expectedRaspberryZeroHealBlock.Trim()
+function Test-RaspberryOneHealContract([string]$Block) {
+    return (Normalize-LineEndings $Block).Trim() -ceq $expectedRaspberryOneHealBlock.Trim()
 }
-Require (Test-RaspberryZeroHealContract $raspberryStatusBlock) `
-    '山莓零治疗状态必须满足完整七行精确契约'
-$raspberryFunctorNeedle = 'data "OnApplyFunctors" "RegainHitPoints(0)"'
+Require (Test-RaspberryOneHealContract $raspberryStatusBlock) `
+    '山莓1点治疗状态必须满足完整七行精确契约'
+$raspberryFunctorNeedle = 'data "OnApplyFunctors" "RegainHitPoints(1)"'
+$raspberryZeroHealMutation = $raspberryStatusBlock.Replace(
+    $raspberryFunctorNeedle,
+    'data "OnApplyFunctors" "RegainHitPoints(0)"'
+)
+Require ($raspberryZeroHealMutation -cne $raspberryStatusBlock -and
+    -not (Test-RaspberryOneHealContract $raspberryZeroHealMutation)) `
+    '山莓1点治疗契约变异探针必须拒绝 RegainHitPoints(0)'
 $raspberryWhitespaceDuplicateMutation = $raspberryStatusBlock.Replace(
     $raspberryFunctorNeedle,
     "$raspberryFunctorNeedle`n $raspberryFunctorNeedle"
 )
 Require ($raspberryWhitespaceDuplicateMutation -cne $raspberryStatusBlock -and
-    -not (Test-RaspberryZeroHealContract $raspberryWhitespaceDuplicateMutation)) `
-    '山莓零治疗契约变异探针必须拒绝带前导空白的重复 OnApplyFunctors'
+    -not (Test-RaspberryOneHealContract $raspberryWhitespaceDuplicateMutation)) `
+    '山莓1点治疗契约变异探针必须拒绝带前导空白的重复 OnApplyFunctors'
 $raspberryOnRemoveMutation = $raspberryStatusBlock.Replace(
     $raspberryFunctorNeedle,
-    "$raspberryFunctorNeedle`ndata `"OnRemoveFunctors`" `"RegainHitPoints(0)`""
+    "$raspberryFunctorNeedle`ndata `"OnRemoveFunctors`" `"RegainHitPoints(1)`""
 )
 Require ($raspberryOnRemoveMutation -cne $raspberryStatusBlock -and
-    -not (Test-RaspberryZeroHealContract $raspberryOnRemoveMutation)) `
-    '山莓零治疗契约变异探针必须拒绝 OnRemoveFunctors'
+    -not (Test-RaspberryOneHealContract $raspberryOnRemoveMutation)) `
+    '山莓1点治疗契约变异探针必须拒绝 OnRemoveFunctors'
 $raspberryExtraDataMutation = $raspberryStatusBlock.Replace(
     $raspberryFunctorNeedle,
     "$raspberryFunctorNeedle`ndata `"Boosts`" `"ArmorClass(1)`""
 )
 Require ($raspberryExtraDataMutation -cne $raspberryStatusBlock -and
-    -not (Test-RaspberryZeroHealContract $raspberryExtraDataMutation)) `
-    '山莓零治疗契约变异探针必须拒绝任意额外 data 字段'
+    -not (Test-RaspberryOneHealContract $raspberryExtraDataMutation)) `
+    '山莓1点治疗契约变异探针必须拒绝任意额外 data 字段'
 Require (-not $raspberryTemplate.OuterXml.Contains('FOOD_FRUIT_GOODBERRY') -and
     -not $statusText.Contains('new entry "FOOD_FRUIT_GOODBERRY"')) `
     '山莓覆盖不得修改神莓术生成物的模板或官方状态'
