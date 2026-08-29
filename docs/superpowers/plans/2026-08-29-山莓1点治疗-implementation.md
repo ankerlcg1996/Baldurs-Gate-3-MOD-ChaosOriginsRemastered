@@ -84,7 +84,7 @@ git diff --check
 
 Expected: 验证输出 `ChaosOriginsStory final native Story source verification: ok`，两个命令均以 0 退出。
 
-- [ ] **Step 3: 提交功能修复**
+- [x] **Step 3: 提交功能修复**
 
 ```powershell
 git add -- story-src/verify.ps1 story-src/Public/ChaosOriginsStory/Stats/Generated/Data/Status_BOOST.txt docs/superpowers/plans/2026-08-29-山莓1点治疗-implementation.md
@@ -95,11 +95,12 @@ git commit -m "fix(raspberry): restore one hit point"
 
 **Files:**
 - Modify by build: `story-src/version.json`
-- Modify by build: `dist/build-manifest.json`
-- Generate by build: `dist/ChaosOriginsStory.pak`
+- Modify by build: `story-src/Mods/ChaosOriginsStory/meta.lsx`
+- Generate locally and keep ignored: `dist/build-manifest.json`
+- Generate locally and keep ignored: `dist/ChaosOriginsStory.pak`
 - Install: `C:/Users/ankerlcg/AppData/Local/Larian Studios/Baldur's Gate 3/Mods/ChaosOriginsStory.pak`
 
-- [ ] **Step 1: 构建一次并确认版本只增加一次**
+- [x] **Step 1: 构建一次并确认版本只增加一次**
 
 ```powershell
 pwsh -NoProfile -File .\story-src\build.ps1 -LslibPath 'C:\Users\ankerlcg\Desktop\BG3ModManager_Latest\_Lib\LSLib.dll'
@@ -107,14 +108,14 @@ pwsh -NoProfile -File .\story-src\build.ps1 -LslibPath 'C:\Users\ankerlcg\Deskto
 
 Expected: 以 0 退出，`story-src/version.json` 的 `lastBuild` 从 `59` 变为 `60`，构建清单报告 38 个文件。
 
-- [ ] **Step 2: 只安装目标 PAK**
+- [x] **Step 2: 只安装目标 PAK**
 
 先检查并只终止 `bg3`、`bg3_dx11`；备份当前已安装的 `ChaosOriginsStory.pak` 到 `dist/installed-backups`，复制新 PAK 后比较构建包与安装包 SHA-256。不得触碰其他 MOD。
 
 - [ ] **Step 3: 提交构建产物并推送两个已授权分支**
 
 ```powershell
-git add -- story-src/version.json dist/build-manifest.json dist/ChaosOriginsStory.pak
+git add -- story-src/version.json story-src/Mods/ChaosOriginsStory/meta.lsx docs/superpowers/plans/2026-08-29-山莓1点治疗-implementation.md
 git commit -m "build(release): publish 1.0.1.60"
 git push github codex/native-core-config
 git push github HEAD:main
