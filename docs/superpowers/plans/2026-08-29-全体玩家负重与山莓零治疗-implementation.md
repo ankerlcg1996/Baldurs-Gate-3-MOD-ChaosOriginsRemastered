@@ -48,11 +48,11 @@ Expected: 分支只领先远端一个已提交的设计文档；验证结束显�
 
 在 `story-src/verify.ps1` 中完成以下精确变化：
 
-1. 两份 README 的契约由 `36`/`五个 Goal` 改为 `37`/`六个 Goal`：
+1. 两份 README 的契约由 `36`/`五个 Goal` 改为 `38`/`六个 Goal`：
 
 ```powershell
-Require ($readmeText.Contains('version.json') -and $readmeText.Contains('37') -and `
-    $readmeText.Contains('六个 Goal')) "工程说明必须以version.json为准并记录37文件/6 Goals: $readmePath"
+Require ($readmeText.Contains('version.json') -and $readmeText.Contains('38') -and `
+    $readmeText.Contains('六个 Goal')) "工程说明必须以version.json为准并记录38文件/6 Goals: $readmePath"
 ```
 
 2. 在 `$expectedPackageFiles` 的 Goal 列表加入：
@@ -216,7 +216,7 @@ data "Boosts" "CarryCapacityMultiplier(50)"
 
 在根 `README.md`：
 
-- 将 `36 个正式文件` 改为 `37 个正式文件`；
+- 将 `36 个正式文件` 改为 `38 个正式文件`；
 - 将 `五个 Raw Goal` 改为 `六个 Raw Goal`；
 - 将 Goal 条目改为：
 
@@ -227,7 +227,7 @@ data "Boosts" "CarryCapacityMultiplier(50)"
 
 在 `story-src/README.md`：
 
-- 将 `36 个正式文件和五个 Goal` 改为 `37 个正式文件和六个 Goal`；
+- 将 `36 个正式文件和五个 Goal` 改为 `38 个正式文件和六个 Goal`；
 - 在 `verify.ps1` 的核对范围中加入“全体玩家 50 倍负重”；
 - 保留“静态/编译/hash不等于实机验收”边界。
 

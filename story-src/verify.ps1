@@ -67,12 +67,12 @@ foreach ($readmePath in @($repositoryReadmePath, $storyReadmePath)) {
         "工程说明仍含过时版本、23文件或3 Goal口径: $readmePath"
     Require ($readmeText.Contains('version.json')) "工程说明必须以version.json为准: $readmePath"
     if ($readmePath -ceq $repositoryReadmePath) {
-        foreach ($repositoryContract in @('37 个正式文件', '六个 Raw Goal', 'DB_Players', '50 倍负重')) {
+        foreach ($repositoryContract in @('38 个正式文件', '六个 Raw Goal', 'DB_Players', '50 倍负重')) {
             Require ($readmeText.Contains($repositoryContract)) `
                 "根工程说明缺少全体玩家负重精确契约: $repositoryContract"
         }
     } else {
-        foreach ($storyContract in @('37 个正式文件和六个 Goal', '全体玩家 50 倍负重')) {
+        foreach ($storyContract in @('38 个正式文件和六个 Goal', '全体玩家 50 倍负重')) {
             Require ($readmeText.Contains($storyContract)) `
                 "Story 工程说明缺少全体玩家负重精确契约: $storyContract"
         }
