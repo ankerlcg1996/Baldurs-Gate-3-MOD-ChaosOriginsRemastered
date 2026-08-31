@@ -832,7 +832,7 @@ $lifeSkillDescriptionTemplates = @{
     Chinese = '混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+{0}。不授予熟练或专精，不影响攻击、豁免与法术难度。'
     English = 'All Skill Checks for the Chaos Origin gain a fixed +5; this level-based status grants +{0} to raw Ability Checks. It grants no proficiency or expertise and does not affect attacks, saves, or spell DC.'
     Japanese = '混沌の起源はすべての技能判定に固定+5を得る。このレベル成長状態は能力値判定に+{0}を与える。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。'
-    Korean = '혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +{0}을 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.'
+    Korean = '혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +{0} 보너스를 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.'
 }
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
