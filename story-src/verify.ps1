@@ -622,8 +622,19 @@ foreach ($sourceStatus in $tooltipSourceStatuses) {
         Require ($sourceValue -ceq $proxyValue) "黄色词条代理字段与原状态不一致: $sourceStatus -> $proxyPassive / $field"
     }
 }
-Require ($passive.Contains('Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)')) `
-    '基础熟练清单未与 ChaosOriginsRemastered 1.0.25 对齐'
+$expectedBaseProficienciesBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument);RollBonus(SkillCheck,5)'
+$baseProficienciesBlocks = @([regex]::Matches(
+    $passive,
+    '(?ms)^new entry "COS_BaseProficiencies".*?(?=^new entry |\z)'
+))
+Require ($baseProficienciesBlocks.Count -eq 1) '必须唯一声明混沌起源基础熟练被动'
+$baseProficienciesBoosts = @([regex]::Matches(
+    $baseProficienciesBlocks[0].Value,
+    '(?m)^data "Boosts" "([^"]*)"\r?$'
+))
+Require ($baseProficienciesBoosts.Count -eq 1 -and
+    $baseProficienciesBoosts[0].Groups[1].Value -ceq $expectedBaseProficienciesBoosts) `
+    '混沌起源基础熟练必须精确包含装备熟练和固定技能检定+5'
 Require (-not ($passive -match 'ProficiencyBonus\(Skill,|ExpertiseBonus\(')) `
     'Story 版不得额外授予任何技能熟练或专精'
 foreach ($spellGrant in @('Target_BoomingBlade_ClassSpell','Target_Guidance','Target_MageHand,,,,Charisma','Target_MinorIllusion,,,,Intelligence','Shout_FeatherFall','Target_Jump','Shout_DisguiseSelf,AddChildren')) {
@@ -808,6 +819,21 @@ $masteryExactTexts = @{
 }
 $referenceLocalizationHandles = $null
 $referenceProxyTooltipKeys = $null
+$lifeSkillDescriptionHandles = @(
+    'h71000002g0002g4002g8002g000000000002',
+    'h71000003g0003g4003g8003g000000000003',
+    'h71000004g0004g4004g8004g000000000004',
+    'h71000005g0005g4005g8005g000000000005',
+    'h71000006g0006g4006g8006g000000000006',
+    'h71000007g0007g4007g8007g000000000007',
+    'h71000008g0008g4008g8008g000000000008'
+)
+$lifeSkillDescriptionTemplates = @{
+    Chinese = '混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+{0}。不授予熟练或专精，不影响攻击、豁免与法术难度。'
+    English = 'All Skill Checks for the Chaos Origin gain a fixed +5; this level-based status grants +{0} to raw Ability Checks. It grants no proficiency or expertise and does not affect attacks, saves, or spell DC.'
+    Japanese = '混沌の起源はすべての技能判定に固定+5を得る。このレベル成長状態は能力値判定に+{0}を与える。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。'
+    Korean = '혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +{0}을 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.'
+}
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少本地化源: $language"
@@ -818,6 +844,13 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     foreach ($content in $contents) {
         Require (-not [string]::IsNullOrWhiteSpace([string]$content.InnerText)) "本地化包含空文本: $language"
         $contentsByHandle[[string]$content.contentuid] = $content
+    }
+    for ($lifeSkillBonus = 1; $lifeSkillBonus -le 7; $lifeSkillBonus++) {
+        $handle = $lifeSkillDescriptionHandles[$lifeSkillBonus - 1]
+        $expectedText = $lifeSkillDescriptionTemplates[$language] -f $lifeSkillBonus
+        Require ($contentsByHandle.ContainsKey($handle) -and
+            [string]$contentsByHandle[$handle].InnerText -ceq $expectedText) `
+            "混沌阅历说明必须精确显示固定技能检定+5和当前纯属性档位: $language / $lifeSkillBonus"
     }
     foreach ($mirror in $configMirrorDisplayHandles.Keys) {
         $handle = [string]$configMirrorDisplayHandles[$mirror]
@@ -1964,6 +1997,8 @@ foreach ($newIconCount in @{
     Require ([regex]::Matches($allStats, '(?m)^data "Icon" "' + [regex]::Escape($newIconCount.Key) + '"\r?$').Count -eq `
         $newIconCount.Value) "Stats新图标引用数量错误: $($newIconCount.Key)"
 }
+Require ([regex]::Matches($allStats, 'RollBonus\(SkillCheck,5\)').Count -eq 1) `
+    '完整 Stats 必须且只能由基础熟练被动提供一次固定技能检定+5'
 Require (-not ($allStats -match 'ProficiencyBonus\(Skill|ExpertiseBonus\(')) `
     '完整 Stats 不得额外授予任何技能熟练或专精'
 Require ([regex]::Matches($mechanicsGoal, 'DB_COS_LifeSkillLevel\(\d+, \d+, "COS_CHAOS_LIFE_SKILL_BONUS_\d"\);').Count -eq 7) `
@@ -1972,8 +2007,12 @@ foreach ($lifeSkillBonus in 1..7) {
     $lifeSkillEntry = "COS_CHAOS_LIFE_SKILL_BONUS_$lifeSkillBonus"
     $lifeSkillPattern = 'new entry "{0}"[\s\S]*?(?=\r?\nnew entry|\z)' -f [regex]::Escape($lifeSkillEntry)
     $lifeSkillBlock = [regex]::Match($allStats, $lifeSkillPattern).Value
-    Require ($lifeSkillBlock.Contains("RollBonus(SkillCheck,$lifeSkillBonus);RollBonus(RawAbility,$lifeSkillBonus)")) `
-        "生活检定成长档位错误: $lifeSkillEntry"
+    $lifeSkillBoosts = @([regex]::Matches($lifeSkillBlock, '(?m)^data "Boosts" "([^"]*)"\r?$'))
+    Require ($lifeSkillBoosts.Count -eq 1 -and
+        $lifeSkillBoosts[0].Groups[1].Value -ceq "RollBonus(RawAbility,$lifeSkillBonus)") `
+        "生活检定成长必须只提供对应的纯属性检定档位: $lifeSkillEntry"
+    Require (-not $lifeSkillBlock.Contains('RollBonus(SkillCheck,')) `
+        "生活检定成长不得叠加固定技能检定+5: $lifeSkillEntry"
 }
 Require ($mechanicsGoal.Contains('IntegerMin(_Level, 30, _CappedLevel)') -and `
     $mechanicsGoal.Contains('PROC_COS_ClearLifeSkillBonus(_Character);') -and `
