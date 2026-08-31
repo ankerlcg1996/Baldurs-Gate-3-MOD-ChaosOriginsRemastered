@@ -613,13 +613,13 @@
 	<content contentuid="h10c0f722gb73eg4319g8dd7g9d2f8ec8da33" version="1">两仪吞噬：100%</content>
 	<content contentuid="h2fba4f13g5d17g411cg80bbg38ea340450bb" version="1">轮盘部分被完全吞噬，总伤害约为原始伤害的0.5倍。</content>
 	<content contentuid="h71000001g0001g4001g8001g000000000001" version="1">混沌阅历</content>
-	<content contentuid="h71000002g0002g4002g8002g000000000002" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+1。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000003g0003g4003g8003g000000000003" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+2。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000004g0004g4004g8004g000000000004" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+3。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000005g0005g4005g8005g000000000005" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+4。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000006g0006g4006g8006g000000000006" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+5。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000007g0007g4007g8007g000000000007" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+6。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
-	<content contentuid="h71000008g0008g4008g8008g000000000008" version="1">等级成长的剧情与生活能力：所有技能检定和纯属性检定+7。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000002g0002g4002g8002g000000000002" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+1。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000003g0003g4003g8003g000000000003" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+2。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000004g0004g4004g8004g000000000004" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+3。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000005g0005g4005g8005g000000000005" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+4。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000006g0006g4006g8006g000000000006" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+5。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000007g0007g4007g8007g000000000007" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+6。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
+	<content contentuid="h71000008g0008g4008g8008g000000000008" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+7。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
 	<content contentuid="h72000001g0001g4001g8001g000000000001" version="1">命运改签</content>
 	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">可切换被动。开启后，攻击触发两仪时自动消耗1点混沌之力，按等级进行多次判定并保留最有利的结果。每次攻击最多触发一次；未命中或混沌之力不足时不消耗。</content>
 	<content contentuid="hbfabec61g3070g4e70g8e71gc20633da5d52" version="1">调律</content>

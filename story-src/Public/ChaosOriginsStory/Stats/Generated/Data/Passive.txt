@@ -5,7 +5,7 @@ data "Properties" "IsHidden"
 new entry "COS_BaseProficiencies"
 type "PassiveData"
 data "Properties" "IsHidden"
-data "Boosts" "Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)"
+data "Boosts" "Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument);RollBonus(SkillCheck,5)"
 
 new entry "COS_BaseStarterSpells"
 type "PassiveData"
