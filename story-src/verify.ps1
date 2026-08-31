@@ -1997,7 +1997,11 @@ foreach ($newIconCount in @{
     Require ([regex]::Matches($allStats, '(?m)^data "Icon" "' + [regex]::Escape($newIconCount.Key) + '"\r?$').Count -eq `
         $newIconCount.Value) "Stats新图标引用数量错误: $($newIconCount.Key)"
 }
-Require ([regex]::Matches($allStats, 'RollBonus\(SkillCheck,5\)').Count -eq 1) `
+$boostFieldMatches = @([regex]::Matches($allStats, '(?m)^data "Boosts" "([^"]*)"\r?$'))
+$skillCheckBoostTokens = @($boostFieldMatches | ForEach-Object {
+    $_.Groups[1].Value -split ';' | Where-Object { $_ -ceq 'RollBonus(SkillCheck,5)' }
+})
+Require ($skillCheckBoostTokens.Count -eq 1) `
     '完整 Stats 必须且只能由基础熟练被动提供一次固定技能检定+5'
 Require (-not ($allStats -match 'ProficiencyBonus\(Skill|ExpertiseBonus\(')) `
     '完整 Stats 不得额外授予任何技能熟练或专精'
@@ -2005,8 +2009,10 @@ Require ([regex]::Matches($mechanicsGoal, 'DB_COS_LifeSkillLevel\(\d+, \d+, "COS
     '生活检定成长必须严格包含 5 至 30 级的 7 个阶段'
 foreach ($lifeSkillBonus in 1..7) {
     $lifeSkillEntry = "COS_CHAOS_LIFE_SKILL_BONUS_$lifeSkillBonus"
-    $lifeSkillPattern = 'new entry "{0}"[\s\S]*?(?=\r?\nnew entry|\z)' -f [regex]::Escape($lifeSkillEntry)
-    $lifeSkillBlock = [regex]::Match($allStats, $lifeSkillPattern).Value
+    $lifeSkillPattern = '(?ms)^new entry "{0}".*?(?=^new entry |\z)' -f [regex]::Escape($lifeSkillEntry)
+    $lifeSkillBlocks = @([regex]::Matches($allStats, $lifeSkillPattern))
+    Require ($lifeSkillBlocks.Count -eq 1) "生活检定成长档位必须唯一声明: $lifeSkillEntry"
+    $lifeSkillBlock = $lifeSkillBlocks[0].Value
     $lifeSkillBoosts = @([regex]::Matches($lifeSkillBlock, '(?m)^data "Boosts" "([^"]*)"\r?$'))
     Require ($lifeSkillBoosts.Count -eq 1 -and
         $lifeSkillBoosts[0].Groups[1].Value -ceq "RollBonus(RawAbility,$lifeSkillBonus)") `
@@ -2014,6 +2020,27 @@ foreach ($lifeSkillBonus in 1..7) {
     Require (-not $lifeSkillBlock.Contains('RollBonus(SkillCheck,')) `
         "生活检定成长不得叠加固定技能检定+5: $lifeSkillEntry"
 }
+$lifeSkillDuplicateMutation = $allStats + "`nnew entry ""COS_CHAOS_LIFE_SKILL_BONUS_1""`ndata ""Boosts"" ""RollBonus(RawAbility,1)"""
+$lifeSkillDuplicateBlocks = @([regex]::Matches(
+    $lifeSkillDuplicateMutation,
+    '(?ms)^new entry "COS_CHAOS_LIFE_SKILL_BONUS_1".*?(?=^new entry |\z)'
+))
+$lifeSkillDuplicateProbeKilled = $false
+try {
+    Require ($lifeSkillDuplicateBlocks.Count -eq 1) '生活检定重复条目变异应被拒绝'
+} catch {
+    $lifeSkillDuplicateProbeKilled = $true
+}
+Require $lifeSkillDuplicateProbeKilled '生活检定重复条目 mutation probe 必须被拒绝'
+Write-Host 'MUTATION_LIFE_SKILL_DUPLICATE=KILLED'
+$commentSkillCheckMutation = $allStats + "`n// RollBonus(SkillCheck,5)"
+$commentBoostFieldMatches = @([regex]::Matches($commentSkillCheckMutation, '(?m)^data "Boosts" "([^"]*)"\r?$'))
+$commentSkillCheckTokens = @($commentBoostFieldMatches | ForEach-Object {
+    $_.Groups[1].Value -split ';' | Where-Object { $_ -ceq 'RollBonus(SkillCheck,5)' }
+})
+Require ($commentSkillCheckTokens.Count -eq $skillCheckBoostTokens.Count) `
+    '完整 Stats 的注释 token mutation 不得改变固定技能检定统计'
+Write-Host 'MUTATION_STATS_COMMENT_SKILL_CHECK=IGNORED'
 Require ($mechanicsGoal.Contains('IntegerMin(_Level, 30, _CappedLevel)') -and `
     $mechanicsGoal.Contains('PROC_COS_ClearLifeSkillBonus(_Character);') -and `
     $mechanicsGoal.Contains('PROC_COS_ApplyLifeSkillBonus(_Character);')) `
