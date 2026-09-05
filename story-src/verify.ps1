@@ -667,7 +667,7 @@ foreach ($lifeSkillBonusEntry in $lifeSkillBonusEntries) {
     $boostMatches = @([regex]::Matches($lifeSkillBonusEntry.Value,
         '(?m)^data "Boosts" "([^"]*)"\r?$'))
     Require ($boostMatches.Count -eq 1 -and
-        $boostMatches[0].Groups[1].Value -ceq "RollBonus(SkillCheck,$value)") `
+        $boostMatches[0].Groups[1].Value -ceq (('Athletics,Acrobatics,SleightOfHand,Stealth,Arcana,History,Investigation,Nature,Religion,AnimalHandling,Insight,Medicine,Perception,Survival,Deception,Intimidation,Performance,Persuasion' -split ',' | ForEach-Object { "Skill($_,$value)" }) -join ';')) `
         "生活熟练项被动必须只提供对应的固定技能检定加值: $value"
 }
 Require (@($lifeSkillBonusEntries | ForEach-Object { $_.Groups['Value'].Value } | Sort-Object -Unique).Count -eq 20) `
@@ -2053,8 +2053,8 @@ $boostFieldMatches = @([regex]::Matches($allStats, '(?m)^data "Boosts" "([^"]*)"
 $skillCheckBoostTokens = @($boostFieldMatches | ForEach-Object {
     $_.Groups[1].Value -split ';' | Where-Object { $_ -ceq 'RollBonus(SkillCheck,5)' }
 })
-Require ($skillCheckBoostTokens.Count -eq 1) `
-    '完整 Stats 必须且只能由基础熟练被动提供一次固定技能检定+5'
+Require ($skillCheckBoostTokens.Count -eq 0) `
+    '逐项技能加值不得叠加原有通用技能检定+5'
 Require (-not ($allStats -match 'ProficiencyBonus\(Skill|ExpertiseBonus\(')) `
     '完整 Stats 不得额外授予任何技能熟练或专精'
 Require ([regex]::Matches($mechanicsGoal, 'DB_COS_LifeSkillLevel\(\d+, \d+, "COS_CHAOS_LIFE_SKILL_BONUS_\d"\);').Count -eq 7) `

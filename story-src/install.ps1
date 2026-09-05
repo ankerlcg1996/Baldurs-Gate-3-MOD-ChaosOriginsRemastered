@@ -26,7 +26,11 @@ if ($CheckOnly) {
     Write-Output 'No loose module overrides found'
     return
 }
-Get-Process -Name bg3,bg3_dx11 -ErrorAction SilentlyContinue | Stop-Process -Force
+$gameProcesses = @(Get-Process -Name bg3,bg3_dx11 -ErrorAction SilentlyContinue)
+foreach ($gameProcess in $gameProcesses) {
+    Stop-Process -InputObject $gameProcess -Force
+    $gameProcess.WaitForExit()
+}
 $backup = Join-Path $DesktopDirectory ('ChaosOriginsStory-backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 New-Item -ItemType Directory -Path $backup | Out-Null
 foreach ($file in $loose) {
