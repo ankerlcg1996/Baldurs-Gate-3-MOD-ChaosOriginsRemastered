@@ -668,4 +668,54 @@
 	<content contentuid="h73000117g0117g4117g8117g000000000117" version="1">COS_CFG_MECH_GENESIS</content>
 	<content contentuid="h73000118g0118g4118g8118g000000000118" version="1">COS_CFG_MECH_STRIKE</content>
 	<content contentuid="h73000119g0119g4119g8119g000000000119" version="1">COS_CFG_MECH_MASTERY</content>
++	<content contentuid="h74000001g0001g4001g8001g000000000001" version="1">Life Skill Bonus</content>
+	<content contentuid="h74000002g0002g4002g8002g000000000002" version="1">Display resource for the native settings page; it is not spent by gameplay.</content>
+	<content contentuid="h74000004g0004g4004g8004g000000000004" version="1">Used only to display the native settings toggle state.</content>
+	<content contentuid="h74000010g0010g4010g8010g000000000010" version="1">Life Skill Bonus</content>
+	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">Adds the current fixed value to every skill check. 0 disables it; the default is 5.</content>
+	<content contentuid="h74000012g0012g4012g8012g000000000012" version="1">Reset to +5</content>
+	<content contentuid="h74000020g0020g4020g8020g000000000020" version="1">Official Racial Passives</content>
+	<content contentuid="h74000021g0021g4021g8021g000000000021" version="1">All are off by default. Only passives are granted; racial actions and spells are excluded, and duplicate names appear once.</content>
+	<content contentuid="h74000022g0022g4022g8022g000000000022" version="1">Enable All</content>
+	<content contentuid="h74000023g0023g4023g8023g000000000023" version="1">Disable All</content>
+	<content contentuid="h74000201g0201g4201g8201g000000000201" version="1">Stone Camouflage: advantage on Stealth checks</content>
+	<content contentuid="h74000202g0202g4202g8202g000000000202" version="1">Drow Weapon Training: proficiency with traditional drow weapons</content>
+	<content contentuid="h74000203g0203g4203g8203g000000000203" version="1">Duergar Resilience: stronger saves against controlling effects</content>
+	<content contentuid="h74000204g0204g4204g8204g000000000204" version="1">Dwarven Combat Training: proficiency with traditional dwarven weapons</content>
+	<content contentuid="h74000205g0205g4205g8205g000000000205" version="1">Dwarven Resilience: stronger poison saves and poison resistance</content>
+	<content contentuid="h74000206g0206g4206g8206g000000000206" version="1">Elven Weapon Training: proficiency with traditional elven weapons</content>
+	<content contentuid="h74000207g0207g4207g8207g000000000207" version="1">Fey Ancestry: resists charm and prevents magical sleep</content>
+	<content contentuid="h74000208g0208g4208g8208g000000000208" version="1">Gith Martial Prodigy: gith weapon and armour training</content>
+	<content contentuid="h74000209g0209g4209g8209g000000000209" version="1">Gnome Cunning: advantage on Intelligence, Wisdom, and Charisma saves</content>
+	<content contentuid="h74000210g0210g4210g8210g000000000210" version="1">Brave: advantage on saves against being Frightened</content>
+	<content contentuid="h74000211g0211g4211g8211g000000000211" version="1">Lightfoot Stealth: proficiency in Stealth</content>
+	<content contentuid="h74000212g0212g4212g8212g000000000212" version="1">Halfling Luck: reroll a natural 1</content>
+	<content contentuid="h74000213g0213g4213g8213g000000000213" version="1">Stout Resilience: stronger poison saves and poison resistance</content>
+	<content contentuid="h74000214g0214g4214g8214g000000000214" version="1">Civil Militia: human militia weapon and armour training</content>
+	<content contentuid="h74000215g0215g4215g8215g000000000215" version="1">Dwarven Armour Training: proficiency with light and medium armour</content>
+	<content contentuid="h74000216g0216g4216g8216g000000000216" version="1">Relentless Endurance: survive lethal damage with 1 hit point</content>
+	<content contentuid="h74000217g0217g4217g8217g000000000217" version="1">Artificer's Lore: extra proficiency bonus on History checks</content>
+	<content contentuid="h74000218g0218g4218g8218g000000000218" version="1">Savage Attacks: add a weapon damage die on a critical hit</content>
+	<content contentuid="h74000219g0219g4219g8219g000000000219" version="1">Superior Darkvision: see farther in darkness</content>
+	<content contentuid="h74000220g0220g4220g8220g000000000220" version="1">Hellish Resistance: resistance to fire damage</content>
+	<content contentuid="h74000101g0101g4101g8101g000000000101" version="1">COS_CFG_RACE_DEEPGNOME_STONE</content>
+	<content contentuid="h74000102g0102g4102g8102g000000000102" version="1">COS_CFG_RACE_DROW_WEAPON</content>
+	<content contentuid="h74000103g0103g4103g8103g000000000103" version="1">COS_CFG_RACE_DUERGAR_RESILIENCE</content>
+	<content contentuid="h74000104g0104g4104g8104g000000000104" version="1">COS_CFG_RACE_DWARF_WEAPON</content>
+	<content contentuid="h74000105g0105g4105g8105g000000000105" version="1">COS_CFG_RACE_DWARF_RESILIENCE</content>
+	<content contentuid="h74000106g0106g4106g8106g000000000106" version="1">COS_CFG_RACE_ELF_WEAPON</content>
+	<content contentuid="h74000107g0107g4107g8107g000000000107" version="1">COS_CFG_RACE_FEY_ANCESTRY</content>
+	<content contentuid="h74000108g0108g4108g8108g000000000108" version="1">COS_CFG_RACE_GITH_MARTIAL</content>
+	<content contentuid="h74000109g0109g4109g8109g000000000109" version="1">COS_CFG_RACE_GNOME_CUNNING</content>
+	<content contentuid="h74000110g0110g4110g8110g000000000110" version="1">COS_CFG_RACE_HALFLING_BRAVE</content>
+	<content contentuid="h74000111g0111g4111g8111g000000000111" version="1">COS_CFG_RACE_HALFLING_LIGHTFOOT</content>
+	<content contentuid="h74000112g0112g4112g8112g000000000112" version="1">COS_CFG_RACE_HALFLING_LUCKY</content>
+	<content contentuid="h74000113g0113g4113g8113g000000000113" version="1">COS_CFG_RACE_HALFLING_STOUT</content>
+	<content contentuid="h74000114g0114g4114g8114g000000000114" version="1">COS_CFG_RACE_HUMAN_MILITIA</content>
+	<content contentuid="h74000115g0115g4115g8115g000000000115" version="1">COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR</content>
+	<content contentuid="h74000116g0116g4116g8116g000000000116" version="1">COS_CFG_RACE_RELENTLESS</content>
+	<content contentuid="h74000117g0117g4117g8117g000000000117" version="1">COS_CFG_RACE_ROCK_GNOME_LORE</content>
+	<content contentuid="h74000118g0118g4118g8118g000000000118" version="1">COS_CFG_RACE_SAVAGE_ATTACKS</content>
+	<content contentuid="h74000119g0119g4119g8119g000000000119" version="1">COS_CFG_RACE_SUPERIOR_DARKVISION</content>
+	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
 </contentList>

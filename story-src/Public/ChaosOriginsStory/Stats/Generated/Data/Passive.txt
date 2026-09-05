@@ -5,7 +5,112 @@ data "Properties" "IsHidden"
 new entry "COS_BaseProficiencies"
 type "PassiveData"
 data "Properties" "IsHidden"
-data "Boosts" "Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument);RollBonus(SkillCheck,5)"
+data "Boosts" "Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)"
+
+new entry "COS_CFG_LIFE_SKILL_CARRIER"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "ActionResource(COS_ConfigLifeSkill,20,0)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_01"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,1)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_02"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,2)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_03"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,3)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_04"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,4)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_05"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,5)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_06"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,6)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_07"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,7)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_08"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,8)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_09"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,9)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_10"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,10)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_11"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,11)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_12"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,12)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_13"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,13)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_14"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,14)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_15"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,15)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_16"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,16)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_17"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,17)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_18"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,18)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_19"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,19)"
+
+new entry "COS_CFG_LIFE_SKILL_BONUS_20"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "RollBonus(SkillCheck,20)"
 
 new entry "COS_BaseStarterSpells"
 type "PassiveData"

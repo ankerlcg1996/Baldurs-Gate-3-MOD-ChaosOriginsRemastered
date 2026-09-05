@@ -30,6 +30,92 @@ DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_STRIKE_78baf203-f60c-4dac
 DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_MASTERY_146d28dc-aa94-40e8-9bad-91b069055526, "Mastery");
 DB_COS_ConfigUiOpenedEvent((TUTORIALEVENT)COS_CFG_UI_OPENED_65247962-a3b0-417d-9044-85e4aad38079);
 DB_COS_ConfigResetCoreEvent((TUTORIALEVENT)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470);
+DB_COS_ConfigLifeDefault(5);
+DB_COS_ConfigLifeBonusPassive(1, "COS_CFG_LIFE_SKILL_BONUS_01");
+DB_COS_ConfigLifeBonusPassive(2, "COS_CFG_LIFE_SKILL_BONUS_02");
+DB_COS_ConfigLifeBonusPassive(3, "COS_CFG_LIFE_SKILL_BONUS_03");
+DB_COS_ConfigLifeBonusPassive(4, "COS_CFG_LIFE_SKILL_BONUS_04");
+DB_COS_ConfigLifeBonusPassive(5, "COS_CFG_LIFE_SKILL_BONUS_05");
+DB_COS_ConfigLifeBonusPassive(6, "COS_CFG_LIFE_SKILL_BONUS_06");
+DB_COS_ConfigLifeBonusPassive(7, "COS_CFG_LIFE_SKILL_BONUS_07");
+DB_COS_ConfigLifeBonusPassive(8, "COS_CFG_LIFE_SKILL_BONUS_08");
+DB_COS_ConfigLifeBonusPassive(9, "COS_CFG_LIFE_SKILL_BONUS_09");
+DB_COS_ConfigLifeBonusPassive(10, "COS_CFG_LIFE_SKILL_BONUS_10");
+DB_COS_ConfigLifeBonusPassive(11, "COS_CFG_LIFE_SKILL_BONUS_11");
+DB_COS_ConfigLifeBonusPassive(12, "COS_CFG_LIFE_SKILL_BONUS_12");
+DB_COS_ConfigLifeBonusPassive(13, "COS_CFG_LIFE_SKILL_BONUS_13");
+DB_COS_ConfigLifeBonusPassive(14, "COS_CFG_LIFE_SKILL_BONUS_14");
+DB_COS_ConfigLifeBonusPassive(15, "COS_CFG_LIFE_SKILL_BONUS_15");
+DB_COS_ConfigLifeBonusPassive(16, "COS_CFG_LIFE_SKILL_BONUS_16");
+DB_COS_ConfigLifeBonusPassive(17, "COS_CFG_LIFE_SKILL_BONUS_17");
+DB_COS_ConfigLifeBonusPassive(18, "COS_CFG_LIFE_SKILL_BONUS_18");
+DB_COS_ConfigLifeBonusPassive(19, "COS_CFG_LIFE_SKILL_BONUS_19");
+DB_COS_ConfigLifeBonusPassive(20, "COS_CFG_LIFE_SKILL_BONUS_20");
+DB_COS_ConfigLifeStepEvent((TUTORIALEVENT)COS_CFG_LIFE_MINUS_e438f411-6a7e-4060-9e0b-c7f6c26e751a, -1);
+DB_COS_ConfigLifeStepEvent((TUTORIALEVENT)COS_CFG_LIFE_PLUS_ddcf4293-e7d1-4154-a9c4-19fa24a35f38, 1);
+DB_COS_ConfigLifeResetEvent((TUTORIALEVENT)COS_CFG_LIFE_RESET_563ba5fe-c808-4a2f-80b5-a1b4feb54649);
+DB_COS_ConfigRacialBulkEvent((TUTORIALEVENT)COS_CFG_RACE_ALL_e0927578-b7bd-42d8-b497-4f6fa2d57053, 1);
+DB_COS_ConfigRacialBulkEvent((TUTORIALEVENT)COS_CFG_RACE_NONE_8d98892a-4cc3-4fb3-88b0-7bcbff3d7abe, 0);
+DB_COS_ConfigRacialDefault("DeepGnome_StoneCamouflage", 0);
+DB_COS_ConfigRacialMirror("DeepGnome_StoneCamouflage", "COS_CFG_RACE_DEEPGNOME_STONE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_DEEPGNOME_STONE_2535def3-de94-4a94-b5be-b7e08e143709, "DeepGnome_StoneCamouflage");
+DB_COS_ConfigRacialDefault("Drow_DrowWeaponTraining", 0);
+DB_COS_ConfigRacialMirror("Drow_DrowWeaponTraining", "COS_CFG_RACE_DROW_WEAPON");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_DROW_WEAPON_712d9a0d-7d5f-4f42-a808-cd2dfb9e3685, "Drow_DrowWeaponTraining");
+DB_COS_ConfigRacialDefault("Duergar_DuergarResilience", 0);
+DB_COS_ConfigRacialMirror("Duergar_DuergarResilience", "COS_CFG_RACE_DUERGAR_RESILIENCE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_DUERGAR_RESILIENCE_d523163f-95a3-459b-92f4-59b9dc499b75, "Duergar_DuergarResilience");
+DB_COS_ConfigRacialDefault("Dwarf_DwarvenCombatTraining", 0);
+DB_COS_ConfigRacialMirror("Dwarf_DwarvenCombatTraining", "COS_CFG_RACE_DWARF_WEAPON");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_DWARF_WEAPON_dd78b5d4-1cab-48eb-91b6-583b00eede31, "Dwarf_DwarvenCombatTraining");
+DB_COS_ConfigRacialDefault("Dwarf_DwarvenResilience", 0);
+DB_COS_ConfigRacialMirror("Dwarf_DwarvenResilience", "COS_CFG_RACE_DWARF_RESILIENCE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_DWARF_RESILIENCE_6394ac5c-d9ae-4fe8-94bb-88900fc50d46, "Dwarf_DwarvenResilience");
+DB_COS_ConfigRacialDefault("Elf_WeaponTraining", 0);
+DB_COS_ConfigRacialMirror("Elf_WeaponTraining", "COS_CFG_RACE_ELF_WEAPON");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_ELF_WEAPON_0aab1270-5408-4fc2-a473-9f6c893f018a, "Elf_WeaponTraining");
+DB_COS_ConfigRacialDefault("FeyAncestry", 0);
+DB_COS_ConfigRacialMirror("FeyAncestry", "COS_CFG_RACE_FEY_ANCESTRY");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_FEY_ANCESTRY_342a9ee6-2aec-4448-885c-8724af4d6c6b, "FeyAncestry");
+DB_COS_ConfigRacialDefault("Gith_MartialProdigy", 0);
+DB_COS_ConfigRacialMirror("Gith_MartialProdigy", "COS_CFG_RACE_GITH_MARTIAL");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_GITH_MARTIAL_8a7fb402-80c6-424e-a90c-a627bf6187e8, "Gith_MartialProdigy");
+DB_COS_ConfigRacialDefault("Gnome_Cunning", 0);
+DB_COS_ConfigRacialMirror("Gnome_Cunning", "COS_CFG_RACE_GNOME_CUNNING");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_GNOME_CUNNING_50b71015-0ed0-4b12-8f46-322e5c9de3fe, "Gnome_Cunning");
+DB_COS_ConfigRacialDefault("Halfling_Brave", 0);
+DB_COS_ConfigRacialMirror("Halfling_Brave", "COS_CFG_RACE_HALFLING_BRAVE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_HALFLING_BRAVE_7937b010-b9cb-4a6b-b732-33e12a5e08a3, "Halfling_Brave");
+DB_COS_ConfigRacialDefault("Halfling_LightfootStealth", 0);
+DB_COS_ConfigRacialMirror("Halfling_LightfootStealth", "COS_CFG_RACE_HALFLING_LIGHTFOOT");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_HALFLING_LIGHTFOOT_aa96a380-d8a4-475e-ac9e-b24502b914aa, "Halfling_LightfootStealth");
+DB_COS_ConfigRacialDefault("Halfling_Lucky", 0);
+DB_COS_ConfigRacialMirror("Halfling_Lucky", "COS_CFG_RACE_HALFLING_LUCKY");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_HALFLING_LUCKY_ed99bd77-fd4e-4bbc-80d1-de2b125ce4ce, "Halfling_Lucky");
+DB_COS_ConfigRacialDefault("Halfling_StoutResilience", 0);
+DB_COS_ConfigRacialMirror("Halfling_StoutResilience", "COS_CFG_RACE_HALFLING_STOUT");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_HALFLING_STOUT_69bf2c6d-7e8c-4dc6-91cd-8ef359b8bcd1, "Halfling_StoutResilience");
+DB_COS_ConfigRacialDefault("HumanMilitia", 0);
+DB_COS_ConfigRacialMirror("HumanMilitia", "COS_CFG_RACE_HUMAN_MILITIA");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_HUMAN_MILITIA_a18a929b-1faa-44ac-b364-b03858bd6504, "HumanMilitia");
+DB_COS_ConfigRacialDefault("MountainDwarf_DwarvenArmorTraining", 0);
+DB_COS_ConfigRacialMirror("MountainDwarf_DwarvenArmorTraining", "COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR_a99eb828-5907-489d-8492-81e833c25e68, "MountainDwarf_DwarvenArmorTraining");
+DB_COS_ConfigRacialDefault("RelentlessEndurance", 0);
+DB_COS_ConfigRacialMirror("RelentlessEndurance", "COS_CFG_RACE_RELENTLESS");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_RELENTLESS_8ddf3765-2814-4085-a0e1-376aaf9d984c, "RelentlessEndurance");
+DB_COS_ConfigRacialDefault("RockGnome_ArtificersLore", 0);
+DB_COS_ConfigRacialMirror("RockGnome_ArtificersLore", "COS_CFG_RACE_ROCK_GNOME_LORE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_ROCK_GNOME_LORE_b227b0fd-026e-4931-af70-dd436277ddc0, "RockGnome_ArtificersLore");
+DB_COS_ConfigRacialDefault("SavageAttacks", 0);
+DB_COS_ConfigRacialMirror("SavageAttacks", "COS_CFG_RACE_SAVAGE_ATTACKS");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_SAVAGE_ATTACKS_108ff1c7-b025-46cc-8b10-e9729e3fb4c3, "SavageAttacks");
+DB_COS_ConfigRacialDefault("SuperiorDarkvision", 0);
+DB_COS_ConfigRacialMirror("SuperiorDarkvision", "COS_CFG_RACE_SUPERIOR_DARKVISION");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_SUPERIOR_DARKVISION_c0888d3b-4c97-4c50-95b9-34620ba1fdef, "SuperiorDarkvision");
+DB_COS_ConfigRacialDefault("Tiefling_HellishResistance", 0);
+DB_COS_ConfigRacialMirror("Tiefling_HellishResistance", "COS_CFG_RACE_TIEFLING_RESISTANCE");
+DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_TIEFLING_RESISTANCE_022d736c-8b4b-4599-9e51-e584a0e1c05d, "Tiefling_HellishResistance");
 KBSECTION
 PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
@@ -39,6 +125,24 @@ AND
 NOT DB_COS_ConfigMechanic(_Character, _Key, _)
 THEN
 DB_COS_ConfigMechanic(_Character, _Key, _Default);
+
+PROC
+PROC_COS_ConfigEnsureLifeSkill((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeDefault(_Default)
+AND
+NOT DB_COS_ConfigLifeSkill(_Character, _)
+THEN
+DB_COS_ConfigLifeSkill(_Character, _Default);
+
+PROC
+PROC_COS_ConfigEnsureRacialPassives((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialDefault(_Passive, _Default)
+AND
+NOT DB_COS_ConfigRacial(_Character, _Passive, _)
+THEN
+DB_COS_ConfigRacial(_Character, _Passive, _Default);
 
 PROC
 PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
@@ -58,6 +162,34 @@ PROC
 PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
 AND
 DB_COS_ConfigResetCoreEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeStepEvent(_Event, _Delta)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeResetEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialEvent(_Event, _Passive)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialBulkEvent(_Event, _Enabled)
 THEN
 EnableTutorialEvent(_Character, _Event);
 
@@ -86,13 +218,153 @@ PROC_COS_ConfigAddEnabledMechanicMirrors(_Character);
 PROC_COS_ConfigRemoveDisabledMechanicMirrors(_Character);
 
 PROC
+PROC_COS_ConfigRemoveLifeSkillBonuses((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeBonusPassive(_Value, _Passive)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigAddLifeSkillBonus((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Value)
+AND
+DB_COS_ConfigLifeBonusPassive(_Value, _Passive)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSyncLifeSkillResource((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Value)
+AND
+IntegerToReal(_Value, _ValueReal)
+AND
+RealSubtract(0.0, 1000.0, _Reset)
+THEN
+PartyIncreaseActionResourceValue(_Character, "COS_ConfigLifeSkill", _Reset);
+PartyIncreaseActionResourceValue(_Character, "COS_ConfigLifeSkill", _ValueReal);
+
+PROC
+PROC_COS_ConfigSyncLifeSkill((CHARACTER)_Character)
+THEN
+AddPassive(_Character, "COS_CFG_LIFE_SKILL_CARRIER");
+PROC_COS_ConfigRemoveLifeSkillBonuses(_Character);
+PROC_COS_ConfigAddLifeSkillBonus(_Character);
+PROC_COS_ConfigSyncLifeSkillResource(_Character);
+
+PROC
+PROC_COS_ConfigSetLifeSkill((CHARACTER)_Character, (INTEGER)_Value)
+AND
+DB_COS_ConfigLifeSkill(_Character, _OldValue)
+THEN
+NOT DB_COS_ConfigLifeSkill(_Character, _OldValue);
+DB_COS_ConfigLifeSkill(_Character, _Value);
+PROC_COS_ConfigSyncLifeSkill(_Character);
+
+PROC
+PROC_COS_ConfigStepLifeSkill((CHARACTER)_Character, (INTEGER)_Delta)
+AND
+DB_COS_ConfigLifeSkill(_Character, _OldValue)
+AND
+IntegerSum(_OldValue, _Delta, _RawValue)
+AND
+IntegerMax(_RawValue, 0, _FloorValue)
+AND
+IntegerMin(_FloorValue, 20, _Value)
+THEN
+PROC_COS_ConfigSetLifeSkill(_Character, _Value);
+
+PROC
+PROC_COS_ConfigAddEnabledRacialMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, 1)
+AND
+DB_COS_ConfigRacialMirror(_Passive, _Mirror)
+THEN
+AddPassive(_Character, _Mirror);
+
+PROC
+PROC_COS_ConfigRemoveDisabledRacialMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, 0)
+AND
+DB_COS_ConfigRacialMirror(_Passive, _Mirror)
+THEN
+RemovePassive(_Character, _Mirror);
+
+PROC
+PROC_COS_ConfigSyncRacialMirrors((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigAddEnabledRacialMirrors(_Character);
+PROC_COS_ConfigRemoveDisabledRacialMirrors(_Character);
+
+PROC
+PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
+AND
+_Enabled == 1
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+DB_COS_RacialPassiveGranted(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
+AND
+_Enabled == 0
+AND
+DB_COS_RacialPassiveGranted(_Character, _Passive)
+THEN
+RemovePassive(_Character, _Passive);
+NOT DB_COS_RacialPassiveGranted(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyAllRacialPassives((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, _Enabled)
+THEN
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
+
+PROC
+PROC_COS_ConfigSyncRacialPassives((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigApplyAllRacialPassives(_Character);
+PROC_COS_ConfigSyncRacialMirrors(_Character);
+
+PROC
+PROC_COS_ConfigToggleRacialPassive((CHARACTER)_Character, (STRING)_Passive)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, _Enabled)
+AND
+IntegerSubtract(1, _Enabled, _Next)
+THEN
+NOT DB_COS_ConfigRacial(_Character, _Passive, _Enabled);
+DB_COS_ConfigRacial(_Character, _Passive, _Next);
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Next);
+PROC_COS_ConfigSyncRacialMirrors(_Character);
+
+PROC
+PROC_COS_ConfigSetAllRacialPassives((CHARACTER)_Character, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, _Current)
+THEN
+NOT DB_COS_ConfigRacial(_Character, _Passive, _Current);
+DB_COS_ConfigRacial(_Character, _Passive, _Enabled);
+PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
+
+PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
 PROC_COS_ConfigEnsureMechanics(_Character);
+PROC_COS_ConfigEnsureLifeSkill(_Character);
+PROC_COS_ConfigEnsureRacialPassives(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
 PROC_COS_AccrueMastery(_Character);
 PROC_COS_SyncMastery(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
+PROC_COS_ConfigSyncLifeSkill(_Character);
+PROC_COS_ConfigSyncRacialPassives(_Character);
 
 PROC
 PROC_COS_ConfigSuspendMastery((CHARACTER)_Character)
@@ -220,6 +492,61 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Default);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigLifeStepEvent(_Event, _Delta)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigStepLifeSkill(_Character, _Delta);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigLifeResetEvent(_Event)
+AND
+DB_COS_ConfigLifeDefault(_Default)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigSetLifeSkill(_Character, _Default);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigRacialEvent(_Event, _Passive)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigToggleRacialPassive(_Character, _Passive);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigRacialBulkEvent(_Event, _Enabled)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ConfigSetAllRacialPassives(_Character, _Enabled);
+PROC_COS_ConfigSyncRacialMirrors(_Character);
 
 IF
 TutorialEvent(_Character, _Event)

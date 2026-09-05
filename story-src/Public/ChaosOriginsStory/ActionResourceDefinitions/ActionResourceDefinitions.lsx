@@ -42,5 +42,17 @@
       <attribute id="ShowOnActionResourcePanel" type="bool" value="false" />
       <attribute id="UUID" type="guid" value="377db753-9c76-4d31-a2f6-cb02687c95eb" />
     </node>
+    <node id="ActionResourceDefinition">
+      <attribute id="Description" type="TranslatedString" handle="h74000002g0002g4002g8002g000000000002" version="1" />
+      <attribute id="DisplayName" type="TranslatedString" handle="h74000001g0001g4001g8001g000000000001" version="1" />
+      <attribute id="IsHidden" type="bool" value="true" />
+      <attribute id="MaxLevel" type="uint32" value="0" />
+      <attribute id="MaxValue" type="uint32" value="20" />
+      <attribute id="Name" type="FixedString" value="COS_ConfigLifeSkill" />
+      <attribute id="PartyActionResource" type="bool" value="true" />
+      <attribute id="ReplenishType" type="FixedString" value="Never" />
+      <attribute id="ShowOnActionResourcePanel" type="bool" value="false" />
+      <attribute id="UUID" type="guid" value="54b91bc1-2c0f-4e12-9103-7c1555614be6" />
+    </node>
   </children></node></region>
 </save>

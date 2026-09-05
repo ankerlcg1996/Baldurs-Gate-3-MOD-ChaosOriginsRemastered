@@ -456,6 +456,26 @@ foreach ($field in @{ IsHidden = 'true'; MaxValue = '12'; ReplenishType = 'Never
     Require ($masteryResourceAttributes[$field.Key] -eq $field.Value) "COS_ChaosMasteryPoint 字段错误: $($field.Key)"
 }
 
+$lifeSkillResources = @($actionResources.SelectNodes('//node[@id="ActionResourceDefinition"]') | Where-Object {
+    [string]$_.SelectSingleNode('attribute[@id="Name"]').value -eq 'COS_ConfigLifeSkill'
+})
+Require ($lifeSkillResources.Count -eq 1) '必须且只能定义一个 COS_ConfigLifeSkill 设置显示资源'
+$lifeSkillResourceAttributes = @{}
+foreach ($attribute in @($lifeSkillResources[0].SelectNodes('attribute'))) {
+    $lifeSkillResourceAttributes[[string]$attribute.id] = [string]$attribute.value
+}
+foreach ($field in @{
+    UUID = '54b91bc1-2c0f-4e12-9103-7c1555614be6'
+    IsHidden = 'true'
+    MaxValue = '20'
+    PartyActionResource = 'true'
+    ReplenishType = 'Never'
+    ShowOnActionResourcePanel = 'false'
+}.GetEnumerator()) {
+    Require ($lifeSkillResourceAttributes[$field.Key] -eq $field.Value) `
+        "COS_ConfigLifeSkill 字段错误: $($field.Key)"
+}
+
 $masteryRequiredLines = @{
     COS_ChaosMasteryGuide = @('type "PassiveData"', 'data "DisplayName" "h1253cd25g6db6g4704g90e7gadf6ad0df3ed;1"', 'data "Description" "h11f157e4g81c1g4dc8gbd3eg20fbb820812f;1"', 'data "Icon" "COS_Mastery"', 'data "Properties" "Highlighted"', 'data "Boosts" ""')
     COS_ChaosMasteryPointL01 = @('type "PassiveData"', 'data "Icon" "COS_Mastery"', 'data "Properties" "IsHidden"', 'data "Boosts" "ActionResource(COS_ChaosMasteryPoint,1,0)"', 'data "StatsFunctorContext" "OnCreate"', 'data "StatsFunctors" "RestoreResource(COS_ChaosMasteryPoint,1,0)"')
@@ -566,6 +586,7 @@ $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' +
 $expectedPassiveEntries = @(
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
+    'COS_CFG_LIFE_SKILL_CARRIER',
     'COS_BaseStarterSpells',
     'COS_GlobalCarryCapacity50x',
     'COS_Origin_Astarion',
@@ -577,11 +598,11 @@ $expectedPassiveEntries = @(
     'COS_Origin_DarkUrge',
     'COS_FateRevision',
     'COS_ChaosTooltipTemplate'
-) + $tooltipPassiveEntries
+) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
-    'Passive.txt 必须且只能定义基础、身份、命运改签与黄色词条代理被动'
-Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 4) `
-    '三项基础被动与全局负重被动必须全部隐藏'
+    'Passive.txt 必须且只能定义基础、生活熟练项、身份、命运改签与黄色词条代理被动'
+Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 25) `
+    '基础、全局负重、生活熟练项资源载体与20档技能检定加值必须全部隐藏'
 Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
     '起源身份开关基类与命运改签必须在获得时默认开启'
 Require ([regex]::Matches($passive, 'data "ToggleOnFunctors" "ApplyStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
@@ -622,7 +643,7 @@ foreach ($sourceStatus in $tooltipSourceStatuses) {
         Require ($sourceValue -ceq $proxyValue) "黄色词条代理字段与原状态不一致: $sourceStatus -> $proxyPassive / $field"
     }
 }
-$expectedBaseProficienciesBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument);RollBonus(SkillCheck,5)'
+$expectedBaseProficienciesBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)'
 $baseProficienciesBlocks = @([regex]::Matches(
     $passive,
     '(?ms)^new entry "COS_BaseProficiencies".*?(?=^new entry |\z)'
@@ -634,7 +655,29 @@ $baseProficienciesBoosts = @([regex]::Matches(
 ))
 Require ($baseProficienciesBoosts.Count -eq 1 -and
     $baseProficienciesBoosts[0].Groups[1].Value -ceq $expectedBaseProficienciesBoosts) `
-    '混沌起源基础熟练必须精确包含装备熟练和固定技能检定+5'
+    '混沌起源基础熟练必须只包含装备熟练，不得叠加固定技能检定加值'
+$lifeSkillBonusEntries = @([regex]::Matches(
+    $passive,
+    '(?ms)^new entry "COS_CFG_LIFE_SKILL_BONUS_(?<Value>\d{2})".*?(?=^new entry |\z)'
+))
+Require ($lifeSkillBonusEntries.Count -eq 20) '生活熟练项必须定义1至20共20个固定技能检定加值被动'
+foreach ($lifeSkillBonusEntry in $lifeSkillBonusEntries) {
+    $value = [int]$lifeSkillBonusEntry.Groups['Value'].Value
+    Require ($value -ge 1 -and $value -le 20) "生活熟练项被动编号必须位于1至20: $value"
+    $boostMatches = @([regex]::Matches($lifeSkillBonusEntry.Value,
+        '(?m)^data "Boosts" "([^"]*)"\r?$'))
+    Require ($boostMatches.Count -eq 1 -and
+        $boostMatches[0].Groups[1].Value -ceq "RollBonus(SkillCheck,$value)") `
+        "生活熟练项被动必须只提供对应的固定技能检定加值: $value"
+}
+Require (@($lifeSkillBonusEntries | ForEach-Object { $_.Groups['Value'].Value } | Sort-Object -Unique).Count -eq 20) `
+    '生活熟练项1至20的被动编号必须唯一'
+$lifeSkillCarrierBlocks = @([regex]::Matches($passive,
+    '(?ms)^new entry "COS_CFG_LIFE_SKILL_CARRIER".*?(?=^new entry |\z)'))
+Require ($lifeSkillCarrierBlocks.Count -eq 1 -and
+    $lifeSkillCarrierBlocks[0].Value.Contains('data "Properties" "IsHidden"') -and
+    $lifeSkillCarrierBlocks[0].Value.Contains('data "Boosts" "ActionResource(COS_ConfigLifeSkill,20,0)"')) `
+    '生活熟练项设置显示资源必须由唯一且固定提供20点隐藏载体'
 Require (-not ($passive -match 'ProficiencyBonus\(Skill,|ExpertiseBonus\(')) `
     'Story 版不得额外授予任何技能熟练或专精'
 foreach ($spellGrant in @('Target_BoomingBlade_ClassSpell','Target_Guidance','Target_MageHand,,,,Charisma','Target_MinorIllusion,,,,Intelligence','Shout_FeatherFall','Target_Jump','Shout_DisguiseSelf,AddChildren')) {
@@ -861,8 +904,17 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 668 -and @($handles | Select-Object -Unique).Count -eq 668) `
-        "完整本地化必须包含 668 个唯一文本: $language"
+    Require ($handles.Count -eq 718 -and @($handles | Select-Object -Unique).Count -eq 718) `
+        "完整本地化必须包含 718 个唯一文本: $language"
+    foreach ($settingsHandle in @(
+        'h74000001g0001g4001g8001g000000000001',
+        'h74000010g0010g4010g8010g000000000010',
+        'h74000020g0020g4020g8020g000000000020',
+        'h74000201g0201g4201g8201g000000000201',
+        'h74000220g0220g4220g8220g000000000220'
+    )) {
+        Require ($handles -contains $settingsHandle) "完整本地化缺少生活熟练项或种族被动文本: $language / $settingsHandle"
+    }
     Require (-not ($handles | Where-Object { $_ -in @(
         'hb6537e8cg9428g4fd3g9af1gfd1e3f258ec7',
         'hae5f271agdd7cg4353gb02bga5d4ede408e6',
@@ -2391,6 +2443,28 @@ $expectedCoreMirrors = [ordered]@{
     Duality = 'COS_CFG_MECH_DUALITY'; AllIn = 'COS_CFG_MECH_ALLIN'; Fate = 'COS_CFG_MECH_FATE'
     Genesis = 'COS_CFG_MECH_GENESIS'; Strike = 'COS_CFG_MECH_STRIKE'; Mastery = 'COS_CFG_MECH_MASTERY'
 }
+$expectedRacialMirrors = [ordered]@{
+    DeepGnome_StoneCamouflage = 'COS_CFG_RACE_DEEPGNOME_STONE'
+    Drow_DrowWeaponTraining = 'COS_CFG_RACE_DROW_WEAPON'
+    Duergar_DuergarResilience = 'COS_CFG_RACE_DUERGAR_RESILIENCE'
+    Dwarf_DwarvenCombatTraining = 'COS_CFG_RACE_DWARF_WEAPON'
+    Dwarf_DwarvenResilience = 'COS_CFG_RACE_DWARF_RESILIENCE'
+    Elf_WeaponTraining = 'COS_CFG_RACE_ELF_WEAPON'
+    FeyAncestry = 'COS_CFG_RACE_FEY_ANCESTRY'
+    Gith_MartialProdigy = 'COS_CFG_RACE_GITH_MARTIAL'
+    Gnome_Cunning = 'COS_CFG_RACE_GNOME_CUNNING'
+    Halfling_Brave = 'COS_CFG_RACE_HALFLING_BRAVE'
+    Halfling_LightfootStealth = 'COS_CFG_RACE_HALFLING_LIGHTFOOT'
+    Halfling_Lucky = 'COS_CFG_RACE_HALFLING_LUCKY'
+    Halfling_StoutResilience = 'COS_CFG_RACE_HALFLING_STOUT'
+    HumanMilitia = 'COS_CFG_RACE_HUMAN_MILITIA'
+    MountainDwarf_DwarvenArmorTraining = 'COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR'
+    RelentlessEndurance = 'COS_CFG_RACE_RELENTLESS'
+    RockGnome_ArtificersLore = 'COS_CFG_RACE_ROCK_GNOME_LORE'
+    SavageAttacks = 'COS_CFG_RACE_SAVAGE_ATTACKS'
+    SuperiorDarkvision = 'COS_CFG_RACE_SUPERIOR_DARKVISION'
+    Tiefling_HellishResistance = 'COS_CFG_RACE_TIEFLING_RESISTANCE'
+}
 $defaultMatches = @([regex]::Matches($configGoal,
     '(?m)^DB_COS_ConfigMechanicDefault\("(?<Key>[^"]+)", (?<Value>\d+)\);$'))
 $defaultPairs = @($defaultMatches | ForEach-Object { "$($_.Groups['Key'].Value)=$($_.Groups['Value'].Value)" })
@@ -2433,14 +2507,60 @@ Require ([regex]::Matches($configGoal,
     '(?m)^DB_COS_ConfigResetCoreEvent\(\(TUTORIALEVENT\)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470\);$').Count -eq 1) `
     '恢复默认必须只注册一个固定 TutorialEvent UUID'
 Require ([regex]::Matches($configGoal,
-    '(?m)^DB_COS_Config(?:MechanicEvent|UiOpenedEvent|ResetCoreEvent)\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}(?:, "[^"]+")?\);$').Count -eq 11) `
-    '全部11个原生设置事件必须按游戏 Story 头声明为 TUTORIALEVENT，不能使用普通 STRING'
+    '(?m)^DB_COS_Config(?:MechanicEvent|UiOpenedEvent|ResetCoreEvent|LifeStepEvent|LifeResetEvent|RacialEvent|RacialBulkEvent)\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}(?:, (?:"[^"]+"|-?\d+))?\);$').Count -eq 36) `
+    '全部36个原生设置事件必须按游戏 Story 头声明为 TUTORIALEVENT，不能使用普通 STRING'
+
+Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigLifeDefault\(5\);$').Count -eq 1) `
+    '生活熟练项默认值必须唯一且为5'
+$lifeMapMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigLifeBonusPassive\((?<Value>\d+), "COS_CFG_LIFE_SKILL_BONUS_(?<Suffix>\d{2})"\);$'))
+Require ($lifeMapMatches.Count -eq 20) '生活熟练项Story映射必须恰好包含1至20'
+foreach ($lifeMap in $lifeMapMatches) {
+    Require ([int]$lifeMap.Groups['Value'].Value -eq [int]$lifeMap.Groups['Suffix'].Value) `
+        '生活熟练项Story映射的数值和被动后缀必须一致'
+}
+$lifeStepMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigLifeStepEvent\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}, (?<Delta>-?\d+)\);$'))
+Require ($lifeStepMatches.Count -eq 2 -and
+    -not (Compare-Object @(-1, 1) @($lifeStepMatches | ForEach-Object { [int]$_.Groups['Delta'].Value } | Sort-Object))) `
+    '生活熟练项只能注册步长为-1和+1的两个固定事件'
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigLifeResetEvent\(\(TUTORIALEVENT\)COS_CFG_LIFE_RESET_563ba5fe-c808-4a2f-80b5-a1b4feb54649\);$').Count -eq 1) `
+    '生活熟练项必须注册唯一的恢复默认事件'
+
+$racialDefaultMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigRacialDefault\("(?<Passive>[^"]+)", (?<Value>\d+)\);$'))
+$racialDefaultPassives = @($racialDefaultMatches | ForEach-Object { $_.Groups['Passive'].Value } | Sort-Object)
+Require ($racialDefaultMatches.Count -eq 20 -and
+    @($racialDefaultPassives | Sort-Object -Unique).Count -eq 20 -and
+    @($racialDefaultMatches | Where-Object { $_.Groups['Value'].Value -ne '0' }).Count -eq 0 -and
+    -not (Compare-Object ($expectedRacialMirrors.Keys | Sort-Object) $racialDefaultPassives)) `
+    '20个去重官方种族被动必须全部默认关闭'
+$racialMirrorMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigRacialMirror\("(?<Passive>[^"]+)", "(?<Mirror>COS_CFG_RACE_[A-Z0-9_]+)"\);$'))
+$racialMirrorPairs = @($racialMirrorMatches | ForEach-Object {
+    "$($_.Groups['Passive'].Value)=$($_.Groups['Mirror'].Value)"
+})
+$expectedRacialMirrorPairs = @($expectedRacialMirrors.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" })
+Require ($racialMirrorMatches.Count -eq 20 -and
+    -not (Compare-Object ($expectedRacialMirrorPairs | Sort-Object) ($racialMirrorPairs | Sort-Object))) `
+    '20个官方种族被动必须唯一映射到20个UI回显被动'
+$racialEventMatches = @([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigRacialEvent\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}, "(?<Passive>[^"]+)"\);$'))
+$racialEventPassives = @($racialEventMatches | ForEach-Object { $_.Groups['Passive'].Value } | Sort-Object)
+Require ($racialEventMatches.Count -eq 20 -and
+    -not (Compare-Object ($expectedRacialMirrors.Keys | Sort-Object) $racialEventPassives)) `
+    '20个官方种族被动必须各自注册唯一固定事件'
+Require ([regex]::Matches($configGoal,
+    '(?m)^DB_COS_ConfigRacialBulkEvent\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}, [01]\);$').Count -eq 2) `
+    '种族被动必须只注册全选和全取消两个批量事件'
 
 $configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
     ForEach-Object { $_.Groups[1].Value })
-Require ($configPassiveEntries.Count -eq 9 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 9 -and
-    -not (Compare-Object ($coreMechanicMirrors | Sort-Object) ($configPassiveEntries | Sort-Object))) `
-    'ChaosConfig.txt 必须且只能定义九个核心机制回显被动'
+$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values)
+Require ($configPassiveEntries.Count -eq 29 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 29 -and
+    -not (Compare-Object ($expectedConfigPassiveEntries | Sort-Object) ($configPassiveEntries | Sort-Object))) `
+    'ChaosConfig.txt 必须且只能定义九个核心机制与20个种族被动回显'
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
@@ -2455,6 +2575,13 @@ foreach ($mirror in $coreMechanicMirrors) {
     }
     Require (-not $mirrorBlock.Contains('data "Properties" "IsHidden"')) `
         "核心设置回显被动必须能被 Stats.Passives 枚举，不能使用 IsHidden: $mirror"
+}
+foreach ($mirror in $expectedRacialMirrors.Values) {
+    $mirrorBlock = [regex]::Match($configStats,
+        '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
+    Require (-not $mirrorBlock.Contains('data "Properties" "IsHidden"') -and
+        -not $mirrorBlock.Contains('data "Boosts" ')) `
+        "种族被动回显必须可枚举且不得包含玩法Boost: $mirror"
 }
 
 $configAddMirrorBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigAddEnabledMechanicMirrors')
@@ -2512,10 +2639,14 @@ Require ($configSyncCharacterBlocks.Count -eq 1) '核心设置必须且只能定
 $configSyncCharacterBlock = $configSyncCharacterBlocks[0]
 foreach ($syncAction in @(
     'PROC_COS_ConfigEnsureMechanics(_Character);',
+    'PROC_COS_ConfigEnsureLifeSkill(_Character);',
+    'PROC_COS_ConfigEnsureRacialPassives(_Character);',
     'PROC_COS_ConfigEnableEvents(_Character);',
     'PROC_COS_AccrueMastery(_Character);',
     'PROC_COS_SyncMastery(_Character);',
-    'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
+    'PROC_COS_ConfigSyncMechanicMirrors(_Character);',
+    'PROC_COS_ConfigSyncLifeSkill(_Character);',
+    'PROC_COS_ConfigSyncRacialPassives(_Character);'
 )) {
     Require ((Get-StoryThen $configSyncCharacterBlock).Contains($syncAction)) `
         "ConfigSyncCharacter 必须同块调用: $syncAction"
@@ -2629,8 +2760,87 @@ Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore').Count -
     (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors').Count -ge 1) `
     '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
 
+$ensureLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigEnsureLifeSkill')
+Require ($ensureLifeBlocks.Count -eq 1 -and
+    $ensureLifeBlocks[0].Contains('DB_COS_ConfigLifeDefault(_Default)') -and
+    $ensureLifeBlocks[0].Contains('NOT DB_COS_ConfigLifeSkill(_Character, _)') -and
+    (Get-StoryThen $ensureLifeBlocks[0]).Contains('DB_COS_ConfigLifeSkill(_Character, _Default);')) `
+    '生活熟练项初始化必须只在缺失时写入默认值5'
+$stepLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigStepLifeSkill')
+Require ($stepLifeBlocks.Count -eq 1 -and
+    $stepLifeBlocks[0].Contains('IntegerSum(_OldValue, _Delta, _RawValue)') -and
+    $stepLifeBlocks[0].Contains('IntegerMax(_RawValue, 0, _FloorValue)') -and
+    $stepLifeBlocks[0].Contains('IntegerMin(_FloorValue, 20, _Value)') -and
+    (Get-StoryThen $stepLifeBlocks[0]).Contains('PROC_COS_ConfigSetLifeSkill(_Character, _Value);')) `
+    '生活熟练项步进必须先计算再夹取到0至20并经唯一设置过程落地'
+$setLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSetLifeSkill')
+Require ($setLifeBlocks.Count -eq 1 -and
+    (Get-StoryThen $setLifeBlocks[0]).Contains('NOT DB_COS_ConfigLifeSkill(_Character, _OldValue);') -and
+    (Get-StoryThen $setLifeBlocks[0]).Contains('DB_COS_ConfigLifeSkill(_Character, _Value);') -and
+    (Get-StoryThen $setLifeBlocks[0]).Contains('PROC_COS_ConfigSyncLifeSkill(_Character);')) `
+    '生活熟练项设置必须原子替换存档值并立即同步玩法和UI'
+$syncLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncLifeSkill')
+foreach ($lifeSyncAction in @(
+    'AddPassive(_Character, "COS_CFG_LIFE_SKILL_CARRIER");',
+    'PROC_COS_ConfigRemoveLifeSkillBonuses(_Character);',
+    'PROC_COS_ConfigAddLifeSkillBonus(_Character);',
+    'PROC_COS_ConfigSyncLifeSkillResource(_Character);'
+)) {
+    Require ($syncLifeBlocks.Count -eq 1 -and (Get-StoryThen $syncLifeBlocks[0]).Contains($lifeSyncAction)) `
+        "生活熟练项同步缺少: $lifeSyncAction"
+}
+$lifeResourceBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncLifeSkillResource')
+Require ($lifeResourceBlocks.Count -eq 1 -and
+    $lifeResourceBlocks[0].Contains('IntegerToReal(_Value, _ValueReal)') -and
+    $lifeResourceBlocks[0].Contains('RealSubtract(0.0, 1000.0, _Reset)') -and
+    [regex]::Matches((Get-StoryThen $lifeResourceBlocks[0]),
+        '(?m)^PartyIncreaseActionResourceValue\(_Character, "COS_ConfigLifeSkill", _(?:Reset|ValueReal)\);$').Count -eq 2) `
+    '生活熟练项UI镜像必须先清空组资源再写入当前值'
+
+$racialApplyBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigApplyRacialPassive')
+$racialEnableBlocks = @($racialApplyBlocks | Where-Object {
+    $_.Contains('_Enabled == 1') -and $_.Contains('HasPassive(_Character, _Passive, 0)')
+})
+$racialDisableBlocks = @($racialApplyBlocks | Where-Object {
+    $_.Contains('_Enabled == 0') -and $_.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')
+})
+Require ($racialApplyBlocks.Count -eq 2 -and $racialEnableBlocks.Count -eq 1 -and
+    (Get-StoryThen $racialEnableBlocks[0]).Contains('AddPassive(_Character, _Passive);') -and
+    (Get-StoryThen $racialEnableBlocks[0]).Contains('DB_COS_RacialPassiveGranted(_Character, _Passive);')) `
+    '开启种族被动只能在角色缺失时添加并记录模组归属'
+Require ($racialDisableBlocks.Count -eq 1 -and
+    (Get-StoryThen $racialDisableBlocks[0]).Contains('RemovePassive(_Character, _Passive);') -and
+    (Get-StoryThen $racialDisableBlocks[0]).Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive);')) `
+    '关闭种族被动必须以模组授予账本为前置条件并同时清账'
+$racialBulkBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSetAllRacialPassives')
+Require ($racialBulkBlocks.Count -eq 1 -and
+    $racialBulkBlocks[0].Contains('DB_COS_ConfigRacial(_Character, _Passive, _Current)') -and
+    (Get-StoryThen $racialBulkBlocks[0]).Contains('PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);')) `
+    '种族被动全选和全取消必须逐项复用同一归属保护过程'
+$racialToggleBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigToggleRacialPassive')
+Require ($racialToggleBlocks.Count -eq 1 -and
+    $racialToggleBlocks[0].Contains('IntegerSubtract(1, _Enabled, _Next)') -and
+    (Get-StoryThen $racialToggleBlocks[0]).Contains('PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Next);')) `
+    '种族被动单项切换必须从唯一当前值取反并复用归属保护过程'
+
+foreach ($eventProcedure in @(
+    'PROC_COS_ConfigStepLifeSkill', 'PROC_COS_ConfigSetLifeSkill',
+    'PROC_COS_ConfigToggleRacialPassive', 'PROC_COS_ConfigSetAllRacialPassives'
+)) {
+    $eventBlocks = @($configIfBlocks | Where-Object {
+        $_.Contains('TutorialEvent(_Character, _Event)') -and $_.Contains($eventProcedure)
+    })
+    Require ($eventBlocks.Count -eq 1) "设置写入必须由唯一固定TutorialEvent块调用: $eventProcedure"
+    foreach ($gate in @(
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
+        'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
+    )) {
+        Require ($eventBlocks[0].Contains($gate)) "设置写入缺少门禁 $gate : $eventProcedure"
+    }
+}
+
 foreach ($forbiddenConfigPattern in @(
-    '(?i)[A-Za-z0-9_]*(Echo|Racial|Race)[A-Za-z0-9_]*',
+    '(?i)[A-Za-z0-9_]*Echo[A-Za-z0-9_]*',
     '(?i)Script\s*Extender', '(?i)\bNMCM\b', '(?i)\bMCM\b'
 )) {
     Require (-not ($configGoal -match $forbiddenConfigPattern -or $configStats -match $forbiddenConfigPattern)) `
@@ -3730,8 +3940,33 @@ $expectedTutorialEvents = [ordered]@{
     COS_CFG_MECH_STRIKE = '78baf203-f60c-4dac-99ea-a7f5d1339d71'
     COS_CFG_MECH_MASTERY = '146d28dc-aa94-40e8-9bad-91b069055526'
     COS_CFG_RESET_CORE = '08c8d67a-ace5-4830-8c2b-38b8c92bb470'
+    COS_CFG_LIFE_MINUS = 'e438f411-6a7e-4060-9e0b-c7f6c26e751a'
+    COS_CFG_LIFE_PLUS = 'ddcf4293-e7d1-4154-a9c4-19fa24a35f38'
+    COS_CFG_LIFE_RESET = '563ba5fe-c808-4a2f-80b5-a1b4feb54649'
+    COS_CFG_RACE_ALL = 'e0927578-b7bd-42d8-b497-4f6fa2d57053'
+    COS_CFG_RACE_NONE = '8d98892a-4cc3-4fb3-88b0-7bcbff3d7abe'
+    COS_CFG_RACE_DEEPGNOME_STONE = '2535def3-de94-4a94-b5be-b7e08e143709'
+    COS_CFG_RACE_DROW_WEAPON = '712d9a0d-7d5f-4f42-a808-cd2dfb9e3685'
+    COS_CFG_RACE_DUERGAR_RESILIENCE = 'd523163f-95a3-459b-92f4-59b9dc499b75'
+    COS_CFG_RACE_DWARF_WEAPON = 'dd78b5d4-1cab-48eb-91b6-583b00eede31'
+    COS_CFG_RACE_DWARF_RESILIENCE = '6394ac5c-d9ae-4fe8-94bb-88900fc50d46'
+    COS_CFG_RACE_ELF_WEAPON = '0aab1270-5408-4fc2-a473-9f6c893f018a'
+    COS_CFG_RACE_FEY_ANCESTRY = '342a9ee6-2aec-4448-885c-8724af4d6c6b'
+    COS_CFG_RACE_GITH_MARTIAL = '8a7fb402-80c6-424e-a90c-a627bf6187e8'
+    COS_CFG_RACE_GNOME_CUNNING = '50b71015-0ed0-4b12-8f46-322e5c9de3fe'
+    COS_CFG_RACE_HALFLING_BRAVE = '7937b010-b9cb-4a6b-b732-33e12a5e08a3'
+    COS_CFG_RACE_HALFLING_LIGHTFOOT = 'aa96a380-d8a4-475e-ac9e-b24502b914aa'
+    COS_CFG_RACE_HALFLING_LUCKY = 'ed99bd77-fd4e-4bbc-80d1-de2b125ce4ce'
+    COS_CFG_RACE_HALFLING_STOUT = '69bf2c6d-7e8c-4dc6-91cd-8ef359b8bcd1'
+    COS_CFG_RACE_HUMAN_MILITIA = 'a18a929b-1faa-44ac-b364-b03858bd6504'
+    COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR = 'a99eb828-5907-489d-8492-81e833c25e68'
+    COS_CFG_RACE_RELENTLESS = '8ddf3765-2814-4085-a0e1-376aaf9d984c'
+    COS_CFG_RACE_ROCK_GNOME_LORE = 'b227b0fd-026e-4931-af70-dd436277ddc0'
+    COS_CFG_RACE_SAVAGE_ATTACKS = '108ff1c7-b025-46cc-8b10-e9729e3fb4c3'
+    COS_CFG_RACE_SUPERIOR_DARKVISION = 'c0888d3b-4c97-4c50-95b9-34620ba1fdef'
+    COS_CFG_RACE_TIEFLING_RESISTANCE = '022d736c-8b4b-4599-9e51-e584a0e1c05d'
 }
-Require ($tutorialEventNodes.Count -eq 11) 'TutorialEvents 必须且只能包含11个 TutorialEvent node'
+Require ($tutorialEventNodes.Count -eq 36) 'TutorialEvents 必须且只能包含36个 TutorialEvent node'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -3862,6 +4097,28 @@ $expectedConfigRows = [ordered]@{
     Genesis = @{ Uuid = '063cc1a5-fe65-43e5-8531-d6974a7b1dce'; Mirror = 'COS_CFG_MECH_GENESIS' }
     Strike = @{ Uuid = '78baf203-f60c-4dac-99ea-a7f5d1339d71'; Mirror = 'COS_CFG_MECH_STRIKE' }
     Mastery = @{ Uuid = '146d28dc-aa94-40e8-9bad-91b069055526'; Mirror = 'COS_CFG_MECH_MASTERY' }
+}
+$expectedRacialConfigRows = [ordered]@{
+    DeepGnomeStone = @{ Uuid = '2535def3-de94-4a94-b5be-b7e08e143709'; Mirror = 'COS_CFG_RACE_DEEPGNOME_STONE' }
+    DrowWeapon = @{ Uuid = '712d9a0d-7d5f-4f42-a808-cd2dfb9e3685'; Mirror = 'COS_CFG_RACE_DROW_WEAPON' }
+    DuergarResilience = @{ Uuid = 'd523163f-95a3-459b-92f4-59b9dc499b75'; Mirror = 'COS_CFG_RACE_DUERGAR_RESILIENCE' }
+    DwarfWeapon = @{ Uuid = 'dd78b5d4-1cab-48eb-91b6-583b00eede31'; Mirror = 'COS_CFG_RACE_DWARF_WEAPON' }
+    DwarfResilience = @{ Uuid = '6394ac5c-d9ae-4fe8-94bb-88900fc50d46'; Mirror = 'COS_CFG_RACE_DWARF_RESILIENCE' }
+    ElfWeapon = @{ Uuid = '0aab1270-5408-4fc2-a473-9f6c893f018a'; Mirror = 'COS_CFG_RACE_ELF_WEAPON' }
+    FeyAncestry = @{ Uuid = '342a9ee6-2aec-4448-885c-8724af4d6c6b'; Mirror = 'COS_CFG_RACE_FEY_ANCESTRY' }
+    GithMartial = @{ Uuid = '8a7fb402-80c6-424e-a90c-a627bf6187e8'; Mirror = 'COS_CFG_RACE_GITH_MARTIAL' }
+    GnomeCunning = @{ Uuid = '50b71015-0ed0-4b12-8f46-322e5c9de3fe'; Mirror = 'COS_CFG_RACE_GNOME_CUNNING' }
+    HalflingBrave = @{ Uuid = '7937b010-b9cb-4a6b-b732-33e12a5e08a3'; Mirror = 'COS_CFG_RACE_HALFLING_BRAVE' }
+    HalflingLightfoot = @{ Uuid = 'aa96a380-d8a4-475e-ac9e-b24502b914aa'; Mirror = 'COS_CFG_RACE_HALFLING_LIGHTFOOT' }
+    HalflingLucky = @{ Uuid = 'ed99bd77-fd4e-4bbc-80d1-de2b125ce4ce'; Mirror = 'COS_CFG_RACE_HALFLING_LUCKY' }
+    HalflingStout = @{ Uuid = '69bf2c6d-7e8c-4dc6-91cd-8ef359b8bcd1'; Mirror = 'COS_CFG_RACE_HALFLING_STOUT' }
+    HumanMilitia = @{ Uuid = 'a18a929b-1faa-44ac-b364-b03858bd6504'; Mirror = 'COS_CFG_RACE_HUMAN_MILITIA' }
+    MountainDwarfArmor = @{ Uuid = 'a99eb828-5907-489d-8492-81e833c25e68'; Mirror = 'COS_CFG_RACE_MOUNTAIN_DWARF_ARMOR' }
+    Relentless = @{ Uuid = '8ddf3765-2814-4085-a0e1-376aaf9d984c'; Mirror = 'COS_CFG_RACE_RELENTLESS' }
+    RockGnomeLore = @{ Uuid = 'b227b0fd-026e-4931-af70-dd436277ddc0'; Mirror = 'COS_CFG_RACE_ROCK_GNOME_LORE' }
+    SavageAttacks = @{ Uuid = '108ff1c7-b025-46cc-8b10-e9729e3fb4c3'; Mirror = 'COS_CFG_RACE_SAVAGE_ATTACKS' }
+    SuperiorDarkvision = @{ Uuid = 'c0888d3b-4c97-4c50-95b9-34620ba1fdef'; Mirror = 'COS_CFG_RACE_SUPERIOR_DARKVISION' }
+    TieflingResistance = @{ Uuid = '022d736c-8b4b-4599-9e51-e584a0e1c05d'; Mirror = 'COS_CFG_RACE_TIEFLING_RESISTANCE' }
 }
 function Get-XamlNamedNodes([xml]$Document, [string]$Name) {
     return @($Document.SelectNodes('//*') | Where-Object {
@@ -4021,9 +4278,17 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
             "手柄核心设置页不得引用键鼠专属资源 ${forbiddenResource}: $PageName"
     }
 }
-function Test-ControllerAcceptContract([xml]$Document, [string]$PageName) {
-    $expectedAcceptNames = @($expectedConfigRows.Keys | ForEach-Object { "COSConfigToggle$_" }) +
-        @('COSConfigResetCore')
+$legacyAcceptNames = @($expectedConfigRows.Keys | ForEach-Object { "COSConfigToggle$_" }) +
+    @('COSConfigResetCore')
+$racialControlIds = @(
+    'DeepGnomeStone','DrowWeapon','DuergarResilience','DwarfWeapon','DwarfResilience',
+    'ElfWeapon','FeyAncestry','GithMartial','GnomeCunning','HalflingBrave',
+    'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
+    'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
+)
+$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone') +
+    @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }))
+function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
         ($_.LocalName -eq 'LSButton' -or $_.LocalName -eq 'LSToggleButton') -and
         $_.GetAttribute('BoundEvent') -eq 'UIAccept'
@@ -4031,10 +4296,10 @@ function Test-ControllerAcceptContract([xml]$Document, [string]$PageName) {
     $acceptNames = @($acceptButtons | ForEach-Object {
         $_.GetAttribute('Name', $xamlNamespace)
     })
-    Require ($acceptButtons.Count -eq 10 -and
-        @($acceptNames | Select-Object -Unique).Count -eq 10 -and
-        -not (Compare-Object ($expectedAcceptNames | Sort-Object) ($acceptNames | Sort-Object))) `
-        "手柄核心设置页只能由九个切换按钮和重置按钮消费 UIAccept: $PageName"
+    Require ($acceptButtons.Count -eq $ExpectedAcceptNames.Count -and
+        @($acceptNames | Select-Object -Unique).Count -eq $ExpectedAcceptNames.Count -and
+        -not (Compare-Object ($ExpectedAcceptNames | Sort-Object) ($acceptNames | Sort-Object))) `
+        "手柄设置页消费 UIAccept 的控件必须与批准清单完全一致: $PageName"
 }
 function Require-ConfigRowMutationRejected([string]$Markup, [string]$Message, [string]$PageName = 'COS_ConfigMenu.xaml') {
     [xml]$mutationDocument = $Markup
@@ -4070,7 +4335,7 @@ function Require-ControllerAcceptMutationRejected([string]$Markup, [string]$Mess
     [xml]$mutationDocument = $Markup
     $rejected = $false
     try {
-        Test-ControllerAcceptContract $mutationDocument 'COS_ConfigMenu_c.xaml'
+        Test-ControllerAcceptContract $mutationDocument 'COS_ConfigMenu_c.xaml' $legacyAcceptNames
     } catch {
         $rejected = $true
     }
@@ -4150,7 +4415,7 @@ Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'Foc
     '手柄页错误 FocusMovementMode 必须被拒绝'
 $configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleFate" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
 [xml]$configControllerAcceptProbeDocument = $configControllerAcceptProbe
-Test-ControllerAcceptContract $configControllerAcceptProbeDocument '内存正向探针'
+Test-ControllerAcceptContract $configControllerAcceptProbeDocument '内存正向探针' $legacyAcceptNames
 Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace '</Root>', '<ls:LSButton x:Name="AlwaysOn" BoundEvent="UIAccept" IsEnabled="True"/></Root>') `
     '手柄页注入第十一个始终启用 UIAccept 必须被拒绝'
 Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace 'x:Name="COSConfigCloseCore"', 'x:Name="COSConfigCloseCore" BoundEvent="UIAccept"') `
@@ -4166,6 +4431,8 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
             'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
+            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
         $controllerFocusableNodes = @($pageDocument.SelectNodes('//*') | Where-Object {
@@ -4176,7 +4443,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
             $_.GetAttribute('Name', $xamlNamespace)
         })
         Require (($controllerFocusOrder -join '|') -eq ($expectedControllerFocusOrder -join '|')) `
-            "手柄焦点顺序必须是九行、重置、关闭，且不得存在额外焦点消费者: $pageName"
+            "手柄焦点顺序必须覆盖核心、生活熟练项、种族被动、重置与关闭，且不得存在额外焦点消费者: $pageName"
         $closeButtons = @(Get-XamlNamedNodes $pageDocument 'COSConfigCloseCore')
         Require ($closeButtons.Count -eq 1 -and $closeButtons[0].LocalName -eq 'LSButton' -and
             $closeButtons[0].GetAttribute('Command') -eq '{Binding CustomEvent}' -and
@@ -4192,11 +4459,11 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         Where-Object { $_.GetAttribute('Source') -eq '{StaticResource OptionsBackground}' })
     Require ($optionsBackgrounds.Count -eq 1) "空壳页必须使用 OptionsBackground: $pageName"
     $rowsViewports = @(Get-XamlNamedNodes $pageDocument 'COSConfigRowsViewport')
-    Require ($rowsViewports.Count -eq 1 -and $rowsViewports[0].LocalName -eq 'Viewbox' -and
+    Require ($rowsViewports.Count -eq 1 -and $rowsViewports[0].LocalName -eq 'ScrollViewer' -and
         $rowsViewports[0].GetAttribute('Grid.Row') -eq '2' -and
-        $rowsViewports[0].GetAttribute('Stretch') -eq 'Uniform' -and
-        $rowsViewports[0].GetAttribute('StretchDirection') -eq 'DownOnly') `
-        "核心设置九行必须放在可向下缩放的 Viewbox 中，避免低分辨率裁切: $pageName"
+        $rowsViewports[0].GetAttribute('VerticalScrollBarVisibility') -eq 'Auto' -and
+        $rowsViewports[0].GetAttribute('HorizontalScrollBarVisibility') -eq 'Disabled') `
+        "扩展设置必须放在唯一的垂直滚动容器中: $pageName"
     Require (-not $page.Contains('Margin="180,80"') -and -not $page.Contains('Width="1180"')) `
         "核心设置页不得保留导致低分辨率越界的固定外边距或1180宽度: $pageName"
     $cancelBindings = @($pageDocument.SelectNodes('//*[local-name()="LSInputBinding"]') |
@@ -4213,15 +4480,84 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq 11 -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq 11 -and
+    Require ($tutorialActions.Count -eq 36 -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq 36 -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
-        "核心设置页必须恰好调用11个唯一固定 TutorialEvent UUID: $pageName"
+        "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {
         Require ($tutorialAction.GetAttribute('Command') -eq $tutorialEventCommandBinding) `
             "核心设置页 InvokeCommandAction 必须精确绑定 DataContext.TutorialEvent: $pageName"
     }
     foreach ($configRow in $expectedConfigRows.GetEnumerator()) {
         Test-ConfigRowContract $pageDocument $configRow.Key $configRow.Value.Uuid $configRow.Value.Mirror $pageName
+    }
+    foreach ($racialRow in $expectedRacialConfigRows.GetEnumerator()) {
+        $rowName = "COSConfigRaceRow$($racialRow.Key)"
+        $toggleName = "COSConfigRaceToggle$($racialRow.Key)"
+        $mirrorName = "COSConfigRaceMirror$($racialRow.Key)"
+        $rows = @(Get-XamlNamedNodes $pageDocument $rowName)
+        $toggles = @(Get-XamlNamedNodes $pageDocument $toggleName)
+        $mirrors = @(Get-XamlNamedNodes $pageDocument $mirrorName)
+        Require ($rows.Count -eq 1 -and $toggles.Count -eq 1 -and $mirrors.Count -eq 1) `
+            "种族被动行、开关和镜像必须各自唯一: $($racialRow.Key)/$pageName"
+        Require ($toggles[0].LocalName -eq 'LSToggleButton' -and
+            $mirrors[0].GetAttribute('ItemsSource') -eq '{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}') `
+            "种族被动必须使用原生开关和当前角色Passives镜像: $($racialRow.Key)/$pageName"
+        $actions = @($toggles[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+        Require ($actions.Count -eq 1) "种族被动开关必须只有一个固定事件: $($racialRow.Key)/$pageName"
+        Require-TutorialEventAction $actions[0] $racialRow.Value.Uuid `
+            "种族被动开关UUID错误: $($racialRow.Key)/$pageName"
+        $dataTriggers = @($mirrors[0].SelectNodes('.//*[local-name()="DataTrigger"]'))
+        Require ($dataTriggers.Count -eq 1 -and
+            $dataTriggers[0].GetAttribute('Binding') -eq '{Binding Name.Str}' -and
+            $dataTriggers[0].GetAttribute('Value') -eq $racialRow.Value.Mirror) `
+            "种族被动镜像必须绑定唯一批准标识: $($racialRow.Key)/$pageName"
+        if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
+            Require ($rows[0].LocalName -eq 'ContentControl' -and
+                $rows[0].GetAttribute('Focusable') -eq 'True' -and
+                $rows[0].GetAttribute('ls:MoveFocus.Focusable') -eq 'True' -and
+                $toggles[0].GetAttribute('BoundEvent') -eq 'UIAccept' -and
+                $toggles[0].GetAttribute('IsEnabled') -eq
+                    "{Binding Path=(ls:MoveFocus.IsFocused), ElementName=$rowName}") `
+                "手柄种族被动行必须独占焦点并门控子开关: $($racialRow.Key)/$pageName"
+        } else {
+            Require ($rows[0].LocalName -eq 'Grid' -and -not $toggles[0].HasAttribute('BoundEvent')) `
+                "键鼠种族被动行不得伪造手柄激活: $($racialRow.Key)/$pageName"
+        }
+    }
+    $lifeValueControls = @(Get-XamlNamedNodes $pageDocument 'COSConfigLifeValue')
+    Require ($lifeValueControls.Count -eq 1 -and
+        $lifeValueControls[0].GetAttribute('ItemsSource') -eq
+            '{Binding CurrentPlayer.SelectedCharacter.Stats.ActionResources}') `
+        "生活熟练项必须唯一绑定当前角色ActionResources: $pageName"
+    $lifeTypeTriggers = @($lifeValueControls[0].SelectNodes('.//*[local-name()="DataTrigger"]') |
+        Where-Object { $_.GetAttribute('Binding') -eq '{Binding TypeId}' })
+    $lifeProgressBars = @($lifeValueControls[0].SelectNodes('.//*[local-name()="LSProgressBar"]'))
+    Require ($lifeTypeTriggers.Count -eq 1 -and
+        $lifeTypeTriggers[0].GetAttribute('Value') -eq 'COS_ConfigLifeSkill' -and
+        $lifeProgressBars.Count -eq 1 -and
+        $lifeProgressBars[0].GetAttribute('Minimum') -eq '0' -and
+        $lifeProgressBars[0].GetAttribute('Maximum') -eq '20') `
+        "生活熟练项显示必须绑定COS_ConfigLifeSkill并固定为0至20: $pageName"
+    foreach ($lifeButton in @(
+        @{ Name = 'COSConfigLifeMinus'; Uuid = $expectedTutorialEvents.COS_CFG_LIFE_MINUS },
+        @{ Name = 'COSConfigLifePlus'; Uuid = $expectedTutorialEvents.COS_CFG_LIFE_PLUS },
+        @{ Name = 'COSConfigLifeReset'; Uuid = $expectedTutorialEvents.COS_CFG_LIFE_RESET },
+        @{ Name = 'COSConfigRaceAll'; Uuid = $expectedTutorialEvents.COS_CFG_RACE_ALL },
+        @{ Name = 'COSConfigRaceNone'; Uuid = $expectedTutorialEvents.COS_CFG_RACE_NONE }
+    )) {
+        $buttons = @(Get-XamlNamedNodes $pageDocument $lifeButton.Name)
+        Require ($buttons.Count -eq 1) "设置控制按钮必须唯一: $($lifeButton.Name)/$pageName"
+        $actions = @($buttons[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+        Require ($actions.Count -eq 1) "设置控制按钮必须只有一个固定事件: $($lifeButton.Name)/$pageName"
+        Require-TutorialEventAction $actions[0] $lifeButton.Uuid `
+            "设置控制按钮UUID错误: $($lifeButton.Name)/$pageName"
+    }
+    if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
+        $lifeMinusNodes = @(Get-XamlNamedNodes $pageDocument 'COSConfigLifeMinus')
+        $lifePlusNodes = @(Get-XamlNamedNodes $pageDocument 'COSConfigLifePlus')
+        Require ($lifeMinusNodes[0].GetAttribute('BoundEvent') -eq 'UILeft' -and
+            $lifePlusNodes[0].GetAttribute('BoundEvent') -eq 'UIRight') `
+            '手柄生活熟练项必须由左右方向逐点调整'
     }
     $loadedTriggers = @($pageDocument.SelectNodes('//*[local-name()="EventTrigger"]') |
         Where-Object { $_.GetAttribute('EventName') -eq 'Loaded' })
