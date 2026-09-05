@@ -7,7 +7,7 @@
  mc:Ignorable="d" ls:UIWidget.ContextName="GameMenu"
  d:DesignWidth="3840" d:DesignHeight="2160">
   <ls:UIWidget.Template><ControlTemplate><Grid>
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,1700,0,0">
+    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,100,160">
       <ls:LSButton Style="{StaticResource BigBrownButtonStyle}" Margin="0,0,0,8"
                    Visibility="Hidden" IsHitTestVisible="False" Focusable="False"/>
       <ls:LSButton x:Name="COSConfigEntryButton" Style="{StaticResource BigBrownButtonStyle}"
