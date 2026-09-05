@@ -387,6 +387,7 @@ PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
 PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
+PROC_COS_EnsureFixedGuidance(_Character);
 PROC_COS_ConfigEnsureMechanics(_Character);
 PROC_COS_ConfigEnsureLifeSkill(_Character);
 PROC_COS_ConfigEnsureRacialPassives(_Character);
@@ -396,6 +397,13 @@ PROC_COS_SyncMastery(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
 PROC_COS_ConfigSyncLifeSkill(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
+
+PROC
+PROC_COS_EnsureFixedGuidance((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_FixedGuidance30", 0)
+THEN
+AddPassive(_Character, "COS_FixedGuidance30");
 
 PROC
 PROC_COS_ConfigSuspendMastery((CHARACTER)_Character)

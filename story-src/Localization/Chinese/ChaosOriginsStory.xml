@@ -718,4 +718,6 @@
 	<content contentuid="h74000118g0118g4118g8118g000000000118" version="1">COS_CFG_RACE_SAVAGE_ATTACKS</content>
 	<content contentuid="h74000119g0119g4119g8119g000000000119" version="1">COS_CFG_RACE_SUPERIOR_DARKVISION</content>
 	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
+  <content contentuid="h75000001g0001g4001g8001g000000000001" version="1">恒定神导：检定 +30</content>
+  <content contentuid="h75000002g0002g4002g8002g000000000002" version="1">开启后，所有技能检定和纯属性检定固定获得+30。无限持续，无需专注；关闭即移除。不影响攻击检定或豁免。可与其他检定加值叠加。</content>
 </contentList>

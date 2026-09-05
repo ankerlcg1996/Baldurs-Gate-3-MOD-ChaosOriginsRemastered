@@ -584,6 +584,7 @@ $tooltipSourceStatuses = @(
 )
 $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' + $_.Substring(4) })
 $expectedPassiveEntries = @(
+    'COS_FixedGuidance30',
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
     'COS_CFG_LIFE_SKILL_CARRIER',
@@ -904,8 +905,8 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 718 -and @($handles | Select-Object -Unique).Count -eq 718) `
-        "完整本地化必须包含 718 个唯一文本: $language"
+    Require ($handles.Count -eq 720 -and @($handles | Select-Object -Unique).Count -eq 720) `
+        "完整本地化必须包含 720 个唯一文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
         'h74000010g0010g4010g8010g000000000010',
@@ -4647,9 +4648,10 @@ $statusEntries = @([regex]::Matches($statusText, 'new entry "([^"]+)"') | ForEac
 $expectedStatusEntries = @(
     @($expectedOriginToggleMappings | ForEach-Object { $_.Split('|')[1] }) +
     'COS_RASPBERRY_ZERO_HEAL'
+    'COS_FIXED_GUIDANCE_30'
     @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_STATUS_{0:D2}' -f $_ })
 )
-Require ($statusEntries.Count -eq 28 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
+Require ($statusEntries.Count -eq 29 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
     '必须定义七个起源身份隐藏状态和一个山莓1点治疗状态'
 $raspberryStatusBlock = Get-StatsEntryBlock $statusText 'COS_RASPBERRY_ZERO_HEAL'
 $raspberryStatusTypes = @([regex]::Matches($raspberryStatusBlock, '(?m)^type "([^"]+)"\r?$'))

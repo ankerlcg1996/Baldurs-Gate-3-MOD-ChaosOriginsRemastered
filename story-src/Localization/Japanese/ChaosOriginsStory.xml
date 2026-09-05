@@ -718,4 +718,6 @@
 	<content contentuid="h74000118g0118g4118g8118g000000000118" version="1">COS_CFG_RACE_SAVAGE_ATTACKS</content>
 	<content contentuid="h74000119g0119g4119g8119g000000000119" version="1">COS_CFG_RACE_SUPERIOR_DARKVISION</content>
 	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
+  <content contentuid="h75000001g0001g4001g8001g000000000001" version="1">恒常の導き：判定 +30</content>
+  <content contentuid="h75000002g0002g4002g8002g000000000002" version="1">有効中、すべての技能判定と能力値判定に固定で+30。永続し、精神集中不要。無効にすると解除。攻撃ロールやセーヴには影響しない。他の判定ボーナスと累積する。</content>
 </contentList>

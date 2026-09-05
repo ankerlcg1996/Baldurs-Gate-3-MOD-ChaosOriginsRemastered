@@ -718,4 +718,6 @@
 	<content contentuid="h74000118g0118g4118g8118g000000000118" version="1">COS_CFG_RACE_SAVAGE_ATTACKS</content>
 	<content contentuid="h74000119g0119g4119g8119g000000000119" version="1">COS_CFG_RACE_SUPERIOR_DARKVISION</content>
 	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
+  <content contentuid="h75000001g0001g4001g8001g000000000001" version="1">Constant Guidance: Checks +30</content>
+  <content contentuid="h75000002g0002g4002g8002g000000000002" version="1">While enabled, all skill checks and raw ability checks gain a fixed +30. Lasts indefinitely without concentration; toggle off to remove. Does not affect attack rolls or saving throws. Stacks with other check bonuses.</content>
 </contentList>

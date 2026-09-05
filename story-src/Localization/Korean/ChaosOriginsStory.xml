@@ -718,4 +718,6 @@
 	<content contentuid="h74000118g0118g4118g8118g000000000118" version="1">COS_CFG_RACE_SAVAGE_ATTACKS</content>
 	<content contentuid="h74000119g0119g4119g8119g000000000119" version="1">COS_CFG_RACE_SUPERIOR_DARKVISION</content>
 	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
+  <content contentuid="h75000001g0001g4001g8001g000000000001" version="1">영구 인도: 판정 +30</content>
+  <content contentuid="h75000002g0002g4002g8002g000000000002" version="1">활성화 중 모든 기술 판정과 순수 능력치 판정에 고정 +30을 얻습니다. 집중 없이 영구 지속되며 끄면 해제됩니다. 공격 굴림과 내성에는 적용되지 않습니다. 다른 판정 보너스와 중첩됩니다.</content>
 </contentList>
