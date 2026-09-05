@@ -2781,6 +2781,15 @@ Require ($setLifeBlocks.Count -eq 1 -and
     (Get-StoryThen $setLifeBlocks[0]).Contains('PROC_COS_ConfigSyncLifeSkill(_Character);')) `
     '生活熟练项设置必须原子替换存档值并立即同步玩法和UI'
 $syncLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncLifeSkill')
+$lifeMappingBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSeedLifeStatusMap')
+Require ($lifeMappingBlocks.Count -eq 1) '旧存档加值映射为空：必须在运行时初始化状态映射，不得仅依赖 INITSECTION'
+$lifeMapThen = Get-StoryThen $lifeMappingBlocks[0]
+foreach ($value in 1..20) {
+    Require ($lifeMapThen.Contains(('DB_COS_ConfigLifeBonusStatus({0}, "COS_CFG_LIFE_SKILL_STATUS_{0:D2}");' -f $value))) '运行时必须补齐全部20档加值映射'
+}
+$lifeSyncThen = (Get-StoryThen $syncLifeBlocks[0]).Trim()
+Require ($lifeSyncThen.StartsWith('PROC_COS_ConfigSeedLifeStatusMap();')) '必须先补齐映射再移除旧状态和施加新状态'
+Require (-not $lifeMapThen.Contains('DB_COS_ConfigLifeSkill(')) '补齐常量表不得重置玩家的设置'
 Require ($configGoal.Contains('ApplyStatus(_Character, _Status, -1.0, 1, _Character);')) '生活技能必须通过常驻状态施加加值'
 foreach ($lifeSyncAction in @(
     'AddPassive(_Character, "COS_CFG_LIFE_SKILL_CARRIER");',
