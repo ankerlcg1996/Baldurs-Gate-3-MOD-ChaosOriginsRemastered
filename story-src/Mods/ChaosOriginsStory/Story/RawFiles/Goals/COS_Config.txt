@@ -31,6 +31,26 @@ DB_COS_ConfigMechanicEvent((TUTORIALEVENT)COS_CFG_MECH_MASTERY_146d28dc-aa94-40e
 DB_COS_ConfigUiOpenedEvent((TUTORIALEVENT)COS_CFG_UI_OPENED_65247962-a3b0-417d-9044-85e4aad38079);
 DB_COS_ConfigResetCoreEvent((TUTORIALEVENT)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470);
 DB_COS_ConfigLifeDefault(5);
+DB_COS_ConfigLifeBonusStatus(1, "COS_CFG_LIFE_SKILL_STATUS_01");
+DB_COS_ConfigLifeBonusStatus(2, "COS_CFG_LIFE_SKILL_STATUS_02");
+DB_COS_ConfigLifeBonusStatus(3, "COS_CFG_LIFE_SKILL_STATUS_03");
+DB_COS_ConfigLifeBonusStatus(4, "COS_CFG_LIFE_SKILL_STATUS_04");
+DB_COS_ConfigLifeBonusStatus(5, "COS_CFG_LIFE_SKILL_STATUS_05");
+DB_COS_ConfigLifeBonusStatus(6, "COS_CFG_LIFE_SKILL_STATUS_06");
+DB_COS_ConfigLifeBonusStatus(7, "COS_CFG_LIFE_SKILL_STATUS_07");
+DB_COS_ConfigLifeBonusStatus(8, "COS_CFG_LIFE_SKILL_STATUS_08");
+DB_COS_ConfigLifeBonusStatus(9, "COS_CFG_LIFE_SKILL_STATUS_09");
+DB_COS_ConfigLifeBonusStatus(10, "COS_CFG_LIFE_SKILL_STATUS_10");
+DB_COS_ConfigLifeBonusStatus(11, "COS_CFG_LIFE_SKILL_STATUS_11");
+DB_COS_ConfigLifeBonusStatus(12, "COS_CFG_LIFE_SKILL_STATUS_12");
+DB_COS_ConfigLifeBonusStatus(13, "COS_CFG_LIFE_SKILL_STATUS_13");
+DB_COS_ConfigLifeBonusStatus(14, "COS_CFG_LIFE_SKILL_STATUS_14");
+DB_COS_ConfigLifeBonusStatus(15, "COS_CFG_LIFE_SKILL_STATUS_15");
+DB_COS_ConfigLifeBonusStatus(16, "COS_CFG_LIFE_SKILL_STATUS_16");
+DB_COS_ConfigLifeBonusStatus(17, "COS_CFG_LIFE_SKILL_STATUS_17");
+DB_COS_ConfigLifeBonusStatus(18, "COS_CFG_LIFE_SKILL_STATUS_18");
+DB_COS_ConfigLifeBonusStatus(19, "COS_CFG_LIFE_SKILL_STATUS_19");
+DB_COS_ConfigLifeBonusStatus(20, "COS_CFG_LIFE_SKILL_STATUS_20");
 DB_COS_ConfigLifeBonusPassive(1, "COS_CFG_LIFE_SKILL_BONUS_01");
 DB_COS_ConfigLifeBonusPassive(2, "COS_CFG_LIFE_SKILL_BONUS_02");
 DB_COS_ConfigLifeBonusPassive(3, "COS_CFG_LIFE_SKILL_BONUS_03");
@@ -229,9 +249,20 @@ PROC_COS_ConfigAddLifeSkillBonus((CHARACTER)_Character)
 AND
 DB_COS_ConfigLifeSkill(_Character, _Value)
 AND
-DB_COS_ConfigLifeBonusPassive(_Value, _Passive)
+DB_COS_ConfigLifeBonusStatus(_Value, _Status)
 THEN
-AddPassive(_Character, _Passive);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_ConfigRemoveLifeSkillBonuses((CHARACTER)_Character)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Current)
+AND
+DB_COS_ConfigLifeBonusStatus(_Other, _Status)
+AND
+_Other != _Current
+THEN
+RemoveStatus(_Character, _Status, _Character);
 
 PROC
 PROC_COS_ConfigSyncLifeSkillResource((CHARACTER)_Character)

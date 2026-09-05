@@ -2780,6 +2780,7 @@ Require ($setLifeBlocks.Count -eq 1 -and
     (Get-StoryThen $setLifeBlocks[0]).Contains('PROC_COS_ConfigSyncLifeSkill(_Character);')) `
     '生活熟练项设置必须原子替换存档值并立即同步玩法和UI'
 $syncLifeBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncLifeSkill')
+Require ($configGoal.Contains('ApplyStatus(_Character, _Status, -1.0, 1, _Character);')) '生活技能必须通过常驻状态施加加值'
 foreach ($lifeSyncAction in @(
     'AddPassive(_Character, "COS_CFG_LIFE_SKILL_CARRIER");',
     'PROC_COS_ConfigRemoveLifeSkillBonuses(_Character);',
@@ -4646,8 +4647,9 @@ $statusEntries = @([regex]::Matches($statusText, 'new entry "([^"]+)"') | ForEac
 $expectedStatusEntries = @(
     @($expectedOriginToggleMappings | ForEach-Object { $_.Split('|')[1] }) +
     'COS_RASPBERRY_ZERO_HEAL'
+    @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_STATUS_{0:D2}' -f $_ })
 )
-Require ($statusEntries.Count -eq 8 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
+Require ($statusEntries.Count -eq 28 -and -not (Compare-Object $expectedStatusEntries $statusEntries)) `
     '必须定义七个起源身份隐藏状态和一个山莓1点治疗状态'
 $raspberryStatusBlock = Get-StatsEntryBlock $statusText 'COS_RASPBERRY_ZERO_HEAL'
 $raspberryStatusTypes = @([regex]::Matches($raspberryStatusBlock, '(?m)^type "([^"]+)"\r?$'))
