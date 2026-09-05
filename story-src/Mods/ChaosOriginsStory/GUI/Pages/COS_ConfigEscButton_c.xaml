@@ -8,7 +8,7 @@
  d:DesignWidth="3840" d:DesignHeight="2160">
   <ls:UIWidget.Template><ControlTemplate><Grid>
     <ls:LSButton x:Name="COSConfigEntryPrompt"
-      HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,100,160"
+      HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,1840,0,0"
       Focusable="False" ContentTemplate="{StaticResource ControllerButtonHint}"
       Content="{Binding CurrentPlayer.UIData.InputEvents, Converter={StaticResource FindInputEventConverter}, ConverterParameter='UIShowInfo'}"
       Tag="{Binding Source='hc05fd001g0000g4000g8000g000000000000', Converter={StaticResource TranslatedStringConverter}}"
