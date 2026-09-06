@@ -801,4 +801,6 @@
   <content contentuid="h76000000g0000g4000g8000g000000000103" version="1">Weapon proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">Armour proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">Instrument proficiency</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000001" version="1">볼로의 마법 눈</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000002" version="1">기본값은 켜짐입니다. 고블린 야영지에서 볼로를 구출하면 혼돈 캐릭터가 원래 범위와 내성 굴림을 유지하는 투명체 감지 효과를 얻습니다. 수술, 외형 변경이나 수술로 인한 이탈은 발생하지 않습니다. 끄면 이 모드의 효과만 제거되며 정상적으로 얻은 눈 능력은 유지됩니다. 구출 전에는 설정만 저장됩니다.</content>
 </contentList>

@@ -393,6 +393,7 @@ PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
 PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
+PROC_COS_SyncVoloEye(_Character);
 PROC_COS_ConfigSyncGrants(_Character);
 PROC_COS_EnsureFixedGuidance(_Character);
 PROC_COS_ConfigEnsureMechanics(_Character);
@@ -1093,6 +1094,105 @@ IsInCombat(_Character, 0)
 THEN
 TogglePassive(_Character, _Passive);
 PROC_COS_SyncOriginGrantMirrors(_Character);
+
+// Volo eye configuration: preference and reward are independent of surgery.
+PROC
+PROC_COS_SyncVoloEye((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001);
+PROC_COS_EnsureVoloEyeSetting(_Character);
+PROC_COS_ApplyVoloEye(_Character);
+
+PROC
+PROC_COS_EnsureVoloEyeSetting((CHARACTER)_Character)
+AND
+NOT DB_COS_VoloEyeSetting(_Character, _)
+THEN
+DB_COS_VoloEyeSetting(_Character, 1);
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeSetting(_Character, 1)
+AND
+HasPassive(_Character, "COS_CFG_VOLO_EYE", 0)
+THEN
+AddPassive(_Character, "COS_CFG_VOLO_EYE");
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeSetting(_Character, 1)
+AND
+GetFlag((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+HasPassive(_Character, "CAMP_Volo_ErsatzEye", 0)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE", 0)
+THEN
+ApplyStatus(_Character, "COS_VOLO_EYE", -1.0, 1, _Character);
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeSetting(_Character, 0)
+THEN
+RemovePassive(_Character, "COS_CFG_VOLO_EYE");
+RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+HasPassive(_Character, "CAMP_Volo_ErsatzEye", 1)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE", 1)
+THEN
+RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
+
+IF
+TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_VoloEyeSetting(_Character, _Value)
+AND
+IntegerSubtract(1, _Value, _Next)
+THEN
+NOT DB_COS_VoloEyeSetting(_Character, _Value);
+DB_COS_VoloEyeSetting(_Character, _Next);
+PROC_COS_ApplyVoloEye(_Character);
+
+IF
+FlagSet((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, _, _)
+AND
+DB_Avatars(_Character)
+THEN
+PROC_COS_SyncVoloEye(_Character);
+
+IF
+Resurrected(_Character)
+THEN
+PROC_COS_SyncVoloEye(_Character);
+
+PROC
+PROC_LongRest()
+AND
+DB_Avatars(_Character)
+THEN
+PROC_COS_SyncVoloEye(_Character);
+
+IF
+StatusApplied(_Character, "CAMP_VOLO_ERSATZEYE", _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
 
 EXITSECTION
 ENDEXITSECTION

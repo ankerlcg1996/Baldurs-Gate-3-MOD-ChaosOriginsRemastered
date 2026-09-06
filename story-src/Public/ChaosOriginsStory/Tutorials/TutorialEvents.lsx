@@ -670,6 +670,12 @@
                     <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000075"/>
                     <attribute id="UserAction" type="uint8" value="0"/>
                 </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_CFG_VOLO_EYE"/>
+                    <attribute id="UUID" type="guid" value="77000000-0000-4000-8000-000000000001"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
             </children>
         </node>
     </region>

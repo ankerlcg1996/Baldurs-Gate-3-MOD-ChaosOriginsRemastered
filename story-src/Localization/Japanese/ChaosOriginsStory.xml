@@ -801,4 +801,6 @@
   <content contentuid="h76000000g0000g4000g8000g000000000103" version="1">Weapon proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">Armour proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">Instrument proficiency</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000001" version="1">ヴォーロの魔法の眼</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000002" version="1">初期設定はオン。ゴブリンの野営地からヴォーロを救出すると、混沌キャラクターは原版の不可視視認効果を得ます。範囲とセーヴ判定は原版どおりです。手術や外見変更、手術による離脱は発生しません。オフにしても通常の手術で得た能力は失われません。救出前は設定のみ保存されます。</content>
 </contentList>

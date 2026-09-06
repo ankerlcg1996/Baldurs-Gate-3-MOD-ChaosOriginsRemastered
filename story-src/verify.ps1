@@ -591,6 +591,7 @@ $tooltipSourceStatuses = @(
 $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' + $_.Substring(4) })
 $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFrom-Json)
 & (Join-Path $root 'verify-grant-menu.ps1') -SeedOnly:$GrantSeedOnly -Partition $GrantPartition
+& (Join-Path $root 'verify-volo-eye.ps1')
 $expectedPassiveEntries = @(
     'COS_FixedGuidance30',
     'COS_ChaosOriginMarker',
@@ -913,7 +914,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 6) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 6)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -2570,10 +2571,10 @@ Require ([regex]::Matches($configGoal,
 
 $configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
     ForEach-Object { $_.Groups[1].Value })
-$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values)
-Require ($configPassiveEntries.Count -eq 29 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 29 -and
+$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values + @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE'))
+Require ($configPassiveEntries.Count -eq 31 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 31 -and
     -not (Compare-Object ($expectedConfigPassiveEntries | Sort-Object) ($configPassiveEntries | Sort-Object))) `
-    'ChaosConfig.txt 必须且只能定义九个核心机制与20个种族被动回显'
+    'ChaosConfig.txt 必须定义九个核心机制、20个种族回显及瓦罗开关与效果'
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
@@ -3990,7 +3991,8 @@ $expectedTutorialEvents = [ordered]@{
     COS_CFG_RACE_TIEFLING_RESISTANCE = '022d736c-8b4b-4599-9e51-e584a0e1c05d'
 }
 foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
-Require ($tutorialEventNodes.Count -eq (36 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有和逐项授予事件'
+$expectedTutorialEvents['COS_CFG_VOLO_EYE'] = '77000000-0000-4000-8000-000000000001'
+Require ($tutorialEventNodes.Count -eq (37 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗和逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4310,7 +4312,7 @@ $racialControlIds = @(
     'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
-$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone') +
+$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye') +
     @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
@@ -4452,7 +4454,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         Test-ControllerPageContract $pageDocument $page $pageName
         Test-ControllerAcceptContract $pageDocument $pageName
         $expectedControllerFocusOrder = @(
-            'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
+            'COSConfigRowPower', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
             'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
@@ -4504,7 +4506,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (36 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (36 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (37 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (37 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {

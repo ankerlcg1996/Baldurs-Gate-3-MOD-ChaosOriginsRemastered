@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "displayVersion": "1.0.1.78",
+  "displayVersion": "1.0.1.79",
   "grantRuntimeIsolation": false,
   "grantStatusIsolation": false,
   "grantSeedOnly": false,
   "grantPartition": "SeedOnly",
-  "version64": 36028799166447694,
+  "version64": 36028799166447695,
   "moduleName": "ChaosOriginsStory",
   "moduleUuid": "a5062238-0d2b-46d1-a093-cb02775b9f57",
-  "pakSha256": "55124bb64dd1c48f1782f1c135c639b3ff76b900d8ccf544c53eddb849c5ac71",
+  "pakSha256": "6acaed9c775ddb74b2e71f96436f80435e5f7cd3a5af9f3145815c2adc802037",
   "files": [
     "Localization/Chinese/ChaosOriginsStory.loca",
     "Localization/English/ChaosOriginsStory.loca",

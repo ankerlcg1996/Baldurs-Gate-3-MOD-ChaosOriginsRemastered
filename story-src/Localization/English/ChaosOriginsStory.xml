@@ -801,4 +801,6 @@
   <content contentuid="h76000000g0000g4000g8000g000000000103" version="1">Weapon proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">Armour proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">Instrument proficiency</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000001" version="1">Volo's Magic Eye</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000002" version="1">Enabled by default. After rescuing Volo from the goblin camp, your Chaos character gains native See Invisibility with its normal range and saving throws. No surgery, appearance change or surgery departure is triggered. Disabling removes only this mod's effect, not a normally acquired eye. Before rescue, this switch only stores your preference.</content>
 </contentList>

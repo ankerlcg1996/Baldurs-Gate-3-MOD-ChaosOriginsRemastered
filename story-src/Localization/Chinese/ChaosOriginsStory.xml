@@ -801,4 +801,6 @@
   <content contentuid="h76000000g0000g4000g8000g000000000103" version="1">武器熟练项</content>
   <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">防具熟练项</content>
   <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">乐器熟练项</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000001" version="1">瓦罗魔法眼</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000002" version="1">默认开启。救出地精营地的瓦罗后，混沌角色自动获得原版识破隐形效果，保留原版范围和豁免。无需挖眼，不改变外观或触发手术离营。关闭仅停用本模组效果，不移除正常挖眼获得的能力。救援前仅保存开关偏好。</content>
 </contentList>
