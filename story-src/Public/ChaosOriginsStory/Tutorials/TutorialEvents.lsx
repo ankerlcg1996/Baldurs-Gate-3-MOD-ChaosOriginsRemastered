@@ -220,6 +220,456 @@
                     <attribute id="UUID" type="guid" value="022d736c-8b4b-4599-9e51-e584a0e1c05d"/>
                     <attribute id="UserAction" type="uint8" value="0"/>
                 </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Astarion"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000001"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Gale"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000002"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Laezel"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000003"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Shadowheart"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000004"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Wyll"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000005"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_Karlach"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000006"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_ORIGIN_DarkUrge"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000007"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_UNDERDARK"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000008"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DUERGARDWARF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000009"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HILLDWARF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000010"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_MOUNTAINDWARF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000011"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DROWHALFELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000012"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_VO_POSTPROCESS"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000013"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HIGHHALFELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000014"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_WOODHALFELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000015"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_LOLTHDROWELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000016"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_SELDARINEDROWELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000017"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HIGHELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000018"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_WOODELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000019"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_LIGHTFOOTHALFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000020"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_STOUTHALFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000021"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DRAGONBORN"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000022"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DROWELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000023"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DWARF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000024"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_SHORT"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000025"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_ELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000026"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_GITHYANKI"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000027"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_GNOME"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000028"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HALFELF"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000029"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HALFORC"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000030"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HALFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000031"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HUMAN"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000032"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_TIEFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000033"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_ASMODEUSTIEFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000034"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_MEPHISTOPHELESTIEFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000035"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_ZARIELTIEFLING"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000036"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_DEEPGNOME"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000037"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_FORESTGNOME"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000038"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_ROCKGNOME"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000039"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Battleaxes"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000040"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Clubs"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000041"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Daggers"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000042"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Flails"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000043"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Glaives"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000044"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Greataxes"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000045"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Greatclubs"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000046"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Greatswords"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000047"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Halberds"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000048"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_HandCrossbows"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000049"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Handaxes"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000050"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_HeavyCrossbows"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000051"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Javelins"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000052"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_LightCrossbows"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000053"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_LightHammers"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000054"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Longbows"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000055"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Longswords"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000056"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Maces"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000057"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Mauls"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000058"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Morningstars"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000059"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Pikes"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000060"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Quarterstaffs"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000061"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Rapiers"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000062"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Scimitars"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000063"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Shortbows"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000064"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Shortswords"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000065"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Sickles"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000066"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Spears"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000067"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Tridents"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000068"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Warhammers"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000069"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Warpicks"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000070"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_LightArmor"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000071"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_MediumArmor"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000072"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_HeavyArmor"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000073"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_Shields"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000074"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
+                <node id="TutorialEvent">
+                    <attribute id="EventType" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="COS_GRANT_PROF_MusicalInstrument"/>
+                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000075"/>
+                    <attribute id="UserAction" type="uint8" value="0"/>
+                </node>
             </children>
         </node>
     </region>

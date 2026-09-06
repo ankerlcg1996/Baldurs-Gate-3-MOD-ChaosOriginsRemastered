@@ -1,8 +1,16 @@
 #requires -Version 7.0
 
-param([string]$LslibPath = 'C:\Users\ankerlcg\Desktop\BG3ModManager_Latest\_Lib\LSLib.dll')
+param(
+    [string]$LslibPath = 'C:\Users\ankerlcg\Desktop\BG3ModManager_Latest\_Lib\LSLib.dll',
+    [switch]$GrantRuntimeIsolation,
+    [switch]$GrantSeedOnly,
+    [switch]$GrantStatusIsolation,
+    [ValidateSet('SeedOnly', 'CaptureApply')][string]$GrantPartition = 'SeedOnly'
+)
 
 $ErrorActionPreference = 'Stop'
+if ($GrantStatusIsolation -and ($GrantRuntimeIsolation -or $GrantSeedOnly)) { throw 'Status watcher isolation requires fully connected grant runtime' }
+if ($GrantSeedOnly -and -not $GrantRuntimeIsolation) { throw 'Seed-only testing requires runtime isolation' }
 $root = $PSScriptRoot
 $repo = Split-Path $root -Parent
 $work = Join-Path $root 'work'
@@ -31,7 +39,7 @@ function Reset-WorkChild([string]$Path) {
 . (Join-Path $root 'build-process.ps1')
 . (Join-Path $root 'story-ir-attestation.ps1')
 
-& (Join-Path $root 'verify.ps1')
+& (Join-Path $root 'verify.ps1') -GrantRuntimeIsolation:$GrantRuntimeIsolation -GrantSeedOnly:$GrantSeedOnly -GrantPartition $GrantPartition
 $compileStoryScript = Join-Path $root 'compile-story.ps1'
 $compiledStoryPath = Join-Path $work 'compiled-story\story.div.osi'
 $storyDebugInfoPath = Join-Path $work 'compiled-story\story.debug-info.pb'
@@ -39,7 +47,9 @@ $storyIrAttestationPath = Join-Path $work 'compiled-story\story-ir-attestation.j
 if (Test-Path -LiteralPath $storyIrAttestationPath -PathType Leaf) {
     [IO.File]::Delete([IO.Path]::GetFullPath($storyIrAttestationPath))
 }
-Invoke-BuildScriptProcess -ScriptPath $compileStoryScript
+$compileArguments = @()
+if ($GrantSeedOnly) { $compileArguments += @('-GrantSeedOnly', '-GrantPartition', $GrantPartition) }
+Invoke-BuildScriptProcess -ScriptPath $compileStoryScript -ArgumentList $compileArguments
 $storyIrAttestation = Assert-StoryIrAttestation -StoryPath $compiledStoryPath `
     -DebugInfoPath $storyDebugInfoPath -AttestationPath $storyIrAttestationPath
 Require ($storyIrAttestation.validated -eq $true) 'Story IR 证明未通过构建进程校验'
@@ -126,6 +136,22 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     Require (Test-Path -LiteralPath $target -PathType Leaf) "本地化编译失败: $language"
 }
 
+if ($GrantRuntimeIsolation -or $GrantStatusIsolation) {
+    # Keep the tested resource bytes: regenerating LSF files can change their binary representation.
+    $candidatePak = 'C:/Users/ankerlcg/Desktop/博德之门3mod/ChaosOriginsStory-1.0.1.72.pak'
+    Require ((Get-FileHash -LiteralPath $candidatePak).Hash -eq '7EDD0E631188F7BCD98E23563ADE936BA704D9547AF929F774974FCE60BB09B9') '隔离测试输入必须是原 .72'
+    $candidatePackage = ([LSLib.LS.PackageReader]::new()).Read($candidatePak, $false)
+    try {
+        foreach ($entry in $candidatePackage.Files | Where-Object { $_.Name -notmatch '/Story/' }) {
+            Require ($manifest -contains $entry.Name) "隔离资源不在打包清单中: $($entry.Name)"
+            $inputStream = $entry.CreateContentReader()
+            $outputStream = [IO.File]::Create((Join-Path $stage $entry.Name))
+            try { $inputStream.CopyTo($outputStream) }
+            finally { $outputStream.Dispose(); $inputStream.Dispose() }
+        }
+    } finally { $candidatePackage.Dispose() }
+}
+
 $stagedMetaPath = Join-Path $stage 'Mods\ChaosOriginsStory\meta.lsx'
 [xml]$stagedMeta = Get-Content -LiteralPath $stagedMetaPath -Raw -Encoding UTF8
 $stagedModuleVersion = $stagedMeta.SelectSingleNode('//node[@id="ModuleInfo"]/attribute[@id="Version64"]')
@@ -189,6 +215,14 @@ foreach ($relative in $actual) {
     Require ($stageHash -eq $reverseHash) "反向解包哈希不匹配: $relative"
 }
 
+if ($GrantRuntimeIsolation -or $GrantStatusIsolation) {
+    $isolationArguments = @('-Path', $pak, '-Version64', [string]$nextVersion64)
+    if ($GrantSeedOnly) { $isolationArguments += @('-SeedOnly', '-Partition', $GrantPartition) }
+    if ($GrantStatusIsolation) { $isolationArguments += '-StatusWatchersRemoved' }
+    Invoke-BuildScriptProcess -ScriptPath (Join-Path $root 'verify-grant-runtime-isolation.ps1') `
+        -ArgumentList $isolationArguments
+}
+
 $sourceMetaPath = Join-Path $root 'Mods\ChaosOriginsStory\meta.lsx'
 [xml]$sourceMeta = Get-Content -LiteralPath $sourceMetaPath -Raw -Encoding UTF8
 $sourceModuleVersion = $sourceMeta.SelectSingleNode('//node[@id="ModuleInfo"]/attribute[@id="Version64"]')
@@ -203,6 +237,10 @@ $version | ConvertTo-Json | Set-Content -LiteralPath $versionPath -Encoding UTF8
 $buildManifest = [ordered]@{
     schema = 1
     displayVersion = $displayVersion
+    grantRuntimeIsolation = [bool]$GrantRuntimeIsolation
+    grantStatusIsolation = [bool]$GrantStatusIsolation
+    grantSeedOnly = [bool]$GrantSeedOnly
+    grantPartition = $GrantPartition
     version64 = $nextVersion64
     moduleName = 'ChaosOriginsStory'
     moduleUuid = 'a5062238-0d2b-46d1-a093-cb02775b9f57'

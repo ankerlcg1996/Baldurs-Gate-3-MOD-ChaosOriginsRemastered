@@ -1,8 +1,10 @@
 #requires -Version 7.0
 
 param(
-    [string]$StoryCompilerPath = 'C:\Users\ankerlcg\Documents\ChatGPT\博德之门3Mod\.tools\lslib-v1.20.4-src\StoryCompiler\bin\Release\net8.0\StoryCompiler.exe',
-    [string]$DependencyVfsPath = 'C:\Users\ankerlcg\Documents\ChatGPT\博德之门3Mod\.story-vfs'
+    [string]$StoryCompilerPath = 'C:\Users\ankerlcg\Documents\ChatGPT\博德之门3Mod\.tools\lslib-duplication-fix\StoryCompiler\bin\Release\net8.0\StoryCompiler.exe',
+    [string]$DependencyVfsPath = 'C:\Users\ankerlcg\Documents\ChatGPT\博德之门3Mod\.story-vfs',
+    [switch]$GrantSeedOnly,
+    [ValidateSet('SeedOnly', 'CaptureApply')][string]$GrantPartition = 'SeedOnly'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -52,6 +54,17 @@ if (Test-Path -LiteralPath $stagedMod) {
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 Copy-Item -LiteralPath $sourceMod -Destination $stagedMod -Recurse
+if ($GrantSeedOnly) {
+    # Diagnostic-only: removed consumers/producers leave these exact tables intentionally orphaned.
+    # The list lives in compiler staging, never in source/package-files.json or the final PAK.
+    $orphanTables = if ($GrantPartition -eq 'CaptureApply') {
+        @('DB_COS_GrantOrigin 4', 'DB_COS_GrantInitialized 1', 'DB_COS_GrantUnresolved 2')
+    } else { @(
+        'DB_COS_RaceIdentityTag 1', 'DB_COS_GrantEvent 2', 'DB_COS_GrantOrigin 4',
+        'DB_COS_GrantOption 2', 'DB_COS_GrantTag 2', 'DB_COS_GrantNativeMap 2'
+    ) }
+    [IO.File]::WriteAllLines((Join-Path $stagedMod 'Story/story_orphanqueries_ignore_local.txt'), $orphanTables, [Text.UTF8Encoding]::new($false))
+}
 
 $sourceHeaderLines = [IO.File]::ReadAllLines($sourceHeader)
 $aliasTargets = @{}
@@ -94,6 +107,7 @@ if (-not (Test-Path -LiteralPath $output -PathType Leaf)) { throw 'StoryCompiler
 Require (Test-Path -LiteralPath $debugInfo -PathType Leaf) 'StoryCompiler 未生成IR调试符号'
 
 $compilerDirectory = Split-Path $StoryCompilerPath -Parent
+& (Join-Path $root 'verify-story-binary.ps1') -Path $output -LslibPath (Join-Path $compilerDirectory 'LSLib.dll')
 $masterySource = Join-Path $sourceMod 'Story\RawFiles\Goals\COS_ChaosMastery.txt'
 $irAttestation = Assert-CompiledStoryIr -StoryPath $output -DebugInfoPath $debugInfo `
     -CompilerDirectory $compilerDirectory -MasterySourcePath $masterySource -AttestationPath $attestation

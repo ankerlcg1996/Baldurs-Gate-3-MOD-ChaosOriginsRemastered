@@ -720,4 +720,85 @@
 	<content contentuid="h74000120g0120g4120g8120g000000000120" version="1">COS_CFG_RACE_TIEFLING_RESISTANCE</content>
   <content contentuid="h75000001g0001g4001g8001g000000000001" version="1">영구 인도: 판정 +30</content>
   <content contentuid="h75000002g0002g4002g8002g000000000002" version="1">활성화 중 모든 기술 판정과 순수 능력치 판정에 고정 +30을 얻습니다. 집중 없이 영구 지속되며 끄면 해제됩니다. 공격 굴림과 내성에는 적용되지 않습니다. 다른 판정 보너스와 중첩됩니다.</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000001" version="1">Astarion</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000002" version="1">Gale</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000003" version="1">Laezel</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000004" version="1">Shadowheart</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000005" version="1">Wyll</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000006" version="1">Karlach</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000007" version="1">DarkUrge</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000008" version="1">UNDERDARK</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000009" version="1">DUERGARDWARF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000010" version="1">HILLDWARF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000011" version="1">MOUNTAINDWARF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000012" version="1">DROWHALFELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000013" version="1">VO_POSTPROCESS</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000014" version="1">HIGHHALFELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000015" version="1">WOODHALFELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000016" version="1">LOLTHDROWELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000017" version="1">SELDARINEDROWELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000018" version="1">HIGHELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000019" version="1">WOODELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000020" version="1">LIGHTFOOTHALFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000021" version="1">STOUTHALFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000022" version="1">DRAGONBORN</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000023" version="1">DROWELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000024" version="1">DWARF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000025" version="1">SHORT</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000026" version="1">ELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000027" version="1">GITHYANKI</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000028" version="1">GNOME</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000029" version="1">HALFELF</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000030" version="1">HALFORC</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000031" version="1">HALFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000032" version="1">HUMAN</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000033" version="1">TIEFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000034" version="1">ASMODEUSTIEFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000035" version="1">MEPHISTOPHELESTIEFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000036" version="1">ZARIELTIEFLING</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000037" version="1">DEEPGNOME</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000038" version="1">FORESTGNOME</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000039" version="1">ROCKGNOME</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000040" version="1">Battleaxes</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000041" version="1">Clubs</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000042" version="1">Daggers</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000043" version="1">Flails</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000044" version="1">Glaives</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000045" version="1">Greataxes</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000046" version="1">Greatclubs</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000047" version="1">Greatswords</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000048" version="1">Halberds</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000049" version="1">HandCrossbows</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000050" version="1">Handaxes</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000051" version="1">HeavyCrossbows</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000052" version="1">Javelins</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000053" version="1">LightCrossbows</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000054" version="1">LightHammers</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000055" version="1">Longbows</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000056" version="1">Longswords</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000057" version="1">Maces</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000058" version="1">Mauls</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000059" version="1">Morningstars</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000060" version="1">Pikes</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000061" version="1">Quarterstaffs</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000062" version="1">Rapiers</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000063" version="1">Scimitars</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000064" version="1">Shortbows</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000065" version="1">Shortswords</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000066" version="1">Sickles</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000067" version="1">Spears</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000068" version="1">Tridents</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000069" version="1">Warhammers</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000070" version="1">Warpicks</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000071" version="1">LightArmor</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000072" version="1">MediumArmor</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000073" version="1">HeavyArmor</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000074" version="1">Shields</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000075" version="1">MusicalInstrument</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000100" version="1">Enabled by default. Each switch controls only Chaos grants. Native identity and proficiency from other sources remain. Origin switches share the passive toggle state. Save the game after changes.</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000101" version="1">Origin identities</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000102" version="1">Racial and related tags</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000103" version="1">Weapon proficiencies</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">Armour proficiencies</content>
+  <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">Instrument proficiency</content>
 </contentList>

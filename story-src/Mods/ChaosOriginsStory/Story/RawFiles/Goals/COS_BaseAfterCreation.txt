@@ -61,12 +61,8 @@ KBSECTION
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
-AND
-HasPassive(_Character, "COS_ChaosOriginMarker", 1)
-AND
-HasPassive(_Character, "COS_BaseProficiencies", 0)
 THEN
-AddPassive(_Character, "COS_BaseProficiencies");
+PROC_COS_ConfigSyncGrants(_Character);
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
@@ -112,14 +108,6 @@ HasActiveStatus(_Character, "COS_CHAOS_FATE_READY", 1)
 THEN
 RemoveStatus(_Character, "COS_CHAOS_FATE_READY", _Character);
 
-PROC
-PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
-AND
-DB_COS_RaceIdentityTag(_Tag)
-AND
-IsTagged(_Character, _Tag, 0)
-THEN
-SetTag(_Character, _Tag);
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
@@ -262,6 +250,7 @@ AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 THEN
 SetTag(_Character, _Tag);
+PROC_COS_SyncOriginGrantMirrors(_Character);
 
 IF
 StatusRemoved(_Character, _Status, _, _)
@@ -271,6 +260,7 @@ AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 THEN
 ClearTag(_Character, _Tag);
+PROC_COS_SyncOriginGrantMirrors(_Character);
 
 IF
 StatusRemoved(_Character, _Status, _, _)

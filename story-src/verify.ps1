@@ -1,5 +1,9 @@
 #requires -Version 7.0
 
+param([switch]$GrantRuntimeIsolation, [switch]$GrantSeedOnly,
+    [ValidateSet('SeedOnly', 'CaptureApply')][string]$GrantPartition = 'SeedOnly')
+if ($GrantSeedOnly -and -not $GrantRuntimeIsolation) { throw 'Seed-only testing requires runtime isolation' }
+
 $ErrorActionPreference = 'Stop'
 
 $root = $PSScriptRoot
@@ -275,7 +279,9 @@ $compiledAttestationPath = Join-Path $root 'work\compiled-story\story-ir-attesta
 if (Test-Path -LiteralPath $compiledAttestationPath -PathType Leaf) {
     [IO.File]::Delete([IO.Path]::GetFullPath($compiledAttestationPath))
 }
-Invoke-BuildScriptProcess -ScriptPath $compileStorySourcePath
+$compileArguments = @()
+if ($GrantSeedOnly) { $compileArguments += @('-GrantSeedOnly', '-GrantPartition', $GrantPartition) }
+Invoke-BuildScriptProcess -ScriptPath $compileStorySourcePath -ArgumentList $compileArguments
 $verifiedIrAttestation = Assert-StoryIrAttestation -StoryPath $compiledStoryPath `
     -DebugInfoPath $compiledDebugInfoPath -AttestationPath $compiledAttestationPath
 Require ($verifiedIrAttestation.validated -eq $true) `
@@ -583,6 +589,8 @@ $tooltipSourceStatuses = @(
     'COS_CHAOS_WOUND_LOG_SPELLDISADVANTAGE','COS_CHAOS_WOUND_LOG_STUNNED','COS_CHAOS_WOUND_LOG_VULNERABILITY_ACID','COS_CHAOS_WOUND_LOG_WET'
 )
 $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' + $_.Substring(4) })
+$grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFrom-Json)
+& (Join-Path $root 'verify-grant-menu.ps1') -SeedOnly:$GrantSeedOnly -Partition $GrantPartition
 $expectedPassiveEntries = @(
     'COS_FixedGuidance30',
     'COS_ChaosOriginMarker',
@@ -599,7 +607,7 @@ $expectedPassiveEntries = @(
     'COS_Origin_DarkUrge',
     'COS_FateRevision',
     'COS_ChaosTooltipTemplate'
-) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries
+) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries + @($grantMenu.mirror)
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
     'Passive.txt 必须且只能定义基础、生活熟练项、身份、命运改签与黄色词条代理被动'
 Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 25) `
@@ -644,7 +652,7 @@ foreach ($sourceStatus in $tooltipSourceStatuses) {
         Require ($sourceValue -ceq $proxyValue) "黄色词条代理字段与原状态不一致: $sourceStatus -> $proxyPassive / $field"
     }
 }
-$expectedBaseProficienciesBoosts = 'Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(HeavyArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);Proficiency(MusicalInstrument)'
+$expectedBaseProficienciesBoosts = ''
 $baseProficienciesBlocks = @([regex]::Matches(
     $passive,
     '(?ms)^new entry "COS_BaseProficiencies".*?(?=^new entry |\z)'
@@ -656,7 +664,7 @@ $baseProficienciesBoosts = @([regex]::Matches(
 ))
 Require ($baseProficienciesBoosts.Count -eq 1 -and
     $baseProficienciesBoosts[0].Groups[1].Value -ceq $expectedBaseProficienciesBoosts) `
-    '混沌起源基础熟练必须只包含装备熟练，不得叠加固定技能检定加值'
+    '旧基础熟练被动必须为空，熟练项由逐项配置授予'
 $lifeSkillBonusEntries = @([regex]::Matches(
     $passive,
     '(?ms)^new entry "COS_CFG_LIFE_SKILL_BONUS_(?<Value>\d{2})".*?(?=^new entry |\z)'
@@ -905,8 +913,8 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq 720 -and @($handles | Select-Object -Unique).Count -eq 720) `
-        "完整本地化必须包含 720 个唯一文本: $language"
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 6) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 6)) `
+        "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
         'h74000010g0010g4010g8010g000000000010',
@@ -1327,9 +1335,13 @@ foreach ($requiredGoalText in @(
     'AddPassive(_Character, _Passive)',
     'HasActiveStatus(_Character, _Status, 1)',
     'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
-    'AddPassive(_Character, "COS_BaseProficiencies")',
+    'PROC_COS_ConfigSyncGrants(_Character)',
     'AddPassive(_Character, "COS_BaseStarterSpells")'
 )) {
+    if ($GrantRuntimeIsolation -and $requiredGoalText -eq 'PROC_COS_ConfigSyncGrants(_Character)') {
+        Require (-not $goal.Contains($requiredGoalText)) '隔离测试不能保留基础自动授予入口'
+        continue
+    }
     Require ($goal.Contains($requiredGoalText)) "基础同步 Goal 缺少: $requiredGoalText"
 }
 $forbiddenRacialPassives = @(
@@ -3977,7 +3989,8 @@ $expectedTutorialEvents = [ordered]@{
     COS_CFG_RACE_SUPERIOR_DARKVISION = 'c0888d3b-4c97-4c50-95b9-34620ba1fdef'
     COS_CFG_RACE_TIEFLING_RESISTANCE = '022d736c-8b4b-4599-9e51-e584a0e1c05d'
 }
-Require ($tutorialEventNodes.Count -eq 36) 'TutorialEvents 必须且只能包含36个 TutorialEvent node'
+foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
+Require ($tutorialEventNodes.Count -eq (36 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有和逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4298,7 +4311,7 @@ $racialControlIds = @(
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
 $expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone') +
-    @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }))
+    @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
         ($_.LocalName -eq 'LSButton' -or $_.LocalName -eq 'LSToggleButton') -and
@@ -4443,7 +4456,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
             'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
-        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + @(
+        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + @($grantMenu | ForEach-Object { "COSGrantRow$($_.key)" }) + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
         $controllerFocusableNodes = @($pageDocument.SelectNodes('//*') | Where-Object {
@@ -4491,7 +4504,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq 36 -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq 36 -and
+    Require ($tutorialActions.Count -eq (36 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (36 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {
