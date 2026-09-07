@@ -1,6 +1,7 @@
 Version 1
 SubGoalCombiner SGC_AND
 INITSECTION
+NOT DB_DLC_Installed((DLC)NULL_00000000-0000-0000-0000-000000000000);
 DB_COS_RaceIdentityTag((TAG)60f6b464-752f-4970-a855-f729565b5e07);
 DB_COS_RaceIdentityTag((TAG)78adf3cd-4741-47a8-94f6-f3d322432591);
 DB_COS_RaceIdentityTag((TAG)534098fa-601d-4f6e-8c4e-b3a8d4b1f141);
@@ -283,6 +284,46 @@ AND
 HasPassive(_Character, _FeaturePassive, 1)
 THEN
 RemovePassive(_Character, _FeaturePassive);
+
+// New-character adventurer bag: eligibility is never created by loading an old save.
+IF
+CharacterCreationFinished()
+AND
+DB_Avatars(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+NOT DB_COS_StartingBagHandled(_Character)
+THEN
+DB_COS_StartingBagPending(_Character);
+
+IF
+LevelGameplayStarted(_Level, _)
+AND
+IsGameLevel(_Level, 1)
+AND
+DB_COS_StartingBagPending(_Character)
+AND
+NOT DB_COS_StartingBagHandled(_Character)
+AND
+GetHostCharacter(_Host)
+AND
+CharacterHasDLC(_Host, (DLC)43962845-7d10-4bf0-ac1f-f13984e430b3, _HostDeluxe)
+AND
+CharacterHasDLC(_Character, (DLC)43962845-7d10-4bf0-ac1f-f13984e430b3, _CharacterDeluxe)
+THEN
+NOT DB_COS_StartingBagPending(_Character);
+DB_COS_StartingBagHandled(_Character);
+PROC_COS_CreateStartingBag(_Character, _HostDeluxe, _CharacterDeluxe);
+
+PROC
+PROC_COS_CreateStartingBag((CHARACTER)_Character, 0, 0)
+AND
+NOT DB_DLC_Installed((DLC)43962845-7d10-4bf0-ac1f-f13984e430b3)
+AND
+CreateAtObject((ROOT)0ae83daa-1096-4b38-9b8c-fc610a9306aa, _Character, 0, 0, "", 0, _Bag)
+THEN
+ToInventory(_Bag, _Character, 1, 0, 1);
 
 EXITSECTION
 ENDEXITSECTION

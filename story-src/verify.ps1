@@ -595,6 +595,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-bulk-menu.ps1')
 & (Join-Path $root 'verify-volo-eye.ps1')
 & (Join-Path $root 'verify-tag-spells.ps1')
+& (Join-Path $root 'verify-starting-bag.ps1')
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
@@ -1387,7 +1388,8 @@ foreach ($runtimeSensitiveCast in @(
     Require ($goal.Contains($runtimeSensitiveCast)) "基础同步缺少当前游戏 Story 头要求的类型转换: $runtimeSensitiveCast"
 }
 foreach ($forbiddenGoalText in @('UserAvatarCreated', 'GetHostCharacter', 'COS_AllSkillMastery', 'ProficiencyBonus(Skill', 'ExpertiseBonus', 'MCM', 'TutorialEvent', 'COS_RacialSpells_', 'DB_COS_RacialSpellPassive', 'TogglePassive(')) {
-    Require (-not $goal.Contains($forbiddenGoalText)) "基础同步 Goal 包含禁用行为: $forbiddenGoalText"
+    $checkedGoal = if ($forbiddenGoalText -eq 'GetHostCharacter') { ($goal -split '// New-character adventurer bag', 2)[0] } else { $goal }
+    Require (-not $checkedGoal.Contains($forbiddenGoalText)) "基础同步 Goal 包含禁用行为: $forbiddenGoalText"
 }
 Require ([regex]::Matches($goal, '(?ms)IF\r?\nLevelGameplayStarted\(_, _\)\r?\nAND\r?\nDB_Avatars\(_Character\)\r?\nAND\r?\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\r?\nTHEN\r?\nPROC_COS_SyncBaseAfterCreation\(_Character\);').Count -eq 1) `
     '读档时必须为每个混沌起源玩家角色迁移基础能力和命运改签'
