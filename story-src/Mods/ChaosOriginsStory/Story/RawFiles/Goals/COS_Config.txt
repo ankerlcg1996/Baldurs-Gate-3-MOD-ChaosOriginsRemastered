@@ -1056,6 +1056,8 @@ THEN
 NOT DB_COS_GrantSetting(_Character, _Key, _Value);
 DB_COS_GrantSetting(_Character, _Key, _Next);
 PROC_COS_ApplyGrantOptions(_Character);
+DB_COS_ConfigClickTrace(_Character, _Key, "Applied");
+DebugText(_Character, "混沌菜单诊断：熟练项或标签切换已执行。");
 
 PROC
 PROC_COS_ToggleGrantOption((CHARACTER)_Character, (STRING)_Key)
@@ -1094,6 +1096,27 @@ IsInCombat(_Character, 0)
 THEN
 TogglePassive(_Character, _Passive);
 PROC_COS_SyncOriginGrantMirrors(_Character);
+DB_COS_ConfigClickTrace(_Character, _Key, "Applied");
+DebugText(_Character, "混沌菜单诊断：起源身份切换已执行。");
+
+// Diagnostic receipts deliberately precede all gameplay permission guards.
+// They observe events only and never change settings or bypass permissions.
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_GrantEvent(_Event, _Key)
+THEN
+DB_COS_ConfigClickTrace(_Character, _Key, "Received");
+
+IF
+TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001)
+THEN
+DB_COS_ConfigClickTrace(_Character, "VoloEye", "Received");
+
+IF
+DB_COS_ConfigClickTrace(_Character, _, "Received")
+THEN
+DebugText(_Character, "混沌菜单诊断：已收到点击事件。");
 
 // Volo eye configuration: preference and reward are independent of surgery.
 PROC
@@ -1170,6 +1193,8 @@ THEN
 NOT DB_COS_VoloEyeSetting(_Character, _Value);
 DB_COS_VoloEyeSetting(_Character, _Next);
 PROC_COS_SyncVoloEye(_Character);
+DB_COS_ConfigClickTrace(_Character, "VoloEye", "Applied");
+DebugText(_Character, "混沌菜单诊断：瓦罗之眼切换已执行。");
 
 IF
 FlagSet((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, _, _)
