@@ -250,7 +250,7 @@ AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 THEN
 SetTag(_Character, _Tag);
-PROC_COS_SyncOriginGrantMirrors(_Character);
+PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);
 
 IF
 StatusRemoved(_Character, _Status, _, _)
@@ -260,7 +260,7 @@ AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 THEN
 ClearTag(_Character, _Tag);
-PROC_COS_SyncOriginGrantMirrors(_Character);
+PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);
 
 IF
 StatusRemoved(_Character, _Status, _, _)

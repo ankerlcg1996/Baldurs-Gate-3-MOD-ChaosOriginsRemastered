@@ -1195,7 +1195,7 @@ StatusApplied(_Character, "CAMP_VOLO_ERSATZEYE", _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
-PROC_COS_SyncVoloEye(_Character);
+PROC_COS_SyncVoloEye((CHARACTER)_Character);
 
 // Latch camp arrival once, independently of the preference and later departures.
 PROC

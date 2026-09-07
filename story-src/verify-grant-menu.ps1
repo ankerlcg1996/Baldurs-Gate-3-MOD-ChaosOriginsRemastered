@@ -46,6 +46,6 @@ if (!$config.Contains('NOT DB_COS_GrantUnresolved(_Character, _Key)') -or !$conf
 if (!$config.Contains('DB_COS_GrantSetting(_Character, _Key, 1);') -or !$config.Contains('TogglePassive(_Character, _Passive);')) { throw 'Default or origin toggle synchronization missing.' }
 'GRANT_MENU_STATIC=PASS; OPTIONS=75; IN_GAME=PENDING'
 foreach ($action in @('SetTag', 'ClearTag')) {
-    $syncPattern = 'DB_COS_OriginIdentityToggle\(_, _Status, _Tag\)\s*THEN\s*' + $action + '\(_Character, _Tag\);\s*PROC_COS_SyncOriginGrantMirrors\(_Character\);'
+    $syncPattern = 'DB_COS_OriginIdentityToggle\(_, _Status, _Tag\)\s*THEN\s*' + $action + '\(_Character, _Tag\);\s*PROC_COS_SyncOriginGrantMirrors\(\(CHARACTER\)_Character\);'
     if ($goal -notmatch $syncPattern) { throw "Origin status handler does not sync menu: $action" }
 }

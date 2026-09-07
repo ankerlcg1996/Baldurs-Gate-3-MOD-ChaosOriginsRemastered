@@ -3,6 +3,7 @@ $config = Get-Content "$PSScriptRoot/Mods/ChaosOriginsStory/Story/RawFiles/Goals
 $stats = Get-Content "$PSScriptRoot/Public/ChaosOriginsStory/Stats/Generated/Data/ChaosConfig.txt" -Raw
 $feature = [regex]::Match($config, '(?s)// Volo eye configuration.*?EXITSECTION').Value
 if (!$feature) { throw 'Volo eye feature is missing' }
+if ($feature -notmatch 'StatusApplied\(_Character, "CAMP_VOLO_ERSATZEYE", _, _\)\s*AND\s*HasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\s*THEN\s*PROC_COS_SyncVoloEye\(\(CHARACTER\)_Character\);') { throw 'StatusApplied GUIDSTRING must explicitly cast to CHARACTER for Volo sync' }
 $blocks = @([regex]::Matches($feature, '(?ms)^(?:PROC|IF)\r?\n.*?(?=^(?:PROC|IF|EXITSECTION)\r?\n|\z)') | ForEach-Object Value)
 $grant = @($blocks | Where-Object { $_.Contains('ApplyStatus(_Character, "COS_VOLO_EYE", -1.0, 1, _Character);') })
 if ($grant.Count -ne 1) { throw 'Volo reward must have exactly one grant path' }
