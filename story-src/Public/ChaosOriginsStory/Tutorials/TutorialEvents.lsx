@@ -676,6 +676,16 @@
                     <attribute id="UUID" type="guid" value="77000000-0000-4000-8000-000000000001"/>
                     <attribute id="UserAction" type="uint8" value="0"/>
                 </node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Core_All"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000001"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Core_Invert"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000002"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Race_All"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000003"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Race_Invert"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000004"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Origin_All"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000005"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Origin_Invert"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000006"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Tag_All"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000007"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Tag_Invert"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000008"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Weapon_All"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000009"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_BULK_Weapon_Invert"/><attribute id="UUID" type="guid" value="79000000-0000-4000-8000-000000000010"/><attribute id="UserAction" type="uint8" value="0"/></node>
             </children>
         </node>
     </region>

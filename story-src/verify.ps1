@@ -592,6 +592,7 @@ $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' +
 $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFrom-Json)
 & (Join-Path $root 'verify-grant-menu.ps1') -SeedOnly:$GrantSeedOnly -Partition $GrantPartition
 & (Join-Path $root 'verify-menu-mirror-keys.ps1')
+& (Join-Path $root 'verify-bulk-menu.ps1')
 & (Join-Path $root 'verify-volo-eye.ps1')
 $expectedPassiveEntries = @(
     'COS_FixedGuidance30',
@@ -915,7 +916,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 76) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 76)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 76 + 2) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 76 + 2)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -2710,7 +2711,7 @@ foreach ($writeProcedure in $configWriteProcedureCalls) {
     Require ($externalCallIfBlocks.Count -eq 1 -and $externalCallIfBlocks[0] -eq $expectedExternalBlock) `
         "$writeProcedure 的外部调用必须且只能来自对应 TutorialEvent IF 块"
 }
-$whitelistedProcedurePattern = '^(?:PROC_COS_ConfigEnsureMechanics|PROC_COS_ConfigToggleMechanic|PROC_COS_ConfigResetCore)$'
+$whitelistedProcedurePattern = '^(?:PROC_COS_ConfigEnsureMechanics|PROC_COS_ConfigToggleMechanic|PROC_COS_ConfigResetCore|PROC_COS_BulkGrant)$'
 foreach ($configProcedureBlock in $configProcedureBlocks) {
     $procedureName = [regex]::Match($configProcedureBlock, '(?m)^PROC\n(?<Name>[A-Za-z0-9_]+)\(').Groups['Name'].Value
     $calledWriteProcedures = @([regex]::Matches((Get-StoryThen $configProcedureBlock),
@@ -3993,7 +3994,17 @@ $expectedTutorialEvents = [ordered]@{
 }
 foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
 $expectedTutorialEvents['COS_CFG_VOLO_EYE'] = '77000000-0000-4000-8000-000000000001'
-Require ($tutorialEventNodes.Count -eq (37 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗和逐项授予事件'
+$expectedTutorialEvents['COS_BULK_Core_All'] = '79000000-0000-4000-8000-000000000001'
+$expectedTutorialEvents['COS_BULK_Core_Invert'] = '79000000-0000-4000-8000-000000000002'
+$expectedTutorialEvents['COS_BULK_Race_All'] = '79000000-0000-4000-8000-000000000003'
+$expectedTutorialEvents['COS_BULK_Race_Invert'] = '79000000-0000-4000-8000-000000000004'
+$expectedTutorialEvents['COS_BULK_Origin_All'] = '79000000-0000-4000-8000-000000000005'
+$expectedTutorialEvents['COS_BULK_Origin_Invert'] = '79000000-0000-4000-8000-000000000006'
+$expectedTutorialEvents['COS_BULK_Tag_All'] = '79000000-0000-4000-8000-000000000007'
+$expectedTutorialEvents['COS_BULK_Tag_Invert'] = '79000000-0000-4000-8000-000000000008'
+$expectedTutorialEvents['COS_BULK_Weapon_All'] = '79000000-0000-4000-8000-000000000009'
+$expectedTutorialEvents['COS_BULK_Weapon_Invert'] = '79000000-0000-4000-8000-000000000010'
+Require ($tutorialEventNodes.Count -eq (47 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4454,12 +4465,22 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
         Test-ControllerPageContract $pageDocument $page $pageName
         Test-ControllerAcceptContract $pageDocument $pageName
+        $grantFocusOrder = @()
+        $seenBulkGroups = @{}
+        foreach ($grant in $grantMenu) {
+            if ($grant.group -in @('Origin','Tag','Weapon') -and !$seenBulkGroups.ContainsKey($grant.group)) {
+                $grantFocusOrder += "COS_BULK_$($grant.group)_All", "COS_BULK_$($grant.group)_Invert"
+                $seenBulkGroups[$grant.group] = $true
+            }
+            $grantFocusOrder += "COSGrantRow$($grant.key)"
+        }
         $expectedControllerFocusOrder = @(
+            'COS_BULK_Core_All', 'COS_BULK_Core_Invert',
             'COSConfigRowPower', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
-        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + @($grantMenu | ForEach-Object { "COSGrantRow$($_.key)" }) + @(
+            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COS_BULK_Race_All', 'COS_BULK_Race_Invert', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
         $controllerFocusableNodes = @($pageDocument.SelectNodes('//*') | Where-Object {
@@ -4507,7 +4528,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (37 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (37 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (47 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (47 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {

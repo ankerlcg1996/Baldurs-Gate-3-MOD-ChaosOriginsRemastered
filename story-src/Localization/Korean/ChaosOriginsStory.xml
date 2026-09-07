@@ -879,4 +879,6 @@
   <content contentuid="h78000000g0000g4000g8000g000000000074" version="1">COS_GRANT_PROF_Shields</content>
   <content contentuid="h78000000g0000g4000g8000g000000000075" version="1">COS_GRANT_PROF_MusicalInstrument</content>
   <content contentuid="h78000000g0000g4000g8000g000000000076" version="1">COS_CFG_VOLO_EYE</content>
+  <content contentuid="h79000000g0000g4000g8000g000000000101" version="1">모두 선택</content>
+  <content contentuid="h79000000g0000g4000g8000g000000000102" version="1">선택 반전</content>
 </contentList>

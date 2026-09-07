@@ -1304,5 +1304,164 @@ HasActiveStatus(_Character, "COS_VOLO_EYE", 1)
 THEN
 RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
 
+
+// Group-local bulk controls: reuse the existing single-option ownership rules.
+PROC
+PROC_COS_SeedGrantMap()
+THEN
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_All_79000000-0000-4000-8000-000000000001, "Core", 1);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_Invert_79000000-0000-4000-8000-000000000002, "Core", 2);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Race_All_79000000-0000-4000-8000-000000000003, "Race", 1);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Race_Invert_79000000-0000-4000-8000-000000000004, "Race", 2);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Origin_All_79000000-0000-4000-8000-000000000005, "Origin", 1);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Origin_Invert_79000000-0000-4000-8000-000000000006, "Origin", 2);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Tag_All_79000000-0000-4000-8000-000000000007, "Tag", 1);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Tag_Invert_79000000-0000-4000-8000-000000000008, "Tag", 2);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Weapon_All_79000000-0000-4000-8000-000000000009, "Weapon", 1);
+DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Weapon_Invert_79000000-0000-4000-8000-000000000010, "Weapon", 2);
+DB_COS_BulkMember("Tag", "TAG_UNDERDARK");
+DB_COS_BulkMember("Tag", "TAG_DUERGARDWARF");
+DB_COS_BulkMember("Tag", "TAG_HILLDWARF");
+DB_COS_BulkMember("Tag", "TAG_MOUNTAINDWARF");
+DB_COS_BulkMember("Tag", "TAG_DROWHALFELF");
+DB_COS_BulkMember("Tag", "TAG_VO_POSTPROCESS");
+DB_COS_BulkMember("Tag", "TAG_HIGHHALFELF");
+DB_COS_BulkMember("Tag", "TAG_WOODHALFELF");
+DB_COS_BulkMember("Tag", "TAG_LOLTHDROWELF");
+DB_COS_BulkMember("Tag", "TAG_SELDARINEDROWELF");
+DB_COS_BulkMember("Tag", "TAG_HIGHELF");
+DB_COS_BulkMember("Tag", "TAG_WOODELF");
+DB_COS_BulkMember("Tag", "TAG_LIGHTFOOTHALFLING");
+DB_COS_BulkMember("Tag", "TAG_STOUTHALFLING");
+DB_COS_BulkMember("Tag", "TAG_DRAGONBORN");
+DB_COS_BulkMember("Tag", "TAG_DROWELF");
+DB_COS_BulkMember("Tag", "TAG_DWARF");
+DB_COS_BulkMember("Tag", "TAG_SHORT");
+DB_COS_BulkMember("Tag", "TAG_ELF");
+DB_COS_BulkMember("Tag", "TAG_GITHYANKI");
+DB_COS_BulkMember("Tag", "TAG_GNOME");
+DB_COS_BulkMember("Tag", "TAG_HALFELF");
+DB_COS_BulkMember("Tag", "TAG_HALFORC");
+DB_COS_BulkMember("Tag", "TAG_HALFLING");
+DB_COS_BulkMember("Tag", "TAG_HUMAN");
+DB_COS_BulkMember("Tag", "TAG_TIEFLING");
+DB_COS_BulkMember("Tag", "TAG_ASMODEUSTIEFLING");
+DB_COS_BulkMember("Tag", "TAG_MEPHISTOPHELESTIEFLING");
+DB_COS_BulkMember("Tag", "TAG_ZARIELTIEFLING");
+DB_COS_BulkMember("Tag", "TAG_DEEPGNOME");
+DB_COS_BulkMember("Tag", "TAG_FORESTGNOME");
+DB_COS_BulkMember("Tag", "TAG_ROCKGNOME");
+DB_COS_BulkMember("Weapon", "PROF_Battleaxes");
+DB_COS_BulkMember("Weapon", "PROF_Clubs");
+DB_COS_BulkMember("Weapon", "PROF_Daggers");
+DB_COS_BulkMember("Weapon", "PROF_Flails");
+DB_COS_BulkMember("Weapon", "PROF_Glaives");
+DB_COS_BulkMember("Weapon", "PROF_Greataxes");
+DB_COS_BulkMember("Weapon", "PROF_Greatclubs");
+DB_COS_BulkMember("Weapon", "PROF_Greatswords");
+DB_COS_BulkMember("Weapon", "PROF_Halberds");
+DB_COS_BulkMember("Weapon", "PROF_HandCrossbows");
+DB_COS_BulkMember("Weapon", "PROF_Handaxes");
+DB_COS_BulkMember("Weapon", "PROF_HeavyCrossbows");
+DB_COS_BulkMember("Weapon", "PROF_Javelins");
+DB_COS_BulkMember("Weapon", "PROF_LightCrossbows");
+DB_COS_BulkMember("Weapon", "PROF_LightHammers");
+DB_COS_BulkMember("Weapon", "PROF_Longbows");
+DB_COS_BulkMember("Weapon", "PROF_Longswords");
+DB_COS_BulkMember("Weapon", "PROF_Maces");
+DB_COS_BulkMember("Weapon", "PROF_Mauls");
+DB_COS_BulkMember("Weapon", "PROF_Morningstars");
+DB_COS_BulkMember("Weapon", "PROF_Pikes");
+DB_COS_BulkMember("Weapon", "PROF_Quarterstaffs");
+DB_COS_BulkMember("Weapon", "PROF_Rapiers");
+DB_COS_BulkMember("Weapon", "PROF_Scimitars");
+DB_COS_BulkMember("Weapon", "PROF_Shortbows");
+DB_COS_BulkMember("Weapon", "PROF_Shortswords");
+DB_COS_BulkMember("Weapon", "PROF_Sickles");
+DB_COS_BulkMember("Weapon", "PROF_Spears");
+DB_COS_BulkMember("Weapon", "PROF_Tridents");
+DB_COS_BulkMember("Weapon", "PROF_Warhammers");
+DB_COS_BulkMember("Weapon", "PROF_Warpicks");
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_BulkEvent(_Event, _, _)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_BulkEvent(_Event, _Group, _Mode)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_BulkGrant(_Character, _Group, _Mode);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, (STRING)_Group, 1)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_GrantSetting(_Character, _Key, 0)
+THEN
+PROC_COS_ToggleGrantOption(_Character, _Key);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, (STRING)_Group, 2)
+AND
+DB_COS_BulkMember(_Group, _Key)
+THEN
+PROC_COS_ToggleGrantOption(_Character, _Key);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Origin", 1)
+AND
+DB_COS_GrantOrigin(_, _Passive, _Status, _)
+AND
+HasActiveStatus(_Character, _Status, 0)
+THEN
+TogglePassive(_Character, _Passive);
+PROC_COS_SyncOriginGrantMirrors(_Character);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Origin", 2)
+AND
+DB_COS_GrantOrigin(_, _Passive, _, _)
+THEN
+TogglePassive(_Character, _Passive);
+PROC_COS_SyncOriginGrantMirrors(_Character);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+THEN
+PROC_COS_ConfigToggleMechanic(_Character, _Key);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Core", 2)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _)
+THEN
+PROC_COS_ConfigToggleMechanic(_Character, _Key);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Race", 1)
+THEN
+PROC_COS_ConfigSetAllRacialPassives(_Character, 1);
+PROC_COS_ConfigSyncRacialMirrors(_Character);
+
+PROC
+PROC_COS_BulkGrant((CHARACTER)_Character, "Race", 2)
+AND
+DB_COS_ConfigRacialDefault(_Passive, _)
+THEN
+PROC_COS_ConfigToggleRacialPassive(_Character, _Passive);
 EXITSECTION
 ENDEXITSECTION
