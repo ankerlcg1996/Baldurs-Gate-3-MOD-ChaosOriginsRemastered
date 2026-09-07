@@ -50,7 +50,7 @@ DB_COS_CorePassive(1, "COS_ChaosLost");
 DB_COS_CorePassive(1, "COS_ChaosWound");
 DB_COS_CorePassive(1, "COS_ChaosDuality");
 DB_COS_CorePassive(1, "COS_ChaosAllIn");
-DB_COS_CorePassive(1, "COS_FateRevision");
+NOT DB_COS_CorePassive(1, "COS_FateRevision");
 DB_COS_CorePassive(5, "COS_ChaosAllInUseL5");
 DB_COS_CorePassive(9, "COS_ChaosAllInUseL9");
 DB_COS_CorePassive(12, "COS_ChaosStrike");
@@ -138,6 +138,8 @@ AND
 GetLevel(_Character, _Level)
 AND
 DB_COS_CorePassive(_RequiredLevel, _CorePassive)
+AND
+_CorePassive != "COS_FateRevision"
 AND
 _Level >= _RequiredLevel
 AND

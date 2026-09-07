@@ -599,6 +599,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-starting-bag.ps1')
 & (Join-Path $root 'verify-observability.ps1')
 & (Join-Path $root 'verify-power-costs.ps1')
+& (Join-Path $root 'verify-retired-fate.ps1')
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
@@ -621,18 +622,14 @@ $expectedPassiveEntries = @(
 ) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries + @($grantMenu.mirror) + $tagSpellPassives + @('COS_TAGSPELL_HellishCharge', 'COS_CFG_TAG_SPELLS')
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
     'Passive.txt 必须且只能定义基础、生活熟练项、身份、命运改签与黄色词条代理被动'
-Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq (25 + $tagSpellPassives.Count + 2)) `
+Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq (25 + $tagSpellPassives.Count + 3)) `
     '基础、全局负重、生活熟练项资源载体与20档技能检定加值必须全部隐藏'
-Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
-    '起源身份开关基类与命运改签必须在获得时默认开启'
+Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 1) `
+    '起源身份开关基类必须在获得时默认开启'
 Require ([regex]::Matches($passive, 'data "ToggleOnFunctors" "ApplyStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
     '七个起源身份被动必须各自应用一个隐藏状态'
 Require ([regex]::Matches($passive, 'data "ToggleOffFunctors" "RemoveStatus\(COS_ORIGIN_TAG_').Count -eq 7) `
     '七个起源身份被动必须各自移除一个隐藏状态'
-Require ($passive.Contains('new entry "COS_FateRevision"') -and `
-    $passive.Contains('data "ToggleOnFunctors" "ApplyStatus(COS_CHAOS_FATE_ENABLED,100,-1)"') -and `
-    $passive.Contains('data "ToggleOffFunctors" "RemoveStatus(COS_CHAOS_FATE_ENABLED)"')) `
-    '命运改签必须是默认开启且可关闭的状态驱动被动'
 foreach ($tooltipPassive in $tooltipPassiveEntries) {
     Require ([regex]::Matches($passive, '(?m)^new entry "' + [regex]::Escape($tooltipPassive) + '"\r?$').Count -eq 1) `
         "黄色词条说明被动缺失或重复: $tooltipPassive"
@@ -2038,7 +2035,6 @@ function Require-StatsIcon([string]$Entry, [string]$ExpectedIcon) {
 $expectedStatsIcons = @{
     COS_ChaosWound = 'COS_Wound'
     COS_ChaosDuality = 'COS_Duality'
-    COS_FateRevision = 'COS_FateRevision'
     Shout_COS_FateRevision = 'COS_FateRevision'
     COS_CHAOS_FATE_READY = 'COS_FateRevision'
     COS_CHAOS_FATE_PENDING = 'COS_FateRevision'
@@ -2068,7 +2064,7 @@ foreach ($entry in $expectedStatsIcons.Keys) {
 foreach ($newIconCount in @{
     COS_Wound = 29
     COS_Duality = 1
-    COS_FateRevision = 5
+    COS_FateRevision = 4
     COS_Mastery = 96
     COS_MasteryTune = 4
     COS_MasteryCorrect = 4
@@ -2155,14 +2151,6 @@ Require ($mechanicsGoal.Contains('DB_COS_ConfigCost(_Character, "Genesis", _Cost
     $mechanicsGoal.Contains('IntegerSubtract(_OldPower, _Cost, _NewPower)') -and `
     $mechanicsGoal.Contains('_Power >= _Cost')) `
     '混沌开天辟地必须按独立设置检查余额与扣费'
-Require ($passive.Contains('new entry "COS_FateRevision"') -and `
-    $passive.Contains('data "Properties" "IsToggled;ToggledDefaultOn"') -and `
-    $featuresText.Contains('new entry "COS_CHAOS_FATE_ENABLED"')) `
-    '命运改签必须是默认开启、可手动关闭的被动能力'
-Require ($goal.Contains('DB_COS_CorePassive(1, "COS_FateRevision");') -and `
-    -not $goal.Contains('DB_COS_CoreSpell(1, "Shout_COS_FateRevision");') -and `
-    $goal.Contains('RemoveSpell(_Character, "Shout_COS_FateRevision", 0);')) `
-    '命运改签必须授予新被动并清理旧主动技能及其挂起状态'
 Require (-not ($mechanicsGoal -match 'COS_CHAOS_FATE_READY|Shout_COS_FateRevision')) `
     '命运改签攻击链不得继续依赖旧主动技能、待结算或资源就绪状态'
 Require ([regex]::Matches($mechanicsGoal, 'COS_CHAOS_FATE_PENDING').Count -eq 8) `
@@ -2226,159 +2214,12 @@ foreach ($legacyClearCase in @(
         "旧主动命运改签在$($legacyClearCase[2])时只能清理待触发状态，不得赠送资源"
 }
 $mechanicsIfBlocks = @([regex]::Matches($mechanicsGoal.Replace("`r`n", "`n"), '(?ms)^IF$.*?(?=^IF$|^PROC$|\z)') | ForEach-Object { $_.Value })
-$fateArmBlocks = @($mechanicsIfBlocks | Where-Object {
-    $_.Contains('UsingSpell(_Character, _, _, _, _StoryActionID)') -and $_.Contains('COS_FateRevision')
-})
-$expectedFateArmConditions = @(
-    'UsingSpell(_Character, _, _, _, _StoryActionID)',
-    'DB_COS_Character((CHARACTER)_Character)',
-    'DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)',
-    'HasPassive(_Character, "COS_FateRevision", 1)',
-    'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)'
-)
-$expectedFateArmActions = @(
-    'PROC_COS_ClearFateAction((CHARACTER)_Character);',
-    'DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);'
-)
-Require ($fateArmBlocks.Count -eq 1) '命运改签必须只有一个攻击行动记录入口'
-Require (((Get-MechanicsConditions $fateArmBlocks[0]) -join "`n") -ceq ($expectedFateArmConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateArmBlocks[0]) -join "`n") -ceq ($expectedFateArmActions -join "`n")) `
-    '命运改签开启后必须用本次攻击的 StoryActionID 建立唯一待处理记录'
 $dualityAttackBlocks = @($mechanicsIfBlocks | Where-Object {
-    $_.Contains('AttackedBy(') -and
-    $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)')
+    $_.Contains('AttackedBy(') -and $_.Contains('HasPassive(_AttackOwner, "COS_ChaosDuality", 1)')
 })
-Require ($dualityAttackBlocks.Count -eq 6) '两仪入口必须严格包含 Fate 关闭、状态关闭、未记录、禁用资源、资源为0和命运改签六个互斥分支'
-$fateDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)' })
-$fateOffBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' })
-$fateUnarmedBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' })
-$fatePowerDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' })
-$fatePowerZeroBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains '_OldPower < _Cost' })
-$fateDualityBlock = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains '_OldPower >= _Cost' })
-Require ($fateDisabledBlocks.Count -eq 1 -and $fateOffBlocks.Count -eq 1 -and $fateUnarmedBlocks.Count -eq 1 -and `
-    $fatePowerDisabledBlocks.Count -eq 1 -and $fatePowerZeroBlocks.Count -eq 1 -and `
-    $fateDualityBlock.Count -eq 1) `
-    '两仪六个攻击分支必须各自唯一且可明确分类'
-$dualityCommonConditions = @(
-    'AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)',
-    '_AttackOwner == _Attacker',
-    'DB_COS_Character((CHARACTER)_AttackOwner)',
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)'
-)
-$dualityFateEnabledConditions = @($dualityCommonConditions + @(
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
-    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)'
-))
-$expectedFateDisabledConditions = @($dualityCommonConditions + @(
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)',
-    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
-))
-$expectedFateOffConditions = @($dualityCommonConditions + @(
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)',
-    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
-    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
-))
-$expectedFateUnarmedConditions = @($dualityFateEnabledConditions + @(
-    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
-))
-$expectedFatePowerDisabledConditions = @($dualityFateEnabledConditions + @(
-    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
-))
-$expectedFatePowerZeroConditions = @($dualityFateEnabledConditions + @(
-    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
-    'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)',
-    'DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)',
-    '_OldPower < _Cost',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
-))
-$expectedFateDualityConditions = @($dualityFateEnabledConditions + @(
-    'HasPassive(_AttackOwner, "COS_FateRevision", 1)',
-    'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
-    'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)',
-    'DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)',
-    '_OldPower >= _Cost', 'IntegerSubtract(_OldPower, _Cost, _NewPower)',
-    'IsCharacter(_Target, 1)', '_Damage > 0', 'GetLevel(_AttackOwner, _Level)',
-    'IntegerMin(_Level, 30, _CappedLevel)',
-    'DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)',
-    '_CappedLevel >= _MinimumLevel', '_CappedLevel < _MaximumLevel',
-    'Random(100, _FirstDualityRoll)', 'IntegerSubtract(_RollCount, 1, _RemainingRolls)'
-))
-$expectedNormalDualityActions = @('PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);')
-$expectedClearedNormalDualityActions = @(
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
-    'PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);'
-)
-Require (((Get-MechanicsConditions $fateDisabledBlocks[0]) -join "`n") -ceq ($expectedFateDisabledConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateDisabledBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
-    'Fate 配置关闭时必须不依赖 FATE_ENABLED、清除旧记录并执行一次普通两仪'
-Require (((Get-MechanicsConditions $fateOffBlocks[0]) -join "`n") -ceq ($expectedFateOffConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateOffBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
-    'Fate 配置开启但命运改签状态关闭时必须清除旧记录并执行一次普通两仪'
-Require (((Get-MechanicsConditions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedNormalDualityActions -join "`n")) `
-    '命运改签未记录本次攻击时必须执行一次普通两仪且不得消费资源'
-Require (((Get-MechanicsConditions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedFatePowerDisabledConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
-    '混沌之力机制关闭时必须清除本次记录并执行一次普通两仪'
-Require (((Get-MechanicsConditions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedFatePowerZeroConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
-    '混沌之力为0时必须清除本次记录并执行一次普通两仪'
-$fateDualityActions = @(Get-MechanicsThenActions $fateDualityBlock[0])
-$expectedFateDualityActions = @(
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
-    'NOT DB_COS_Power((CHARACTER)_AttackOwner, _OldPower);',
-    'DB_COS_Power((CHARACTER)_AttackOwner, _NewPower);',
-    'PROC_COS_SyncPowerDisplay((CHARACTER)_AttackOwner, _NewPower);',
-    'PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);'
-)
-Require (((Get-MechanicsConditions $fateDualityBlock[0]) -join "`n") -ceq ($expectedFateDualityConditions -join "`n") -and `
-    (($fateDualityActions -join "`n") -ceq ($expectedFateDualityActions -join "`n"))) `
-    '命运改签必须只在同一攻击命中时消耗1点、移除本次记录并开始最优两仪判定'
-$actualFateActionLines = @($mechanicsGoal.Replace("`r`n", "`n") -split "`n" | `
-    ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^(?:NOT )?DB_COS_FateAction\(' } | Sort-Object)
-$expectedFateActionLines = @(
-    'DB_COS_FateAction(_Character, _StoryActionID)',
-    'NOT DB_COS_FateAction(_Character, _StoryActionID);',
-    'DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);',
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
-    'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);'
-) | Sort-Object
-Require (($actualFateActionLines -join "`n") -ceq ($expectedFateActionLines -join "`n")) `
-    '命运改签行动记录的全部读写位置必须严格受限于清理、建立和六个结算分支'
-Require (-not $mechanicsGoal.Contains('PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, _RollCount);')) `
-    '命运改签改为攻击触发后不得再重投受击轮盘'
-Require ($mechanicsGoal.Contains('Random(100, _FirstDualityRoll)') -and `
-    $mechanicsGoal.Contains('PROC_COS_ContinueFateDuality') -and `
-    $mechanicsGoal.Contains('IntegerMax(_BestRoll, _NextRoll, _NextBestRoll)')) `
-    '命运改签必须为两仪递归判定并保留更高的倍率结果'
-$expectedFateTiers = @(
-    'DB_COS_FateRolls(1, 5, 2);',
-    'DB_COS_FateRolls(5, 9, 3);',
-    'DB_COS_FateRolls(9, 13, 4);',
-    'DB_COS_FateRolls(13, 17, 5);',
-    'DB_COS_FateRolls(17, 21, 6);',
-    'DB_COS_FateRolls(21, 25, 7);',
-    'DB_COS_FateRolls(25, 100, 8);'
-)
-foreach ($fateTier in $expectedFateTiers) {
-    Require ($mechanicsGoal.Contains($fateTier)) "命运改签等级判定次数缺少: $fateTier"
-}
+Require ($dualityAttackBlocks.Count -eq 1 -and
+    $dualityAttackBlocks[0].Contains('Random(100, _DualityRoll)') -and
+    -not ($dualityAttackBlocks[0] -match 'Fate|FATE|DB_COS_Power')) '普通两仪必须单次判定、不依赖改签或资源'
 foreach ($powerChance in @(
     'DB_COS_LostChance(1, 15);',
     'DB_COS_LostChance(6, 100);',
@@ -2456,17 +2297,6 @@ try {
     $storyGateThenOnlyRejected = $true
 }
 Require $storyGateThenOnlyRejected 'Require-StoryGate 不得把 THEN 动作段误判为条件门禁'
-
-$fateArmProbe = "IF`n" + ($expectedFateArmConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_Character);"
-Require (((Get-MechanicsConditions $fateArmProbe) -join "`n") -ceq ($expectedFateArmConditions -join "`n")) `
-    '命运改签武装探针必须满足旧精确条件数组'
-Require-StoryGate $fateArmProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_Character, "Fate", 1\)' `
-    '命运改签武装探针必须满足 _Character Fate=1 门禁'
-$fateAttackProbe = "IF`n" + ($expectedFateUnarmedConditions -join "`nAND`n") + "`nTHEN`nPROC_COS_Test(_AttackOwner);"
-Require (((Get-MechanicsConditions $fateAttackProbe) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n")) `
-    '命运改签攻击探针必须满足旧精确条件数组'
-Require-StoryGate $fateAttackProbe 'DB_COS_ConfigMechanic\(\(CHARACTER\)_AttackOwner, "Fate", 1\)' `
-    '命运改签攻击探针必须满足 _AttackOwner Fate=1 门禁'
 
 $expectedCoreMirrors = [ordered]@{
     Power = 'COS_CFG_MECH_POWER'; Wound = 'COS_CFG_MECH_WOUND'; KillPower = 'COS_CFG_MECH_KILLPOWER'
@@ -3517,110 +3347,6 @@ Require ($semanticHp -eq 80 -and $semanticTargetTotal -eq 0 -and
     $semanticOwnerTotals.Count -eq 0 -and -not $semanticMarker) `
     '两仪内存语义 probe：结算 B 后必须只扣总额20到HP80并清 marker'
 
-$fateArmGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Fate", 1\)'
-$fateAttackGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_AttackOwner, "Fate", 1\)'
-$fateEffectAttackBlocks = @($dualityAttackBlocks | Where-Object {
-    $_.Contains('HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)') -and
-    $_.Contains('DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)')
-})
-$fateRelevantBlocks = @($fateArmBlocks + $fateEffectAttackBlocks)
-Require ($fateRelevantBlocks.Count -eq 5 -and $fateEffectAttackBlocks.Count -eq 4) `
-    '命运改签必须保留一个武装和四个已启用/记录/多投相关攻击块'
-Require-StoryGate $fateArmBlocks[0] $fateArmGatePattern '命运改签武装块必须用 _Character 要求 Fate=1'
-foreach ($fateAttackBlock in $fateEffectAttackBlocks) {
-    Require-StoryGate $fateAttackBlock $fateAttackGatePattern '命运改签攻击多投块必须用 _AttackOwner 要求 Fate=1'
-}
-Require-StoryGate $fateOffBlocks[0] $fateAttackGatePattern `
-    'FATE_ENABLED=0 的普通单次 Duality 块必须要求 Fate=1，与 Fate=0 通路互斥'
-Require (-not $fateDisabledBlocks[0].Contains('COS_CHAOS_FATE_ENABLED')) `
-    'Fate=0 的普通单次 Duality 块不得依赖用户 FATE_ENABLED 状态'
-
-function Test-FateEffectAttackBlock([string]$Block) {
-    return $Block.Contains('AttackedBy(') -and
-        $Block.Contains('HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)') -and
-        $Block.Contains('DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)')
-}
-function Get-FateDualityRouteBlocks([string]$StoryText) {
-    $ifBlocks = @([regex]::Matches($StoryText.Replace("`r`n", "`n"), '(?ms)^IF$.*?(?=^IF$|^PROC$|\z)') | `
-        ForEach-Object { $_.Value })
-    return @($ifBlocks | Where-Object {
-        $_.Contains('AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)') -and
-        $_.Contains('DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)')
-    })
-}
-
-function Test-FateRouteMatchesState(
-    [string]$Block,
-    [int]$FateEnabled,
-    [int]$StatusEnabled,
-    [bool]$HasAction,
-    [int]$PowerEnabled,
-    [int]$Power,
-    [int]$Cost
-) {
-    $conditions = @(Get-MechanicsConditions $Block)
-    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)' -and $FateEnabled -ne 0) { return $false }
-    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)' -and $FateEnabled -ne 1) { return $false }
-    if ($conditions -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' -and $StatusEnabled -ne 0) { return $false }
-    if ($conditions -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)' -and $StatusEnabled -ne 1) { return $false }
-    if ($conditions -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' -and $HasAction) { return $false }
-    if ($conditions -contains 'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' -and -not $HasAction) { return $false }
-    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' -and $PowerEnabled -ne 0) { return $false }
-    if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)' -and $PowerEnabled -ne 1) { return $false }
-    if ($conditions -contains '_OldPower < _Cost' -and $Power -ge $Cost) { return $false }
-    if ($conditions -contains '_OldPower >= _Cost' -and $Power -lt $Cost) { return $false }
-    if ($conditions -contains '_OldPower >= 1' -and $Power -lt 1) { return $false }
-    return $true
-}
-
-function Test-FateRouteTruthTable([string]$StoryText) {
-    $routeBlocks = @(Get-FateDualityRouteBlocks $StoryText)
-    if ($routeBlocks.Count -ne 6) { return $false }
-    foreach ($fateEnabled in @(0, 1)) {
-        foreach ($statusEnabled in @(0, 1)) {
-            foreach ($hasAction in @($false, $true)) {
-                foreach ($powerEnabled in @(0, 1)) {
-                    foreach ($cost in @(0, 1, 10, 20)) {
-                    foreach ($power in @(0, 1, 9, 10, 19, 20, 21)) {
-                        $matchCount = @($routeBlocks | Where-Object {
-                            Test-FateRouteMatchesState $_ $fateEnabled $statusEnabled $hasAction $powerEnabled $power $cost
-                        }).Count
-                        if ($matchCount -ne 1) { return $false }
-                    }
-                    }
-                }
-            }
-        }
-    }
-    return $true
-}
-Require (Test-FateRouteTruthTable $mechanicsGoal) `
-    'Fate 配置/用户状态/记录/资源的32个真值组合必须各自恰好匹配一个 Duality 攻击路径'
-$freeCostOverlapProbe = $mechanicsGoal.Replace("`n_OldPower < _Cost", "")
-Require (-not (Test-FateRouteTruthTable $freeCostOverlapProbe)) '移除余额不足门槛必须被真值表拒绝'
-$freeCostBlockedProbe = $mechanicsGoal.Replace("`n_OldPower >= _Cost", "`n_OldPower >= 1")
-Require (-not (Test-FateRouteTruthTable $freeCostBlockedProbe)) '恢复固定 1 点门槛必须被免费成本真值表拒绝'
-$fateDisabledDeletionMutation = $mechanicsGoal.Replace($fateDisabledBlocks[0], '')
-Require ($fateDisabledDeletionMutation -cne $mechanicsGoal -and
-    -not (Test-FateRouteTruthTable $fateDisabledDeletionMutation)) `
-    'Fate=0 普通路径删除 mutation 必须被真值表拒绝'
-$fateDisabledStatusMutationBlock = $fateDisabledBlocks[0].Replace(
-    'HasPassive(_AttackOwner, "COS_ChaosDuality", 1)',
-    "HasPassive(_AttackOwner, `"COS_ChaosDuality`", 1)`nAND`nHasActiveStatus(_AttackOwner, `"COS_CHAOS_FATE_ENABLED`", 0)")
-$fateDisabledStatusMutation = $mechanicsGoal.Replace($fateDisabledBlocks[0], $fateDisabledStatusMutationBlock)
-Require ($fateDisabledStatusMutation -cne $mechanicsGoal -and
-    -not (Test-FateRouteTruthTable $fateDisabledStatusMutation)) `
-    'Fate=0 普通路径错误依赖 FATE_ENABLED mutation 必须被真值表拒绝'
-$fateGateRemovalProbe = $fateEffectAttackBlocks[0].Replace(
-    "`nDB_COS_ConfigMechanic((CHARACTER)_AttackOwner, `"Fate`", 1)", '')
-$fateGateRemovalRejected = $false
-try {
-    Require-StoryGate $fateGateRemovalProbe $fateAttackGatePattern '真实 Fate 效果块删除门禁后必须失败'
-} catch {
-    $fateGateRemovalRejected = $true
-}
-Require $fateGateRemovalRejected 'Fate mutation probe 必须拒绝真实效果块缺失 Fate=1'
-
 $masteryEnabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 1\)'
 $masteryDisabledGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Mastery", 0\)'
 $masteryIfBlocksForConfig = @([regex]::Matches($masteryGoal,
@@ -4160,7 +3886,6 @@ $expectedConfigRows = [ordered]@{
     KillPower = @{ Uuid = '71abdeef-69d2-4385-8885-4f9ebbd829ca'; Mirror = 'COS_CFG_MECH_KILLPOWER' }
     Duality = @{ Uuid = 'aa88abcb-5f2e-452c-bdce-3ca6176db1e0'; Mirror = 'COS_CFG_MECH_DUALITY' }
     AllIn = @{ Uuid = '2dd4ef80-1686-4989-8773-3cf6f12b9a36'; Mirror = 'COS_CFG_MECH_ALLIN' }
-    Fate = @{ Uuid = 'aff82c28-d71a-4dad-837d-d41d8519051a'; Mirror = 'COS_CFG_MECH_FATE' }
     Genesis = @{ Uuid = '063cc1a5-fe65-43e5-8531-d6974a7b1dce'; Mirror = 'COS_CFG_MECH_GENESIS' }
     Strike = @{ Uuid = '78baf203-f60c-4dac-99ea-a7f5d1339d71'; Mirror = 'COS_CFG_MECH_STRIKE' }
     Mastery = @{ Uuid = '146d28dc-aa94-40e8-9bad-91b069055526'; Mirror = 'COS_CFG_MECH_MASTERY' }
@@ -4353,7 +4078,7 @@ $racialControlIds = @(
     'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
-$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigFateCostReset','COSConfigGenesisCostReset','COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
+$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigGenesisCostReset','COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
     @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
@@ -4480,7 +4205,7 @@ Require-ControllerPageMutationRejected ($configControllerPageProbe -replace ' ls
     '手柄页缺失 FocusMovementMode 必须被拒绝'
 Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'FocusMovementMode="MainAxisTunnel"', 'FocusMovementMode="Cycle"') `
     '手柄页错误 FocusMovementMode 必须被拒绝'
-$configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleFate" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
+$configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
 [xml]$configControllerAcceptProbeDocument = $configControllerAcceptProbe
 Test-ControllerAcceptContract $configControllerAcceptProbeDocument '内存正向探针' $legacyAcceptNames
 Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace '</Root>', '<ls:LSButton x:Name="AlwaysOn" BoundEvent="UIAccept" IsEnabled="True"/></Root>') `
@@ -4506,9 +4231,9 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         $expectedControllerFocusOrder = @(
             'COS_BULK_Core_All', 'COS_BULK_Core_Invert',
             'COSConfigRowPower', 'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
-            'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
-            'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigFateCostRow', 'COSConfigFateCostResetRow', 'COSConfigGenesisCostRow', 'COSConfigGenesisCostResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+            'COSConfigRowDuality', 'COSConfigRowAllIn',
+            'COSConfigRowGenesis', 'COSConfigGenesisCostRow', 'COSConfigGenesisCostResetRow', 'COSConfigRowStrike', 'COSConfigRowMastery',
+            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
         ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
@@ -4556,8 +4281,8 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         "空壳页返回按钮必须绑定 CustomEvent: $pageName"
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
-    $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (52 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (52 + $grantMenu.Count) -and
+    $expectedTutorialUuids = @($expectedTutorialEvents.Values | Where-Object { $_ -notin @('aff82c28-d71a-4dad-837d-d41d8519051a','7d000000-0000-4000-8000-000000000001','7d000000-0000-4000-8000-000000000002','7d000000-0000-4000-8000-000000000003') })
+    Require ($tutorialActions.Count -eq (48 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (48 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {
@@ -4654,9 +4379,9 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         $_.GetAttribute('Value') -match '^COS_CFG_MECH_'
     })
     $mirrorTriggerValues = @($mirrorTriggers | ForEach-Object { $_.GetAttribute('Value') })
-    Require ($mirrorTriggers.Count -eq 9 -and @($mirrorTriggerValues | Sort-Object -Unique).Count -eq 9 -and
-        -not (Compare-Object ($coreMechanicMirrors | Sort-Object) ($mirrorTriggerValues | Sort-Object))) `
-        "核心设置页必须恰好有九个唯一机制回显 DataTrigger，且不得夹带额外 COS_CFG_MECH_*: $pageName"
+    Require ($mirrorTriggers.Count -eq 8 -and @($mirrorTriggerValues | Sort-Object -Unique).Count -eq 8 -and
+        -not (Compare-Object ($coreMechanicMirrors | Where-Object { $_ -ne 'COS_CFG_MECH_FATE' } | Sort-Object) ($mirrorTriggerValues | Sort-Object))) `
+        "核心设置页必须恰好有八个唯一机制回显 DataTrigger，且不得夹带额外 COS_CFG_MECH_*: $pageName"
     Require ($page.Contains('hc05fd001g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd002g0000g4000g8000g000000000000') -and
         $page.Contains('hc05fd010g0000g4000g8000g000000000000')) `
