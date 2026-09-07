@@ -288,6 +288,15 @@ RemovePassive(_Character, _FeaturePassive);
 // New-character adventurer bag: eligibility is never created by loading an old save.
 IF
 CharacterCreationFinished()
+THEN
+DB_COS_StartingBagCreationFinished(1);
+
+IF
+LevelGameplayStarted(_Level, _)
+AND
+IsGameLevel(_Level, 1)
+AND
+DB_COS_StartingBagCreationFinished(1)
 AND
 DB_Avatars(_Character)
 AND
@@ -296,11 +305,10 @@ AND
 NOT DB_COS_StartingBagHandled(_Character)
 THEN
 DB_COS_StartingBagPending(_Character);
+PROC_COS_TryStartingBag(_Character);
 
-IF
-LevelGameplayStarted(_Level, _)
-AND
-IsGameLevel(_Level, 1)
+PROC
+PROC_COS_TryStartingBag((CHARACTER)_Character)
 AND
 DB_COS_StartingBagPending(_Character)
 AND
