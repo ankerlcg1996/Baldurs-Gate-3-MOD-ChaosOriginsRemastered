@@ -405,6 +405,7 @@ PROC_COS_SyncMastery(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
 PROC_COS_ConfigSyncLifeSkill(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
+PROC_COS_SyncOverview(_Character);
 
 PROC
 PROC_COS_EnsureFixedGuidance((CHARACTER)_Character)
@@ -527,6 +528,7 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Next);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);
+PROC_COS_SyncOverview(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
 PROC
@@ -539,6 +541,7 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Default);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);
+PROC_COS_SyncOverview(_Character);
 
 IF
 TutorialEvent(_Character, _Event)

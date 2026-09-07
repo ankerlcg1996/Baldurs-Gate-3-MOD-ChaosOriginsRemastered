@@ -204,6 +204,34 @@ DB_COS_KillChance(11, 20, 10);
 DB_COS_KillChance(21, 30, 20);
 DB_COS_KillChance(31, 39, 35);
 DB_COS_KillChance(40, 40, 100);
+DB_COS_RecentWound(0, "COS_RECENT_WOUND_0");
+DB_COS_RecentWound(1, "COS_RECENT_WOUND_1");
+DB_COS_RecentWound(2, "COS_RECENT_WOUND_2");
+DB_COS_RecentWound(3, "COS_RECENT_WOUND_3");
+DB_COS_RecentWound(4, "COS_RECENT_WOUND_4");
+DB_COS_RecentWound(5, "COS_RECENT_WOUND_5");
+DB_COS_RecentWound(6, "COS_RECENT_WOUND_6");
+DB_COS_RecentWound(7, "COS_RECENT_WOUND_7");
+DB_COS_RecentWound(8, "COS_RECENT_WOUND_8");
+DB_COS_RecentWound(9, "COS_RECENT_WOUND_9");
+DB_COS_RecentWound(10, "COS_RECENT_WOUND_10");
+DB_COS_RecentWound(11, "COS_RECENT_WOUND_11");
+DB_COS_RecentWound(12, "COS_RECENT_WOUND_12");
+DB_COS_RecentWound(13, "COS_RECENT_WOUND_13");
+DB_COS_RecentWound(14, "COS_RECENT_WOUND_14");
+DB_COS_RecentWound(15, "COS_RECENT_WOUND_15");
+DB_COS_RecentWound(16, "COS_RECENT_WOUND_16");
+DB_COS_RecentWound(17, "COS_RECENT_WOUND_17");
+DB_COS_RecentWound(18, "COS_RECENT_WOUND_18");
+DB_COS_RecentWound(19, "COS_RECENT_WOUND_19");
+DB_COS_RecentWound(20, "COS_RECENT_WOUND_20");
+DB_COS_RecentWound(23, "COS_RECENT_WOUND_23");
+DB_COS_RecentWound(24, "COS_RECENT_WOUND_24");
+DB_COS_RecentWound(25, "COS_RECENT_WOUND_25");
+DB_COS_RecentWound(21, "COS_RECENT_WOUND_21");
+DB_COS_RecentWound(22, "COS_RECENT_WOUND_22");
+DB_COS_RecentWound(26, "COS_RECENT_WOUND_26");
+DB_COS_RecentWound(38, "COS_RECENT_WOUND_38");
 KBSECTION
 PROC
 PROC_COS_Register((CHARACTER)_Character)
@@ -810,6 +838,7 @@ PROC_COS_FinishWoundTrials((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Po
 THEN
 PROC_COS_ResolveWound(_Character, _Damage, _BestOutcome, _PowerEligible);
 PROC_COS_ClearWoundPool(_Character);
+PROC_COS_RecordWoundResult(_Character, _BestOutcome);
 
 PROC
 PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible)
@@ -1719,6 +1748,14 @@ AND
 DB_COS_WoundConsumed((CHARACTER)_Character)
 THEN
 NOT DB_COS_WoundConsumed((CHARACTER)_Character);
+
+// Snapshot of the adopted draw only; existing combat-log statuses are unchanged.
+PROC
+PROC_COS_RecordWoundResult((CHARACTER)_Character, (INTEGER)_Outcome)
+AND
+DB_COS_RecentWound(_Outcome, _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 100, _Character);
 
 EXITSECTION
 ENDEXITSECTION

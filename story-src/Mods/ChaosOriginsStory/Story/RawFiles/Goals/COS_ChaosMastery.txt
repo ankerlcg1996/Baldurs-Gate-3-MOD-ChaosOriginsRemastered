@@ -14,6 +14,97 @@ DB_COS_MasteryCarrier(10, "COS_ChaosMasteryPointL10");
 DB_COS_MasteryCarrier(11, "COS_ChaosMasteryPointL11");
 DB_COS_MasteryCarrier(12, "COS_ChaosMasteryPointL12");
 NOT DB_Avatars((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
+DB_COS_OverviewRow(0, 0, "COS_OVERVIEW_0_0");
+DB_COS_OverviewRow(0, 1, "COS_OVERVIEW_0_1");
+DB_COS_OverviewRow(0, 2, "COS_OVERVIEW_0_2");
+DB_COS_OverviewRow(0, 3, "COS_OVERVIEW_0_3");
+DB_COS_OverviewRow(0, 4, "COS_OVERVIEW_0_4");
+DB_COS_OverviewRow(0, 5, "COS_OVERVIEW_0_5");
+DB_COS_OverviewRow(0, 6, "COS_OVERVIEW_0_6");
+DB_COS_OverviewRow(0, 7, "COS_OVERVIEW_0_7");
+DB_COS_OverviewRow(0, 8, "COS_OVERVIEW_0_8");
+DB_COS_OverviewRow(0, 9, "COS_OVERVIEW_0_9");
+DB_COS_OverviewRow(0, 10, "COS_OVERVIEW_0_10");
+DB_COS_OverviewRow(0, 11, "COS_OVERVIEW_0_11");
+DB_COS_OverviewRow(0, 12, "COS_OVERVIEW_0_12");
+DB_COS_OverviewRow(1, 0, "COS_OVERVIEW_1_0");
+DB_COS_OverviewRow(1, 1, "COS_OVERVIEW_1_1");
+DB_COS_OverviewRow(1, 2, "COS_OVERVIEW_1_2");
+DB_COS_OverviewRow(1, 3, "COS_OVERVIEW_1_3");
+DB_COS_OverviewRow(1, 4, "COS_OVERVIEW_1_4");
+DB_COS_OverviewRow(1, 5, "COS_OVERVIEW_1_5");
+DB_COS_OverviewRow(1, 6, "COS_OVERVIEW_1_6");
+DB_COS_OverviewRow(1, 7, "COS_OVERVIEW_1_7");
+DB_COS_OverviewRow(1, 8, "COS_OVERVIEW_1_8");
+DB_COS_OverviewRow(1, 9, "COS_OVERVIEW_1_9");
+DB_COS_OverviewRow(1, 10, "COS_OVERVIEW_1_10");
+DB_COS_OverviewRow(1, 11, "COS_OVERVIEW_1_11");
+DB_COS_OverviewRow(2, 0, "COS_OVERVIEW_2_0");
+DB_COS_OverviewRow(2, 1, "COS_OVERVIEW_2_1");
+DB_COS_OverviewRow(2, 2, "COS_OVERVIEW_2_2");
+DB_COS_OverviewRow(2, 3, "COS_OVERVIEW_2_3");
+DB_COS_OverviewRow(2, 4, "COS_OVERVIEW_2_4");
+DB_COS_OverviewRow(2, 5, "COS_OVERVIEW_2_5");
+DB_COS_OverviewRow(2, 6, "COS_OVERVIEW_2_6");
+DB_COS_OverviewRow(2, 7, "COS_OVERVIEW_2_7");
+DB_COS_OverviewRow(2, 8, "COS_OVERVIEW_2_8");
+DB_COS_OverviewRow(2, 9, "COS_OVERVIEW_2_9");
+DB_COS_OverviewRow(2, 10, "COS_OVERVIEW_2_10");
+DB_COS_OverviewRow(3, 0, "COS_OVERVIEW_3_0");
+DB_COS_OverviewRow(3, 1, "COS_OVERVIEW_3_1");
+DB_COS_OverviewRow(3, 2, "COS_OVERVIEW_3_2");
+DB_COS_OverviewRow(3, 3, "COS_OVERVIEW_3_3");
+DB_COS_OverviewRow(3, 4, "COS_OVERVIEW_3_4");
+DB_COS_OverviewRow(3, 5, "COS_OVERVIEW_3_5");
+DB_COS_OverviewRow(3, 6, "COS_OVERVIEW_3_6");
+DB_COS_OverviewRow(3, 7, "COS_OVERVIEW_3_7");
+DB_COS_OverviewRow(3, 8, "COS_OVERVIEW_3_8");
+DB_COS_OverviewRow(3, 9, "COS_OVERVIEW_3_9");
+DB_COS_OverviewRow(4, 0, "COS_OVERVIEW_4_0");
+DB_COS_OverviewRow(4, 1, "COS_OVERVIEW_4_1");
+DB_COS_OverviewRow(4, 2, "COS_OVERVIEW_4_2");
+DB_COS_OverviewRow(4, 3, "COS_OVERVIEW_4_3");
+DB_COS_OverviewRow(4, 4, "COS_OVERVIEW_4_4");
+DB_COS_OverviewRow(4, 5, "COS_OVERVIEW_4_5");
+DB_COS_OverviewRow(4, 6, "COS_OVERVIEW_4_6");
+DB_COS_OverviewRow(4, 7, "COS_OVERVIEW_4_7");
+DB_COS_OverviewRow(4, 8, "COS_OVERVIEW_4_8");
+DB_COS_OverviewRow(5, 0, "COS_OVERVIEW_5_0");
+DB_COS_OverviewRow(5, 1, "COS_OVERVIEW_5_1");
+DB_COS_OverviewRow(5, 2, "COS_OVERVIEW_5_2");
+DB_COS_OverviewRow(5, 3, "COS_OVERVIEW_5_3");
+DB_COS_OverviewRow(5, 4, "COS_OVERVIEW_5_4");
+DB_COS_OverviewRow(5, 5, "COS_OVERVIEW_5_5");
+DB_COS_OverviewRow(5, 6, "COS_OVERVIEW_5_6");
+DB_COS_OverviewRow(5, 7, "COS_OVERVIEW_5_7");
+DB_COS_OverviewRow(6, 0, "COS_OVERVIEW_6_0");
+DB_COS_OverviewRow(6, 1, "COS_OVERVIEW_6_1");
+DB_COS_OverviewRow(6, 2, "COS_OVERVIEW_6_2");
+DB_COS_OverviewRow(6, 3, "COS_OVERVIEW_6_3");
+DB_COS_OverviewRow(6, 4, "COS_OVERVIEW_6_4");
+DB_COS_OverviewRow(6, 5, "COS_OVERVIEW_6_5");
+DB_COS_OverviewRow(6, 6, "COS_OVERVIEW_6_6");
+DB_COS_OverviewRow(7, 0, "COS_OVERVIEW_7_0");
+DB_COS_OverviewRow(7, 1, "COS_OVERVIEW_7_1");
+DB_COS_OverviewRow(7, 2, "COS_OVERVIEW_7_2");
+DB_COS_OverviewRow(7, 3, "COS_OVERVIEW_7_3");
+DB_COS_OverviewRow(7, 4, "COS_OVERVIEW_7_4");
+DB_COS_OverviewRow(7, 5, "COS_OVERVIEW_7_5");
+DB_COS_OverviewRow(8, 0, "COS_OVERVIEW_8_0");
+DB_COS_OverviewRow(8, 1, "COS_OVERVIEW_8_1");
+DB_COS_OverviewRow(8, 2, "COS_OVERVIEW_8_2");
+DB_COS_OverviewRow(8, 3, "COS_OVERVIEW_8_3");
+DB_COS_OverviewRow(8, 4, "COS_OVERVIEW_8_4");
+DB_COS_OverviewRow(9, 0, "COS_OVERVIEW_9_0");
+DB_COS_OverviewRow(9, 1, "COS_OVERVIEW_9_1");
+DB_COS_OverviewRow(9, 2, "COS_OVERVIEW_9_2");
+DB_COS_OverviewRow(9, 3, "COS_OVERVIEW_9_3");
+DB_COS_OverviewRow(10, 0, "COS_OVERVIEW_10_0");
+DB_COS_OverviewRow(10, 1, "COS_OVERVIEW_10_1");
+DB_COS_OverviewRow(10, 2, "COS_OVERVIEW_10_2");
+DB_COS_OverviewRow(11, 0, "COS_OVERVIEW_11_0");
+DB_COS_OverviewRow(11, 1, "COS_OVERVIEW_11_1");
+DB_COS_OverviewRow(12, 0, "COS_OVERVIEW_12_0");
 KBSECTION
 
 PROC
@@ -63,6 +154,7 @@ RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
 PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _TuneCount);
 PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);
+PROC_COS_SyncOverview(_Character);
 
 PROC
 PROC_COS_AccrueMastery((CHARACTER)_Character)
@@ -339,6 +431,51 @@ AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
 PROC_COS_ResetMastery(_Character);
+
+// Read-only overview. No random rolls, resource changes or combat effects.
+PROC
+PROC_COS_SyncOverview((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Wound", 0)
+THEN
+PROC_COS_ApplyOverview(_Character, "COS_OVERVIEW_WOUND_OFF");
+
+PROC
+PROC_COS_SyncOverview((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Wound", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Mastery", 0)
+THEN
+PROC_COS_ApplyOverview(_Character, "COS_OVERVIEW_MASTERY_OFF");
+
+PROC
+PROC_COS_SyncOverview((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Wound", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Mastery", 1)
+AND
+DB_COS_MasteryTuneCount(_Character, _Tune)
+AND
+DB_COS_MasteryCorrectCount(_Character, _Correct)
+AND
+DB_COS_OverviewRow(_Tune, _Correct, _Status)
+THEN
+PROC_COS_ApplyOverview(_Character, _Status);
+
+PROC
+PROC_COS_ApplyOverview((CHARACTER)_Character, (STRING)_Status)
+AND
+HasActiveStatus(_Character, _Status, 0)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 100, _Character);
 
 EXITSECTION
 ENDEXITSECTION

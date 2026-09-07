@@ -118,9 +118,10 @@ $expectedToggleActionsEarly = @(
     'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
     'DB_COS_ConfigMechanic(_Character, _Key, _Next);',
     'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);',
+    'PROC_COS_SyncOverview(_Character);',
     'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
 )
-Require ($toggleActionsEarly.Count -eq 4 -and
+Require ($toggleActionsEarly.Count -eq 5 -and
     ($toggleActionsEarly -join "`n") -ceq ($expectedToggleActionsEarly -join "`n")) `
     '核心设置切换 THEN 必须且只能删除当前值、写入反值、应用反值并同步一次镜像'
 Require (-not ($toggleBlockEarly -match '(?m)^(?:NOT )?DB_COS_ConfigMechanic\(_Character, _Key, [01]\);?$')) `
@@ -596,6 +597,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-volo-eye.ps1')
 & (Join-Path $root 'verify-tag-spells.ps1')
 & (Join-Path $root 'verify-starting-bag.ps1')
+& (Join-Path $root 'verify-observability.ps1')
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
@@ -920,7 +922,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -1137,7 +1139,8 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
             'RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);',
             'RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);',
             'PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _TuneCount);',
-            'PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);'
+            'PROC_COS_ApplyMasteryRouteStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _CorrectCount);',
+            'PROC_COS_SyncOverview(_Character);'
         ))) { return $false }
 
     $syncStatusEntry = @(@(Get-MasteryStoryBlocks $Story 'PROC' 'PROC_COS_SyncMastery') | Where-Object {
@@ -1222,7 +1225,7 @@ function Test-COSMasteryLevelSemantics([string]$Story) {
             ))) { return $false }
     }
 
-    if ([regex]::Matches($Story, '(?m)^ApplyStatus\(').Count -ne 1) { return $false }
+    if ([regex]::Matches($Story, '(?m)^ApplyStatus\(').Count -ne 2) { return $false }
 
     return $true
 }
@@ -1752,7 +1755,8 @@ $finishTrialBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_FinishWoundTrials')
 $finishTrialActions = @(Get-MechanicsThenActions $finishTrialBlocks[0])
 $expectedFinishTrialActions = @(
     'PROC_COS_ResolveWound(_Character, _Damage, _BestOutcome, _PowerEligible);',
-    'PROC_COS_ClearWoundPool(_Character);'
+    'PROC_COS_ClearWoundPool(_Character);',
+    'PROC_COS_RecordWoundResult(_Character, _BestOutcome);'
 )
 Require ($finishTrialBlocks.Count -eq 1 -and `
     (($finishTrialActions -join "`n") -ceq ($expectedFinishTrialActions -join "`n"))) `
@@ -2060,10 +2064,10 @@ foreach ($entry in $expectedStatsIcons.Keys) {
     Require-StatsIcon $entry $expectedStatsIcons[$entry]
 }
 foreach ($newIconCount in @{
-    COS_Wound = 1
+    COS_Wound = 29
     COS_Duality = 1
     COS_FateRevision = 5
-    COS_Mastery = 3
+    COS_Mastery = 96
     COS_MasteryTune = 4
     COS_MasteryCorrect = 4
 }.GetEnumerator()) {
@@ -3838,7 +3842,8 @@ $resetCoreConditions = @(
 $resetCoreActions = @(
     'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
     'DB_COS_ConfigMechanic(_Character, _Key, _Default);',
-    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);'
+    'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);',
+    'PROC_COS_SyncOverview(_Character);'
 )
 $resetEventConditions = @(
     'TutorialEvent(_Character, _Event)',
