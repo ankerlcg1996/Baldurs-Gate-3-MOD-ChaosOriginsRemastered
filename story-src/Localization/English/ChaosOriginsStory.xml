@@ -1037,4 +1037,13 @@
   <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">Restore 1</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">Chaos Genesis cost (0 is free; default 10)</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">Restore 10</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000001" version="1">Extra conveniences</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000002" version="1">Unspent mastery points:</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000003" version="1">Enabled extra settings (unlock requirements still apply)</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000004" version="1">Wound roll: same-family strong penalty already active; not reapplied</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000005" version="1">No stacks or duration refresh. While the strongest penalty is active, same-family outcome weights are halved; category probabilities are unchanged.</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000006" version="1">Carry capacity ×50</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">Starting bag: granted once during character creation; Deluxe owners receive no duplicate. No refill or item removal.</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">Fixed skill-check bonus: +</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
 </contentList>

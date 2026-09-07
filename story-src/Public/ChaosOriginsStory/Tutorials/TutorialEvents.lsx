@@ -685,6 +685,7 @@
                 <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_CFG_GENESIS_COST_MINUS"/><attribute id="UUID" type="guid" value="7d000000-0000-4000-8000-000000000004"/><attribute id="UserAction" type="uint8" value="0"/></node>
                 <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_CFG_GENESIS_COST_PLUS"/><attribute id="UUID" type="guid" value="7d000000-0000-4000-8000-000000000005"/><attribute id="UserAction" type="uint8" value="0"/></node>
                 <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_CFG_GENESIS_COST_RESET"/><attribute id="UUID" type="guid" value="7d000000-0000-4000-8000-000000000006"/><attribute id="UserAction" type="uint8" value="0"/></node>
+                <node id="TutorialEvent"><attribute id="EventType" type="uint8" value="8"/><attribute id="Name" type="LSString" value="COS_CFG_CARRY"/><attribute id="UUID" type="guid" value="7e000000-0000-4000-8000-000000000001"/><attribute id="UserAction" type="uint8" value="0"/></node>
             </children>
         </node>
     </region>

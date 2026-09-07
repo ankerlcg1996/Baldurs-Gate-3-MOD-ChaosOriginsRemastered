@@ -1037,4 +1037,13 @@
   <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">1로 복원</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">혼돈 창세 소모 (0 무료, 기본 10)</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">10으로 복원</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000001" version="1">추가 편의 기능</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000002" version="1">남은 숙련 점수:</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000003" version="1">활성화된 추가 설정 (해금 조건 별도)</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000004" version="1">같은 계열의 강한 불이익 활성 중: 재적용 없음</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000005" version="1">중첩과 지속 시간 갱신 없음. 같은 계열의 추첨 가중치는 절반이며 분류 확률은 유지됩니다.</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000006" version="1">소지 용량 ×50</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">시작 가방: 캐릭터 생성 시 한 번 지급. Deluxe 소유자 중복 지급 및 재지급·회수 없음.</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">고정 기술 판정 보너스: +</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
 </contentList>

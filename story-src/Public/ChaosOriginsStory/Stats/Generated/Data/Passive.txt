@@ -716,6 +716,7 @@ data "Boosts" "UnlockSpell(Target_BoomingBlade_ClassSpell);UnlockSpell(Target_Gu
 
 new entry "COS_GlobalCarryCapacity50x"
 type "PassiveData"
+data "DisplayName" "h7e000000g0000g4000g8000g000000000009"
 data "Properties" "IsHidden"
 data "Boosts" "CarryCapacityMultiplier(50)"
 

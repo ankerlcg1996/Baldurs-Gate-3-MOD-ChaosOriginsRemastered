@@ -5,13 +5,66 @@ NOT DB_Players((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
 KBSECTION
 
 PROC
-PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
+PROC_COS_EnsureCarrySetting((CHARACTER)_Character)
+AND
+NOT DB_COS_CarryEnabled(_Character, _)
+THEN
+DB_COS_CarryEnabled(_Character, 1);
+
+PROC
+PROC_COS_ApplyCarrySetting((CHARACTER)_Character)
 AND
 DB_Players(_Character)
+AND
+DB_COS_CarryEnabled(_Character, 1)
 AND
 HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
 THEN
 AddPassive(_Character, "COS_GlobalCarryCapacity50x");
+
+PROC
+PROC_COS_ApplyCarrySetting((CHARACTER)_Character)
+AND
+DB_Players(_Character)
+AND
+DB_COS_CarryEnabled(_Character, 0)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 1)
+THEN
+RemovePassive(_Character, "COS_GlobalCarryCapacity50x");
+
+PROC
+PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
+AND
+DB_Players(_Character)
+THEN
+PROC_COS_EnsureCarrySetting(_Character);
+PROC_COS_ApplyCarrySetting(_Character);
+EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001);
+
+PROC
+PROC_COS_ToggleCarrySetting((CHARACTER)_Character)
+AND
+DB_COS_CarryEnabled(_Character, _Old)
+AND
+IntegerSubtract(1, _Old, _Enabled)
+THEN
+NOT DB_COS_CarryEnabled(_Character, _Old);
+DB_COS_CarryEnabled(_Character, _Enabled);
+PROC_COS_ApplyCarrySetting(_Character);
+
+IF
+TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001)
+AND
+DB_Players(_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ToggleCarrySetting(_Character);
 
 IF
 LevelGameplayStarted(_, _)

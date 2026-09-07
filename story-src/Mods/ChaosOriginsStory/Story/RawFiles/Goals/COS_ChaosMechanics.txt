@@ -673,6 +673,27 @@ _Layer <= _Weight
 THEN
 PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 
+// Runtime seed: existing saves do not rerun INITSECTION.
+PROC
+PROC_COS_EnsureNegativeProtection()
+THEN
+DB_COS_WoundNegativeStrong(0, "COS_CHAOS_WOUND_ATTACK_MINUS_3");
+DB_COS_WoundNegativeStrong(1, "COS_CHAOS_WOUND_ATTACK_MINUS_3");
+DB_COS_WoundNegativeStrong(2, "COS_CHAOS_WOUND_ATTACK_MINUS_3");
+DB_COS_WoundNegativeStrong(3, "COS_CHAOS_WOUND_AC_MINUS_3");
+DB_COS_WoundNegativeStrong(4, "COS_CHAOS_WOUND_AC_MINUS_3");
+DB_COS_WoundNegativeStrong(5, "COS_CHAOS_WOUND_AC_MINUS_3");
+DB_COS_WoundNegativeStrong(6, "COS_CHAOS_WOUND_SAVE_MINUS_3");
+DB_COS_WoundNegativeStrong(7, "COS_CHAOS_WOUND_SAVE_MINUS_3");
+DB_COS_WoundNegativeStrong(8, "COS_CHAOS_WOUND_SAVE_MINUS_3");
+DB_COS_WoundNegativeStrong(9, "COS_CHAOS_WOUND_CHECK_MINUS_3");
+DB_COS_WoundNegativeStrong(10, "COS_CHAOS_WOUND_CHECK_MINUS_3");
+DB_COS_WoundNegativeStrong(11, "COS_CHAOS_WOUND_CHECK_MINUS_3");
+DB_COS_WoundNegativeStrong(12, "COS_CHAOS_WOUND_MOVE_MINUS_9");
+DB_COS_WoundNegativeStrong(23, "COS_CHAOS_WOUND_MOVE_MINUS_9");
+DB_COS_WoundNegativeStrong(24, "COS_CHAOS_WOUND_MOVE_MINUS_9");
+
+// Twice the original weight avoids rounding the smallest protected weight to zero.
 PROC
 PROC_COS_AddEnabledNegativeWoundCandidates((CHARACTER)_Character)
 AND
@@ -681,6 +702,31 @@ AND
 DB_COS_ConfigWoundOutcome(_Key, _Outcome)
 AND
 DB_COS_WoundNegativeWeight(_Outcome, _Weight)
+AND
+DB_COS_WoundNegativeStrong(_Outcome, _StrongStatus)
+AND
+HasActiveStatus(_Character, _StrongStatus, 0)
+AND
+IntegerProduct(_Weight, 2, _EffectiveWeight)
+AND
+DB_COS_WoundLayer(_Layer)
+AND
+_Layer <= _EffectiveWeight
+THEN
+PROC_COS_AppendWoundCandidate(_Character, _Outcome);
+
+PROC
+PROC_COS_AddEnabledNegativeWoundCandidates((CHARACTER)_Character)
+AND
+DB_COS_ConfigWound(_Character, _Key, 1)
+AND
+DB_COS_ConfigWoundOutcome(_Key, _Outcome)
+AND
+DB_COS_WoundNegativeWeight(_Outcome, _Weight)
+AND
+DB_COS_WoundNegativeStrong(_Outcome, _StrongStatus)
+AND
+HasActiveStatus(_Character, _StrongStatus, 1)
 AND
 DB_COS_WoundLayer(_Layer)
 AND
@@ -699,6 +745,7 @@ PROC_COS_AddMasteryGiftWoundCandidates(_Character);
 PROC
 PROC_COS_RebuildNegativeWoundPool((CHARACTER)_Character)
 THEN
+PROC_COS_EnsureNegativeProtection();
 PROC_COS_ClearWoundPool(_Character);
 DB_COS_WoundPoolCount(_Character, 0);
 PROC_COS_AddEnabledNegativeWoundCandidates(_Character);
@@ -843,15 +890,48 @@ PROC_COS_RollWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligi
 THEN
 PROC_COS_BeginWoundTrials(_Character, _Damage, _PowerEligible, 1);
 
+// A protected draw still counts as a negative result, but cannot mutate its status.
 PROC
-PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+PROC_COS_ApplyWoundStatus((CHARACTER)_Character, (INTEGER)_Roll)
 AND
-DB_COS_WoundStatus(_Roll, _Status, _Negative)
+DB_COS_WoundStatus(_Roll, _Status, 0)
 AND
 DB_COS_WoundLog(_Roll, _LogStatus)
 THEN
 ApplyStatus(_Character, _Status, 6.0, 100, _Character);
 ApplyStatus(_Character, _LogStatus, 0.1, 100, _Character);
+
+PROC
+PROC_COS_ApplyWoundStatus((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+DB_COS_WoundStatus(_Roll, _Status, 1)
+AND
+DB_COS_WoundNegativeStrong(_Roll, _StrongStatus)
+AND
+HasActiveStatus(_Character, _StrongStatus, 1)
+THEN
+ApplyStatus(_Character, "COS_NEGATIVE_PROTECTED_LOG", 0.1, 100, _Character);
+
+PROC
+PROC_COS_ApplyWoundStatus((CHARACTER)_Character, (INTEGER)_Roll)
+AND
+DB_COS_WoundStatus(_Roll, _Status, 1)
+AND
+DB_COS_WoundNegativeStrong(_Roll, _StrongStatus)
+AND
+HasActiveStatus(_Character, _StrongStatus, 0)
+AND
+DB_COS_WoundLog(_Roll, _LogStatus)
+THEN
+ApplyStatus(_Character, _Status, 6.0, 100, _Character);
+ApplyStatus(_Character, _LogStatus, 0.1, 100, _Character);
+
+PROC
+PROC_COS_ResolveWound((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_Roll, (INTEGER)_PowerEligible)
+AND
+DB_COS_WoundStatus(_Roll, _Status, _Negative)
+THEN
+PROC_COS_ApplyWoundStatus(_Character, _Roll);
 PROC_COS_RecordWoundNegative(_Character, _Negative, _PowerEligible);
 
 PROC

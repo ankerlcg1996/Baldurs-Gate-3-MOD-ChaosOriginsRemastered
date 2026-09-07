@@ -600,6 +600,9 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-observability.ps1')
 & (Join-Path $root 'verify-power-costs.ps1')
 & (Join-Path $root 'verify-retired-fate.ps1')
+& (Join-Path $root 'verify-negative-protection.ps1')
+& (Join-Path $root 'verify-optimization-menu.ps1')
+& (Join-Path $root 'verify-carry-toggle.ps1')
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
@@ -921,7 +924,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 9) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 9)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -1005,54 +1008,13 @@ Require ($goals.Count -eq 6 -and ($goals.FullName -contains $goalPath) -and `
     ($goals.FullName -contains $globalBenefitsGoalPath)) `
     '当前 Story 必须且只能包含基础同步、掌控混沌、混沌机制、核心设置、起源剧情奖励和全体玩家增益六个 Goal'
 $globalBenefitsGoal = Normalize-LineEndings ([IO.File]::ReadAllText($globalBenefitsGoalPath))
-$expectedGlobalBenefitsGoal = Normalize-LineEndings @'
-Version 1
-SubGoalCombiner SGC_AND
-INITSECTION
-NOT DB_Players((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
-KBSECTION
-
-PROC
-PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
-AND
-DB_Players(_Character)
-AND
-HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
-THEN
-AddPassive(_Character, "COS_GlobalCarryCapacity50x");
-
-IF
-LevelGameplayStarted(_, _)
-AND
-DB_Players(_Character)
-THEN
-PROC_COS_SyncGlobalPlayerBenefits(_Character);
-
-IF
-GainedControl(_Character)
-THEN
-PROC_COS_SyncGlobalPlayerBenefits(_Character);
-
-IF
-CharacterJoinedParty(_Character)
-THEN
-PROC_COS_SyncGlobalPlayerBenefits(_Character);
-
-IF
-RespecCompleted(_Character)
-THEN
-PROC_COS_SyncGlobalPlayerBenefits(_Character);
-
-EXITSECTION
-ENDEXITSECTION
-'@
-Require ($globalBenefitsGoal.Trim() -ceq $expectedGlobalBenefitsGoal.Trim()) `
-    '全体玩家增益 Goal 必须只按既定四入口和 DB_Players 幂等同步50倍负重'
+foreach ($event in @('LevelGameplayStarted(_, _)','GainedControl(_Character)','CharacterJoinedParty(_Character)','RespecCompleted(_Character)')) {
+    Require ($globalBenefitsGoal.Contains($event)) "负重同步缺少生命周期事件: $event"
+}
 Require ([regex]::Matches($globalBenefitsGoal,
     '(?m)^NOT DB_Players\(\(CHARACTER\)NULL_00000000-0000-0000-0000-000000000000\);$').Count -eq 1) `
     '独立模块必须用NULL删除声明官方合并Story的DB_Players签名，且不得写入虚构玩家'
-Require (-not $globalBenefitsGoal.Contains('COS_ChaosOriginMarker')) `
-    '全体玩家负重不得依赖混沌起源标记'
+Require (-not ([regex]::Match($globalBenefitsGoal, '(?ms)^PROC\nPROC_COS_ApplyCarrySetting.*?(?=^IF)').Value.Contains('COS_ChaosOriginMarker'))) '自动负重同步不得限制为混沌起源'
 $masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
 if ($masteryGoal.EndsWith("`n")) {
     $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
@@ -1532,7 +1494,7 @@ function Get-MechanicsProcBlocks([string]$Name) {
 function Get-MechanicsThenActions([string]$Block) {
     $parts = @([regex]::Split($Block, '(?m)^THEN\r?$'))
     Require ($parts.Count -eq 2) 'Story 过程必须严格包含一个 THEN 动作段'
-    return @($parts[1] -split '\r?\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    return @($parts[1] -split '\r?\n' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and -not $_.StartsWith('//') })
 }
 
 function Get-MechanicsConditions([string]$Block) {
@@ -1561,10 +1523,10 @@ Require ($giftCandidateBlocks.Count -eq 1 -and $giftCandidateBlocks[0].Contains(
     $giftCandidateBlocks[0].Contains('_Level >= _MinimumLevel') -and $giftCandidateBlocks[0].Contains('_Layer <= _Weight')) `
     '掌控混沌礼物候选必须在 Mastery=1 时按等级和权重加入'
 $negativeCandidateBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_AddEnabledNegativeWoundCandidates')
-Require ($negativeCandidateBlocks.Count -eq 1 -and $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWound(_Character, _Key, 1)') -and `
+Require ($negativeCandidateBlocks.Count -eq 2 -and $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWound(_Character, _Key, 1)') -and `
     $negativeCandidateBlocks[0].Contains('DB_COS_ConfigWoundOutcome(_Key, _Outcome)') -and `
     $negativeCandidateBlocks[0].Contains('DB_COS_WoundNegativeWeight(_Outcome, _Weight)') -and `
-    $negativeCandidateBlocks[0].Contains('_Layer <= _Weight')) `
+    $negativeCandidateBlocks[0].Contains('_Layer <= _EffectiveWeight') -and $negativeCandidateBlocks[0].Contains('IntegerProduct(_Weight, 2, _EffectiveWeight)') -and $negativeCandidateBlocks[1].Contains('HasActiveStatus(_Character, _StrongStatus, 1)') -and $negativeCandidateBlocks[1].Contains('_Layer <= _Weight')) `
     '负面候选只能从已启用配置和负面目录加入'
 
 $positiveRebuildBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RebuildPositiveWoundPool')
@@ -1581,6 +1543,7 @@ Require ($positiveRebuildBlocks.Count -eq 1 -and `
 $negativeRebuildBlocks = @(Get-MechanicsProcBlocks 'PROC_COS_RebuildNegativeWoundPool')
 $negativeRebuildActions = @(Get-MechanicsThenActions $negativeRebuildBlocks[0])
 $expectedNegativeRebuildActions = @(
+    'PROC_COS_EnsureNegativeProtection();',
     'PROC_COS_ClearWoundPool(_Character);',
     'DB_COS_WoundPoolCount(_Character, 0);',
     'PROC_COS_AddEnabledNegativeWoundCandidates(_Character);'
@@ -2062,7 +2025,7 @@ foreach ($entry in $expectedStatsIcons.Keys) {
     Require-StatsIcon $entry $expectedStatsIcons[$entry]
 }
 foreach ($newIconCount in @{
-    COS_Wound = 29
+    COS_Wound = 30
     COS_Duality = 1
     COS_FateRevision = 4
     COS_Mastery = 96
@@ -2817,6 +2780,7 @@ $globalCarryPassiveBlock = Get-StatsEntryBlock $passive 'COS_GlobalCarryCapacity
 $expectedGlobalCarryPassiveBlock = Normalize-LineEndings @'
 new entry "COS_GlobalCarryCapacity50x"
 type "PassiveData"
+data "DisplayName" "h7e000000g0000g4000g8000g000000000009"
 data "Properties" "IsHidden"
 data "Boosts" "CarryCapacityMultiplier(50)"
 '@
@@ -2829,7 +2793,7 @@ Require ((Test-StatsField $globalCarryPassiveBlock 'Properties' 'IsHidden') -and
 Require ([regex]::Matches($globalCarryPassiveBlock, '(?m)^type "PassiveData"\r?$').Count -eq 1) `
     '全局负重被动必须唯一声明为 PassiveData'
 Require (Test-GlobalCarryPassiveContract $globalCarryPassiveBlock) `
-    '全局负重被动必须大小写敏感地只包含 entry、PassiveData、IsHidden 和 CarryCapacityMultiplier(50) 四行'
+    '全局负重被动必须大小写敏感地只包含 entry、PassiveData、稳定显示键、IsHidden 和 CarryCapacityMultiplier(50) 五行'
 
 $globalCarryExtraTypeMutation = $globalCarryPassiveBlock.Replace(
     'type "PassiveData"',
@@ -3705,6 +3669,7 @@ Require-ConfigResetMutationRejected $resetEventMirrorDeletionMutation `
 [xml]$tutorialEventsDocument = Get-Content -LiteralPath $tutorialEventsPath -Raw -Encoding UTF8
 $tutorialEventNodes = @($tutorialEventsDocument.SelectNodes('//node[@id="TutorialEvent"]'))
 $expectedTutorialEvents = [ordered]@{
+    'COS_CFG_CARRY' = '7e000000-0000-4000-8000-000000000001'
     COS_CFG_UI_OPENED = '65247962-a3b0-417d-9044-85e4aad38079'
     COS_CFG_MECH_POWER = '7f818c10-3f23-49f8-838a-d161c57bb35d'
     COS_CFG_MECH_WOUND = '0574b4b8-549a-4b39-b810-6890c68642b1'
@@ -3759,7 +3724,7 @@ $expectedTutorialEvents['COS_BULK_Tag_All'] = '79000000-0000-4000-8000-000000000
 $expectedTutorialEvents['COS_BULK_Tag_Invert'] = '79000000-0000-4000-8000-000000000008'
 $expectedTutorialEvents['COS_BULK_Weapon_All'] = '79000000-0000-4000-8000-000000000009'
 $expectedTutorialEvents['COS_BULK_Weapon_Invert'] = '79000000-0000-4000-8000-000000000010'
-Require ($tutorialEventNodes.Count -eq (52 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
+Require ($tutorialEventNodes.Count -eq (53 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -3881,6 +3846,7 @@ foreach ($entrySpec in $entrySpecs) {
 $xamlNamespace = 'http://schemas.microsoft.com/winfx/2006/xaml'
 $tutorialEventCommandBinding = '{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}'
 $expectedConfigRows = [ordered]@{
+    Carry = @{ Uuid = '7e000000-0000-4000-8000-000000000001'; Mirror = 'COS_GlobalCarryCapacity50x' }
     Power = @{ Uuid = '7f818c10-3f23-49f8-838a-d161c57bb35d'; Mirror = 'COS_CFG_MECH_POWER' }
     Wound = @{ Uuid = '0574b4b8-549a-4b39-b810-6890c68642b1'; Mirror = 'COS_CFG_MECH_WOUND' }
     KillPower = @{ Uuid = '71abdeef-69d2-4385-8885-4f9ebbd829ca'; Mirror = 'COS_CFG_MECH_KILLPOWER' }
@@ -4205,7 +4171,7 @@ Require-ControllerPageMutationRejected ($configControllerPageProbe -replace ' ls
     '手柄页缺失 FocusMovementMode 必须被拒绝'
 Require-ControllerPageMutationRejected ($configControllerPageProbe -replace 'FocusMovementMode="MainAxisTunnel"', 'FocusMovementMode="Cycle"') `
     '手柄页错误 FocusMovementMode 必须被拒绝'
-$configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
+$configControllerAcceptProbe = '<Root xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ls="urn:test-ls"><ls:LSButton x:Name="COSConfigTogglePower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleWound" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleKillPower" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleDuality" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleAllIn" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleGenesis" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleStrike" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleMastery" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigToggleCarry" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigResetCore" BoundEvent="UIAccept"/><ls:LSButton x:Name="COSConfigCloseCore"/></Root>'
 [xml]$configControllerAcceptProbeDocument = $configControllerAcceptProbe
 Test-ControllerAcceptContract $configControllerAcceptProbeDocument '内存正向探针' $legacyAcceptNames
 Require-ControllerAcceptMutationRejected ($configControllerAcceptProbe -replace '</Root>', '<ls:LSButton x:Name="AlwaysOn" BoundEvent="UIAccept" IsEnabled="True"/></Root>') `
@@ -4230,10 +4196,10 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         }
         $expectedControllerFocusOrder = @(
             'COS_BULK_Core_All', 'COS_BULK_Core_Invert',
-            'COSConfigRowPower', 'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
+            'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn',
             'COSConfigRowGenesis', 'COSConfigGenesisCostRow', 'COSConfigGenesisCostResetRow', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+            'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowCarry', 'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
         ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
@@ -4282,7 +4248,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values | Where-Object { $_ -notin @('aff82c28-d71a-4dad-837d-d41d8519051a','7d000000-0000-4000-8000-000000000001','7d000000-0000-4000-8000-000000000002','7d000000-0000-4000-8000-000000000003') })
-    Require ($tutorialActions.Count -eq (48 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (48 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (49 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (49 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {

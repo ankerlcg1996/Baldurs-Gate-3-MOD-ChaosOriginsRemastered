@@ -1037,4 +1037,13 @@
   <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">恢复为 1 点</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">混沌开天辟地消耗（0 为免费，默认 10）</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">恢复为 10 点</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000001" version="1">额外便利</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000002" version="1">剩余掌控混沌点数：</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000003" version="1">已开启额外设置（仍须满足等级或任务条件）</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000004" version="1">受击抽签：同类强负面已存在，本次不重复施加</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000005" version="1">不叠层、不刷新持续时间。同类最强负面生效时，该类结果权重减半；正面、负面、平息总概率不变。</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000006" version="1">负重容量 ×50</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">开局礼包：仅创建人物时赠送一次，豪华版角色不重复赠送；不补发、不回收。</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">固定技能检定加值：+</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
 </contentList>

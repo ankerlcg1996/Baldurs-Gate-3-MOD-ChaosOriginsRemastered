@@ -1037,4 +1037,13 @@
   <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">1 に戻す</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">混沌開闢の消費（0 は無料、初期値 10）</content>
   <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">10 に戻す</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000001" version="1">追加の便利機能</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000002" version="1">未使用の掌控ポイント：</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000003" version="1">有効な追加設定（解放条件は別途必要）</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000004" version="1">同系統の強い不利益が有効：再適用なし</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000005" version="1">累積や持続時間の更新なし。同系統の抽選重みは半減し、各分類の確率は変わりません。</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000006" version="1">運搬容量 ×50</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">開始時の袋：キャラクター作成時に一度だけ付与。Deluxe所有者への重複付与、補充、回収なし。</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">技能判定固定ボーナス：+</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
 </contentList>
