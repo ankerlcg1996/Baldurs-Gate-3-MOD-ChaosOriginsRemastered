@@ -598,6 +598,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-tag-spells.ps1')
 & (Join-Path $root 'verify-starting-bag.ps1')
 & (Join-Path $root 'verify-observability.ps1')
+& (Join-Path $root 'verify-power-costs.ps1')
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
@@ -605,6 +606,7 @@ $expectedPassiveEntries = @(
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
     'COS_CFG_LIFE_SKILL_CARRIER',
+    'COS_CFG_COST_CARRIER',
     'COS_BaseStarterSpells',
     'COS_GlobalCarryCapacity50x',
     'COS_Origin_Astarion',
@@ -619,7 +621,7 @@ $expectedPassiveEntries = @(
 ) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries + @($grantMenu.mirror) + $tagSpellPassives + @('COS_TAGSPELL_HellishCharge', 'COS_CFG_TAG_SPELLS')
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
     'Passive.txt 必须且只能定义基础、生活熟练项、身份、命运改签与黄色词条代理被动'
-Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq (25 + $tagSpellPassives.Count + 1)) `
+Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq (25 + $tagSpellPassives.Count + 2)) `
     '基础、全局负重、生活熟练项资源载体与20档技能检定加值必须全部隐藏'
 Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
     '起源身份开关基类与命运改签必须在获得时默认开启'
@@ -922,7 +924,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -2149,10 +2151,10 @@ Require ($mechanicsGoal.Contains('IntegerProduct(_Power, 6, _DurationSeconds)') 
     $mechanicsGoal.Contains('IntegerToReal(_DurationSeconds, _Duration)') -and `
     $mechanicsGoal.Contains('ApplyStatus(_Character, "COS_CHAOS_POWER_STACK", _Duration, 100, _Character)')) `
     '混沌之力显示必须把当前点数换算成冻结的回合数字'
-Require ($mechanicsGoal.Contains('_OldPower >= 10') -and `
-    $mechanicsGoal.Contains('IntegerSubtract(_OldPower, 10, _NewPower)') -and `
-    $mechanicsGoal.Contains('_Power >= 10')) `
-    '混沌开天辟地必须需要并消耗 10 点混沌之力'
+Require ($mechanicsGoal.Contains('DB_COS_ConfigCost(_Character, "Genesis", _Cost)') -and `
+    $mechanicsGoal.Contains('IntegerSubtract(_OldPower, _Cost, _NewPower)') -and `
+    $mechanicsGoal.Contains('_Power >= _Cost')) `
+    '混沌开天辟地必须按独立设置检查余额与扣费'
 Require ($passive.Contains('new entry "COS_FateRevision"') -and `
     $passive.Contains('data "Properties" "IsToggled;ToggledDefaultOn"') -and `
     $featuresText.Contains('new entry "COS_CHAOS_FATE_ENABLED"')) `
@@ -2251,8 +2253,8 @@ $fateDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsCon
 $fateOffBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)' })
 $fateUnarmedBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' })
 $fatePowerDisabledBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' })
-$fatePowerZeroBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, 0)' })
-$fateDualityBlock = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains 'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)' })
+$fatePowerZeroBlocks = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains '_OldPower < _Cost' })
+$fateDualityBlock = @($dualityAttackBlocks | Where-Object { @(Get-MechanicsConditions $_) -contains '_OldPower >= _Cost' })
 Require ($fateDisabledBlocks.Count -eq 1 -and $fateOffBlocks.Count -eq 1 -and $fateUnarmedBlocks.Count -eq 1 -and `
     $fatePowerDisabledBlocks.Count -eq 1 -and $fatePowerZeroBlocks.Count -eq 1 -and `
     $fateDualityBlock.Count -eq 1) `
@@ -2293,7 +2295,9 @@ $expectedFatePowerZeroConditions = @($dualityFateEnabledConditions + @(
     'HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)',
     'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
-    'DB_COS_Power((CHARACTER)_AttackOwner, 0)',
+    'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)',
+    'DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)',
+    '_OldPower < _Cost',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'Random(100, _DualityRoll)'
 ))
 $expectedFateDualityConditions = @($dualityFateEnabledConditions + @(
@@ -2302,7 +2306,8 @@ $expectedFateDualityConditions = @($dualityFateEnabledConditions + @(
     'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)',
     'DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)',
-    '_OldPower >= 1', 'IntegerSubtract(_OldPower, 1, _NewPower)',
+    'DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)',
+    '_OldPower >= _Cost', 'IntegerSubtract(_OldPower, _Cost, _NewPower)',
     'IsCharacter(_Target, 1)', '_Damage > 0', 'GetLevel(_AttackOwner, _Level)',
     'IntegerMin(_Level, 30, _CappedLevel)',
     'DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)',
@@ -2888,7 +2893,8 @@ $expectedGenesisReadyConditions = @(
     'PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)',
-    '_Power >= 10'
+    'DB_COS_ConfigCost(_Character, "Genesis", _Cost)',
+    '_Power >= _Cost'
 )
 $expectedGenesisReadyActions = @(
     'ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);'
@@ -2910,7 +2916,7 @@ Require ($genesisReadyPowerConfigGateDeletionProbe -cne $genesisReadyBlocks[0] -
     -not (Test-GenesisReadyContract $genesisReadyPowerConfigGateDeletionProbe)) `
     'GenesisReady Power config gate deletion mutation probe 必须被拒绝'
 $genesisReadyPowerGateDeletionProbe = $genesisReadyBlocks[0].Replace(
-    "`n_Power >= 10", '')
+    "`n_Power >= _Cost", '')
 Require ($genesisReadyPowerGateDeletionProbe -cne $genesisReadyBlocks[0] -and
     -not (Test-GenesisReadyContract $genesisReadyPowerGateDeletionProbe)) `
     'GenesisReady Power gate deletion mutation probe 必须被拒绝'
@@ -3549,7 +3555,8 @@ function Test-FateRouteMatchesState(
     [int]$StatusEnabled,
     [bool]$HasAction,
     [int]$PowerEnabled,
-    [int]$Power
+    [int]$Power,
+    [int]$Cost
 ) {
     $conditions = @(Get-MechanicsConditions $Block)
     if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)' -and $FateEnabled -ne 0) { return $false }
@@ -3560,7 +3567,8 @@ function Test-FateRouteMatchesState(
     if ($conditions -contains 'DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)' -and -not $HasAction) { return $false }
     if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)' -and $PowerEnabled -ne 0) { return $false }
     if ($conditions -contains 'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)' -and $PowerEnabled -ne 1) { return $false }
-    if ($conditions -contains 'DB_COS_Power((CHARACTER)_AttackOwner, 0)' -and $Power -ne 0) { return $false }
+    if ($conditions -contains '_OldPower < _Cost' -and $Power -ge $Cost) { return $false }
+    if ($conditions -contains '_OldPower >= _Cost' -and $Power -lt $Cost) { return $false }
     if ($conditions -contains '_OldPower >= 1' -and $Power -lt 1) { return $false }
     return $true
 }
@@ -3572,11 +3580,13 @@ function Test-FateRouteTruthTable([string]$StoryText) {
         foreach ($statusEnabled in @(0, 1)) {
             foreach ($hasAction in @($false, $true)) {
                 foreach ($powerEnabled in @(0, 1)) {
-                    foreach ($power in @(0, 1)) {
+                    foreach ($cost in @(0, 1, 10, 20)) {
+                    foreach ($power in @(0, 1, 9, 10, 19, 20, 21)) {
                         $matchCount = @($routeBlocks | Where-Object {
-                            Test-FateRouteMatchesState $_ $fateEnabled $statusEnabled $hasAction $powerEnabled $power
+                            Test-FateRouteMatchesState $_ $fateEnabled $statusEnabled $hasAction $powerEnabled $power $cost
                         }).Count
                         if ($matchCount -ne 1) { return $false }
+                    }
                     }
                 }
             }
@@ -3586,6 +3596,10 @@ function Test-FateRouteTruthTable([string]$StoryText) {
 }
 Require (Test-FateRouteTruthTable $mechanicsGoal) `
     'Fate 配置/用户状态/记录/资源的32个真值组合必须各自恰好匹配一个 Duality 攻击路径'
+$freeCostOverlapProbe = $mechanicsGoal.Replace("`n_OldPower < _Cost", "")
+Require (-not (Test-FateRouteTruthTable $freeCostOverlapProbe)) '移除余额不足门槛必须被真值表拒绝'
+$freeCostBlockedProbe = $mechanicsGoal.Replace("`n_OldPower >= _Cost", "`n_OldPower >= 1")
+Require (-not (Test-FateRouteTruthTable $freeCostBlockedProbe)) '恢复固定 1 点门槛必须被免费成本真值表拒绝'
 $fateDisabledDeletionMutation = $mechanicsGoal.Replace($fateDisabledBlocks[0], '')
 Require ($fateDisabledDeletionMutation -cne $mechanicsGoal -and
     -not (Test-FateRouteTruthTable $fateDisabledDeletionMutation)) `
@@ -4002,6 +4016,12 @@ $expectedTutorialEvents = [ordered]@{
     COS_CFG_RACE_SUPERIOR_DARKVISION = 'c0888d3b-4c97-4c50-95b9-34620ba1fdef'
     COS_CFG_RACE_TIEFLING_RESISTANCE = '022d736c-8b4b-4599-9e51-e584a0e1c05d'
 }
+$expectedTutorialEvents['COS_CFG_FATE_COST_MINUS'] = '7d000000-0000-4000-8000-000000000001'
+$expectedTutorialEvents['COS_CFG_FATE_COST_PLUS'] = '7d000000-0000-4000-8000-000000000002'
+$expectedTutorialEvents['COS_CFG_FATE_COST_RESET'] = '7d000000-0000-4000-8000-000000000003'
+$expectedTutorialEvents['COS_CFG_GENESIS_COST_MINUS'] = '7d000000-0000-4000-8000-000000000004'
+$expectedTutorialEvents['COS_CFG_GENESIS_COST_PLUS'] = '7d000000-0000-4000-8000-000000000005'
+$expectedTutorialEvents['COS_CFG_GENESIS_COST_RESET'] = '7d000000-0000-4000-8000-000000000006'
 foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
 $expectedTutorialEvents['COS_CFG_VOLO_EYE'] = '77000000-0000-4000-8000-000000000001'
 $expectedTutorialEvents['COS_CFG_TAG_SPELLS'] = '7a000000-0000-4000-8000-000000000001'
@@ -4013,7 +4033,7 @@ $expectedTutorialEvents['COS_BULK_Tag_All'] = '79000000-0000-4000-8000-000000000
 $expectedTutorialEvents['COS_BULK_Tag_Invert'] = '79000000-0000-4000-8000-000000000008'
 $expectedTutorialEvents['COS_BULK_Weapon_All'] = '79000000-0000-4000-8000-000000000009'
 $expectedTutorialEvents['COS_BULK_Weapon_Invert'] = '79000000-0000-4000-8000-000000000010'
-Require ($tutorialEventNodes.Count -eq (46 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
+Require ($tutorialEventNodes.Count -eq (52 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4333,7 +4353,7 @@ $racialControlIds = @(
     'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
-$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
+$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigFateCostReset','COSConfigGenesisCostReset','COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
     @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
@@ -4488,7 +4508,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
             'COSConfigRowPower', 'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigFateCostRow', 'COSConfigFateCostResetRow', 'COSConfigGenesisCostRow', 'COSConfigGenesisCostResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
         ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
@@ -4537,7 +4557,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (46 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (46 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (52 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (52 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {

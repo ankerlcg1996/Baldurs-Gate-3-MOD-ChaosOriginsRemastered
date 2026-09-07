@@ -301,7 +301,9 @@ DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
 AND
-_Power >= 10
+DB_COS_ConfigCost(_Character, "Genesis", _Cost)
+AND
+_Power >= _Cost
 THEN
 ApplyStatus(_Character, "COS_CHAOS_GENESIS_READY", -1.0, 100, _Character);
 
@@ -435,6 +437,7 @@ PROC_COS_Sync((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
+PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_MigrateLegacyFatePending(_Character);
 PROC_COS_Register(_Character);
 PROC_COS_EnsurePowerState(_Character);
@@ -1303,9 +1306,11 @@ DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
 AND
 DB_COS_Power((CHARACTER)_Character, _OldPower)
 AND
-_OldPower >= 10
+DB_COS_ConfigCost(_Character, "Genesis", _Cost)
 AND
-IntegerSubtract(_OldPower, 10, _NewPower)
+_OldPower >= _Cost
+AND
+IntegerSubtract(_OldPower, _Cost, _NewPower)
 THEN
 NOT DB_COS_Power((CHARACTER)_Character, _OldPower);
 DB_COS_Power((CHARACTER)_Character, _NewPower);
@@ -1586,7 +1591,11 @@ DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)
 AND
-DB_COS_Power((CHARACTER)_AttackOwner, 0)
+DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)
+AND
+DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)
+AND
+_OldPower < _Cost
 AND
 IsCharacter(_Target, 1)
 AND
@@ -1620,9 +1629,11 @@ DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)
 AND
 DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)
 AND
-_OldPower >= 1
+DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)
 AND
-IntegerSubtract(_OldPower, 1, _NewPower)
+_OldPower >= _Cost
+AND
+IntegerSubtract(_OldPower, _Cost, _NewPower)
 AND
 IsCharacter(_Target, 1)
 AND

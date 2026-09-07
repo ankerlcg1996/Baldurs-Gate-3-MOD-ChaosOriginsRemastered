@@ -28,7 +28,7 @@
 	<content contentuid="h48439fc8g7d61g573fg9732g77fca5a2fa4d" version="1">有効</content>
 	<content contentuid="h9b44970cg3badg5a7fgaf09gc89097e6f44a" version="1">次の完全な近接攻撃アクションまたはダメージ呪文は自動命中しクリティカルになる。セーヴ型ダメージ呪文はダメージ・ダイスが2倍になる。</content>
 	<content contentuid="h648bb906g5e2dg58b8g8a17ge8986305fb33" version="1">混沌の必殺</content>
-	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">アクション不要。混沌の力が10以上必要で、発動時に10消費する。HPを全回復し、有害状態を解除してアクション、ボーナス・アクション、移動力を回復する。このターンは&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌開闢&lt;/LSTag&gt;と1回の&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;混沌の必殺&lt;/LSTag&gt;を得る。</content>
+	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">アクション不要。必要な混沌の力と消費量は設定に従います（初期値10、0は無料）。HPを全回復し、有害状態を解除してアクション、ボーナス・アクション、移動力を回復する。このターンは&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌開闢&lt;/LSTag&gt;と1回の&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;混沌の必殺&lt;/LSTag&gt;を得る。</content>
 	<content contentuid="hf1fbb0bag3ad6g506eg84a0gf66557489030" version="1">混沌開闢</content>
 	<content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1ターン：追加アクションは得ない。呪文スロットとウォーロック呪文スロットを消費しない。飛行を解放し、機会攻撃、伏せ、困難地形を無効化する。移動力を消費しない。近接攻撃ごとに酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴を各1d6、合計10d6追加する。</content>
 	<content contentuid="he3fb5498gb36dg5a3egb9fcg5ac096d3febf" version="1">使用可能な混沌開闢</content>
@@ -72,7 +72,7 @@
 	<content contentuid="h88cdd3a6g6d9fg5787g8e46g9a6b334c52cf" version="1">ランダム・ダメージ脆弱</content>
 	<content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1ターン。酸、冷気、火、力場、電撃、死霊、毒、精神、光輝、雷鳴から1種をランダムに選び、そのダメージを2倍受ける。一時的なペナルティ終了後も混沌の迷走層は残る。</content>
 	<content contentuid="h956e6a5bg3065g5001g8da5g57e917dc0eb4" version="1">混沌の迷走：ダメージ脆弱</content>
-	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">消費するまで現在のセーブ内に保持される。10スタックごとに&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌開闢&lt;/LSTag&gt;を1回使用でき、1スタックで運命改稿を1回使用できる。混沌の迷走1–6スタックの変換率は15%、30%、50%、70%、85%、100%。撃破1–10回は5%、11–20回は10%、21–30回は20%、31–39回は35%、40回目は確定で獲得後にリセット。成功時は60%で1、30%で2、10%で3スタックを得る。</content>
+	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">消費するまで現在のセーブ内に保持される。設定した消費量で&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌開闢&lt;/LSTag&gt;を使用できる。運命改訂の消費は独立設定で、0は無料。混沌の迷走1–6スタックの変換率は15%、30%、50%、70%、85%、100%。撃破1–10回は5%、11–20回は10%、21–30回は20%、31–39回は35%、40回目は確定で獲得後にリセット。成功時は60%で1、30%で2、10%で3スタックを得る。</content>
 	<content contentuid="h17ef643bg71a0g54ebgbc2eg484ebc12dcf8" version="1">混沌の力と混沌開闢</content>
 	<content contentuid="hc076f0ddg33c0g56c1gb0cdg5f1b3ebd2a63" version="1">混沌の力</content>
 	<content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">すべての公式種族の識別と能力を併せ持ち、予測不能な混沌の変化を受ける。</content>
@@ -621,7 +621,7 @@
 	<content contentuid="h71000007g0007g4007g8007g000000000007" version="1">混沌の起源はすべての技能判定に固定+5を得る。このレベル成長状態は能力値判定に+6を与える。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。</content>
 	<content contentuid="h71000008g0008g4008g8008g000000000008" version="1">混沌の起源はすべての技能判定に固定+5を得る。このレベル成長状態は能力値判定に+7を与える。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。</content>
 	<content contentuid="h72000001g0001g4001g8001g000000000001" version="1">運命改稿</content>
-	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">切り替え可能なパッシブ。オンにすると、攻撃で両儀が発動した際に混沌の力を1消費し、レベルに応じて複数回判定して最も有利な結果を採用する。1回の攻撃につき最大1回。ミス時または混沌の力不足時は消費しない。</content>
+	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">切り替え可能。攻撃で両儀が発動すると、設定した混沌の力を消費（初期値1、0は無料）し、レベルに応じた複数回の判定から最良を選択します。攻撃1回につき最大1回。ミスや残高不足では改訂せず、消費しません。</content>
 	<content contentuid="hbfabec61g3070g4e70g8e71gc20633da5d52" version="1">調律</content>
 	<content contentuid="h0cf72805gf1e4g4f89gbc8fgb4eb4561d859" version="1">混沌掌握ポイントを1消費し、調律を1スタック得る。</content>
 	<content contentuid="h03a4fec8gb0efg45f9g8c5fgfd91d085f127" version="1">凶兆補正</content>
@@ -1032,4 +1032,9 @@
   <content contentuid="h7c000094g0000g4000g8000g000000000000" version="1">採用された抽選結果の記録であり、現在の効果ではありません。追加効果はなく、実際の状態は無効化・解除・終了している場合があります。&lt;br&gt;抽選結果：正効果区分が選ばれた後、微光の守りが通常の正効果結果を置き換えることがある。1d4+習熟ボーナスに等しい一時的ヒット・ポイントを2ターン得る。一時的ヒット・ポイントは累積せず、高い値だけが残る。</content>
   <content contentuid="h7c000095g0000g4000g8000g000000000000" version="1">直近の被弾抽選：混沌鎮静</content>
   <content contentuid="h7c000096g0000g4000g8000g000000000000" version="1">採用された抽選結果の記録であり、現在の効果ではありません。追加効果はなく、実際の状態は無効化・解除・終了している場合があります。&lt;br&gt;抽選結果：今回の被撃ルーレットは鎮静された。正・負いずれの結果も適用せず、混沌の喪失も増加させない。</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000001" version="1">混沌の力の消費</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000002" version="1">運命改訂の消費（0 は無料、初期値 1）</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">1 に戻す</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">混沌開闢の消費（0 は無料、初期値 10）</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">10 に戻す</content>
 </contentList>

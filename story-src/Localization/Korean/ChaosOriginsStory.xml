@@ -28,7 +28,7 @@
 	<content contentuid="h48439fc8g7d61g573fg9732g77fca5a2fa4d" version="1">활성화</content>
 	<content contentuid="h9b44970cg3badg5a7fgaf09gc89097e6f44a" version="1">다음 완전한 근접 공격 행동 또는 피해 주문이 자동 명중하고 치명타가 됩니다. 내성 굴림형 피해 주문은 피해 주사위가 두 배가 됩니다.</content>
 	<content contentuid="h648bb906g5e2dg58b8g8a17ge8986305fb33" version="1">혼돈의 필살</content>
-	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">행동을 소모하지 않습니다. 혼돈의 힘이 10 이상 필요하며 발동 시 10을 소모합니다. 생명력을 완전히 회복하고 해로운 상태를 제거하며 행동, 추가 행동과 이동력을 회복합니다. 이번 턴 동안 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;혼돈의 천지개벽&lt;/LSTag&gt;과 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;혼돈의 필살&lt;/LSTag&gt; 1회를 얻습니다.</content>
+	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">행동을 소모하지 않습니다. 필요한 혼돈의 힘과 소모량은 설정을 따릅니다 (기본 10, 0 무료). 생명력을 완전히 회복하고 해로운 상태를 제거하며 행동, 추가 행동과 이동력을 회복합니다. 이번 턴 동안 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;혼돈의 천지개벽&lt;/LSTag&gt;과 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;혼돈의 필살&lt;/LSTag&gt; 1회를 얻습니다.</content>
 	<content contentuid="hf1fbb0bag3ad6g506eg84a0gf66557489030" version="1">혼돈의 천지개벽</content>
 	<content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">1턴 동안 추가 행동을 얻지 않으며 주문 슬롯과 워락 주문 슬롯을 소모하지 않습니다. 비행을 해금하고 기회 공격, 넘어짐과 험난한 지형에 면역이 되며 이동력을 소모하지 않습니다. 각 근접 공격에 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 피해를 각각 1d6, 총 10d6 추가합니다.</content>
 	<content contentuid="he3fb5498gb36dg5a3egb9fcg5ac096d3febf" version="1">사용 가능한 혼돈의 천지개벽</content>
@@ -72,7 +72,7 @@
 	<content contentuid="h88cdd3a6g6d9fg5787g8e46g9a6b334c52cf" version="1">무작위 피해 취약</content>
 	<content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">1턴 동안 산성, 냉기, 화염, 역장, 번개, 사령, 독, 정신, 광휘, 천둥 중 하나를 무작위로 선택해 해당 피해를 2배로 받습니다. 임시 불이익이 끝나도 혼돈의 방황 중첩은 남습니다.</content>
 	<content contentuid="h956e6a5bg3065g5001g8da5g57e917dc0eb4" version="1">혼돈의 방황: 피해 취약</content>
-	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">소모될 때까지 현재 저장 파일에 유지됩니다. 10중첩마다 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;혼돈의 천지개벽&lt;/LSTag&gt; 1회를 사용할 수 있고, 1중첩으로 운명 개정을 1회 사용할 수 있습니다. 혼돈의 방황 1–6중첩의 전환 확률은 15%, 30%, 50%, 70%, 85%, 100%입니다. 처치 1–10회는 5%, 11–20회 10%, 21–30회 20%, 31–39회 35%, 40회째는 확정 획득 후 초기화됩니다. 성공 시 60%로 1중첩, 30%로 2중첩, 10%로 3중첩을 얻습니다.</content>
+	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">소모될 때까지 현재 저장 파일에 유지됩니다. 설정한 소모량으로 &lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;혼돈의 천지개벽&lt;/LSTag&gt; 사용할 수 있습니다. 운명 개정의 소모량은 독립 설정이며 0은 무료입니다. 혼돈의 방황 1–6중첩의 전환 확률은 15%, 30%, 50%, 70%, 85%, 100%입니다. 처치 1–10회는 5%, 11–20회 10%, 21–30회 20%, 31–39회 35%, 40회째는 확정 획득 후 초기화됩니다. 성공 시 60%로 1중첩, 30%로 2중첩, 10%로 3중첩을 얻습니다.</content>
 	<content contentuid="h17ef643bg71a0g54ebgbc2eg484ebc12dcf8" version="1">혼돈의 힘과 혼돈의 천지개벽</content>
 	<content contentuid="hc076f0ddg33c0g56c1gb0cdg5f1b3ebd2a63" version="1">혼돈의 힘</content>
 	<content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">모든 공식 종족 정체성과 능력을 지니는 대신 예측할 수 없는 혼돈의 변화를 겪습니다.</content>
@@ -621,7 +621,7 @@
 	<content contentuid="h71000007g0007g4007g8007g000000000007" version="1">혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +6 보너스를 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.</content>
 	<content contentuid="h71000008g0008g4008g8008g000000000008" version="1">혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +7 보너스를 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.</content>
 	<content contentuid="h72000001g0001g4001g8001g000000000001" version="1">운명 개정</content>
-	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">전환 가능한 패시브입니다. 활성화하면 공격으로 양의가 발동할 때 혼돈의 힘 1을 자동 소모하고, 레벨에 따라 여러 번 판정하여 가장 유리한 결과를 적용합니다. 공격 1회당 최대 한 번만 발동하며, 빗나가거나 혼돈의 힘이 부족하면 소모하지 않습니다.</content>
+	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">전환형 지속 효과. 공격으로 양의가 발동하면 설정한 혼돈의 힘을 소모하고 (기본 1, 0 무료) 레벨에 따라 여러 번 판정하여 최상의 결과를 선택합니다. 공격당 최대 한 번. 빗나가거나 잔액이 부족하면 개정하지 않으며 소모하지 않습니다.</content>
 	<content contentuid="hbfabec61g3070g4e70g8e71gc20633da5d52" version="1">조율</content>
 	<content contentuid="h0cf72805gf1e4g4f89gbc8fgb4eb4561d859" version="1">혼돈 통제 점수 1을 소모해 조율 1중첩을 얻습니다.</content>
 	<content contentuid="h03a4fec8gb0efg45f9g8c5fgfd91d085f127" version="1">흉조 교정</content>
@@ -1032,4 +1032,9 @@
   <content contentuid="h7c000094g0000g4000g8000g000000000000" version="1">채택된 추첨 결과 기록이며 활성 효과가 아닙니다. 효과를 다시 부여하지 않습니다. 실제 상태는 면역, 해제 또는 만료되었을 수 있습니다.&lt;br&gt;선택된 결과: 긍정 범주가 선택된 뒤 잔광 수호가 일반 긍정 결과를 대체할 수 있습니다. 1d4+숙련 보너스만큼 임시 생명력을 2턴 동안 얻습니다. 임시 생명력은 중첩되지 않으며 더 높은 값만 남습니다.</content>
   <content contentuid="h7c000095g0000g4000g8000g000000000000" version="1">최근 피격 추첨: 혼돈 진정</content>
   <content contentuid="h7c000096g0000g4000g8000g000000000000" version="1">채택된 추첨 결과 기록이며 활성 효과가 아닙니다. 효과를 다시 부여하지 않습니다. 실제 상태는 면역, 해제 또는 만료되었을 수 있습니다.&lt;br&gt;선택된 결과: 이번 피격 룰렛은 진정되었습니다. 긍정 또는 부정 결과를 적용하지 않고 혼돈 상실도 증가시키지 않습니다.</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000001" version="1">혼돈의 힘 소모</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000002" version="1">운명 개정 소모 (0 무료, 기본 1)</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">1로 복원</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">혼돈 창세 소모 (0 무료, 기본 10)</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">10으로 복원</content>
 </contentList>

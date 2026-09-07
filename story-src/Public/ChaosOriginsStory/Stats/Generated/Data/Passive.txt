@@ -4,6 +4,11 @@ data "DisplayName" "h78000000g0000g4000g8000g000000000001"
 data "Description" "h74000004g0004g4004g8004g000000000004"
 data "Icon" "PassiveFeature_Generic_Threat"
 
+new entry "COS_CFG_COST_CARRIER"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "ActionResource(COS_ConfigFateCost,20,0);ActionResource(COS_ConfigGenesisCost,20,0)"
+
 new entry "COS_TAGSPELL_Shout_ProduceFlame"
 type "PassiveData"
 data "Properties" "IsHidden"

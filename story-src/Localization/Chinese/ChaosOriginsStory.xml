@@ -28,7 +28,7 @@
 	<content contentuid="h48439fc8g7d61g573fg9732g77fca5a2fa4d" version="1">开启</content>
 	<content contentuid="h9b44970cg3badg5a7fgaf09gc89097e6f44a" version="1">下一次完整近战攻击动作或伤害法术自动命中并暴击；豁免型伤害法术的伤害骰翻倍。完整动作或法术结算后消耗。</content>
 	<content contentuid="h648bb906g5e2dg58b8g8a17ge8986305fb33" version="1">混沌必杀</content>
-	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">不消耗动作；需要至少10层混沌之力，发动后消耗10层。立即回满生命并清除有害状态，恢复行动、附赠动作与移动力。本回合获得&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌开天辟地&lt;/LSTag&gt;，并获得一次&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;混沌必杀&lt;/LSTag&gt;。</content>
+	<content contentuid="h5dbd8848g4aabg5733g9574ga567771e3c1d" version="1">不消耗动作；混沌之力门槛和消耗以设置为准（默认 10，0 为免费）。立即回满生命并清除有害状态，恢复行动、附赠动作与移动力。本回合获得&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌开天辟地&lt;/LSTag&gt;，并获得一次&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_KILL"&gt;混沌必杀&lt;/LSTag&gt;。</content>
 	<content contentuid="hf1fbb0bag3ad6g506eg84a0gf66557489030" version="1">混沌开天辟地</content>
 	<content contentuid="hf641666bgd4b7g51d2g9c2egf4740ef3f82b" version="1">持续1回合：不额外增加行动点；法术位与契术法术位不消耗；解锁飞行；免疫借机攻击、倒伏和困难地形；移动力不会被消耗；每次近战攻击分别附加强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣1d6伤害，共10d6。</content>
 	<content contentuid="he3fb5498gb36dg5a3egb9fcg5ac096d3febf" version="1">可用开天辟地次数</content>
@@ -72,7 +72,7 @@
 	<content contentuid="h88cdd3a6g6d9fg5787g8e46g9a6b334c52cf" version="1">随机伤害易伤</content>
 	<content contentuid="h0250e836g9c8fg56a3ga0d7g03e4a8b50514" version="1">持续1回合。随机从强酸、寒冷、火焰、力场、闪电、黯蚀、毒素、心灵、光耀、雷鸣中选择一种，受到该类型伤害翻倍。该临时惩罚结束后，混沌迷失层数仍然保留。</content>
 	<content contentuid="h956e6a5bg3065g5001g8da5g57e917dc0eb4" version="1">混沌迷失：伤害易伤</content>
-	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">在当前存档内保留直到被消耗。每10层可发动1次&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌开天辟地&lt;/LSTag&gt;；每1层可使用1次命运改签。混沌迷失第1–6层的转化率依次为15%、30%、50%、70%、85%、100%。击杀计数1–10时每次5%获得、11–20时10%、21–30时20%、31–39时35%、第40次必定获得并清零；成功时60%获得1层、30%获得2层、10%获得3层。</content>
+	<content contentuid="ha5a1e38ag1f10g5b61ga61bg0b82b6e1e2f2" version="1">在当前存档内保留直到被消耗。按菜单设置消耗混沌之力发动&lt;LSTag Type="Passive" Tooltip="COS_TT_CHAOS_GENESIS"&gt;混沌开天辟地&lt;/LSTag&gt;；命运改签消耗也由独立设置决定，0 为免费。混沌迷失第1–6层的转化率依次为15%、30%、50%、70%、85%、100%。击杀计数1–10时每次5%获得、11–20时10%、21–30时20%、31–39时35%、第40次必定获得并清零；成功时60%获得1层、30%获得2层、10%获得3层。</content>
 	<content contentuid="h17ef643bg71a0g54ebgbc2eg484ebc12dcf8" version="1">混沌之力与混沌开天辟地</content>
 	<content contentuid="hc076f0ddg33c0g56c1gb0cdg5f1b3ebd2a63" version="1">混沌之力</content>
 	<content contentuid="he4d96fdegf56cg55b1gb05bgdfd968ba2b17" version="1">汇聚所有官方种族身份与种族能力，并承受不可预测的混沌变化。</content>
@@ -621,7 +621,7 @@
 	<content contentuid="h71000007g0007g4007g8007g000000000007" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+6。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
 	<content contentuid="h71000008g0008g4008g8008g000000000008" version="1">混沌起源的所有技能检定固定+5；此等级成长状态使纯属性检定+7。不授予熟练或专精，不影响攻击、豁免与法术难度。</content>
 	<content contentuid="h72000001g0001g4001g8001g000000000001" version="1">命运改签</content>
-	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">可切换被动。开启后，攻击触发两仪时自动消耗1点混沌之力，按等级进行多次判定并保留最有利的结果。每次攻击最多触发一次；未命中或混沌之力不足时不消耗。</content>
+	<content contentuid="h72000002g0002g4002g8002g000000000002" version="1">可切换被动。开启后，攻击触发两仪时按设置消耗混沌之力（默认 1，0 为免费），按等级进行多次判定并保留最有利的结果。每次攻击最多触发一次；未命中或余额不足时不触发改签、不扣费。</content>
 	<content contentuid="hbfabec61g3070g4e70g8e71gc20633da5d52" version="1">调律</content>
 	<content contentuid="h0cf72805gf1e4g4f89gbc8fgb4eb4561d859" version="1">消耗1点掌控混沌，增加1层调律。</content>
 	<content contentuid="h03a4fec8gb0efg45f9g8c5fgfd91d085f127" version="1">厄兆纠偏</content>
@@ -1032,4 +1032,9 @@
   <content contentuid="h7c000094g0000g4000g8000g000000000000" version="1">最终采用的抽签结果记录，不代表此效果仍在生效；不会再次发放效果。实际状态可能被免疫、解除或到期。&lt;br&gt;当时抽中：判定为正面类别后，浮光护体可能替代普通正面结果。获得1d4+熟练加值点临时生命，持续2回合。临时生命不叠加，只保留较高值。</content>
   <content contentuid="h7c000095g0000g4000g8000g000000000000" version="1">最近受击抽签：混沌平息</content>
   <content contentuid="h7c000096g0000g4000g8000g000000000000" version="1">最终采用的抽签结果记录，不代表此效果仍在生效；不会再次发放效果。实际状态可能被免疫、解除或到期。&lt;br&gt;当时抽中：本次受击轮盘平息：不施加正面或负面结果，也不增加混沌迷失。</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000001" version="1">混沌之力消耗</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000002" version="1">命运改签消耗（0 为免费，默认 1）</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000003" version="1">恢复为 1 点</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000004" version="1">混沌开天辟地消耗（0 为免费，默认 10）</content>
+  <content contentuid="h7d000000g0000g4000g8000g000000000005" version="1">恢复为 10 点</content>
 </contentList>
