@@ -802,5 +802,5 @@
   <content contentuid="h76000000g0000g4000g8000g000000000104" version="1">Armour proficiencies</content>
   <content contentuid="h76000000g0000g4000g8000g000000000105" version="1">Instrument proficiency</content>
   <content contentuid="h77000000g0000g4000g8000g000000000001" version="1">볼로의 마법 눈</content>
-  <content contentuid="h77000000g0000g4000g8000g000000000002" version="1">기본값은 켜짐입니다. 고블린 야영지에서 볼로를 구출하면 혼돈 캐릭터가 원래 범위와 내성 굴림을 유지하는 투명체 감지 효과를 얻습니다. 수술, 외형 변경이나 수술로 인한 이탈은 발생하지 않습니다. 끄면 이 모드의 효과만 제거되며 정상적으로 얻은 눈 능력은 유지됩니다. 구출 전에는 설정만 저장됩니다.</content>
+  <content contentuid="h77000000g0000g4000g8000g000000000002" version="2">기본값은 켜짐입니다. 고블린 야영지에서 볼로를 구출하고 아군 야영지에 도착해야 영구 해금됩니다. 수술을 수락하거나 거절할 필요가 없습니다. 이후 수술, 거절 또는 볼로의 이탈로 자격이 사라지지 않습니다. 켜면 원래 투명체 감지를 유지하고, 끄면 수술로 얻은 마법 눈 효과도 중지합니다. 해금 전에는 켜도 능력을 얻지 않습니다. 외형이나 퀘스트는 변경하지 않습니다.</content>
 </contentList>

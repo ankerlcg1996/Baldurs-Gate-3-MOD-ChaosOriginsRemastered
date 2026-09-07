@@ -2571,8 +2571,8 @@ Require ([regex]::Matches($configGoal,
 
 $configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
     ForEach-Object { $_.Groups[1].Value })
-$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values + @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE'))
-Require ($configPassiveEntries.Count -eq 31 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 31 -and
+$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values + @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE', 'COS_VOLO_EYE_DISABLED'))
+Require ($configPassiveEntries.Count -eq 32 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 32 -and
     -not (Compare-Object ($expectedConfigPassiveEntries | Sort-Object) ($configPassiveEntries | Sort-Object))) `
     'ChaosConfig.txt 必须定义九个核心机制、20个种族回显及瓦罗开关与效果'
 foreach ($mirror in $coreMechanicMirrors) {

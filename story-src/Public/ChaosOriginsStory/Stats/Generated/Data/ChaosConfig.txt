@@ -14,6 +14,13 @@ data "Icon" "Item_DEN_VoloOperation_ErsatzEye"
 data "StackId" "COS_VOLO_EYE"
 data "StatusPropertyFlags" "IgnoreResting"
 
+new entry "COS_VOLO_EYE_DISABLED"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StackId" "COS_VOLO_EYE_DISABLED"
+data "Boosts" "StatusImmunity(MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING)"
+data "StatusPropertyFlags" "IgnoreResting;DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead"
+
 new entry "COS_CFG_MECH_POWER"
 type "PassiveData"
 data "DisplayName" "h73000111g0111g4111g8111g000000000111"

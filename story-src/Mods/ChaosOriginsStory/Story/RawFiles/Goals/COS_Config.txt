@@ -1103,6 +1103,9 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
 EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001);
 PROC_COS_EnsureVoloEyeSetting(_Character);
+PROC_COS_UnlockVoloEye();
+PROC_COS_UnblockVoloEye(_Character);
+PROC_COS_SuppressNativeVoloEye(_Character);
 PROC_COS_ApplyVoloEye(_Character);
 
 PROC
@@ -1126,7 +1129,7 @@ PROC_COS_ApplyVoloEye((CHARACTER)_Character)
 AND
 DB_COS_VoloEyeSetting(_Character, 1)
 AND
-GetFlag((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, NULL_00000000-0000-0000-0000-000000000000, 1)
+DB_COS_VoloEyeUnlocked(1)
 AND
 HasPassive(_Character, "CAMP_Volo_ErsatzEye", 0)
 AND
@@ -1166,7 +1169,7 @@ IntegerSubtract(1, _Value, _Next)
 THEN
 NOT DB_COS_VoloEyeSetting(_Character, _Value);
 DB_COS_VoloEyeSetting(_Character, _Next);
-PROC_COS_ApplyVoloEye(_Character);
+PROC_COS_SyncVoloEye(_Character);
 
 IF
 FlagSet((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, _, _)
@@ -1191,6 +1194,88 @@ IF
 StatusApplied(_Character, "CAMP_VOLO_ERSATZEYE", _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_SyncVoloEye(_Character);
+
+// Latch camp arrival once, independently of the preference and later departures.
+PROC
+PROC_COS_UnlockVoloEye()
+AND
+GetFlag((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+GetFlag((FLAG)GLO_Volo_State_AtCamp_de1cadca-2eca-4cee-a3dc-e262bbb92277, NULL_00000000-0000-0000-0000-000000000000, 1)
+THEN
+DB_COS_VoloEyeUnlocked(1);
+
+// Historical proof for saves made after surgery or refusing surgery in camp.
+PROC
+PROC_COS_UnlockVoloEye()
+AND
+GetFlag((FLAG)GOB_VoloBallad_State_VoloEscaped_13ae819f-b0b7-434d-9ebb-cee412b1a407, NULL_00000000-0000-0000-0000-000000000000, 1)
+AND
+GetFlag((FLAG)GLO_Volo_State_LeftAfterOperation_fec19c09-93c5-40f3-a6e9-b242076e68bf, NULL_00000000-0000-0000-0000-000000000000, 1)
+THEN
+DB_COS_VoloEyeUnlocked(1);
+
+IF
+FlagSet((FLAG)GLO_Volo_State_AtCamp_de1cadca-2eca-4cee-a3dc-e262bbb92277, _, _)
+AND
+DB_Avatars(_Character)
+THEN
+PROC_COS_SyncVoloEye(_Character);
+
+PROC
+PROC_COS_UnblockVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeSetting(_Character, 1)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE_DISABLED", 1)
+THEN
+RemoveStatus(_Character, "COS_VOLO_EYE_DISABLED", _Character);
+
+PROC
+PROC_COS_SuppressNativeVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeUnlocked(1)
+AND
+DB_COS_VoloEyeSetting(_Character, 0)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE_DISABLED", 0)
+THEN
+ApplyStatus(_Character, "COS_VOLO_EYE_DISABLED", -1.0, 1, _Character);
+
+PROC
+PROC_COS_SuppressNativeVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeUnlocked(1)
+AND
+DB_COS_VoloEyeSetting(_Character, 0)
+AND
+HasPassive(_Character, "CAMP_Volo_ErsatzEye", 1)
+AND
+HasActiveStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", 1)
+THEN
+RemoveStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", _Character);
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_VoloEyeUnlocked(1)
+AND
+DB_COS_VoloEyeSetting(_Character, 1)
+AND
+HasPassive(_Character, "CAMP_Volo_ErsatzEye", 1)
+AND
+HasActiveStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", 0)
+THEN
+ApplyStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", -1.0, 1, _Character);
+
+PROC
+PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+NOT DB_COS_VoloEyeUnlocked(1)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE", 1)
 THEN
 RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
 
