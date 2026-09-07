@@ -606,6 +606,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 $tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
 $tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
+    'COS_CFG_CARRY',
     'COS_FixedGuidance30',
     'COS_ChaosOriginMarker',
     'COS_BaseProficiencies',
@@ -924,7 +925,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 9) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 9)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 10) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 10)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -3846,7 +3847,7 @@ foreach ($entrySpec in $entrySpecs) {
 $xamlNamespace = 'http://schemas.microsoft.com/winfx/2006/xaml'
 $tutorialEventCommandBinding = '{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}'
 $expectedConfigRows = [ordered]@{
-    Carry = @{ Uuid = '7e000000-0000-4000-8000-000000000001'; Mirror = 'COS_GlobalCarryCapacity50x' }
+    Carry = @{ Uuid = '7e000000-0000-4000-8000-000000000001'; Mirror = 'COS_CFG_CARRY' }
     Power = @{ Uuid = '7f818c10-3f23-49f8-838a-d161c57bb35d'; Mirror = 'COS_CFG_MECH_POWER' }
     Wound = @{ Uuid = '0574b4b8-549a-4b39-b810-6890c68642b1'; Mirror = 'COS_CFG_MECH_WOUND' }
     KillPower = @{ Uuid = '71abdeef-69d2-4385-8885-4f9ebbd829ca'; Mirror = 'COS_CFG_MECH_KILLPOWER' }

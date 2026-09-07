@@ -1046,4 +1046,5 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">開始時の袋：キャラクター作成時に一度だけ付与。Deluxe所有者への重複付与、補充、回収なし。</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">技能判定固定ボーナス：+</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
 </contentList>

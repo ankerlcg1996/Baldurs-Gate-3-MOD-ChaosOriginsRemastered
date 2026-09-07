@@ -40,6 +40,7 @@ DB_Players(_Character)
 THEN
 PROC_COS_EnsureCarrySetting(_Character);
 PROC_COS_ApplyCarrySetting(_Character);
+PROC_COS_SyncCarryMirror(_Character);
 EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001);
 
 PROC
@@ -52,6 +53,7 @@ THEN
 NOT DB_COS_CarryEnabled(_Character, _Old);
 DB_COS_CarryEnabled(_Character, _Enabled);
 PROC_COS_ApplyCarrySetting(_Character);
+PROC_COS_SyncCarryMirror(_Character);
 
 IF
 TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001)
@@ -64,6 +66,7 @@ IsControlled(_Character, 1)
 AND
 IsInCombat(_Character, 0)
 THEN
+PROC_COS_EnsureCarrySetting(_Character);
 PROC_COS_ToggleCarrySetting(_Character);
 
 IF
@@ -87,6 +90,24 @@ IF
 RespecCompleted(_Character)
 THEN
 PROC_COS_SyncGlobalPlayerBenefits(_Character);
+
+PROC
+PROC_COS_SyncCarryMirror((CHARACTER)_Character)
+AND
+DB_COS_CarryEnabled(_Character, 1)
+AND
+HasPassive(_Character, "COS_CFG_CARRY", 0)
+THEN
+AddPassive(_Character, "COS_CFG_CARRY");
+
+PROC
+PROC_COS_SyncCarryMirror((CHARACTER)_Character)
+AND
+DB_COS_CarryEnabled(_Character, 0)
+AND
+HasPassive(_Character, "COS_CFG_CARRY", 1)
+THEN
+RemovePassive(_Character, "COS_CFG_CARRY");
 
 EXITSECTION
 ENDEXITSECTION

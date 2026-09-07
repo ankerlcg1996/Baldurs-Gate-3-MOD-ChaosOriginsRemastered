@@ -1,3 +1,9 @@
+new entry "COS_CFG_CARRY"
+type "PassiveData"
+data "DisplayName" "h7e000000g0000g4000g8000g000000000010"
+data "Description" "h7e000000g0000g4000g8000g000000000006"
+data "Icon" "PassiveFeature_Generic_Threat"
+
 new entry "COS_GRANT_ORIGIN_Astarion"
 type "PassiveData"
 data "DisplayName" "h78000000g0000g4000g8000g000000000001"

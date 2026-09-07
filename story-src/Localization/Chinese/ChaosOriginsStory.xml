@@ -1046,4 +1046,5 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">开局礼包：仅创建人物时赠送一次，豪华版角色不重复赠送；不补发、不回收。</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">固定技能检定加值：+</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
 </contentList>

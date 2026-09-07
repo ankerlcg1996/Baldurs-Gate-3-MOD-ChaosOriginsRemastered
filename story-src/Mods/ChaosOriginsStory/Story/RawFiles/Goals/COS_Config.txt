@@ -393,6 +393,7 @@ PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
 PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
+PROC_COS_SyncGlobalPlayerBenefits(_Character);
 PROC_COS_RetireFate(_Character);
 PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_SyncVoloEye(_Character);

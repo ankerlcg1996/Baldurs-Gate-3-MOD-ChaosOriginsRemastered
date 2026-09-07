@@ -1046,4 +1046,5 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000007" version="1">Starting bag: granted once during character creation; Deluxe owners receive no duplicate. No refill or item removal.</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">Fixed skill-check bonus: +</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
+  <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
 </contentList>
