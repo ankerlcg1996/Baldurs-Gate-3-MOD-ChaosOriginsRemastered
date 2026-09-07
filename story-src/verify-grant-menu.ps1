@@ -4,11 +4,12 @@ $goal = Get-Content "$PSScriptRoot/Mods/ChaosOriginsStory/Story/RawFiles/Goals/C
 $config = Get-Content "$PSScriptRoot/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt" -Raw
 if ($goal -match 'AddPassive\(_Character, "COS_BaseProficiencies"\)') { throw 'Legacy all-proficiencies grant bypasses individual switches.' }
 $entries = @(Get-Content "$PSScriptRoot/grant-menu.json" -Raw | ConvertFrom-Json)
-if ($entries.Count -ne 75) { throw 'Expected 75 individual options.' }
-foreach ($expected in @(@('origin',7), @('tag',32), @('proficiency',36))) {
+if ($entries.key -contains 'TAG_VO_POSTPROCESS') { throw 'Internal voice tag must not be a selectable race identity.' }
+if ($entries.Count -ne 74) { throw 'Expected 74 individual options.' }
+foreach ($expected in @(@('origin',7), @('tag',31), @('proficiency',36))) {
     if (@($entries | Where-Object {$_.kind -eq $expected[0]}).Count -ne $expected[1]) { throw "Wrong category coverage: $($expected[0])" }
 }
-if (@($entries.key | Select-Object -Unique).Count -ne 75 -or @($entries.event | Select-Object -Unique).Count -ne 75) { throw 'Duplicate grant keys or events.' }
+if (@($entries.key | Select-Object -Unique).Count -ne 74 -or @($entries.event | Select-Object -Unique).Count -ne 74) { throw 'Duplicate grant keys or events.' }
 $stats = Get-Content "$PSScriptRoot/Public/ChaosOriginsStory/Stats/Generated/Data/Passive.txt" -Raw
 [xml]$events = Get-Content "$PSScriptRoot/Public/ChaosOriginsStory/Tutorials/TutorialEvents.lsx" -Raw
 foreach ($entry in $entries) {
@@ -45,7 +46,7 @@ foreach ($guard in @('DB_COS_GrantTagOwned(_Character, _Tag)', 'NOT DB_COS_Nativ
 }
 if (!$config.Contains('NOT DB_COS_GrantUnresolved(_Character, _Key)') -or !$config.Contains('DebugText(_Character,')) { throw 'Unknown legacy identity must be reported, not silently removed.' }
 if (!$config.Contains('DB_COS_GrantSetting(_Character, _Key, 1);') -or !$config.Contains('TogglePassive(_Character, _Passive);')) { throw 'Default or origin toggle synchronization missing.' }
-'GRANT_MENU_STATIC=PASS; OPTIONS=75; IN_GAME=PENDING'
+'GRANT_MENU_STATIC=PASS; OPTIONS=74; IN_GAME=PENDING'
 foreach ($action in @('SetTag', 'ClearTag')) {
     $syncPattern = 'DB_COS_OriginIdentityToggle\(_, _Status, _Tag\)\s*THEN\s*' + $action + '\(_Character, _Tag\);\s*PROC_COS_SyncOriginGrantMirrors\(\(CHARACTER\)_Character\);'
     if ($goal -notmatch $syncPattern) { throw "Origin status handler does not sync menu: $action" }

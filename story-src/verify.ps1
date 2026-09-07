@@ -916,7 +916,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 76 + 2) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 76 + 2)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',

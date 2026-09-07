@@ -7,6 +7,8 @@ foreach ($group in @('Core','Race','Origin','Tag','Weapon')) {
         foreach ($suffix in @('', '_c')) {
             [xml]$ui = Get-Content "$PSScriptRoot/Mods/ChaosOriginsStory/GUI/Pages/COS_ConfigMenu$suffix.xaml"
             if (@($ui.SelectNodes('//*[@*[local-name()="Name"]="' + $name + '"]')).Count -ne 1) { throw "Missing unique button $name $suffix" }
+            $button = $ui.SelectSingleNode('//*[@*[local-name()="Name"]="' + $name + '"]')
+            if ($suffix -eq '' -and $button.GetAttribute('Style') -ne '{StaticResource BigBrownButtonStyle}') { throw "Missing native gold button style: $name $suffix" }
         }
     }
 }

@@ -732,7 +732,6 @@
   <content contentuid="h76000000g0000g4000g8000g000000000010" version="1">HILLDWARF</content>
   <content contentuid="h76000000g0000g4000g8000g000000000011" version="1">MOUNTAINDWARF</content>
   <content contentuid="h76000000g0000g4000g8000g000000000012" version="1">DROWHALFELF</content>
-  <content contentuid="h76000000g0000g4000g8000g000000000013" version="1">VO_POSTPROCESS</content>
   <content contentuid="h76000000g0000g4000g8000g000000000014" version="1">HIGHHALFELF</content>
   <content contentuid="h76000000g0000g4000g8000g000000000015" version="1">WOODHALFELF</content>
   <content contentuid="h76000000g0000g4000g8000g000000000016" version="1">LOLTHDROWELF</content>
@@ -815,7 +814,6 @@
   <content contentuid="h78000000g0000g4000g8000g000000000010" version="1">COS_GRANT_TAG_HILLDWARF</content>
   <content contentuid="h78000000g0000g4000g8000g000000000011" version="1">COS_GRANT_TAG_MOUNTAINDWARF</content>
   <content contentuid="h78000000g0000g4000g8000g000000000012" version="1">COS_GRANT_TAG_DROWHALFELF</content>
-  <content contentuid="h78000000g0000g4000g8000g000000000013" version="1">COS_GRANT_TAG_VO_POSTPROCESS</content>
   <content contentuid="h78000000g0000g4000g8000g000000000014" version="1">COS_GRANT_TAG_HIGHHALFELF</content>
   <content contentuid="h78000000g0000g4000g8000g000000000015" version="1">COS_GRANT_TAG_WOODHALFELF</content>
   <content contentuid="h78000000g0000g4000g8000g000000000016" version="1">COS_GRANT_TAG_LOLTHDROWELF</content>

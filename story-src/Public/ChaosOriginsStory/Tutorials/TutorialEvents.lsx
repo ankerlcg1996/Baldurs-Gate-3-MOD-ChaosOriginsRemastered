@@ -294,12 +294,6 @@
                 </node>
                 <node id="TutorialEvent">
                     <attribute id="EventType" type="uint8" value="8"/>
-                    <attribute id="Name" type="LSString" value="COS_GRANT_TAG_VO_POSTPROCESS"/>
-                    <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000013"/>
-                    <attribute id="UserAction" type="uint8" value="0"/>
-                </node>
-                <node id="TutorialEvent">
-                    <attribute id="EventType" type="uint8" value="8"/>
                     <attribute id="Name" type="LSString" value="COS_GRANT_TAG_HIGHHALFELF"/>
                     <attribute id="UUID" type="guid" value="76000000-0000-4000-8000-000000000014"/>
                     <attribute id="UserAction" type="uint8" value="0"/>

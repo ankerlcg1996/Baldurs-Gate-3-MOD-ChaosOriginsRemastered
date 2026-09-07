@@ -146,17 +146,6 @@
     "mirror": "COS_GRANT_TAG_DROWHALFELF"
   },
   {
-    "key": "TAG_VO_POSTPROCESS",
-    "kind": "tag",
-    "group": "Tag",
-    "value": "eae44d86-3321-4a0a-811d-4fd8e48b5723",
-    "zh": "语音后期处理",
-    "en": "VO_POSTPROCESS",
-    "event": "76000000-0000-4000-8000-000000000013",
-    "handle": "h76000000g0000g4000g8000g000000000013",
-    "mirror": "COS_GRANT_TAG_VO_POSTPROCESS"
-  },
-  {
     "key": "TAG_HIGHHALFELF",
     "kind": "tag",
     "group": "Tag",

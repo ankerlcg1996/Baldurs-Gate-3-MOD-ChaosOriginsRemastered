@@ -70,11 +70,7 @@ data "DisplayName" "h78000000g0000g4000g8000g000000000012"
 data "Description" "h74000004g0004g4004g8004g000000000004"
 data "Icon" "PassiveFeature_Generic_Threat"
 
-new entry "COS_GRANT_TAG_VO_POSTPROCESS"
-type "PassiveData"
-data "DisplayName" "h78000000g0000g4000g8000g000000000013"
-data "Description" "h74000004g0004g4004g8004g000000000004"
-data "Icon" "PassiveFeature_Generic_Threat"
+
 
 new entry "COS_GRANT_TAG_HIGHHALFELF"
 type "PassiveData"
