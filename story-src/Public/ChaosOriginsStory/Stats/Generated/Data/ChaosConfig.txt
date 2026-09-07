@@ -1,6 +1,6 @@
 new entry "COS_CFG_VOLO_EYE"
 type "PassiveData"
-data "DisplayName" "h77000000g0000g4000g8000g000000000001"
+data "DisplayName" "h78000000g0000g4000g8000g000000000076"
 data "Description" "h77000000g0000g4000g8000g000000000002"
 data "Icon" "Item_DEN_VoloOperation_ErsatzEye"
 

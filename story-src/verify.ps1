@@ -591,6 +591,7 @@ $tooltipSourceStatuses = @(
 $tooltipPassiveEntries = @($tooltipSourceStatuses | ForEach-Object { 'COS_TT_' + $_.Substring(4) })
 $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFrom-Json)
 & (Join-Path $root 'verify-grant-menu.ps1') -SeedOnly:$GrantSeedOnly -Partition $GrantPartition
+& (Join-Path $root 'verify-menu-mirror-keys.ps1')
 & (Join-Path $root 'verify-volo-eye.ps1')
 $expectedPassiveEntries = @(
     'COS_FixedGuidance30',
@@ -914,7 +915,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 76) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 76)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',

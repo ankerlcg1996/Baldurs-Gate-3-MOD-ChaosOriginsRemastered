@@ -13,7 +13,8 @@ $stats = Get-Content "$PSScriptRoot/Public/ChaosOriginsStory/Stats/Generated/Dat
 [xml]$events = Get-Content "$PSScriptRoot/Public/ChaosOriginsStory/Tutorials/TutorialEvents.lsx" -Raw
 foreach ($entry in $entries) {
     $mirrorBlock = [regex]::Match($stats, '(?ms)^new entry "' + [regex]::Escape($entry.mirror) + '"\r?\n.*?(?=^new entry |\z)').Value
-    if (!$mirrorBlock -or $mirrorBlock -match 'IsHidden' -or !$mirrorBlock.Contains('data "DisplayName" "' + $entry.handle + '"')) { throw "Menu mirror must be visible and named: $($entry.key)" }
+    $mirrorHandle = $entry.handle.Replace('h76000000', 'h78000000')
+    if (!$mirrorBlock -or $mirrorBlock -match 'IsHidden' -or !$mirrorBlock.Contains('data "DisplayName" "' + $mirrorHandle + '"')) { throw "Menu mirror must use its separate stable display key: $($entry.key)" }
     if (!$config.Contains($entry.event)) { throw "Missing event: $($entry.key)" }
     $eventNodes = @($events.SelectNodes('//node[@id="TutorialEvent"]') | Where-Object {$_.SelectSingleNode('attribute[@id="UUID"]').value -eq $entry.event})
     if ($eventNodes.Count -ne 1 -or $eventNodes[0].SelectSingleNode('attribute[@id="EventType"]').value -ne '8') { throw "Unregistered event: $($entry.key)" }
