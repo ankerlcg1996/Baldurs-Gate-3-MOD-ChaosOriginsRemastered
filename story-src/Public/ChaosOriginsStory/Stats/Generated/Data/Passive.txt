@@ -4,6 +4,107 @@ data "DisplayName" "h78000000g0000g4000g8000g000000000001"
 data "Description" "h74000004g0004g4004g8004g000000000004"
 data "Icon" "PassiveFeature_Generic_Threat"
 
+new entry "COS_TAGSPELL_Shout_ProduceFlame"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_ProduceFlame,AddChildren,,,Charisma)"
+
+new entry "COS_TAGSPELL_Shout_HellishRebuke_AsmodeusTiefling"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_HellishRebuke_AsmodeusTiefling,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Target_Darkness_DrowMagic"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_Darkness_DrowMagic,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Target_DancingLights"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_DancingLights,AddChildren,,,Charisma)"
+
+new entry "COS_TAGSPELL_Target_FaerieFire_DrowMagic"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_FaerieFire_DrowMagic,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Shout_Enlarge_Duergar"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_Enlarge_Duergar,AddChildren,,,)"
+
+new entry "COS_TAGSPELL_Shout_Invisibility_Duergar"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_Invisibility_Duergar,AddChildren,,,)"
+
+new entry "COS_TAGSPELL_Shout_SpeakWithAnimals_ForestGnome"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_SpeakWithAnimals_ForestGnome,AddChildren,,UntilRest,Intelligence)"
+
+new entry "COS_TAGSPELL_Shout_AstralKnowledge"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_AstralKnowledge,AddChildren,,,)"
+
+new entry "COS_TAGSPELL_Target_MageHand_GithyankiPsionics"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_MageHand_GithyankiPsionics,AddChildren,,,Intelligence)"
+
+new entry "COS_TAGSPELL_Target_Jump_Githyanki"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_Jump_Githyanki,AddChildren,,UntilRest,Intelligence)"
+
+new entry "COS_TAGSPELL_Target_MistyStep_Githyanki"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_MistyStep_Githyanki,AddChildren,,UntilRest,Intelligence)"
+
+new entry "COS_TAGSPELL_Target_MageHand"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_MageHand,AddChildren,,,Charisma)"
+
+new entry "COS_TAGSPELL_Zone_BurningHands_MephistophelesTiefling"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Zone_BurningHands_MephistophelesTiefling,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Shout_FlameBlade_MephistophelesTiefling"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_FlameBlade_MephistophelesTiefling,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Shout_Thaumaturgy"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Shout_Thaumaturgy,AddChildren,,,Charisma)"
+
+new entry "COS_TAGSPELL_Target_Smite_Searing_ZarielTiefling"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_Smite_Searing_ZarielTiefling,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_Target_Smite_Branding_ZarielTiefling_Container"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "UnlockSpell(Target_Smite_Branding_ZarielTiefling_Container,AddChildren,,UntilRest,Charisma)"
+
+new entry "COS_TAGSPELL_HellishCharge"
+type "PassiveData"
+data "Properties" "IsHidden"
+data "Boosts" "ActionResource(Interrupt_HellishRebukeTiefling_Charge,1,0)"
+
+new entry "COS_CFG_TAG_SPELLS"
+type "PassiveData"
+data "DisplayName" "h7a000000g0000g4000g8000g000000000003"
+data "Description" "h7a000000g0000g4000g8000g000000000002"
+data "Icon" "PassiveFeature_Generic_Threat"
+
 new entry "COS_GRANT_ORIGIN_Gale"
 type "PassiveData"
 data "DisplayName" "h78000000g0000g4000g8000g000000000002"

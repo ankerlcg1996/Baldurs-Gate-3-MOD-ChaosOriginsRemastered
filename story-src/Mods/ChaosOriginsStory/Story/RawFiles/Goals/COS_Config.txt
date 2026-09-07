@@ -671,6 +671,8 @@ NOT DB_COS_GrantEvent((TUTORIALEVENT)76000000-0000-4000-8000-000000000013, "TAG_
 NOT DB_COS_GrantOption("TAG_VO_POSTPROCESS", "COS_GRANT_TAG_VO_POSTPROCESS");
 NOT DB_COS_GrantTag("TAG_VO_POSTPROCESS", (TAG)eae44d86-3321-4a0a-811d-4fd8e48b5723);
 NOT DB_COS_BulkMember("Tag", "TAG_VO_POSTPROCESS");
+NOT DB_COS_BulkEvent((TUTORIALEVENT)79000000-0000-4000-8000-000000000003, "Race", 1);
+NOT DB_COS_BulkEvent((TUTORIALEVENT)79000000-0000-4000-8000-000000000004, "Race", 2);
 DB_COS_GrantEvent((TUTORIALEVENT)76000000-0000-4000-8000-000000000001, "ORIGIN_Astarion");
 DB_COS_GrantOrigin("ORIGIN_Astarion", "COS_Origin_Astarion", "COS_ORIGIN_TAG_ASTARION", "COS_GRANT_ORIGIN_Astarion");
 DB_COS_GrantEvent((TUTORIALEVENT)76000000-0000-4000-8000-000000000002, "ORIGIN_Gale");
@@ -1043,6 +1045,7 @@ DB_COS_GrantInitialized(_Character);
 RemovePassive(_Character, "COS_BaseProficiencies");
 PROC_COS_EnableGrantEvents(_Character);
 PROC_COS_ApplyGrantOptions(_Character);
+PROC_COS_SyncTagSpells(_Character);
 PROC_COS_SyncOriginGrantMirrors(_Character);
 
 PROC
@@ -1057,6 +1060,7 @@ THEN
 NOT DB_COS_GrantSetting(_Character, _Key, _Value);
 DB_COS_GrantSetting(_Character, _Key, _Next);
 PROC_COS_ApplyGrantOptions(_Character);
+PROC_COS_SyncTagSpells(_Character);
 DB_COS_ConfigClickTrace(_Character, _Key, "Applied");
 DebugText(_Character, "混沌菜单诊断：熟练项或标签切换已执行。");
 
@@ -1312,8 +1316,6 @@ PROC_COS_SeedGrantMap()
 THEN
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_All_79000000-0000-4000-8000-000000000001, "Core", 1);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_Invert_79000000-0000-4000-8000-000000000002, "Core", 2);
-DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Race_All_79000000-0000-4000-8000-000000000003, "Race", 1);
-DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Race_Invert_79000000-0000-4000-8000-000000000004, "Race", 2);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Origin_All_79000000-0000-4000-8000-000000000005, "Origin", 1);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Origin_Invert_79000000-0000-4000-8000-000000000006, "Origin", 2);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Tag_All_79000000-0000-4000-8000-000000000007, "Tag", 1);
@@ -1416,6 +1418,8 @@ PROC
 PROC_COS_BulkGrant((CHARACTER)_Character, (STRING)_Group, 2)
 AND
 DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_GrantSetting(_Character, _Key, 1)
 THEN
 PROC_COS_ToggleGrantOption(_Character, _Key);
 
@@ -1432,7 +1436,9 @@ PROC_COS_SyncOriginGrantMirrors(_Character);
 PROC
 PROC_COS_BulkGrant((CHARACTER)_Character, "Origin", 2)
 AND
-DB_COS_GrantOrigin(_, _Passive, _, _)
+DB_COS_GrantOrigin(_, _Passive, _Status, _)
+AND
+HasActiveStatus(_Character, _Status, 1)
 THEN
 TogglePassive(_Character, _Passive);
 PROC_COS_SyncOriginGrantMirrors(_Character);
@@ -1447,7 +1453,7 @@ PROC_COS_ConfigToggleMechanic(_Character, _Key);
 PROC
 PROC_COS_BulkGrant((CHARACTER)_Character, "Core", 2)
 AND
-DB_COS_ConfigMechanicDefault(_Key, _)
+DB_COS_ConfigMechanic(_Character, _Key, 1)
 THEN
 PROC_COS_ConfigToggleMechanic(_Character, _Key);
 
@@ -1459,9 +1465,172 @@ PROC_COS_ConfigSyncRacialMirrors(_Character);
 
 PROC
 PROC_COS_BulkGrant((CHARACTER)_Character, "Race", 2)
-AND
-DB_COS_ConfigRacialDefault(_Passive, _)
 THEN
-PROC_COS_ConfigToggleRacialPassive(_Character, _Passive);
+PROC_COS_ConfigSetAllRacialPassives(_Character, 0);
+
+// Tag spell delivery: only fixed racial spells; independent removable sources.
+PROC
+PROC_COS_SeedGrantMap()
+THEN
+DB_COS_TagSpellMap("TAG_ASMODEUSTIEFLING", 1, "COS_TAGSPELL_Shout_ProduceFlame");
+DB_COS_TagSpellMap("TAG_ASMODEUSTIEFLING", 3, "COS_TAGSPELL_Shout_HellishRebuke_AsmodeusTiefling");
+DB_COS_TagSpellMap("TAG_ASMODEUSTIEFLING", 5, "COS_TAGSPELL_Target_Darkness_DrowMagic");
+DB_COS_TagSpellMap("TAG_DROWELF", 1, "COS_TAGSPELL_Target_DancingLights");
+DB_COS_TagSpellMap("TAG_LOLTHDROWELF", 1, "COS_TAGSPELL_Target_DancingLights");
+DB_COS_TagSpellMap("TAG_SELDARINEDROWELF", 1, "COS_TAGSPELL_Target_DancingLights");
+DB_COS_TagSpellMap("TAG_DROWELF", 3, "COS_TAGSPELL_Target_FaerieFire_DrowMagic");
+DB_COS_TagSpellMap("TAG_LOLTHDROWELF", 3, "COS_TAGSPELL_Target_FaerieFire_DrowMagic");
+DB_COS_TagSpellMap("TAG_SELDARINEDROWELF", 3, "COS_TAGSPELL_Target_FaerieFire_DrowMagic");
+DB_COS_TagSpellMap("TAG_DROWELF", 5, "COS_TAGSPELL_Target_Darkness_DrowMagic");
+DB_COS_TagSpellMap("TAG_LOLTHDROWELF", 5, "COS_TAGSPELL_Target_Darkness_DrowMagic");
+DB_COS_TagSpellMap("TAG_SELDARINEDROWELF", 5, "COS_TAGSPELL_Target_Darkness_DrowMagic");
+DB_COS_TagSpellMap("TAG_DUERGARDWARF", 3, "COS_TAGSPELL_Shout_Enlarge_Duergar");
+DB_COS_TagSpellMap("TAG_DUERGARDWARF", 5, "COS_TAGSPELL_Shout_Invisibility_Duergar");
+DB_COS_TagSpellMap("TAG_FORESTGNOME", 1, "COS_TAGSPELL_Shout_SpeakWithAnimals_ForestGnome");
+DB_COS_TagSpellMap("TAG_GITHYANKI", 1, "COS_TAGSPELL_Shout_AstralKnowledge");
+DB_COS_TagSpellMap("TAG_GITHYANKI", 1, "COS_TAGSPELL_Target_MageHand_GithyankiPsionics");
+DB_COS_TagSpellMap("TAG_GITHYANKI", 3, "COS_TAGSPELL_Target_Jump_Githyanki");
+DB_COS_TagSpellMap("TAG_GITHYANKI", 5, "COS_TAGSPELL_Target_MistyStep_Githyanki");
+DB_COS_TagSpellMap("TAG_DROWHALFELF", 1, "COS_TAGSPELL_Target_DancingLights");
+DB_COS_TagSpellMap("TAG_DROWHALFELF", 3, "COS_TAGSPELL_Target_FaerieFire_DrowMagic");
+DB_COS_TagSpellMap("TAG_DROWHALFELF", 5, "COS_TAGSPELL_Target_Darkness_DrowMagic");
+DB_COS_TagSpellMap("TAG_MEPHISTOPHELESTIEFLING", 1, "COS_TAGSPELL_Target_MageHand");
+DB_COS_TagSpellMap("TAG_MEPHISTOPHELESTIEFLING", 3, "COS_TAGSPELL_Zone_BurningHands_MephistophelesTiefling");
+DB_COS_TagSpellMap("TAG_MEPHISTOPHELESTIEFLING", 5, "COS_TAGSPELL_Shout_FlameBlade_MephistophelesTiefling");
+DB_COS_TagSpellMap("TAG_ZARIELTIEFLING", 1, "COS_TAGSPELL_Shout_Thaumaturgy");
+DB_COS_TagSpellMap("TAG_ZARIELTIEFLING", 3, "COS_TAGSPELL_Target_Smite_Searing_ZarielTiefling");
+DB_COS_TagSpellMap("TAG_ZARIELTIEFLING", 5, "COS_TAGSPELL_Target_Smite_Branding_ZarielTiefling_Container");
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+THEN
+EnableTutorialEvent(_Character, (TUTORIALEVENT)7a000000-0000-4000-8000-000000000001);
+
+IF
+TutorialEvent(_Character, (TUTORIALEVENT)7a000000-0000-4000-8000-000000000001)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_TagSpellsSetting(_Character, _Current)
+AND
+IntegerSubtract(1, _Current, _Next)
+THEN
+NOT DB_COS_TagSpellsSetting(_Character, _Current);
+DB_COS_TagSpellsSetting(_Character, _Next);
+PROC_COS_SyncTagSpells(_Character);
+
+PROC
+PROC_COS_EnsureTagSpells((CHARACTER)_Character)
+AND
+NOT DB_COS_TagSpellsSetting(_Character, _)
+THEN
+DB_COS_TagSpellsSetting(_Character, 0);
+
+PROC
+PROC_COS_SyncTagSpells((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_EnsureTagSpells(_Character);
+PROC_COS_ClearTagSpellDesired(_Character);
+PROC_COS_CollectTagSpellDesired(_Character);
+PROC_COS_CaptureNativeHellish(_Character);
+DB_COS_TagSpellCaptured(_Character);
+PROC_COS_ApplyTagSpells(_Character);
+PROC_COS_TagSpellMirror(_Character);
+
+PROC
+PROC_COS_ClearTagSpellDesired((CHARACTER)_Character)
+AND
+DB_COS_TagSpellDesired(_Character, _Passive)
+THEN
+NOT DB_COS_TagSpellDesired(_Character, _Passive);
+
+PROC
+PROC_COS_CollectTagSpellDesired((CHARACTER)_Character)
+AND
+DB_COS_TagSpellsSetting(_Character, 1)
+AND
+DB_COS_GrantSetting(_Character, _Key, 1)
+AND
+DB_COS_TagSpellMap(_Key, _Minimum, _Passive)
+AND
+GetLevel(_Character, _Level)
+AND
+_Level >= _Minimum
+THEN
+DB_COS_TagSpellDesired(_Character, _Passive);
+
+PROC
+PROC_COS_CaptureNativeHellish((CHARACTER)_Character)
+AND
+NOT DB_COS_TagSpellCaptured(_Character)
+AND
+HasSpell(_Character, "Shout_HellishRebuke_AsmodeusTiefling", 1)
+THEN
+DB_COS_TagSpellNativeHellish(_Character);
+
+PROC
+PROC_COS_ApplyTagSpells((CHARACTER)_Character)
+AND
+DB_COS_TagSpellDesired(_Character, _Passive)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ApplyTagSpells((CHARACTER)_Character)
+AND
+DB_COS_TagSpellMap(_, _, _Passive)
+AND
+NOT DB_COS_TagSpellDesired(_Character, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ApplyTagSpells((CHARACTER)_Character)
+AND
+DB_COS_TagSpellDesired(_Character, "COS_TAGSPELL_Shout_HellishRebuke_AsmodeusTiefling")
+AND
+NOT DB_COS_TagSpellNativeHellish(_Character)
+AND
+HasPassive(_Character, "COS_TAGSPELL_HellishCharge", 0)
+THEN
+AddPassive(_Character, "COS_TAGSPELL_HellishCharge");
+
+PROC
+PROC_COS_ApplyTagSpells((CHARACTER)_Character)
+AND
+NOT DB_COS_TagSpellDesired(_Character, "COS_TAGSPELL_Shout_HellishRebuke_AsmodeusTiefling")
+AND
+HasPassive(_Character, "COS_TAGSPELL_HellishCharge", 1)
+THEN
+RemovePassive(_Character, "COS_TAGSPELL_HellishCharge");
+
+PROC
+PROC_COS_TagSpellMirror((CHARACTER)_Character)
+AND
+DB_COS_TagSpellsSetting(_Character, 1)
+AND
+HasPassive(_Character, "COS_CFG_TAG_SPELLS", 0)
+THEN
+AddPassive(_Character, "COS_CFG_TAG_SPELLS");
+
+PROC
+PROC_COS_TagSpellMirror((CHARACTER)_Character)
+AND
+DB_COS_TagSpellsSetting(_Character, 0)
+AND
+HasPassive(_Character, "COS_CFG_TAG_SPELLS", 1)
+THEN
+RemovePassive(_Character, "COS_CFG_TAG_SPELLS");
+
 EXITSECTION
 ENDEXITSECTION

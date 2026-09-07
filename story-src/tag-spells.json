@@ -1,0 +1,156 @@
+[
+  {
+    "race": "AsmodeusTiefling",
+    "level": 1,
+    "selector": "a3366430-2f63-495c-be14-408d9facfd3b,,Charisma,,AlwaysPrepared",
+    "spells": "Shout_ProduceFlame",
+    "progression": "a8b18f0c-fe70-4f13-9dbc-23f4dbc3d648"
+  },
+  {
+    "race": "AsmodeusTiefling",
+    "level": 3,
+    "selector": "87b3ec16-de6f-4fd9-a809-78934a82c5d9,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Shout_HellishRebuke_AsmodeusTiefling",
+    "progression": "bf3c33f5-4b95-4048-91f5-d8ff6f7a9cdd"
+  },
+  {
+    "race": "AsmodeusTiefling",
+    "level": 5,
+    "selector": "ab1b1b3e-d13c-49b3-b061-c72dd3c8a2b4,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Darkness_DrowMagic",
+    "progression": "76ced3c8-2244-477b-bab3-ba741db463d3"
+  },
+  {
+    "race": "Drow",
+    "level": 1,
+    "selector": "d707ec70-da8a-457b-9b69-7cf5205eef0e,,Charisma,,AlwaysPrepared",
+    "spells": "Target_DancingLights",
+    "progression": "4a634f24-bdcb-4559-b8be-7847133ad1c3"
+  },
+  {
+    "race": "Drow",
+    "level": 3,
+    "selector": "753bd4ba-9f16-4a01-92df-556b98cc7497,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_FaerieFire_DrowMagic",
+    "progression": "334e0ddd-33cb-468f-a232-40cfe9ad23da"
+  },
+  {
+    "race": "Drow",
+    "level": 5,
+    "selector": "ab1b1b3e-d13c-49b3-b061-c72dd3c8a2b4,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Darkness_DrowMagic",
+    "progression": "db485b48-fc71-4de4-a62d-47675659678b"
+  },
+  {
+    "race": "Duergar",
+    "level": 3,
+    "selector": "0c23701c-a79b-483d-b283-9f234211d979",
+    "spells": "Shout_Enlarge_Duergar",
+    "progression": "02828bce-0bee-4010-a614-f4e46d0aba12"
+  },
+  {
+    "race": "Duergar",
+    "level": 5,
+    "selector": "3928cc43-fd2d-46e3-90f5-9171e3aad0f2",
+    "spells": "Shout_Invisibility_Duergar",
+    "progression": "77f416e5-406b-40ee-a2ff-dea281c32c8f"
+  },
+  {
+    "race": "ForestGnome",
+    "level": 1,
+    "selector": "582ed05c-c6fa-4d6f-99f9-efcc9de769f9,,Intelligence,,AlwaysPrepared,UntilRest",
+    "spells": "Shout_SpeakWithAnimals_ForestGnome",
+    "progression": "a63bbb3c-c37c-4578-94e6-7d1c4c063d5c"
+  },
+  {
+    "race": "Githyanki",
+    "level": 1,
+    "selector": "5216169f-6b32-4860-8664-61348d970e48",
+    "spells": "Shout_AstralKnowledge",
+    "progression": "f653d537-bc14-4fea-b7d2-25734ec928a2"
+  },
+  {
+    "race": "Githyanki",
+    "level": 1,
+    "selector": "4d7bfb6c-5001-4a83-8728-94e3711516d3,,Intelligence,,AlwaysPrepared",
+    "spells": "Target_MageHand_GithyankiPsionics",
+    "progression": "f653d537-bc14-4fea-b7d2-25734ec928a2"
+  },
+  {
+    "race": "Githyanki",
+    "level": 3,
+    "selector": "bc5fa476-8329-4e60-bfee-0db7d057d5c2,,Intelligence,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Jump_Githyanki",
+    "progression": "851880cb-3b5d-4129-9b25-3bb17d849f87"
+  },
+  {
+    "race": "Githyanki",
+    "level": 5,
+    "selector": "b5218b5e-37a6-4ff7-8821-8bead1baa9ba,,Intelligence,,AlwaysPrepared,UntilRest",
+    "spells": "Target_MistyStep_Githyanki",
+    "progression": "37ad7172-291b-4a05-b226-2734170fb4fa"
+  },
+  {
+    "race": "HalfDrow",
+    "level": 1,
+    "selector": "d707ec70-da8a-457b-9b69-7cf5205eef0e,,Charisma,,AlwaysPrepared",
+    "spells": "Target_DancingLights",
+    "progression": "58dae581-c25a-4dfb-8a57-589bf4b34f62"
+  },
+  {
+    "race": "HalfDrow",
+    "level": 3,
+    "selector": "753bd4ba-9f16-4a01-92df-556b98cc7497,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_FaerieFire_DrowMagic",
+    "progression": "87d2588b-bd2e-43df-ace0-2c2d3efea0ca"
+  },
+  {
+    "race": "HalfDrow",
+    "level": 5,
+    "selector": "ab1b1b3e-d13c-49b3-b061-c72dd3c8a2b4,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Darkness_DrowMagic",
+    "progression": "60758c3f-d9c5-4f1a-a253-cf2a5e60b627"
+  },
+  {
+    "race": "MephistophelesTiefling",
+    "level": 1,
+    "selector": "e1407db3-e476-4d8f-a687-d3c795ad8c04,,Charisma,,AlwaysPrepared",
+    "spells": "Target_MageHand",
+    "progression": "bdd1cf22-1b3c-4bc6-8313-898a49fcfe49"
+  },
+  {
+    "race": "MephistophelesTiefling",
+    "level": 3,
+    "selector": "fabad2db-dc3c-46a2-9028-a8a18e3847a6,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Zone_BurningHands_MephistophelesTiefling",
+    "progression": "5b3c1a37-18a8-40cf-8bf6-cad43b3ff0cc"
+  },
+  {
+    "race": "MephistophelesTiefling",
+    "level": 5,
+    "selector": "972f76df-ea15-40aa-a5ae-c590697403c5,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Shout_FlameBlade_MephistophelesTiefling",
+    "progression": "a9e766ce-7641-4fac-9510-99389b86546f"
+  },
+  {
+    "race": "ZarielTiefling",
+    "level": 1,
+    "selector": "5eada6b7-d9a2-4ef2-8872-0dce047e458c,,Charisma,,AlwaysPrepared",
+    "spells": "Shout_Thaumaturgy",
+    "progression": "89d57acd-85ff-4da6-b989-9b82d0241e46"
+  },
+  {
+    "race": "ZarielTiefling",
+    "level": 3,
+    "selector": "005bf526-4964-4ae8-8c86-f5d36df99375,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Smite_Searing_ZarielTiefling",
+    "progression": "09be3a4b-3360-414e-b3fb-1e4a04b63331"
+  },
+  {
+    "race": "ZarielTiefling",
+    "level": 5,
+    "selector": "b7642851-835c-4246-a8e6-af39a027fed9,,Charisma,,AlwaysPrepared,UntilRest",
+    "spells": "Target_Smite_Branding_ZarielTiefling_Container",
+    "progression": "0394d93d-5f86-42e6-821b-91777c6e120b"
+  }
+]

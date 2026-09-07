@@ -594,6 +594,9 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-menu-mirror-keys.ps1')
 & (Join-Path $root 'verify-bulk-menu.ps1')
 & (Join-Path $root 'verify-volo-eye.ps1')
+& (Join-Path $root 'verify-tag-spells.ps1')
+$tagSpellCatalog = @(Get-Content (Join-Path $root 'tag-spells.json') -Raw | ConvertFrom-Json)
+$tagSpellPassives = @($tagSpellCatalog.spells | Sort-Object -Unique | ForEach-Object { 'COS_TAGSPELL_' + $_ })
 $expectedPassiveEntries = @(
     'COS_FixedGuidance30',
     'COS_ChaosOriginMarker',
@@ -610,10 +613,10 @@ $expectedPassiveEntries = @(
     'COS_Origin_DarkUrge',
     'COS_FateRevision',
     'COS_ChaosTooltipTemplate'
-) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries + @($grantMenu.mirror)
+) + @(1..20 | ForEach-Object { 'COS_CFG_LIFE_SKILL_BONUS_{0:D2}' -f $_ }) + $tooltipPassiveEntries + @($grantMenu.mirror) + $tagSpellPassives + @('COS_TAGSPELL_HellishCharge', 'COS_CFG_TAG_SPELLS')
 Require ($passiveEntries.Count -eq $expectedPassiveEntries.Count -and -not (Compare-Object $expectedPassiveEntries $passiveEntries)) `
     'Passive.txt 必须且只能定义基础、生活熟练项、身份、命运改签与黄色词条代理被动'
-Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq 25) `
+Require ([regex]::Matches($passive, 'data "Properties" "IsHidden"').Count -eq (25 + $tagSpellPassives.Count + 1)) `
     '基础、全局负重、生活熟练项资源载体与20档技能检定加值必须全部隐藏'
 Require ([regex]::Matches($passive, 'data "Properties" "IsToggled;ToggledDefaultOn"').Count -eq 2) `
     '起源身份开关基类与命运改签必须在获得时默认开启'
@@ -695,8 +698,8 @@ Require (-not ($passive -match 'ProficiencyBonus\(Skill,|ExpertiseBonus\(')) `
 foreach ($spellGrant in @('Target_BoomingBlade_ClassSpell','Target_Guidance','Target_MageHand,,,,Charisma','Target_MinorIllusion,,,,Intelligence','Shout_FeatherFall','Target_Jump','Shout_DisguiseSelf,AddChildren')) {
     Require ($passive.Contains("UnlockSpell($spellGrant)")) "缺少初始法术授予: $spellGrant"
 }
-Require ([regex]::Matches($passive, 'UnlockSpell\(').Count -eq 7) `
-    '静态包必须严格只包含七个基础法术，不得授予种族主动能力'
+Require ([regex]::Matches($passive, 'UnlockSpell\(').Count -eq (7 + $tagSpellPassives.Count)) `
+    '静态法术授予必须精确覆盖七个基础法术与固定种族法术独立来源'
 Require (-not ($passive -match 'COR_|COS_Racial')) '静态被动不得夹带 SE 命名空间或种族主动开关'
 foreach ($deferredPassive in @('COS_BaseProficiencies', 'COS_BaseStarterSpells')) {
     Require (-not $originAttributes.Passives.Split(';').Contains($deferredPassive)) `
@@ -916,7 +919,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2)) `
+    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3)) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -3994,17 +3997,16 @@ $expectedTutorialEvents = [ordered]@{
 }
 foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
 $expectedTutorialEvents['COS_CFG_VOLO_EYE'] = '77000000-0000-4000-8000-000000000001'
+$expectedTutorialEvents['COS_CFG_TAG_SPELLS'] = '7a000000-0000-4000-8000-000000000001'
 $expectedTutorialEvents['COS_BULK_Core_All'] = '79000000-0000-4000-8000-000000000001'
 $expectedTutorialEvents['COS_BULK_Core_Invert'] = '79000000-0000-4000-8000-000000000002'
-$expectedTutorialEvents['COS_BULK_Race_All'] = '79000000-0000-4000-8000-000000000003'
-$expectedTutorialEvents['COS_BULK_Race_Invert'] = '79000000-0000-4000-8000-000000000004'
 $expectedTutorialEvents['COS_BULK_Origin_All'] = '79000000-0000-4000-8000-000000000005'
 $expectedTutorialEvents['COS_BULK_Origin_Invert'] = '79000000-0000-4000-8000-000000000006'
 $expectedTutorialEvents['COS_BULK_Tag_All'] = '79000000-0000-4000-8000-000000000007'
 $expectedTutorialEvents['COS_BULK_Tag_Invert'] = '79000000-0000-4000-8000-000000000008'
 $expectedTutorialEvents['COS_BULK_Weapon_All'] = '79000000-0000-4000-8000-000000000009'
 $expectedTutorialEvents['COS_BULK_Weapon_Invert'] = '79000000-0000-4000-8000-000000000010'
-Require ($tutorialEventNodes.Count -eq (47 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
+Require ($tutorialEventNodes.Count -eq (46 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4324,7 +4326,7 @@ $racialControlIds = @(
     'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
-$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye') +
+$expandedAcceptNames = @($legacyAcceptNames + @('COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
     @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
@@ -4476,10 +4478,10 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
         }
         $expectedControllerFocusOrder = @(
             'COS_BULK_Core_All', 'COS_BULK_Core_Invert',
-            'COSConfigRowPower', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
+            'COSConfigRowPower', 'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate',
             'COSConfigRowGenesis', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COS_BULK_Race_All', 'COS_BULK_Race_Invert', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+            'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
         ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
@@ -4528,7 +4530,7 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (47 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (47 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (46 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (46 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
         "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {

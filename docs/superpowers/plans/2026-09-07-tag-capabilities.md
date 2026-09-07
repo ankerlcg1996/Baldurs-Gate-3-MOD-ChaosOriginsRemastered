@@ -4,7 +4,7 @@
 
 ## 1. 分组批量选择
 
-- 核心机制9项、官方种族被动20项、起源7项、身份标签32项、武器31项各提供全选/反选。
+- 核心机制9项、起源7项、身份标签31项、武器31项提供居中的全部开启/全部取消；官方种族被动20项沿用原有两个按钮。
 - 修改 COS_Config.txt、两套 COS_ConfigMenu.xaml、TutorialEvents.lsx、四语言本地化。
 - 复用现有切换/授予逻辑；原生标签保护和旧档来源不明保护不变。
 - 先运行 `pwsh -NoProfile -File story-src/verify-bulk-menu.ps1` 验证缺失入口失败，再实施并运行完整 verify.ps1。
