@@ -74,7 +74,10 @@ AND
 HasPassive(_Character, "COS_FateRevision", 0)
 THEN
 DB_COS_CorePassive(1, "COS_FateRevision");
+DB_COS_FateSyncing(_Character);
 AddPassive(_Character, "COS_FateRevision");
+PROC_COS_SyncFateToggle(_Character);
+NOT DB_COS_FateSyncing(_Character);
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)

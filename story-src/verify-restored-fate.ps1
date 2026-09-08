@@ -10,7 +10,10 @@ AND
 HasPassive(_Character, "COS_FateRevision", 0)
 THEN
 DB_COS_CorePassive(1, "COS_FateRevision");
+DB_COS_FateSyncing(_Character);
 AddPassive(_Character, "COS_FateRevision");
+PROC_COS_SyncFateToggle(_Character);
+NOT DB_COS_FateSyncing(_Character);
 '@
 if (-not $base.Contains($migration.Replace("`r`n", "`n"))) { throw '删除改签版本的旧档必须显式恢复改签被动，不能仅依赖 INIT 数据' }
 if ($config.Contains('PROC_COS_RetireFate')) { throw '不得在菜单同步时再次删除改签' }

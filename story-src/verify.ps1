@@ -118,10 +118,11 @@ $expectedToggleActionsEarly = @(
     'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
     'DB_COS_ConfigMechanic(_Character, _Key, _Next);',
     'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);',
+    'PROC_COS_SyncFateToggle(_Character);',
     'PROC_COS_SyncOverview(_Character);',
     'PROC_COS_ConfigSyncMechanicMirrors(_Character);'
 )
-Require ($toggleActionsEarly.Count -eq 5 -and
+Require ($toggleActionsEarly.Count -eq 6 -and
     ($toggleActionsEarly -join "`n") -ceq ($expectedToggleActionsEarly -join "`n")) `
     '核心设置切换 THEN 必须且只能删除当前值、写入反值、应用反值并同步一次镜像'
 Require (-not ($toggleBlockEarly -match '(?m)^(?:NOT )?DB_COS_ConfigMechanic\(_Character, _Key, [01]\);?$')) `
@@ -600,6 +601,7 @@ $grantMenu = @(Get-Content (Join-Path $root 'grant-menu.json') -Raw | ConvertFro
 & (Join-Path $root 'verify-observability.ps1')
 & (Join-Path $root 'verify-power-costs.ps1')
 & (Join-Path $root 'verify-restored-fate.ps1')
+& (Join-Path $root 'verify-fate-observation.ps1')
 & (Join-Path $root 'verify-negative-protection.ps1')
 & (Join-Path $root 'verify-optimization-menu.ps1')
 & (Join-Path $root 'verify-carry-toggle.ps1')
@@ -2284,20 +2286,25 @@ $expectedClearedNormalDualityActions = @(
     'NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);',
     'PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);'
 )
+Require (@(Get-MechanicsThenActions $fateDisabledBlocks[0])[0] -ceq 'PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：改签已关闭；未扣费。");') '未触发记录必须匹配真实分支'
 Require (((Get-MechanicsConditions $fateDisabledBlocks[0]) -join "`n") -ceq ($expectedFateDisabledConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateDisabledBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
+    ((@(Get-MechanicsThenActions $fateDisabledBlocks[0]) | Select-Object -Skip 1) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
     'Fate 配置关闭时必须不依赖 FATE_ENABLED、清除旧记录并执行一次普通两仪'
+Require (@(Get-MechanicsThenActions $fateOffBlocks[0])[0] -ceq 'PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：改签被动未开启；未扣费。");') '未触发记录必须匹配真实分支'
 Require (((Get-MechanicsConditions $fateOffBlocks[0]) -join "`n") -ceq ($expectedFateOffConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateOffBlocks[0]) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
+    ((@(Get-MechanicsThenActions $fateOffBlocks[0]) | Select-Object -Skip 1) -join "`n") -ceq ((@('PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);') + $expectedNormalDualityActions) -join "`n")) `
     'Fate 配置开启但命运改签状态关闭时必须清除旧记录并执行一次普通两仪'
+Require (@(Get-MechanicsThenActions $fateUnarmedBlocks[0])[0] -ceq 'PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：未记录本次攻击；未扣费。");') '未触发记录必须匹配真实分支'
 Require (((Get-MechanicsConditions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedFateUnarmedConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fateUnarmedBlocks[0]) -join "`n") -ceq ($expectedNormalDualityActions -join "`n")) `
+    ((@(Get-MechanicsThenActions $fateUnarmedBlocks[0]) | Select-Object -Skip 1) -join "`n") -ceq ($expectedNormalDualityActions -join "`n")) `
     '命运改签未记录本次攻击时必须执行一次普通两仪且不得消费资源'
+Require (@(Get-MechanicsThenActions $fatePowerDisabledBlocks[0])[0] -ceq 'PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：混沌之力机制已关闭；未扣费。");') '未触发记录必须匹配真实分支'
 Require (((Get-MechanicsConditions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedFatePowerDisabledConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fatePowerDisabledBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
+    ((@(Get-MechanicsThenActions $fatePowerDisabledBlocks[0]) | Select-Object -Skip 1) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
     '混沌之力机制关闭时必须清除本次记录并执行一次普通两仪'
+Require (@(Get-MechanicsThenActions $fatePowerZeroBlocks[0])[0] -ceq 'PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：混沌之力不足；未扣费。");') '未触发记录必须匹配真实分支'
 Require (((Get-MechanicsConditions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedFatePowerZeroConditions -join "`n") -and `
-    ((Get-MechanicsThenActions $fatePowerZeroBlocks[0]) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
+    ((@(Get-MechanicsThenActions $fatePowerZeroBlocks[0]) | Select-Object -Skip 1) -join "`n") -ceq ($expectedClearedNormalDualityActions -join "`n")) `
     '混沌之力为0时必须清除本次记录并执行一次普通两仪'
 $fateDualityActions = @(Get-MechanicsThenActions $fateDualityBlock[0])
 $expectedFateDualityActions = @(
@@ -2305,6 +2312,7 @@ $expectedFateDualityActions = @(
     'NOT DB_COS_Power((CHARACTER)_AttackOwner, _OldPower);',
     'DB_COS_Power((CHARACTER)_AttackOwner, _NewPower);',
     'PROC_COS_SyncPowerDisplay((CHARACTER)_AttackOwner, _NewPower);',
+    'PROC_COS_BeginFateLog((CHARACTER)_AttackOwner, _StoryActionID, _RollCount, _Cost);',
     'PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);'
 )
 Require (((Get-MechanicsConditions $fateDualityBlock[0]) -join "`n") -ceq ($expectedFateDualityConditions -join "`n") -and `
@@ -2670,7 +2678,7 @@ foreach ($configIfBlock in $configIfBlocks) {
         'IF 的 THEN 区不得直接增加或删除 DB_COS_ConfigMechanic，必须调用受白名单约束的 PROC'
 }
 $configMechanicWriteProcedures = @(
-    'PROC_COS_ConfigEnsureMechanics', 'PROC_COS_ConfigToggleMechanic', 'PROC_COS_ConfigResetCore'
+    'PROC_COS_ConfigEnsureMechanics', 'PROC_COS_ConfigToggleMechanic', 'PROC_COS_ConfigResetCore', 'PROC_COS_AcceptFateToggle'
 )
 foreach ($configProcedureBlock in $configProcedureBlocks) {
     $procedureName = [regex]::Match($configProcedureBlock, '(?m)^PROC\n(?<Name>[A-Za-z0-9_]+)\(').Groups['Name'].Value
@@ -2730,7 +2738,7 @@ $uiOpenedActions = @((Get-StoryThen $uiOpenedBlocks[0]).Replace("`r`n", "`n") -s
     ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
 Require ($uiOpenedBlocks[0].Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and
     $uiOpenedBlocks[0].Contains('IsControlled(_Character, 1)') -and
-    $uiOpenedActions.Count -eq 1 -and $uiOpenedActions[0] -eq 'PROC_COS_ConfigSyncCharacter(_Character);') `
+    $uiOpenedActions.Count -eq 2 -and $uiOpenedActions[0] -eq 'PROC_COS_ConfigSyncCharacter(_Character);' -and $uiOpenedActions[1] -eq 'PROC_COS_ShowLastFate(_Character);') `
     'UI_OPENED 只允许受控混沌角色通过 ConfigSyncCharacter 初始化和同步，不得直接写配置值'
 $allStoryBlocksForConfigSync = @(
     @(Get-AllStoryBlocks $configGoal) + $mechanicsAllBlocksForConfig +
@@ -3823,6 +3831,7 @@ $resetCoreActions = @(
     'NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);',
     'DB_COS_ConfigMechanic(_Character, _Key, _Default);',
     'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);',
+    'PROC_COS_SyncFateToggle(_Character);',
     'PROC_COS_SyncOverview(_Character);'
 )
 $resetEventConditions = @(

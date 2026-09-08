@@ -399,6 +399,7 @@ PROC_COS_SyncVoloEye(_Character);
 PROC_COS_ConfigSyncGrants(_Character);
 PROC_COS_EnsureFixedGuidance(_Character);
 PROC_COS_ConfigEnsureMechanics(_Character);
+PROC_COS_SyncFateToggle(_Character);
 PROC_COS_ConfigEnsureLifeSkill(_Character);
 PROC_COS_ConfigEnsureRacialPassives(_Character);
 PROC_COS_ConfigEnableEvents(_Character);
@@ -531,6 +532,7 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Next);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Next);
+PROC_COS_SyncFateToggle(_Character);
 PROC_COS_SyncOverview(_Character);
 PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
@@ -544,6 +546,7 @@ THEN
 NOT DB_COS_ConfigMechanic(_Character, _Key, _Enabled);
 DB_COS_ConfigMechanic(_Character, _Key, _Default);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);
+PROC_COS_SyncFateToggle(_Character);
 PROC_COS_SyncOverview(_Character);
 
 IF
@@ -611,6 +614,7 @@ AND
 IsControlled(_Character, 1)
 THEN
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_ShowLastFate(_Character);
 
 IF
 TutorialEvent(_Character, _Event)
@@ -1757,6 +1761,82 @@ AND
 IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigSetCost(_Character, _Key, _Default);
+
+// Fate: saved setting is authoritative during lifecycle projection.
+
+PROC
+PROC_COS_SyncFateToggle((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "Fate", 0)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)
+THEN
+DB_COS_FateSyncing(_Character);
+TogglePassive(_Character, "COS_FateRevision");
+NOT DB_COS_FateSyncing(_Character);
+
+IF
+StatusRemoved(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 0)
+AND
+NOT DB_COS_FateSyncing((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)
+THEN
+PROC_COS_AcceptFateToggle((CHARACTER)_Character, 0);
+
+PROC
+PROC_COS_SyncFateToggle((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic(_Character, "Fate", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 0)
+THEN
+DB_COS_FateSyncing(_Character);
+TogglePassive(_Character, "COS_FateRevision");
+NOT DB_COS_FateSyncing(_Character);
+
+IF
+StatusApplied(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)
+AND
+NOT DB_COS_FateSyncing((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 0)
+THEN
+PROC_COS_AcceptFateToggle((CHARACTER)_Character, 1);
+
+PROC
+PROC_COS_AcceptFateToggle((CHARACTER)_Character, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigMechanic(_Character, "Fate", _Old)
+AND
+_Old != _Enabled
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", _Enabled)
+AND
+NOT DB_COS_FateSyncing(_Character)
+THEN
+NOT DB_COS_ConfigMechanic(_Character, "Fate", _Old);
+DB_COS_ConfigMechanic(_Character, "Fate", _Enabled);
+PROC_COS_ClearFateAction(_Character);
+PROC_COS_ConfigSyncMechanicMirrors(_Character);
 
 EXITSECTION
 ENDEXITSECTION

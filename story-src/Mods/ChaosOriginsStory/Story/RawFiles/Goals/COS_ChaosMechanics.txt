@@ -1226,6 +1226,7 @@ PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Da
 AND
 _RemainingRolls == 0
 THEN
+PROC_COS_RecordFateSuccess(_Owner, _BestRoll);
 PROC_COS_ResolveDuality(_Owner, _Target, _Damage, _BestRoll);
 
 PROC
@@ -1572,6 +1573,7 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：改签已关闭；未扣费。");
 PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
 
@@ -1596,6 +1598,7 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：改签被动未开启；未扣费。");
 PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
 
@@ -1622,6 +1625,7 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：未记录本次攻击；未扣费。");
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
 
 IF
@@ -1649,6 +1653,7 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：混沌之力机制已关闭；未扣费。");
 NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
 
@@ -1683,6 +1688,7 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：混沌之力不足；未扣费。");
 NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
 
@@ -1737,6 +1743,7 @@ NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
 NOT DB_COS_Power((CHARACTER)_AttackOwner, _OldPower);
 DB_COS_Power((CHARACTER)_AttackOwner, _NewPower);
 PROC_COS_SyncPowerDisplay((CHARACTER)_AttackOwner, _NewPower);
+PROC_COS_BeginFateLog((CHARACTER)_AttackOwner, _StoryActionID, _RollCount, _Cost);
 PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);
 
 IF
@@ -1847,6 +1854,102 @@ AND
 DB_COS_RecentWound(_Outcome, _Status)
 THEN
 ApplyStatus(_Character, _Status, -1.0, 100, _Character);
+
+PROC
+PROC_COS_ClearFateLast((CHARACTER)_Character)
+AND
+DB_COS_FateLast(_Character, _Action, _Message)
+THEN
+NOT DB_COS_FateLast(_Character, _Action, _Message);
+
+PROC
+PROC_COS_WriteFateLog((CHARACTER)_Character, (INTEGER)_Action, (STRING)_Message)
+AND
+NOT DB_COS_FateLogged(_Character, _Action)
+THEN
+DB_COS_FateLogged(_Character, _Action);
+PROC_COS_ClearFateLast(_Character);
+DB_COS_FateLast(_Character, _Action, _Message);
+DebugText(_Character, _Message);
+DebugLog(_Message);
+
+PROC
+PROC_COS_ShowLastFate((CHARACTER)_Character)
+AND
+DB_COS_FateLast(_Character, _, _Message)
+THEN
+DebugText(_Character, _Message);
+
+PROC
+PROC_COS_ClearFateLogPending((CHARACTER)_Character)
+AND
+DB_COS_FateLogPending(_Character, _Action, _Rolls, _Cost)
+THEN
+NOT DB_COS_FateLogPending(_Character, _Action, _Rolls, _Cost);
+
+PROC
+PROC_COS_BeginFateLog((CHARACTER)_Character, (INTEGER)_Action, (INTEGER)_Rolls, (INTEGER)_Cost)
+THEN
+PROC_COS_ClearFateLogPending(_Character);
+DB_COS_FateLogPending(_Character, _Action, _Rolls, _Cost);
+
+PROC
+PROC_COS_RecordFateSuccess((CHARACTER)_Owner, (INTEGER)_BestRoll)
+AND
+DB_COS_FateLogPending(_Owner, _Action, _Rolls, _Cost)
+AND
+DB_COS_DualityBand(_Min, _Max, _Percent, _)
+AND
+_BestRoll >= _Min
+AND
+_BestRoll < _Max
+AND
+ConcatenateInteger("命运改签：判定 ", _Rolls, _A)
+AND
+Concatenate(_A, " 次；采用两仪基础倍率 ", _B)
+AND
+ConcatenateInteger(_B, _Percent, _C)
+AND
+Concatenate(_C, "%；实际消耗 ", _D)
+AND
+ConcatenateInteger(_D, _Cost, _E)
+AND
+Concatenate(_E, " 点混沌之力。", _Message)
+THEN
+NOT DB_COS_FateLogPending(_Owner, _Action, _Rolls, _Cost);
+PROC_COS_WriteFateLog(_Owner, _Action, _Message);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+HasPassive(_AttackOwner, "COS_FateRevision", 1)
+AND
+IsCharacter(_Target, 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 0)
+AND
+_Damage > 0
+THEN
+PROC_COS_WriteFateLog((CHARACTER)_AttackOwner, _StoryActionID, "命运改签未触发：两仪已关闭；未扣费。");
+
+PROC
+PROC_COS_ClearFateLogged((CHARACTER)_Character)
+AND
+DB_COS_FateLogged(_Character, _Action)
+THEN
+NOT DB_COS_FateLogged(_Character, _Action);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_COS_Character(_Character)
+THEN
+PROC_COS_ClearFateLogged(_Character);
+PROC_COS_ClearFateLogPending(_Character);
 
 EXITSECTION
 ENDEXITSECTION
