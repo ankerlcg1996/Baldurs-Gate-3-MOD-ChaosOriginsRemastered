@@ -394,7 +394,6 @@ PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
 PROC_COS_SyncGlobalPlayerBenefits(_Character);
-PROC_COS_RetireFate(_Character);
 PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_SyncVoloEye(_Character);
 PROC_COS_ConfigSyncGrants(_Character);
@@ -1475,30 +1474,6 @@ PROC_COS_BulkGrant((CHARACTER)_Character, "Race", 2)
 THEN
 PROC_COS_ConfigSetAllRacialPassives(_Character, 0);
 
-// Legacy identifiers remain loadable, but Fate Revision has no gameplay entry point.
-PROC
-PROC_COS_RetireFate((CHARACTER)_Character)
-THEN
-NOT DB_COS_CorePassive(1, "COS_FateRevision");
-NOT DB_COS_ConfigCostDefault("Fate", 1, "COS_ConfigFateCost");
-NOT DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_FATE_COST_MINUS_7d000000-0000-4000-8000-000000000001, "Fate", -1);
-NOT DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_FATE_COST_PLUS_7d000000-0000-4000-8000-000000000002, "Fate", 1);
-NOT DB_COS_ConfigCostResetEvent((TUTORIALEVENT)COS_CFG_FATE_COST_RESET_7d000000-0000-4000-8000-000000000003, "Fate");
-RemovePassive(_Character, "COS_FateRevision");
-RemoveSpell(_Character, "Shout_COS_FateRevision", 0);
-RemoveStatus(_Character, "COS_CHAOS_FATE_ENABLED", _Character);
-RemoveStatus(_Character, "COS_CHAOS_FATE_READY", _Character);
-RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
-PROC_COS_ClearFateAction(_Character);
-PROC_COS_ClearRetiredFateCost(_Character);
-
-PROC
-PROC_COS_ClearRetiredFateCost((CHARACTER)_Character)
-AND
-DB_COS_ConfigCost(_Character, "Fate", _Old)
-THEN
-NOT DB_COS_ConfigCost(_Character, "Fate", _Old);
-
 // Tag spell delivery: only fixed racial spells; independent removable sources.
 PROC
 PROC_COS_SeedGrantMap()
@@ -1668,7 +1643,11 @@ RemovePassive(_Character, "COS_CFG_TAG_SPELLS");
 PROC
 PROC_COS_ConfigSeedCosts()
 THEN
+DB_COS_ConfigCostDefault("Fate", 1, "COS_ConfigFateCost");
 DB_COS_ConfigCostDefault("Genesis", 10, "COS_ConfigGenesisCost");
+DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_FATE_COST_MINUS_7d000000-0000-4000-8000-000000000001, "Fate", -1);
+DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_FATE_COST_PLUS_7d000000-0000-4000-8000-000000000002, "Fate", 1);
+DB_COS_ConfigCostResetEvent((TUTORIALEVENT)COS_CFG_FATE_COST_RESET_7d000000-0000-4000-8000-000000000003, "Fate");
 DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_GENESIS_COST_MINUS_7d000000-0000-4000-8000-000000000004, "Genesis", -1);
 DB_COS_ConfigCostStepEvent((TUTORIALEVENT)COS_CFG_GENESIS_COST_PLUS_7d000000-0000-4000-8000-000000000005, "Genesis", 1);
 DB_COS_ConfigCostResetEvent((TUTORIALEVENT)COS_CFG_GENESIS_COST_RESET_7d000000-0000-4000-8000-000000000006, "Genesis");

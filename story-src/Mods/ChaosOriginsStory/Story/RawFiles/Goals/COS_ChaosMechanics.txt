@@ -1,8 +1,6 @@
 Version 1
 SubGoalCombiner SGC_AND
 INITSECTION
-// Type declaration for clearing saved legacy action rows; does not create an action.
-NOT DB_COS_FateAction((CHARACTER)NULL_00000000-0000-0000-0000-000000000000, 0);
 DB_COS_WoundStatus(0, "COS_CHAOS_WOUND_ATTACK_MINUS_1", 1);
 DB_COS_WoundStatus(1, "COS_CHAOS_WOUND_ATTACK_MINUS_2", 1);
 DB_COS_WoundStatus(2, "COS_CHAOS_WOUND_ATTACK_MINUS_3", 1);
@@ -154,6 +152,13 @@ DB_COS_DualityBand(98, 100, 150, "COS_CHAOS_DUALITY_LOG_BOOST_100");
 DB_COS_DualityTiming(1, 90, 98, 5, 15, 80);
 DB_COS_DualityTiming(2, 75, 90, 10, 25, 65);
 DB_COS_DualityTiming(3, 60, 85, 15, 35, 50);
+DB_COS_FateRolls(1, 5, 2);
+DB_COS_FateRolls(5, 9, 3);
+DB_COS_FateRolls(9, 13, 4);
+DB_COS_FateRolls(13, 17, 5);
+DB_COS_FateRolls(17, 21, 6);
+DB_COS_FateRolls(21, 25, 7);
+DB_COS_FateRolls(25, 100, 8);
 DB_COS_DualityDelaySerial(0);
 DB_COS_LifeSkillLevel(5, 9, "COS_CHAOS_LIFE_SKILL_BONUS_1");
 DB_COS_LifeSkillLevel(9, 13, "COS_CHAOS_LIFE_SKILL_BONUS_2");
@@ -1204,6 +1209,26 @@ THEN
 PROC_COS_ResolveDualityType(_Owner, _Target, _Damage, _Half, _Percent, _TimingRoll, _TypeChance, _DamageTypeRoll, _ImmediateEnd, _SplitEnd, _SplitBonus, _DelayBonus, _ForceChance, _LogStatus);
 
 PROC
+PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_RemainingRolls, (INTEGER)_BestRoll)
+AND
+_RemainingRolls > 0
+AND
+Random(100, _NextRoll)
+AND
+IntegerMax(_BestRoll, _NextRoll, _NextBestRoll)
+AND
+IntegerSubtract(_RemainingRolls, 1, _NextRemaining)
+THEN
+PROC_COS_ContinueFateDuality(_Owner, _Target, _Damage, _NextRemaining, _NextBestRoll);
+
+PROC
+PROC_COS_ContinueFateDuality((CHARACTER)_Owner, (CHARACTER)_Target, (INTEGER)_Damage, (INTEGER)_RemainingRolls, (INTEGER)_BestRoll)
+AND
+_RemainingRolls == 0
+THEN
+PROC_COS_ResolveDuality(_Owner, _Target, _Damage, _BestRoll);
+
+PROC
 PROC_COS_SyncDualityDelayedMarker((CHARACTER)_Target)
 AND
 NOT DB_COS_DualityDelayed(_Target, _, _, _, _)
@@ -1373,6 +1398,20 @@ RemoveHarmfulStatuses(_Character);
 PROC_COS_SyncPowerDisplay((CHARACTER)_Character, _NewPower);
 
 IF
+UsingSpell(_Character, _, _, _, _StoryActionID)
+AND
+DB_COS_Character((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)
+THEN
+PROC_COS_ClearFateAction((CHARACTER)_Character);
+DB_COS_FateAction((CHARACTER)_Character, _StoryActionID);
+
+IF
 StatusApplied(_Character, "COS_CHAOS_ALLIN_TOGGLE", _, _)
 AND
 DB_COS_Character((CHARACTER)_Character)
@@ -1523,6 +1562,8 @@ DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 0)
+AND
 HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
 AND
 IsCharacter(_Target, 1)
@@ -1531,7 +1572,172 @@ _Damage > 0
 AND
 Random(100, _DualityRoll)
 THEN
+PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);
 PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 0)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+PROC_COS_ClearFateAction((CHARACTER)_AttackOwner);
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)
+AND
+NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)
+AND
+DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 0)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)
+AND
+DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)
+AND
+DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)
+AND
+DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)
+AND
+_OldPower < _Cost
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+Random(100, _DualityRoll)
+THEN
+NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
+PROC_COS_ResolveDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _DualityRoll);
+
+IF
+AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)
+AND
+_AttackOwner == _Attacker
+AND
+DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
+AND
+HasPassive(_AttackOwner, "COS_ChaosDuality", 1)
+AND
+HasPassive(_AttackOwner, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_AttackOwner, "COS_CHAOS_FATE_ENABLED", 1)
+AND
+DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID)
+AND
+DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Power", 1)
+AND
+DB_COS_Power((CHARACTER)_AttackOwner, _OldPower)
+AND
+DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)
+AND
+_OldPower >= _Cost
+AND
+IntegerSubtract(_OldPower, _Cost, _NewPower)
+AND
+IsCharacter(_Target, 1)
+AND
+_Damage > 0
+AND
+GetLevel(_AttackOwner, _Level)
+AND
+IntegerMin(_Level, 30, _CappedLevel)
+AND
+DB_COS_FateRolls(_MinimumLevel, _MaximumLevel, _RollCount)
+AND
+_CappedLevel >= _MinimumLevel
+AND
+_CappedLevel < _MaximumLevel
+AND
+Random(100, _FirstDualityRoll)
+AND
+IntegerSubtract(_RollCount, 1, _RemainingRolls)
+THEN
+NOT DB_COS_FateAction((CHARACTER)_AttackOwner, _StoryActionID);
+NOT DB_COS_Power((CHARACTER)_AttackOwner, _OldPower);
+DB_COS_Power((CHARACTER)_AttackOwner, _NewPower);
+PROC_COS_SyncPowerDisplay((CHARACTER)_AttackOwner, _NewPower);
+PROC_COS_ContinueFateDuality((CHARACTER)_AttackOwner, (CHARACTER)_Target, _Damage, _RemainingRolls, _FirstDualityRoll);
 
 IF
 AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _)

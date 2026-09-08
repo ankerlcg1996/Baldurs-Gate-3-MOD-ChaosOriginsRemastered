@@ -50,7 +50,7 @@ DB_COS_CorePassive(1, "COS_ChaosLost");
 DB_COS_CorePassive(1, "COS_ChaosWound");
 DB_COS_CorePassive(1, "COS_ChaosDuality");
 DB_COS_CorePassive(1, "COS_ChaosAllIn");
-NOT DB_COS_CorePassive(1, "COS_FateRevision");
+DB_COS_CorePassive(1, "COS_FateRevision");
 DB_COS_CorePassive(5, "COS_ChaosAllInUseL5");
 DB_COS_CorePassive(9, "COS_ChaosAllInUseL9");
 DB_COS_CorePassive(12, "COS_ChaosStrike");
@@ -64,6 +64,17 @@ PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
 THEN
 PROC_COS_ConfigSyncGrants(_Character);
+
+// Restore the passive removed by 1.0.1.91-93, including existing saves.
+PROC
+PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 0)
+THEN
+DB_COS_CorePassive(1, "COS_FateRevision");
+AddPassive(_Character, "COS_FateRevision");
 
 PROC
 PROC_COS_SyncBaseAfterCreation((CHARACTER)_Character)
@@ -138,8 +149,6 @@ AND
 GetLevel(_Character, _Level)
 AND
 DB_COS_CorePassive(_RequiredLevel, _CorePassive)
-AND
-_CorePassive != "COS_FateRevision"
 AND
 _Level >= _RequiredLevel
 AND

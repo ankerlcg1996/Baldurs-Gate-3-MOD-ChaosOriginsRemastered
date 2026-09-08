@@ -3,9 +3,12 @@ $g = Join-Path $PSScriptRoot 'Mods/ChaosOriginsStory/Story/RawFiles/Goals'
 $c = (Get-Content "$g/COS_Config.txt" -Raw).Replace("`r`n","`n")
 $m = (Get-Content "$g/COS_ChaosMechanics.txt" -Raw).Replace("`r`n","`n")
 function Assert-Cost($ok,$message) { if(-not $ok){throw $message} }
+Assert-Cost ($c.Contains('DB_COS_ConfigCostDefault("Fate", 1, "COS_ConfigFateCost");')) '缺少命运改签独立消耗默认值'
 Assert-Cost ($c.Contains('DB_COS_ConfigCostDefault("Genesis", 10, "COS_ConfigGenesisCost");')) '缺少开天辟地独立消耗默认值'
 Assert-Cost ($c.Contains('NOT DB_COS_ConfigCost(_Character, _Key, _)')) '不得覆盖已有设置'
 Assert-Cost ($c.Contains('IntegerMax(_RawValue, 0, _FloorValue)') -and $c.Contains('IntegerMin(_FloorValue, 20, _Value)')) '消耗范围必须限制为 0–20'
+Assert-Cost ($m.Contains('DB_COS_ConfigCost(_AttackOwner, "Fate", _Cost)')) '改签必须读取独立设置'
+Assert-Cost ($m.Contains('_OldPower < _Cost') -and $m.Contains('_OldPower >= _Cost')) '余额不足和成功分支必须互斥且允许免费'
 Assert-Cost ($m.Contains('IntegerSubtract(_OldPower, _Cost, _NewPower)')) '必须扣除当前成本'
 Assert-Cost ($m.Contains('DB_COS_ConfigCost(_Character, "Genesis", _Cost)') -and $m.Contains('_Power >= _Cost')) '开天辟地门槛必须同步成本'
 Assert-Cost (-not $m.Contains('IntegerSubtract(_OldPower, 10, _NewPower)') -and -not $m.Contains('IntegerSubtract(_OldPower, 1, _NewPower)')) '不允许残留固定扣费'
@@ -13,8 +16,10 @@ Assert-Cost ($m.Contains('PROC_COS_ConfigEnsureCosts(_Character);')) '旧档同�
 foreach($page in @('COS_ConfigMenu.xaml','COS_ConfigMenu_c.xaml')){
     [xml]$x = Get-Content (Join-Path $PSScriptRoot "Mods/ChaosOriginsStory/GUI/Pages/$page") -Raw
     $raw = Get-Content (Join-Path $PSScriptRoot "Mods/ChaosOriginsStory/GUI/Pages/$page") -Raw
-    Assert-Cost ($raw.IndexOf('x:Name="COSConfigGenesisCostRow"') -gt $raw.IndexOf('x:Name="COSConfigRowGenesis"') -and $raw.IndexOf('x:Name="COSConfigGenesisCostRow"') -lt $raw.IndexOf('x:Name="COSConfigRowStrike"')) '开天辟地消耗必须紧随核心开关，不得放入熟练项区'
-    foreach($key in @('GenesisCost')){
+    foreach ($pair in @(@('Fate','Genesis'), @('Genesis','Strike'))) {
+        Assert-Cost ($raw.IndexOf('x:Name="COSConfig' + $pair[0] + 'CostRow"') -gt $raw.IndexOf('x:Name="COSConfigRow' + $pair[0] + '"') -and $raw.IndexOf('x:Name="COSConfig' + $pair[0] + 'CostRow"') -lt $raw.IndexOf('x:Name="COSConfigRow' + $pair[1] + '"')) '消耗滑条必须紧随对应核心开关'
+    }
+    foreach($key in @('FateCost','GenesisCost')){
         $bars=@($x.SelectNodes('//*[local-name()="ItemsControl"]') | Where-Object { $_.GetAttribute('x:Name') -eq "COSConfig$($key)Value" })
         Assert-Cost ($bars.Count -eq 1) "缺少独立成本滑条: $key/$page"
         $pbar=$bars[0].SelectSingleNode('.//*[local-name()="LSProgressBar"]')
