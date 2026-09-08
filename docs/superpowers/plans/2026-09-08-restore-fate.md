@@ -11,5 +11,5 @@
 - [x] Restore Fate checkbox and cost controls to both XAML pages, directly before Genesis. Preserve the Genesis cost position.
 - [x] Restore Fate descriptions affected by retirement; keep overview probability calculations intact.
 - [x] Run full source checks and story-src/build.ps1; expect version 1.0.1.94 and validated package.
-- [ ] Record project summary and acceptance limits. Back up source and PAK to the verified GitHub branch.
-- [ ] Stop only BG3 processes; replace only ChaosOriginsStory.pak and its module Version64 in modsettings.lsx. Verify matching hashes and unchanged other configuration.
+- [x] Record project summary and acceptance limits. Back up source and PAK to the verified GitHub branch.
+- [x] Stop only BG3 processes; replace only ChaosOriginsStory.pak and its module Version64 in modsettings.lsx. Verify matching hashes and unchanged other configuration.
