@@ -1,10 +1,10 @@
-# 战斗外探索增益 1.0.0.1
+# 战斗外探索增益 1.0.0.2
 
 独立纯 Story MOD，不需要混沌起源、NMCM 或 Script Extender。
 
 ## 使用
 
-通过模组管理器导入并启用 `战斗外探索增益-1.0.0.1.pak`，保存并导出加载顺序，进入存档。没有自动修改游戏加载顺序。
+通过模组管理器导入并启用 `战斗外探索增益-1.0.0.2.pak`，保存并导出加载顺序，进入存档。同一模块只启用一个版本。
 
 每名正式队员的被动栏获得默认开启的“探索便利”。未参战时显示“探索便利：生效中”状态，提供：
 
@@ -21,7 +21,7 @@
 
 ## 构建与检查
 
-运行环境：PowerShell 7、Python 3（规则模型测试），以及本机已有 StoryCompiler、原版依赖 VFS、LSLib。build.ps1 中列出工具路径，原版 Story 头文件从本仓库 story-src 只读取得。它们仅为构建输入，不是游戏运行前置。
+运行环境：PowerShell 7、Python 3（规则模型测试），以及本机已有 StoryCompiler、原版依赖 VFS、LSLib。build.ps1 中列出工具路径，原版 Story 头文件从本仓库 story-src 只读取得并随包保留。编译工具不是游戏运行前置，也不要求安装混沌起源。
 
 ```powershell
 pwsh -NoProfile -File exploration-benefits/verify.ps1
@@ -29,7 +29,13 @@ python exploration-benefits/test_story_model.py
 pwsh -NoProfile -File exploration-benefits/build.ps1
 ```
 
-构建输出在 `dist`。包内仅有模块元数据、已编译 Story、Stats、中英文本共 5 个文件。源检查覆盖战斗资格、保存值初始化、清理范围、本地化和独立身份，变异检查确保关键条件不能被删除。规则模型直接解析本模块 Story，并分别模拟即时与排队状态回调。构建回读原生 Story，检查常量有效性及最终包逐文件哈希。
+构建输出在 `dist`。包内有模块元数据、已编译 Story、原生 Story 源规则和头文件、Stats、中英文本共 7 个不重复文件。verify-package.ps1 直接检查 PAK 内条目，禁止遗漏或重复；原生头文件必须与原始输入一致，不能使用仅供外部编译器使用的别名展开版本。源检查覆盖战斗资格、保存值初始化、清理范围、本地化和独立身份，变异检查确保关键条件不能被删除。规则模型直接解析本模块 Story，并分别模拟即时与排队状态回调。构建回读原生 Story，检查常量有效性及最终包逐文件哈希。
+
+## 1.0.0.2 修订
+
+用户确认 1.0.0.1 在安装后新建的存档中也没有开关。只读检查发现存档模块列表有本 MOD，但 StorySave 中没有 EBS_Exploration。与已在游戏正常运行的混沌起源、复制术包对比，首版遗漏 Story/RawFiles/Goals/EBS_Exploration.txt 与 Story/RawFiles/story_header.div；另发现打包器重复收集文件，实际 PAK 是 10 条记录，而不是当时仅根据解包目录报告的 5 条。旧检查不能发现重复记录。
+
+本版仅修正以上两项打包缺陷，不改变 Story 发放条件、开关或六类增益。新增检查先对首版产生预期失败，再对新版通过。原版头文件和源规则的恢复依据是本机已验证的原生 MOD 打包方式；开关是否实际出现仍需要新版游戏验收。
 
 ## 必须进行的游戏测试
 
@@ -49,4 +55,4 @@ pwsh -NoProfile -File exploration-benefits/build.ps1
 
 模块 UUID：`7f2cfe6b-cab7-4da7-a46d-31b535c53c68`。
 
-本次仅制作和导出，未自动安装、未启动或结束游戏。
+安装状态以当次安装核对结果为准；编译通过不等于游戏验收通过。

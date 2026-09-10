@@ -67,6 +67,8 @@ Add-Type -Path $selectedLibrary
 $expected = @(
     "Mods/$module/meta.lsx",
     "Mods/$module/Story/story.div.osi",
+    "Mods/$module/Story/RawFiles/Goals/EBS_Exploration.txt",
+    "Mods/$module/Story/RawFiles/story_header.div",
     "Public/$module/Stats/Generated/Data/Exploration.txt",
     "Localization/Chinese/$module.loca",
     "Localization/English/$module.loca"
@@ -79,12 +81,15 @@ foreach ($relative in $expected) {
         [LSLib.LS.LocaUtils]::Save($localization, $destination)
     } elseif ($relative.EndsWith('story.div.osi')) {
         Copy-Item -LiteralPath $binary -Destination $destination
+    } elseif ($relative.EndsWith('story_header.div')) {
+        # Ship the native header, not the alias-flattened compiler-only copy.
+        Copy-Item -LiteralPath $sourceHeader -Destination $destination
     } else { Copy-Item -LiteralPath (Join-Path $src $relative) -Destination $destination }
 }
 [xml]$meta = Get-Content -LiteralPath "$stage/Mods/$module/meta.lsx" -Raw
 $versionNodes = @($meta.SelectNodes('//node[@id="ModuleInfo"]//attribute[@id="Version64"]'))
 Require ($versionNodes.Count -ge 1) 'Meta lacks module version'
-foreach ($node in $versionNodes) { Require ($node.value -eq '36028797018963969') 'Expected fixed initial Version64 36028797018963969' }
+foreach ($node in $versionNodes) { Require ($node.value -eq '36028797018963970') 'Expected Version64 36028797018963970 for release 1.0.0.2' }
 $actual = @(Get-ChildItem -LiteralPath $stage -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($stage, $_.FullName).Replace('\', '/') } | Sort-Object)
 Require ($actual.Count -eq $expected.Count -and -not (Compare-Object $expected $actual)) 'Package staging file list mismatch'
 $build = [LSLib.LS.PackageBuildData]::new()
@@ -94,15 +99,11 @@ $build.CompressionLevel = [LSLib.LS.LSCompressionLevel]::Fast
 $build.Flags = [LSLib.LS.PackageFlags]0
 $build.Hash = $true
 $build.ExcludeHidden = $true
-foreach ($relative in $expected) {
-    $inputFile = [LSLib.LS.PackageBuildInputFile]::new()
-    $inputFile.Path = $relative
-    $inputFile.FilesystemPath = Join-Path $stage $relative
-    [void]$build.Files.Add($inputFile)
-}
+# CreatePackage enumerates this directory itself; do not also prefill Files.
 $candidate = Join-Path $work 'ExplorationBenefitsStory.pak'
 $packager = [LSLib.LS.Packager]::new()
 $packager.CreatePackage($candidate, $stage, $build).GetAwaiter().GetResult()
+& "$PSScriptRoot/verify-package.ps1" -PakPath $candidate -LslibPath $selectedLibrary
 $packager.UncompressPackage($candidate, $reverse)
 $unpacked = @(Get-ChildItem -LiteralPath $reverse -Recurse -File | ForEach-Object { [IO.Path]::GetRelativePath($reverse, $_.FullName).Replace('\', '/') } | Sort-Object)
 Require ($unpacked.Count -eq $expected.Count -and -not (Compare-Object $expected $unpacked)) 'Unpacked file list mismatch'
@@ -112,15 +113,15 @@ $fileHashes = foreach ($relative in $expected) {
     Require ($original -eq $decoded) "Unpacked hash mismatch: $relative"
     [ordered]@{ path = $relative; sha256 = $original.ToLowerInvariant() }
 }
-$pak = Join-Path $dist '战斗外探索增益-1.0.0.1.pak'
+$pak = Join-Path $dist '战斗外探索增益-1.0.0.2.pak'
 Copy-Item -LiteralPath $candidate -Destination $pak -Force
 $pakHash = (Get-FileHash -LiteralPath $pak -Algorithm SHA256).Hash
 Require ($pakHash -eq (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash) 'Final package copy hash mismatch'
 $manifest = [ordered]@{
     schema = 1; moduleName = $module; moduleUuid = '7f2cfe6b-cab7-4da7-a46d-31b535c53c68'
-    displayVersion = '1.0.0.1'; version64 = '36028797018963969'; pakSha256 = $pakHash.ToLowerInvariant()
+    displayVersion = '1.0.0.2'; version64 = '36028797018963970'; pakSha256 = $pakHash.ToLowerInvariant()
     compiledGoals = @($storyReport.goals); compiledNodes = $storyReport.nodes; validConstants = $storyReport.validConstants
     files = @($fileHashes); buildDirectory = $work; gameplayVerified = $false
 }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath "$dist/build-manifest.json" -Encoding utf8
-Write-Host "PASS: native Story compiled and read back; five package files verified byte-for-byte. Gameplay not tested. $pak"
+Write-Host "PASS: native Story compiled and read back; seven unique package files verified byte-for-byte. Gameplay not tested. $pak"

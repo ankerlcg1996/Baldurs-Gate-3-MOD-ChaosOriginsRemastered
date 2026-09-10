@@ -2,9 +2,9 @@
   "schema": 1,
   "moduleName": "ExplorationBenefitsStory",
   "moduleUuid": "7f2cfe6b-cab7-4da7-a46d-31b535c53c68",
-  "displayVersion": "1.0.0.1",
-  "version64": "36028797018963969",
-  "pakSha256": "a90655f01bb9a82785dac47711a673a3e03a7de6046922e9ad71030470eb2459",
+  "displayVersion": "1.0.0.2",
+  "version64": "36028797018963970",
+  "pakSha256": "a19a634002f4494670398a8c4cdfc45fe26c09f7caa8915337db497e5c28699a",
   "compiledGoals": [
     "EBS_Exploration"
   ],
@@ -21,7 +21,15 @@
     },
     {
       "path": "Mods/ExplorationBenefitsStory/meta.lsx",
-      "sha256": "38c58a1b8297f83bc7c17f2ff657bc18e93a458e462856dfd58b3264b9df715a"
+      "sha256": "beb8e0b2a5d48d167ede0c1c9d1dcc03419d30a75de9ed30b24df7e0ac4f4fb3"
+    },
+    {
+      "path": "Mods/ExplorationBenefitsStory/Story/RawFiles/Goals/EBS_Exploration.txt",
+      "sha256": "34bb6f3d767778b3b6fd3926f03079f088b137f88a83f26dbd33c45d2dd874ba"
+    },
+    {
+      "path": "Mods/ExplorationBenefitsStory/Story/RawFiles/story_header.div",
+      "sha256": "2b7f295e621a093d4b55e02a868f3599be1b781710193d970a46d6650dfd7976"
     },
     {
       "path": "Mods/ExplorationBenefitsStory/Story/story.div.osi",
@@ -32,6 +40,6 @@
       "sha256": "9d9426305ef43552aab21770c72a7fa0575fd89686541d8f163c4b6fa3eff936"
     }
   ],
-  "buildDirectory": "C:\\Users\\ankerlcg\\Desktop\\chaos-BG3-mod-story\\exploration-benefits\\work\\build-3bf9786ac9eb4202b81fdefcdc5974d5",
+  "buildDirectory": "C:\\Users\\ankerlcg\\Desktop\\chaos-BG3-mod-story\\exploration-benefits\\work\\build-8f99a8bb901f4c5cb144cb5637440863",
   "gameplayVerified": false
 }
