@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<contentList>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790001" version="1">探索便利</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790002" version="1">开关仅控制本角色，默认开启，随存档保存。开启后，战斗外获得大跳、羽落、动物交谈、12米黑暗视觉、防滑倒与忽略恶劣地形。参战暂停，脱战自动恢复。关闭立即移除本模组增益。不会移除原版法术或装备效果。</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790003" version="1">探索便利：生效中</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790004" version="1">战斗外：跳跃距离变为3倍、免疫坠落伤害、可与动物交谈、至少12米黑暗视觉、免疫地表滑倒、忽略恶劣地形。参战后暂停。不提供所有倒地免疫或地表伤害免疫。</content>
+</contentList>

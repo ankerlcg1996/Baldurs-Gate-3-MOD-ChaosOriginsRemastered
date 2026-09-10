@@ -1,0 +1,219 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+NOT DB_Players((CHARACTER)NULL_00000000-0000-0000-0000-000000000000);
+KBSECTION
+
+PROC
+PROC_EBS_EnsureSetting((CHARACTER)_Character)
+AND
+NOT DB_EBS_Enabled(_Character, _)
+THEN
+DB_EBS_Enabled(_Character, 1);
+
+PROC
+PROC_EBS_EnsurePassive((CHARACTER)_Character)
+AND
+HasPassive(_Character, "EBS_Toggle", 0)
+THEN
+AddPassive(_Character, "EBS_Toggle");
+
+PROC
+PROC_EBS_ProjectToggle((CHARACTER)_Character)
+AND
+DB_EBS_Enabled(_Character, 0)
+AND
+HasActiveStatus(_Character, "EBS_ENABLED", 1)
+THEN
+TogglePassive(_Character, "EBS_Toggle");
+
+PROC
+PROC_EBS_ProjectToggle((CHARACTER)_Character)
+AND
+DB_EBS_Enabled(_Character, 1)
+AND
+HasActiveStatus(_Character, "EBS_ENABLED", 0)
+THEN
+TogglePassive(_Character, "EBS_Toggle");
+
+PROC
+PROC_EBS_Sync((CHARACTER)_Character)
+AND
+IsPlayer(_Character, 1)
+AND
+IsPartyMember(_Character, 0, 1)
+AND
+IsSummon(_Character, 0)
+AND
+GetRegion(_Character, _Region)
+AND
+IsCharacterCreationLevel(_Region, 0)
+THEN
+DB_EBS_Member(_Character);
+PROC_EBS_EnsureSetting(_Character);
+DB_EBS_Syncing(_Character);
+PROC_EBS_EnsurePassive(_Character);
+PROC_EBS_ProjectToggle(_Character);
+NOT DB_EBS_Syncing(_Character);
+PROC_EBS_RefreshBenefits(_Character);
+
+PROC
+PROC_EBS_RefreshBenefits((CHARACTER)_Character)
+AND
+DB_EBS_Enabled(_Character, 1)
+AND
+IsPartyMember(_Character, 0, 1)
+AND
+IsSummon(_Character, 0)
+AND
+IsInCombat(_Character, 0)
+AND
+IsDead(_Character, 0)
+AND
+HasActiveStatus(_Character, "EBS_EXPLORING", 0)
+THEN
+ApplyStatus(_Character, "EBS_EXPLORING", -1.0, 1, _Character);
+
+PROC
+PROC_EBS_RefreshBenefits((CHARACTER)_Character)
+AND
+DB_EBS_Enabled(_Character, 0)
+THEN
+PROC_EBS_ClearBenefits(_Character);
+
+PROC
+PROC_EBS_RefreshBenefits((CHARACTER)_Character)
+AND
+IsInCombat(_Character, 1)
+THEN
+PROC_EBS_ClearBenefits(_Character);
+
+PROC
+PROC_EBS_RefreshBenefits((CHARACTER)_Character)
+AND
+IsDead(_Character, 1)
+THEN
+PROC_EBS_ClearBenefits(_Character);
+
+PROC
+PROC_EBS_ClearBenefits((CHARACTER)_Character)
+AND
+HasActiveStatus(_Character, "EBS_EXPLORING", 1)
+THEN
+RemoveStatus(_Character, "EBS_EXPLORING", _Character);
+
+PROC
+PROC_EBS_AcceptToggle((CHARACTER)_Character, (INTEGER)_Enabled)
+AND
+DB_EBS_Enabled(_Character, _Old)
+AND
+_Old != _Enabled
+THEN
+NOT DB_EBS_Enabled(_Character, _Old);
+DB_EBS_Enabled(_Character, _Enabled);
+PROC_EBS_RefreshBenefits(_Character);
+
+IF
+StatusApplied(_Character, "EBS_ENABLED", _, _)
+AND
+DB_EBS_Member((CHARACTER)_Character)
+AND
+HasPassive(_Character, "EBS_Toggle", 1)
+AND
+HasActiveStatus(_Character, "EBS_ENABLED", 1)
+AND
+NOT DB_EBS_Syncing(_Character)
+THEN
+PROC_EBS_AcceptToggle((CHARACTER)_Character, 1);
+
+IF
+StatusRemoved(_Character, "EBS_ENABLED", _, _)
+AND
+DB_EBS_Member((CHARACTER)_Character)
+AND
+HasPassive(_Character, "EBS_Toggle", 1)
+AND
+HasActiveStatus(_Character, "EBS_ENABLED", 0)
+AND
+IsDead((CHARACTER)_Character, 0)
+AND
+NOT DB_EBS_Syncing(_Character)
+THEN
+PROC_EBS_AcceptToggle((CHARACTER)_Character, 0);
+
+IF
+EnteredCombat(_Character, _)
+AND
+DB_EBS_Member((CHARACTER)_Character)
+THEN
+PROC_EBS_ClearBenefits((CHARACTER)_Character);
+
+IF
+LeftCombat(_Character, _)
+AND
+DB_EBS_Member((CHARACTER)_Character)
+THEN
+PROC_EBS_Sync((CHARACTER)_Character);
+
+IF
+CharacterLeftParty(_Character)
+AND
+DB_EBS_Member(_Character)
+THEN
+DB_EBS_Syncing(_Character);
+PROC_EBS_ClearBenefits(_Character);
+RemovePassive(_Character, "EBS_Toggle");
+RemoveStatus(_Character, "EBS_ENABLED", _Character);
+NOT DB_EBS_Member(_Character);
+NOT DB_EBS_Syncing(_Character);
+
+IF
+LevelGameplayStarted(_, _)
+AND
+DB_Players(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+LongRestFinished()
+AND
+DB_Players(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+CharacterCreationFinished()
+AND
+DB_Players(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+CharacterJoinedParty(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+GainedControl(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+Resurrected(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+RespecCompleted(_Character)
+THEN
+PROC_EBS_Sync(_Character);
+
+IF
+Died(_Character)
+AND
+DB_EBS_Member(_Character)
+THEN
+PROC_EBS_ClearBenefits(_Character);
+
+EXITSECTION
+ENDEXITSECTION

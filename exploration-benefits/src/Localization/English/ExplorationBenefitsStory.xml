@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<contentList>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790001" version="1">Exploration Convenience</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790002" version="1">Personal toggle, enabled by default and saved with the game. Outside combat: enhanced leap, feather fall, speak with animals, 12 m darkvision, slipping immunity and difficult-terrain immunity. Suspended in combat and restored afterwards. Turning off removes only this mod's benefits.</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790003" version="1">Exploration Convenience: Active</content>
+  <content contentuid="h812cab01g4cc5g435ag94fegb16c4b790004" version="1">Outside combat: triple jump distance, no fall damage, speak with animals, at least 12 m darkvision, slipping immunity and difficult-terrain immunity. Suspended on entering combat. Does not grant general prone immunity or surface damage immunity.</content>
+</contentList>
