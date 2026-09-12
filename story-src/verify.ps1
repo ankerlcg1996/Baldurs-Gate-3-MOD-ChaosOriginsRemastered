@@ -694,7 +694,7 @@ foreach ($lifeSkillBonusEntry in $lifeSkillBonusEntries) {
     $boostMatches = @([regex]::Matches($lifeSkillBonusEntry.Value,
         '(?m)^data "Boosts" "([^"]*)"\r?$'))
     Require ($boostMatches.Count -eq 1 -and
-        $boostMatches[0].Groups[1].Value -ceq (('Athletics,Acrobatics,SleightOfHand,Stealth,Arcana,History,Investigation,Nature,Religion,AnimalHandling,Insight,Medicine,Perception,Survival,Deception,Intimidation,Performance,Persuasion' -split ',' | ForEach-Object { "Skill($_,$value)" }) -join ';')) `
+        $boostMatches[0].Groups[1].Value -ceq (('SleightOfHand,Stealth,Arcana,History,Investigation,Nature,Religion,AnimalHandling,Insight,Medicine,Perception,Survival,Deception,Intimidation,Performance,Persuasion' -split ',' | ForEach-Object { "Skill($_,$value)" }) -join ';')) `
         "生活熟练项被动必须只提供对应的固定技能检定加值: $value"
 }
 Require (@($lifeSkillBonusEntries | ForEach-Object { $_.Groups['Value'].Value } | Sort-Object -Unique).Count -eq 20) `
@@ -4769,4 +4769,5 @@ Require ([regex]::Matches($statusText, 'DisableOverhead;DisablePortraitIndicator
     '起源身份状态基类必须隐藏头顶和肖像提示并跨休息保留'
 
 & (Join-Path $PSScriptRoot 'verify-level5-multitarget.ps1')
+& (Join-Path $PSScriptRoot 'verify-life-skill-exclusions.ps1')
 Write-Host 'ChaosOriginsStory final native Story source verification: ok'

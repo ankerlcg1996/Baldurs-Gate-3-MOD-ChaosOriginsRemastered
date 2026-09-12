@@ -672,7 +672,7 @@
 	<content contentuid="h74000002g0002g4002g8002g000000000002" version="1">Display resource for the native settings page; it is not spent by gameplay.</content>
 	<content contentuid="h74000004g0004g4004g8004g000000000004" version="1">Used only to display the native settings toggle state.</content>
 	<content contentuid="h74000010g0010g4010g8010g000000000010" version="1">Life Skill Bonus</content>
-	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">Adds the current fixed value to every skill check. 0 disables it; the default is 5.</content>
+	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">Adds the current fixed value to the other 16 skills, excluding Athletics and Acrobatics. 0 disables it; the default is 5. Existing proficiencies are unchanged.</content>
 	<content contentuid="h74000012g0012g4012g8012g000000000012" version="1">Reset to +5</content>
 	<content contentuid="h74000020g0020g4020g8020g000000000020" version="1">Official Racial Passives</content>
 	<content contentuid="h74000021g0021g4021g8021g000000000021" version="1">All are off by default. Only passives are granted; racial actions and spells are excluded, and duplicate names appear once.</content>

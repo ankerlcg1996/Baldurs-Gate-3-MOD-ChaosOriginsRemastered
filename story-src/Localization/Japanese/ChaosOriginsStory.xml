@@ -672,7 +672,7 @@
 	<content contentuid="h74000002g0002g4002g8002g000000000002" version="1">ネイティブ設定画面の表示用リソースです。ゲーム中には消費されません。</content>
 	<content contentuid="h74000004g0004g4004g8004g000000000004" version="1">ネイティブ設定画面でオン状態を表示するためだけに使います。</content>
 	<content contentuid="h74000010g0010g4010g8010g000000000010" version="1">生活技能判定ボーナス</content>
-	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">すべての技能判定に現在値を固定加算します。0で無効、初期値は5です。</content>
+	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">運動と軽業を除く16種類の技能判定に現在値を固定加算します。0で無効、初期値は5です。元の習熟は変更しません。</content>
 	<content contentuid="h74000012g0012g4012g8012g000000000012" version="1">+5に戻す</content>
 	<content contentuid="h74000020g0020g4020g8020g000000000020" version="1">公式種族パッシブ</content>
 	<content contentuid="h74000021g0021g4021g8021g000000000021" version="1">初期状態ではすべて無効です。パッシブのみを付与し、種族アクションと呪文は含みません。</content>

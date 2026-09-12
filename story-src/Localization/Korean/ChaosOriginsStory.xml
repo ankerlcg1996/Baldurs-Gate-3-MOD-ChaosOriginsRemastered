@@ -672,7 +672,7 @@
 	<content contentuid="h74000002g0002g4002g8002g000000000002" version="1">기본 설정 화면 표시용 자원이며 게임에서 소모되지 않습니다.</content>
 	<content contentuid="h74000004g0004g4004g8004g000000000004" version="1">기본 설정 화면에서 켜짐 상태를 표시할 때만 사용합니다.</content>
 	<content contentuid="h74000010g0010g4010g8010g000000000010" version="1">생활 기술 판정 보너스</content>
-	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">모든 기술 판정에 현재 수치를 고정으로 더합니다. 0은 끔이며 기본값은 5입니다.</content>
+	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">운동과 곡예를 제외한 16개 기술 판정에 현재 수치를 고정으로 더합니다. 0은 끔이며 기본값은 5입니다. 기존 숙련은 변경하지 않습니다.</content>
 	<content contentuid="h74000012g0012g4012g8012g000000000012" version="1">+5로 초기화</content>
 	<content contentuid="h74000020g0020g4020g8020g000000000020" version="1">공식 종족 패시브</content>
 	<content contentuid="h74000021g0021g4021g8021g000000000021" version="1">기본값은 모두 꺼짐입니다. 패시브만 부여하며 종족 행동과 주문은 제외합니다.</content>

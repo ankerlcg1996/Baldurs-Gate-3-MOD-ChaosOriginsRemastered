@@ -672,7 +672,7 @@
 	<content contentuid="h74000002g0002g4002g8002g000000000002" version="1">设置页显示资源，不用于玩法消耗。</content>
 	<content contentuid="h74000004g0004g4004g8004g000000000004" version="1">用于原生设置页显示开关状态。</content>
 	<content contentuid="h74000010g0010g4010g8010g000000000010" version="1">生活熟练项加值</content>
-	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">所有技能检定获得当前数值的固定加值；0为关闭，默认5。</content>
+	<content contentuid="h74000011g0011g4011g8011g000000000011" version="1">除运动、体操外，其余16项技能检定获得当前数值的固定加值；0为关闭，默认5。不改变角色原有熟练项。</content>
 	<content contentuid="h74000012g0012g4012g8012g000000000012" version="1">恢复为 +5</content>
 	<content contentuid="h74000020g0020g4020g8020g000000000020" version="1">官方种族被动</content>
 	<content contentuid="h74000021g0021g4021g8021g000000000021" version="1">默认全部关闭。只发送被动，不发送种族主动技能或法术；同名被动只保留一项。</content>
