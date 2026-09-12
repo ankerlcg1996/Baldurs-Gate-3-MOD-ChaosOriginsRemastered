@@ -1047,4 +1047,7 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">Fixed skill-check bonus: +</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">Choose up to 10 party members, including yourself, and apply Haste. Costs one action and requires concentration for 10 turns. Can target distant party members on the current map.</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">Choose an element, then up to 10 party members with a main-hand weapon, including yourself, to enchant their weapons. No resource cost. Can target distant party members on the current map.</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">Choose up to 10 party members with a main-hand weapon, including yourself. Their main-hand weapons gain +[1] to Attack Rolls and deal an additional [2]. Lasts until Long Rest, with no resource cost. Can target distant party members on the current map.</content>
 </contentList>

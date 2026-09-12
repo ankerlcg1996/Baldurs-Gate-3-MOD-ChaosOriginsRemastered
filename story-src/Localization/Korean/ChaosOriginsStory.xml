@@ -1047,4 +1047,7 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">고정 기술 판정 보너스: +</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">자신을 포함한 파티원 최대 10명을 선택해 가속을 부여합니다. 행동 1회와 집중이 필요하며 10턴 동안 지속됩니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">원소를 고른 후 자신을 포함해 주무기를 든 파티원 최대 10명의 무기를 강화합니다. 자원을 소모하지 않습니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">자신을 포함해 주무기를 든 파티원 최대 10명을 선택합니다. 주무기 명중 굴림에 +[1], 추가 피해 [2]를 얻습니다. 긴 휴식까지 지속되며 자원을 소모하지 않습니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
 </contentList>

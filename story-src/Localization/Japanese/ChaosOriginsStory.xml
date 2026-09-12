@@ -1047,4 +1047,7 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">技能判定固定ボーナス：+</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">自分を含むパーティメンバーを最大10人選び、加速を付与する。1アクションと精神集中が必要。10ターン持続。現在のマップ内の遠くの仲間も対象にできる。</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">属性を選び、メインハンドに武器を持つパーティメンバーを自分を含め最大10人選んで武器を強化する。リソース消費なし。現在のマップ内の遠くの仲間も対象にできる。</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">メインハンドに武器を持つパーティメンバーを自分を含め最大10人選ぶ。武器の攻撃ロールに+[1]、追加ダメージ[2]。大休憩まで持続。リソース消費なし。現在のマップ内の遠くの仲間も対象にできる。</content>
 </contentList>

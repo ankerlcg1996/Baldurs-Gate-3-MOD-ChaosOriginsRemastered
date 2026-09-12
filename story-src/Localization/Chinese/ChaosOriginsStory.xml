@@ -1047,4 +1047,7 @@
   <content contentuid="h7e000000g0000g4000g8000g000000000008" version="1">固定技能检定加值：+</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000009" version="1">COS_GlobalCarryCapacity50x</content>
   <content contentuid="h7e000000g0000g4000g8000g000000000010" version="1">COS_CFG_CARRY</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">选择至多10名队友（含自己），同时施加加速术。需要一个动作和专注，持续10回合。可选择当前地图内远处的队友。</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">选择一种元素，再选择至多10名持有主手武器的队友（含自己），为其主手武器附魔。无消耗，可选择当前地图内远处的队友。</content>
+  <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">选择至多10名持有主手武器的队友（含自己）。主手武器的攻击掷骰获得+[1]加值，并额外造成[2]。持续至长休，无消耗，可选择当前地图内远处的队友。</content>
 </contentList>
