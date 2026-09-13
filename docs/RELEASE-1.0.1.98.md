@@ -2,7 +2,7 @@
 
 日期：2026-09-14
 功能基线提交：`54c1f8c`
-状态：已完成静态验证、构建并导出；尚未安装及实机验收。
+状态：已完成静态验证、构建、导出和本机安装；尚未完成实机验收。
 
 ## 本版内容
 
@@ -22,6 +22,13 @@
 - 大小：`571208` 字节
 - SHA-256：`5fbfb668fcee7638b779bf8801c4e9f058832c9697a0964f84767db2353a909e`
 - `dist/build-manifest.json` 记录的 PAK 哈希与源文件、桌面候选一致。
+
+## 本机安装
+
+- 已安装到 `Baldur's Gate 3\Mods\ChaosOriginsStory.pak`。
+- Mods 目录仅保留 1 个 `ChaosOriginsStory*.pak`。
+- `modsettings.lsx` 仅保留 1 条混沌起源加载项，`Version64` 为 `36028799166447714`。
+- 安装 PAK 的 SHA-256 与源 PAK、桌面候选和构建 manifest 一致。
 
 ## 静态验证
 
