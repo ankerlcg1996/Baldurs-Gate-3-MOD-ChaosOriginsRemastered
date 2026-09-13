@@ -1050,4 +1050,75 @@
   <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">选择至多10名队友（含自己），同时施加加速术。需要一个动作和专注，持续10回合。可选择当前地图内远处的队友。</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">选择一种元素，再选择至多10名持有主手武器的队友（含自己），为其主手武器附魔。无消耗，可选择当前地图内远处的队友。</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">选择至多10名持有主手武器的队友（含自己）。主手武器的攻击掷骰获得+[1]加值，并额外造成[2]。持续至长休，无消耗，可选择当前地图内远处的队友。</content>
+  <content contentuid="h8f110001g0000g4000g8000g000000000001" version="1">非混沌起源</content>
+  <content contentuid="h8f120001g0000g4000g8000g000000000001" version="1">Story 已收到菜单事件；当前角色没有混沌起源标记，其他诊断不适用。</content>
+  <content contentuid="h8f110002g0000g4000g8000g000000000002" version="1">配置记录不完整</content>
+  <content contentuid="h8f120002g0000g4000g8000g000000000002" version="1">同步前或同步后发现明确配置缺口；请查看“最近同步问题”。</content>
+  <content contentuid="h8f110003g0000g4000g8000g000000000003" version="1">核心设置镜像不一致</content>
+  <content contentuid="h8f120003g0000g4000g8000g000000000003" version="1">设置记录与菜单镜像被动不一致；请查看“最近同步问题”。</content>
+  <content contentuid="h8f110004g0000g4000g8000g000000000004" version="1">运行诊断就绪</content>
+  <content contentuid="h8f120004g0000g4000g8000g000000000004" version="1">Story 已收到菜单事件；当前角色已识别为混沌起源；配置记录完整；核心设置与镜像一致。</content>
+  <content contentuid="h8f110005g0000g4000g8000g000000000005" version="1">未记录明确问题</content>
+  <content contentuid="h8f120005g0000g4000g8000g000000000005" version="1">本角色尚未记录到明确的配置缺失或镜像不一致。</content>
+  <content contentuid="h8f110006g0000g4000g8000g000000000006" version="1">缺少核心设置：Power</content>
+  <content contentuid="h8f120006g0000g4000g8000g000000000006" version="1">配置记录缺少核心机制键 Power（混沌之力）。</content>
+  <content contentuid="h8f110007g0000g4000g8000g000000000007" version="1">缺少核心设置：Wound</content>
+  <content contentuid="h8f120007g0000g4000g8000g000000000007" version="1">配置记录缺少核心机制键 Wound（混沌之伤）。</content>
+  <content contentuid="h8f110008g0000g4000g8000g000000000008" version="1">缺少核心设置：KillPower</content>
+  <content contentuid="h8f120008g0000g4000g8000g000000000008" version="1">配置记录缺少核心机制键 KillPower（击杀获得混沌之力）。</content>
+  <content contentuid="h8f110009g0000g4000g8000g000000000009" version="1">缺少核心设置：Duality</content>
+  <content contentuid="h8f120009g0000g4000g8000g000000000009" version="1">配置记录缺少核心机制键 Duality（混沌二象性）。</content>
+  <content contentuid="h8f110010g0000g4000g8000g000000000010" version="1">缺少核心设置：AllIn</content>
+  <content contentuid="h8f120010g0000g4000g8000g000000000010" version="1">配置记录缺少核心机制键 AllIn（孤注一掷）。</content>
+  <content contentuid="h8f110011g0000g4000g8000g000000000011" version="1">缺少核心设置：Fate</content>
+  <content contentuid="h8f120011g0000g4000g8000g000000000011" version="1">配置记录缺少核心机制键 Fate（命运改写）。</content>
+  <content contentuid="h8f110012g0000g4000g8000g000000000012" version="1">缺少核心设置：Genesis</content>
+  <content contentuid="h8f120012g0000g4000g8000g000000000012" version="1">配置记录缺少核心机制键 Genesis（混沌创世）。</content>
+  <content contentuid="h8f110013g0000g4000g8000g000000000013" version="1">缺少核心设置：Strike</content>
+  <content contentuid="h8f120013g0000g4000g8000g000000000013" version="1">配置记录缺少核心机制键 Strike（混沌打击）。</content>
+  <content contentuid="h8f110014g0000g4000g8000g000000000014" version="1">缺少核心设置：Mastery</content>
+  <content contentuid="h8f120014g0000g4000g8000g000000000014" version="1">配置记录缺少核心机制键 Mastery（掌控混沌）。</content>
+  <content contentuid="h8f110015g0000g4000g8000g000000000015" version="1">缺少设置：Life</content>
+  <content contentuid="h8f120015g0000g4000g8000g000000000015" version="1">配置记录缺少生活技能加值键 Life。</content>
+  <content contentuid="h8f110016g0000g4000g8000g000000000016" version="1">缺少设置：FateCost</content>
+  <content contentuid="h8f120016g0000g4000g8000g000000000016" version="1">配置记录缺少命运改写消耗键 FateCost。</content>
+  <content contentuid="h8f110017g0000g4000g8000g000000000017" version="1">缺少设置：GenesisCost</content>
+  <content contentuid="h8f120017g0000g4000g8000g000000000017" version="1">配置记录缺少混沌创世消耗键 GenesisCost。</content>
+  <content contentuid="h8f110018g0000g4000g8000g000000000018" version="1">缺少配置类别：Racial</content>
+  <content contentuid="h8f120018g0000g4000g8000g000000000018" version="1">配置记录缺少官方种族被动设置类别 Racial。</content>
+  <content contentuid="h8f110019g0000g4000g8000g000000000019" version="1">缺少配置类别：Grant</content>
+  <content contentuid="h8f120019g0000g4000g8000g000000000019" version="1">配置记录缺少 grant 菜单选择记录类别 Grant。</content>
+  <content contentuid="h8f110020g0000g4000g8000g000000000020" version="1">缺少配置类别：TagSpells</content>
+  <content contentuid="h8f120020g0000g4000g8000g000000000020" version="1">配置记录缺少标签法术授予记录类别 TagSpells。</content>
+  <content contentuid="h8f110021g0000g4000g8000g000000000021" version="1">缺少设置：Volo</content>
+  <content contentuid="h8f120021g0000g4000g8000g000000000021" version="1">配置记录缺少沃罗假眼设置键 Volo。</content>
+  <content contentuid="h8f110022g0000g4000g8000g000000000022" version="1">缺少设置：Carry</content>
+  <content contentuid="h8f120022g0000g4000g8000g000000000022" version="1">配置记录缺少负重容量设置键 Carry。</content>
+  <content contentuid="h8f110023g0000g4000g8000g000000000023" version="1">镜像不一致：Power</content>
+  <content contentuid="h8f120023g0000g4000g8000g000000000023" version="1">核心机制键 Power 的记录值与被动镜像 COS_CFG_MECH_POWER 不一致。</content>
+  <content contentuid="h8f110024g0000g4000g8000g000000000024" version="1">镜像不一致：Wound</content>
+  <content contentuid="h8f120024g0000g4000g8000g000000000024" version="1">核心机制键 Wound 的记录值与被动镜像 COS_CFG_MECH_WOUND 不一致。</content>
+  <content contentuid="h8f110025g0000g4000g8000g000000000025" version="1">镜像不一致：KillPower</content>
+  <content contentuid="h8f120025g0000g4000g8000g000000000025" version="1">核心机制键 KillPower 的记录值与被动镜像 COS_CFG_MECH_KILLPOWER 不一致。</content>
+  <content contentuid="h8f110026g0000g4000g8000g000000000026" version="1">镜像不一致：Duality</content>
+  <content contentuid="h8f120026g0000g4000g8000g000000000026" version="1">核心机制键 Duality 的记录值与被动镜像 COS_CFG_MECH_DUALITY 不一致。</content>
+  <content contentuid="h8f110027g0000g4000g8000g000000000027" version="1">镜像不一致：AllIn</content>
+  <content contentuid="h8f120027g0000g4000g8000g000000000027" version="1">核心机制键 AllIn 的记录值与被动镜像 COS_CFG_MECH_ALLIN 不一致。</content>
+  <content contentuid="h8f110028g0000g4000g8000g000000000028" version="1">镜像不一致：Fate</content>
+  <content contentuid="h8f120028g0000g4000g8000g000000000028" version="1">核心机制键 Fate 的记录值与被动镜像 COS_CFG_MECH_FATE 不一致。</content>
+  <content contentuid="h8f110029g0000g4000g8000g000000000029" version="1">镜像不一致：Genesis</content>
+  <content contentuid="h8f120029g0000g4000g8000g000000000029" version="1">核心机制键 Genesis 的记录值与被动镜像 COS_CFG_MECH_GENESIS 不一致。</content>
+  <content contentuid="h8f110030g0000g4000g8000g000000000030" version="1">镜像不一致：Strike</content>
+  <content contentuid="h8f120030g0000g4000g8000g000000000030" version="1">核心机制键 Strike 的记录值与被动镜像 COS_CFG_MECH_STRIKE 不一致。</content>
+  <content contentuid="h8f110031g0000g4000g8000g000000000031" version="1">镜像不一致：Mastery</content>
+  <content contentuid="h8f120031g0000g4000g8000g000000000031" version="1">核心机制键 Mastery 的记录值与被动镜像 COS_CFG_MECH_MASTERY 不一致。</content>
+  <content contentuid="h8f110032g0000g4000g8000g000000000032" version="1">镜像不一致：Carry</content>
+  <content contentuid="h8f120032g0000g4000g8000g000000000032" version="1">负重容量设置键 Carry 的记录值与被动镜像 COS_CFG_CARRY 不一致。</content>
+  <content contentuid="h8f100001g0000g4000g8000g000000000001" version="1">运行诊断</content>
+  <content contentuid="h8f100002g0000g4000g8000g000000000002" version="1">ChaosOriginsStory 1.0.1.98</content>
+  <content contentuid="h8f100003g0000g4000g8000g000000000003" version="1">当前状态</content>
+  <content contentuid="h8f100004g0000g4000g8000g000000000004" version="1">最近同步问题</content>
+  <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">混沌之力点数</content>
+  <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">掌控混沌剩余点数</content>
+  <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">已用掌控混沌点数：已分配到升级中的掌控混沌点数。</content>
 </contentList>

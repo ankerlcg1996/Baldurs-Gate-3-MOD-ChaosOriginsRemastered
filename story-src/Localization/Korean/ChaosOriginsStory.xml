@@ -1050,4 +1050,75 @@
   <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">자신을 포함한 파티원 최대 10명을 선택해 가속을 부여합니다. 행동 1회와 집중이 필요하며 10턴 동안 지속됩니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">원소를 고른 후 자신을 포함해 주무기를 든 파티원 최대 10명의 무기를 강화합니다. 자원을 소모하지 않습니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">자신을 포함해 주무기를 든 파티원 최대 10명을 선택합니다. 주무기 명중 굴림에 +[1], 추가 피해 [2]를 얻습니다. 긴 휴식까지 지속되며 자원을 소모하지 않습니다. 현재 지도 안의 먼 파티원도 대상으로 선택할 수 있습니다.</content>
+  <content contentuid="h8f110001g0000g4000g8000g000000000001" version="1">혼돈 기원 아님</content>
+  <content contentuid="h8f120001g0000g4000g8000g000000000001" version="1">Story가 메뉴 이벤트를 받았습니다. 현재 캐릭터에 혼돈 기원 표식이 없으므로 다른 진단은 적용되지 않습니다.</content>
+  <content contentuid="h8f110002g0000g4000g8000g000000000002" version="1">설정 기록 불완전</content>
+  <content contentuid="h8f120002g0000g4000g8000g000000000002" version="1">동기화 전 또는 후에 명확한 설정 누락이 발견되었습니다. 최근 동기화 문제를 확인하세요.</content>
+  <content contentuid="h8f110003g0000g4000g8000g000000000003" version="1">핵심 설정 미러 불일치</content>
+  <content contentuid="h8f120003g0000g4000g8000g000000000003" version="1">저장된 설정이 메뉴 미러 패시브와 일치하지 않습니다. 최근 동기화 문제를 확인하세요.</content>
+  <content contentuid="h8f110004g0000g4000g8000g000000000004" version="1">런타임 진단 준비 완료</content>
+  <content contentuid="h8f120004g0000g4000g8000g000000000004" version="1">Story가 메뉴 이벤트를 받았습니다. 현재 캐릭터가 혼돈 기원으로 인식되었고 설정 기록이 완전하며 핵심 설정이 미러와 일치합니다.</content>
+  <content contentuid="h8f110005g0000g4000g8000g000000000005" version="1">명확한 문제 기록 없음</content>
+  <content contentuid="h8f120005g0000g4000g8000g000000000005" version="1">이 캐릭터에는 명확한 설정 누락이나 미러 불일치가 아직 기록되지 않았습니다.</content>
+  <content contentuid="h8f110006g0000g4000g8000g000000000006" version="1">핵심 설정 누락: Power</content>
+  <content contentuid="h8f120006g0000g4000g8000g000000000006" version="1">설정 기록에 핵심 메커니즘 키 Power(혼돈의 힘)가 없습니다.</content>
+  <content contentuid="h8f110007g0000g4000g8000g000000000007" version="1">핵심 설정 누락: Wound</content>
+  <content contentuid="h8f120007g0000g4000g8000g000000000007" version="1">설정 기록에 핵심 메커니즘 키 Wound(혼돈의 상처)가 없습니다.</content>
+  <content contentuid="h8f110008g0000g4000g8000g000000000008" version="1">핵심 설정 누락: KillPower</content>
+  <content contentuid="h8f120008g0000g4000g8000g000000000008" version="1">설정 기록에 핵심 메커니즘 키 KillPower(처치 시 혼돈의 힘 획득)가 없습니다.</content>
+  <content contentuid="h8f110009g0000g4000g8000g000000000009" version="1">핵심 설정 누락: Duality</content>
+  <content contentuid="h8f120009g0000g4000g8000g000000000009" version="1">설정 기록에 핵심 메커니즘 키 Duality(혼돈의 이중성)가 없습니다.</content>
+  <content contentuid="h8f110010g0000g4000g8000g000000000010" version="1">핵심 설정 누락: AllIn</content>
+  <content contentuid="h8f120010g0000g4000g8000g000000000010" version="1">설정 기록에 핵심 메커니즘 키 AllIn(올인)이 없습니다.</content>
+  <content contentuid="h8f110011g0000g4000g8000g000000000011" version="1">핵심 설정 누락: Fate</content>
+  <content contentuid="h8f120011g0000g4000g8000g000000000011" version="1">설정 기록에 핵심 메커니즘 키 Fate(운명 개정)가 없습니다.</content>
+  <content contentuid="h8f110012g0000g4000g8000g000000000012" version="1">핵심 설정 누락: Genesis</content>
+  <content contentuid="h8f120012g0000g4000g8000g000000000012" version="1">설정 기록에 핵심 메커니즘 키 Genesis(혼돈 창세)가 없습니다.</content>
+  <content contentuid="h8f110013g0000g4000g8000g000000000013" version="1">핵심 설정 누락: Strike</content>
+  <content contentuid="h8f120013g0000g4000g8000g000000000013" version="1">설정 기록에 핵심 메커니즘 키 Strike(혼돈의 일격)가 없습니다.</content>
+  <content contentuid="h8f110014g0000g4000g8000g000000000014" version="1">핵심 설정 누락: Mastery</content>
+  <content contentuid="h8f120014g0000g4000g8000g000000000014" version="1">설정 기록에 핵심 메커니즘 키 Mastery(혼돈 통제)가 없습니다.</content>
+  <content contentuid="h8f110015g0000g4000g8000g000000000015" version="1">설정 누락: Life</content>
+  <content contentuid="h8f120015g0000g4000g8000g000000000015" version="1">설정 기록에 생활 기술 보정 키 Life가 없습니다.</content>
+  <content contentuid="h8f110016g0000g4000g8000g000000000016" version="1">설정 누락: FateCost</content>
+  <content contentuid="h8f120016g0000g4000g8000g000000000016" version="1">설정 기록에 운명 개정 비용 키 FateCost가 없습니다.</content>
+  <content contentuid="h8f110017g0000g4000g8000g000000000017" version="1">설정 누락: GenesisCost</content>
+  <content contentuid="h8f120017g0000g4000g8000g000000000017" version="1">설정 기록에 혼돈 창세 비용 키 GenesisCost가 없습니다.</content>
+  <content contentuid="h8f110018g0000g4000g8000g000000000018" version="1">설정 범주 누락: Racial</content>
+  <content contentuid="h8f120018g0000g4000g8000g000000000018" version="1">설정 기록에 공식 종족 패시브 설정 범주 Racial이 없습니다.</content>
+  <content contentuid="h8f110019g0000g4000g8000g000000000019" version="1">설정 범주 누락: Grant</content>
+  <content contentuid="h8f120019g0000g4000g8000g000000000019" version="1">설정 기록에 grant 메뉴 선택 범주 Grant가 없습니다.</content>
+  <content contentuid="h8f110020g0000g4000g8000g000000000020" version="1">설정 범주 누락: TagSpells</content>
+  <content contentuid="h8f120020g0000g4000g8000g000000000020" version="1">설정 기록에 태그 주문 부여 범주 TagSpells가 없습니다.</content>
+  <content contentuid="h8f110021g0000g4000g8000g000000000021" version="1">설정 누락: Volo</content>
+  <content contentuid="h8f120021g0000g4000g8000g000000000021" version="1">설정 기록에 볼로의 의안 설정 키 Volo가 없습니다.</content>
+  <content contentuid="h8f110022g0000g4000g8000g000000000022" version="1">설정 누락: Carry</content>
+  <content contentuid="h8f120022g0000g4000g8000g000000000022" version="1">설정 기록에 운반 용량 설정 키 Carry가 없습니다.</content>
+  <content contentuid="h8f110023g0000g4000g8000g000000000023" version="1">미러 불일치: Power</content>
+  <content contentuid="h8f120023g0000g4000g8000g000000000023" version="1">핵심 메커니즘 키 Power의 기록 값이 패시브 미러 COS_CFG_MECH_POWER와 일치하지 않습니다.</content>
+  <content contentuid="h8f110024g0000g4000g8000g000000000024" version="1">미러 불일치: Wound</content>
+  <content contentuid="h8f120024g0000g4000g8000g000000000024" version="1">핵심 메커니즘 키 Wound의 기록 값이 패시브 미러 COS_CFG_MECH_WOUND와 일치하지 않습니다.</content>
+  <content contentuid="h8f110025g0000g4000g8000g000000000025" version="1">미러 불일치: KillPower</content>
+  <content contentuid="h8f120025g0000g4000g8000g000000000025" version="1">핵심 메커니즘 키 KillPower의 기록 값이 패시브 미러 COS_CFG_MECH_KILLPOWER와 일치하지 않습니다.</content>
+  <content contentuid="h8f110026g0000g4000g8000g000000000026" version="1">미러 불일치: Duality</content>
+  <content contentuid="h8f120026g0000g4000g8000g000000000026" version="1">핵심 메커니즘 키 Duality의 기록 값이 패시브 미러 COS_CFG_MECH_DUALITY와 일치하지 않습니다.</content>
+  <content contentuid="h8f110027g0000g4000g8000g000000000027" version="1">미러 불일치: AllIn</content>
+  <content contentuid="h8f120027g0000g4000g8000g000000000027" version="1">핵심 메커니즘 키 AllIn의 기록 값이 패시브 미러 COS_CFG_MECH_ALLIN과 일치하지 않습니다.</content>
+  <content contentuid="h8f110028g0000g4000g8000g000000000028" version="1">미러 불일치: Fate</content>
+  <content contentuid="h8f120028g0000g4000g8000g000000000028" version="1">핵심 메커니즘 키 Fate의 기록 값이 패시브 미러 COS_CFG_MECH_FATE와 일치하지 않습니다.</content>
+  <content contentuid="h8f110029g0000g4000g8000g000000000029" version="1">미러 불일치: Genesis</content>
+  <content contentuid="h8f120029g0000g4000g8000g000000000029" version="1">핵심 메커니즘 키 Genesis의 기록 값이 패시브 미러 COS_CFG_MECH_GENESIS와 일치하지 않습니다.</content>
+  <content contentuid="h8f110030g0000g4000g8000g000000000030" version="1">미러 불일치: Strike</content>
+  <content contentuid="h8f120030g0000g4000g8000g000000000030" version="1">핵심 메커니즘 키 Strike의 기록 값이 패시브 미러 COS_CFG_MECH_STRIKE와 일치하지 않습니다.</content>
+  <content contentuid="h8f110031g0000g4000g8000g000000000031" version="1">미러 불일치: Mastery</content>
+  <content contentuid="h8f120031g0000g4000g8000g000000000031" version="1">핵심 메커니즘 키 Mastery의 기록 값이 패시브 미러 COS_CFG_MECH_MASTERY와 일치하지 않습니다.</content>
+  <content contentuid="h8f110032g0000g4000g8000g000000000032" version="1">미러 불일치: Carry</content>
+  <content contentuid="h8f120032g0000g4000g8000g000000000032" version="1">운반 용량 설정 키 Carry의 기록 값이 패시브 미러 COS_CFG_CARRY와 일치하지 않습니다.</content>
+  <content contentuid="h8f100001g0000g4000g8000g000000000001" version="1">런타임 진단</content>
+  <content contentuid="h8f100002g0000g4000g8000g000000000002" version="1">ChaosOriginsStory 1.0.1.98</content>
+  <content contentuid="h8f100003g0000g4000g8000g000000000003" version="1">현재 상태</content>
+  <content contentuid="h8f100004g0000g4000g8000g000000000004" version="1">최근 동기화 문제</content>
+  <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">혼돈의 힘 점수</content>
+  <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">남은 혼돈 통제 점수</content>
+  <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">사용한 혼돈 통제 점수: 업그레이드에 이미 배분한 점수입니다.</content>
 </contentList>

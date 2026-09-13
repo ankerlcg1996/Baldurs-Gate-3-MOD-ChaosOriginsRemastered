@@ -117,6 +117,375 @@ DB_COS_ConfigRacialDefault("Tiefling_HellishResistance", 0);
 DB_COS_ConfigRacialMirror("Tiefling_HellishResistance", "COS_CFG_RACE_TIEFLING_RESISTANCE");
 DB_COS_ConfigRacialEvent((TUTORIALEVENT)COS_CFG_RACE_TIEFLING_RESISTANCE_022d736c-8b4b-4599-9e51-e584a0e1c05d, "Tiefling_HellishResistance");
 KBSECTION
+
+// Read-only runtime diagnostics. Immutable maps are seeded from a PROC so upgraded saves receive them.
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Power", "COS_CFG_MECH_POWER", "COS_DIAG_LAST_MISSING_POWER", "COS_DIAG_LAST_MISMATCH_POWER")
+THEN
+DB_COS_RuntimeDiagnosticCore("Power", "COS_CFG_MECH_POWER", "COS_DIAG_LAST_MISSING_POWER", "COS_DIAG_LAST_MISMATCH_POWER");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Wound", "COS_CFG_MECH_WOUND", "COS_DIAG_LAST_MISSING_WOUND", "COS_DIAG_LAST_MISMATCH_WOUND")
+THEN
+DB_COS_RuntimeDiagnosticCore("Wound", "COS_CFG_MECH_WOUND", "COS_DIAG_LAST_MISSING_WOUND", "COS_DIAG_LAST_MISMATCH_WOUND");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("KillPower", "COS_CFG_MECH_KILLPOWER", "COS_DIAG_LAST_MISSING_KILLPOWER", "COS_DIAG_LAST_MISMATCH_KILLPOWER")
+THEN
+DB_COS_RuntimeDiagnosticCore("KillPower", "COS_CFG_MECH_KILLPOWER", "COS_DIAG_LAST_MISSING_KILLPOWER", "COS_DIAG_LAST_MISMATCH_KILLPOWER");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Duality", "COS_CFG_MECH_DUALITY", "COS_DIAG_LAST_MISSING_DUALITY", "COS_DIAG_LAST_MISMATCH_DUALITY")
+THEN
+DB_COS_RuntimeDiagnosticCore("Duality", "COS_CFG_MECH_DUALITY", "COS_DIAG_LAST_MISSING_DUALITY", "COS_DIAG_LAST_MISMATCH_DUALITY");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("AllIn", "COS_CFG_MECH_ALLIN", "COS_DIAG_LAST_MISSING_ALLIN", "COS_DIAG_LAST_MISMATCH_ALLIN")
+THEN
+DB_COS_RuntimeDiagnosticCore("AllIn", "COS_CFG_MECH_ALLIN", "COS_DIAG_LAST_MISSING_ALLIN", "COS_DIAG_LAST_MISMATCH_ALLIN");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Fate", "COS_CFG_MECH_FATE", "COS_DIAG_LAST_MISSING_FATE", "COS_DIAG_LAST_MISMATCH_FATE")
+THEN
+DB_COS_RuntimeDiagnosticCore("Fate", "COS_CFG_MECH_FATE", "COS_DIAG_LAST_MISSING_FATE", "COS_DIAG_LAST_MISMATCH_FATE");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Genesis", "COS_CFG_MECH_GENESIS", "COS_DIAG_LAST_MISSING_GENESIS", "COS_DIAG_LAST_MISMATCH_GENESIS")
+THEN
+DB_COS_RuntimeDiagnosticCore("Genesis", "COS_CFG_MECH_GENESIS", "COS_DIAG_LAST_MISSING_GENESIS", "COS_DIAG_LAST_MISMATCH_GENESIS");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Strike", "COS_CFG_MECH_STRIKE", "COS_DIAG_LAST_MISSING_STRIKE", "COS_DIAG_LAST_MISMATCH_STRIKE")
+THEN
+DB_COS_RuntimeDiagnosticCore("Strike", "COS_CFG_MECH_STRIKE", "COS_DIAG_LAST_MISSING_STRIKE", "COS_DIAG_LAST_MISMATCH_STRIKE");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCore("Mastery", "COS_CFG_MECH_MASTERY", "COS_DIAG_LAST_MISSING_MASTERY", "COS_DIAG_LAST_MISMATCH_MASTERY")
+THEN
+DB_COS_RuntimeDiagnosticCore("Mastery", "COS_CFG_MECH_MASTERY", "COS_DIAG_LAST_MISSING_MASTERY", "COS_DIAG_LAST_MISMATCH_MASTERY");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCost("Fate", "COS_DIAG_LAST_MISSING_FATE_COST")
+THEN
+DB_COS_RuntimeDiagnosticCost("Fate", "COS_DIAG_LAST_MISSING_FATE_COST");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticCost("Genesis", "COS_DIAG_LAST_MISSING_GENESIS_COST")
+THEN
+DB_COS_RuntimeDiagnosticCost("Genesis", "COS_DIAG_LAST_MISSING_GENESIS_COST");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticState("NotOrigin", "COS_DIAG_STATE_NOT_ORIGIN")
+THEN
+DB_COS_RuntimeDiagnosticState("NotOrigin", "COS_DIAG_STATE_NOT_ORIGIN");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticState("ConfigIncomplete", "COS_DIAG_STATE_CONFIG_INCOMPLETE")
+THEN
+DB_COS_RuntimeDiagnosticState("ConfigIncomplete", "COS_DIAG_STATE_CONFIG_INCOMPLETE");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticState("CoreMismatch", "COS_DIAG_STATE_CORE_MISMATCH")
+THEN
+DB_COS_RuntimeDiagnosticState("CoreMismatch", "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticSeed()
+AND
+NOT DB_COS_RuntimeDiagnosticState("Ready", "COS_DIAG_STATE_READY")
+THEN
+DB_COS_RuntimeDiagnosticState("Ready", "COS_DIAG_STATE_READY");
+
+// Clear only this diagnostic cycle's transient selection.
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus)
+THEN
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus);
+
+PROC
+PROC_COS_RuntimeDiagnosticSelectFirst((CHARACTER)_Character, (STRING)_Kind, (STRING)_IssueStatus)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+THEN
+DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus);
+
+// Missing-data checks are called explicitly in fixed priority order.
+PROC
+PROC_COS_RuntimeDiagnosticCheckConfig((CHARACTER)_Character)
+THEN
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Power", "COS_DIAG_LAST_MISSING_POWER");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Wound", "COS_DIAG_LAST_MISSING_WOUND");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "KillPower", "COS_DIAG_LAST_MISSING_KILLPOWER");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Duality", "COS_DIAG_LAST_MISSING_DUALITY");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "AllIn", "COS_DIAG_LAST_MISSING_ALLIN");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Fate", "COS_DIAG_LAST_MISSING_FATE");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Genesis", "COS_DIAG_LAST_MISSING_GENESIS");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Strike", "COS_DIAG_LAST_MISSING_STRIKE");
+PROC_COS_RuntimeDiagnosticCheckCoreMissing(_Character, "Mastery", "COS_DIAG_LAST_MISSING_MASTERY");
+PROC_COS_RuntimeDiagnosticCheckLifeMissing(_Character);
+PROC_COS_RuntimeDiagnosticCheckCostMissing(_Character, "Fate", "COS_DIAG_LAST_MISSING_FATE_COST");
+PROC_COS_RuntimeDiagnosticCheckCostMissing(_Character, "Genesis", "COS_DIAG_LAST_MISSING_GENESIS_COST");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "DeepGnome_StoneCamouflage");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Drow_DrowWeaponTraining");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Duergar_DuergarResilience");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Dwarf_DwarvenCombatTraining");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Dwarf_DwarvenResilience");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Elf_WeaponTraining");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "FeyAncestry");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Gith_MartialProdigy");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Gnome_Cunning");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Halfling_Brave");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Halfling_LightfootStealth");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Halfling_Lucky");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Halfling_StoutResilience");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "HumanMilitia");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "MountainDwarf_DwarvenArmorTraining");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "RelentlessEndurance");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "RockGnome_ArtificersLore");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "SavageAttacks");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "SuperiorDarkvision");
+PROC_COS_RuntimeDiagnosticCheckRacialMissing(_Character, "Tiefling_HellishResistance");
+PROC_COS_RuntimeDiagnosticCheckGrantMissing(_Character);
+PROC_COS_RuntimeDiagnosticCheckTagSpellsMissing(_Character);
+PROC_COS_RuntimeDiagnosticCheckVoloMissing(_Character);
+PROC_COS_RuntimeDiagnosticCheckCarryMissing(_Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCoreMissing((CHARACTER)_Character, (STRING)_Key, (STRING)_IssueStatus)
+AND
+DB_COS_RuntimeDiagnosticCore(_Key, _, _IssueStatus, _)
+AND
+NOT DB_COS_ConfigMechanic(_Character, _Key, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", _IssueStatus);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckLifeMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigLifeSkill(_Character, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_LIFE");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCostMissing((CHARACTER)_Character, (STRING)_Key, (STRING)_IssueStatus)
+AND
+DB_COS_RuntimeDiagnosticCost(_Key, _IssueStatus)
+AND
+NOT DB_COS_ConfigCost(_Character, _Key, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", _IssueStatus);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckRacialMissing((CHARACTER)_Character, (STRING)_Passive)
+AND
+NOT DB_COS_ConfigRacial(_Character, _Passive, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_RACIAL");
+
+// One aggregate result covers every grant option, while the query checks every option row.
+PROC
+PROC_COS_RuntimeDiagnosticCheckGrantMissing((CHARACTER)_Character)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+AND
+NOT DB_COS_GrantSetting(_Character, _Key, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_GRANT");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckTagSpellsMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_TagSpellsSetting(_Character, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_TAG_SPELLS");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckVoloMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_VoloEyeSetting(_Character, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_VOLO");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCarryMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_CarryEnabled(_Character, _)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_CARRY");
+
+// Mirror checks are also called explicitly; each check covers both directions.
+PROC
+PROC_COS_RuntimeDiagnosticCheckMirrors((CHARACTER)_Character)
+THEN
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Power", "COS_CFG_MECH_POWER", "COS_DIAG_LAST_MISMATCH_POWER");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Wound", "COS_CFG_MECH_WOUND", "COS_DIAG_LAST_MISMATCH_WOUND");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "KillPower", "COS_CFG_MECH_KILLPOWER", "COS_DIAG_LAST_MISMATCH_KILLPOWER");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Duality", "COS_CFG_MECH_DUALITY", "COS_DIAG_LAST_MISMATCH_DUALITY");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "AllIn", "COS_CFG_MECH_ALLIN", "COS_DIAG_LAST_MISMATCH_ALLIN");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Fate", "COS_CFG_MECH_FATE", "COS_DIAG_LAST_MISMATCH_FATE");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Genesis", "COS_CFG_MECH_GENESIS", "COS_DIAG_LAST_MISMATCH_GENESIS");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Strike", "COS_CFG_MECH_STRIKE", "COS_DIAG_LAST_MISMATCH_STRIKE");
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Mastery", "COS_CFG_MECH_MASTERY", "COS_DIAG_LAST_MISMATCH_MASTERY");
+PROC_COS_RuntimeDiagnosticCheckCarryMismatch(_Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch((CHARACTER)_Character, (STRING)_Key, (STRING)_Mirror, (STRING)_IssueStatus)
+AND
+DB_COS_RuntimeDiagnosticCore(_Key, _Mirror, _, _IssueStatus)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 1)
+AND
+HasPassive(_Character, _Mirror, 0)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Mismatch", _IssueStatus);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCoreMismatch((CHARACTER)_Character, (STRING)_Key, (STRING)_Mirror, (STRING)_IssueStatus)
+AND
+DB_COS_RuntimeDiagnosticCore(_Key, _Mirror, _, _IssueStatus)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, 0)
+AND
+HasPassive(_Character, _Mirror, 1)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Mismatch", _IssueStatus);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCarryMismatch((CHARACTER)_Character)
+AND
+DB_COS_CarryEnabled(_Character, 1)
+AND
+HasPassive(_Character, "COS_CFG_CARRY", 0)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Mismatch", "COS_DIAG_LAST_MISMATCH_CARRY");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCarryMismatch((CHARACTER)_Character)
+AND
+DB_COS_CarryEnabled(_Character, 0)
+AND
+HasPassive(_Character, "COS_CFG_CARRY", 1)
+THEN
+PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Mismatch", "COS_DIAG_LAST_MISMATCH_CARRY");
+
+PROC
+PROC_COS_RuntimeDiagnosticSetCurrent((CHARACTER)_Character, (STRING)_Status)
+AND
+DB_COS_RuntimeDiagnosticState(_, _Status)
+THEN
+PROC_COS_RuntimeDiagnosticApply(_Character, "State", _Status);
+
+PROC
+PROC_COS_RuntimeDiagnosticSetLast((CHARACTER)_Character, (STRING)_Status)
+THEN
+PROC_COS_RuntimeDiagnosticApply(_Character, "Last", _Status);
+
+// Apply only when the cached channel value changes; repeated menu opens do not refresh a status.
+PROC
+PROC_COS_RuntimeDiagnosticApply((CHARACTER)_Character, (STRING)_Channel, (STRING)_Status)
+AND
+NOT DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _Status)
+AND
+DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _OldStatus)
+THEN
+RemoveStatus(_Character, _OldStatus, _Character);
+NOT DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _OldStatus);
+DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _Status);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticApply((CHARACTER)_Character, (STRING)_Channel, (STRING)_Status)
+AND
+NOT DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _Status)
+AND
+NOT DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _)
+THEN
+DB_COS_RuntimeDiagnosticApplied(_Character, _Channel, _Status);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticEnsureLast((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticApplied(_Character, "Last", _)
+THEN
+PROC_COS_RuntimeDiagnosticSetLast(_Character, "COS_DIAG_LAST_NONE");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticSelected(_Character, "Missing", _IssueStatus)
+THEN
+PROC_COS_RuntimeDiagnosticSetLast(_Character, _IssueStatus);
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CONFIG_INCOMPLETE");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticSelected(_Character, "Mismatch", _IssueStatus)
+THEN
+PROC_COS_RuntimeDiagnosticSetLast(_Character, _IssueStatus);
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+THEN
+PROC_COS_RuntimeDiagnosticEnsureLast(_Character);
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_READY");
+
+// Non-origin characters receive only NOT_ORIGIN/NONE; origin characters run the complete audit.
+PROC
+PROC_COS_RuntimeDiagnosticUpdate((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 0)
+THEN
+PROC_COS_RuntimeDiagnosticSeed();
+PROC_COS_RuntimeDiagnosticBegin(_Character);
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_NOT_ORIGIN");
+PROC_COS_RuntimeDiagnosticSetLast(_Character, "COS_DIAG_LAST_NONE");
+
+PROC
+PROC_COS_RuntimeDiagnosticUpdate((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_RuntimeDiagnosticSeed();
+PROC_COS_RuntimeDiagnosticBegin(_Character);
+PROC_COS_RuntimeDiagnosticCheckConfig(_Character);
+PROC_COS_RuntimeDiagnosticCheckMirrors(_Character);
+PROC_COS_RuntimeDiagnosticResolve(_Character);
+
 PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
 AND
@@ -609,11 +978,24 @@ TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigUiOpenedEvent(_Event)
 AND
+IsControlled(_Character, 1)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 0)
+THEN
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigUiOpenedEvent(_Event)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
 THEN
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 PROC_COS_ShowLastFate(_Character);
 
 IF

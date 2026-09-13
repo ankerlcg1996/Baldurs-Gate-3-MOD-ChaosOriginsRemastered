@@ -1050,4 +1050,75 @@
   <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">Choose up to 10 party members, including yourself, and apply Haste. Costs one action and requires concentration for 10 turns. Can target distant party members on the current map.</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">Choose an element, then up to 10 party members with a main-hand weapon, including yourself, to enchant their weapons. No resource cost. Can target distant party members on the current map.</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">Choose up to 10 party members with a main-hand weapon, including yourself. Their main-hand weapons gain +[1] to Attack Rolls and deal an additional [2]. Lasts until Long Rest, with no resource cost. Can target distant party members on the current map.</content>
+  <content contentuid="h8f110001g0000g4000g8000g000000000001" version="1">Not a Chaos Origin</content>
+  <content contentuid="h8f120001g0000g4000g8000g000000000001" version="1">Story received the menu event. The current character does not have the Chaos Origin marker, so the other diagnostics do not apply.</content>
+  <content contentuid="h8f110002g0000g4000g8000g000000000002" version="1">Configuration Record Incomplete</content>
+  <content contentuid="h8f120002g0000g4000g8000g000000000002" version="1">A definite configuration gap was found before or after synchronization. Check Most Recent Sync Issue.</content>
+  <content contentuid="h8f110003g0000g4000g8000g000000000003" version="1">Core Setting Mirror Mismatch</content>
+  <content contentuid="h8f120003g0000g4000g8000g000000000003" version="1">The stored setting does not match the menu mirror passive. Check Most Recent Sync Issue.</content>
+  <content contentuid="h8f110004g0000g4000g8000g000000000004" version="1">Runtime Diagnostics Ready</content>
+  <content contentuid="h8f120004g0000g4000g8000g000000000004" version="1">Story received the menu event. The current character is recognized as a Chaos Origin, the configuration record is complete, and the core settings match their mirrors.</content>
+  <content contentuid="h8f110005g0000g4000g8000g000000000005" version="1">No Definite Issue Recorded</content>
+  <content contentuid="h8f120005g0000g4000g8000g000000000005" version="1">No definite missing configuration or mirror mismatch has been recorded for this character.</content>
+  <content contentuid="h8f110006g0000g4000g8000g000000000006" version="1">Missing Core Setting: Power</content>
+  <content contentuid="h8f120006g0000g4000g8000g000000000006" version="1">The configuration record is missing core mechanic key Power (Chaos Power).</content>
+  <content contentuid="h8f110007g0000g4000g8000g000000000007" version="1">Missing Core Setting: Wound</content>
+  <content contentuid="h8f120007g0000g4000g8000g000000000007" version="1">The configuration record is missing core mechanic key Wound (Chaos Wound).</content>
+  <content contentuid="h8f110008g0000g4000g8000g000000000008" version="1">Missing Core Setting: KillPower</content>
+  <content contentuid="h8f120008g0000g4000g8000g000000000008" version="1">The configuration record is missing core mechanic key KillPower (Chaos Power on kill).</content>
+  <content contentuid="h8f110009g0000g4000g8000g000000000009" version="1">Missing Core Setting: Duality</content>
+  <content contentuid="h8f120009g0000g4000g8000g000000000009" version="1">The configuration record is missing core mechanic key Duality (Chaos Duality).</content>
+  <content contentuid="h8f110010g0000g4000g8000g000000000010" version="1">Missing Core Setting: AllIn</content>
+  <content contentuid="h8f120010g0000g4000g8000g000000000010" version="1">The configuration record is missing core mechanic key AllIn.</content>
+  <content contentuid="h8f110011g0000g4000g8000g000000000011" version="1">Missing Core Setting: Fate</content>
+  <content contentuid="h8f120011g0000g4000g8000g000000000011" version="1">The configuration record is missing core mechanic key Fate (Fate Rewrite).</content>
+  <content contentuid="h8f110012g0000g4000g8000g000000000012" version="1">Missing Core Setting: Genesis</content>
+  <content contentuid="h8f120012g0000g4000g8000g000000000012" version="1">The configuration record is missing core mechanic key Genesis (Chaos Genesis).</content>
+  <content contentuid="h8f110013g0000g4000g8000g000000000013" version="1">Missing Core Setting: Strike</content>
+  <content contentuid="h8f120013g0000g4000g8000g000000000013" version="1">The configuration record is missing core mechanic key Strike (Chaos Strike).</content>
+  <content contentuid="h8f110014g0000g4000g8000g000000000014" version="1">Missing Core Setting: Mastery</content>
+  <content contentuid="h8f120014g0000g4000g8000g000000000014" version="1">The configuration record is missing core mechanic key Mastery (Chaos Mastery).</content>
+  <content contentuid="h8f110015g0000g4000g8000g000000000015" version="1">Missing Setting: Life</content>
+  <content contentuid="h8f120015g0000g4000g8000g000000000015" version="1">The configuration record is missing life-skill bonus key Life.</content>
+  <content contentuid="h8f110016g0000g4000g8000g000000000016" version="1">Missing Setting: FateCost</content>
+  <content contentuid="h8f120016g0000g4000g8000g000000000016" version="1">The configuration record is missing Fate Rewrite cost key FateCost.</content>
+  <content contentuid="h8f110017g0000g4000g8000g000000000017" version="1">Missing Setting: GenesisCost</content>
+  <content contentuid="h8f120017g0000g4000g8000g000000000017" version="1">The configuration record is missing Chaos Genesis cost key GenesisCost.</content>
+  <content contentuid="h8f110018g0000g4000g8000g000000000018" version="1">Missing Configuration Category: Racial</content>
+  <content contentuid="h8f120018g0000g4000g8000g000000000018" version="1">The configuration record is missing the official racial passive settings category Racial.</content>
+  <content contentuid="h8f110019g0000g4000g8000g000000000019" version="1">Missing Configuration Category: Grant</content>
+  <content contentuid="h8f120019g0000g4000g8000g000000000019" version="1">The configuration record is missing grant-menu selection category Grant.</content>
+  <content contentuid="h8f110020g0000g4000g8000g000000000020" version="1">Missing Configuration Category: TagSpells</content>
+  <content contentuid="h8f120020g0000g4000g8000g000000000020" version="1">The configuration record is missing tag-spell grant category TagSpells.</content>
+  <content contentuid="h8f110021g0000g4000g8000g000000000021" version="1">Missing Setting: Volo</content>
+  <content contentuid="h8f120021g0000g4000g8000g000000000021" version="1">The configuration record is missing Volo's Ersatz Eye setting key Volo.</content>
+  <content contentuid="h8f110022g0000g4000g8000g000000000022" version="1">Missing Setting: Carry</content>
+  <content contentuid="h8f120022g0000g4000g8000g000000000022" version="1">The configuration record is missing carrying-capacity setting key Carry.</content>
+  <content contentuid="h8f110023g0000g4000g8000g000000000023" version="1">Mirror Mismatch: Power</content>
+  <content contentuid="h8f120023g0000g4000g8000g000000000023" version="1">The recorded value for core mechanic key Power does not match passive mirror COS_CFG_MECH_POWER.</content>
+  <content contentuid="h8f110024g0000g4000g8000g000000000024" version="1">Mirror Mismatch: Wound</content>
+  <content contentuid="h8f120024g0000g4000g8000g000000000024" version="1">The recorded value for core mechanic key Wound does not match passive mirror COS_CFG_MECH_WOUND.</content>
+  <content contentuid="h8f110025g0000g4000g8000g000000000025" version="1">Mirror Mismatch: KillPower</content>
+  <content contentuid="h8f120025g0000g4000g8000g000000000025" version="1">The recorded value for core mechanic key KillPower does not match passive mirror COS_CFG_MECH_KILLPOWER.</content>
+  <content contentuid="h8f110026g0000g4000g8000g000000000026" version="1">Mirror Mismatch: Duality</content>
+  <content contentuid="h8f120026g0000g4000g8000g000000000026" version="1">The recorded value for core mechanic key Duality does not match passive mirror COS_CFG_MECH_DUALITY.</content>
+  <content contentuid="h8f110027g0000g4000g8000g000000000027" version="1">Mirror Mismatch: AllIn</content>
+  <content contentuid="h8f120027g0000g4000g8000g000000000027" version="1">The recorded value for core mechanic key AllIn does not match passive mirror COS_CFG_MECH_ALLIN.</content>
+  <content contentuid="h8f110028g0000g4000g8000g000000000028" version="1">Mirror Mismatch: Fate</content>
+  <content contentuid="h8f120028g0000g4000g8000g000000000028" version="1">The recorded value for core mechanic key Fate does not match passive mirror COS_CFG_MECH_FATE.</content>
+  <content contentuid="h8f110029g0000g4000g8000g000000000029" version="1">Mirror Mismatch: Genesis</content>
+  <content contentuid="h8f120029g0000g4000g8000g000000000029" version="1">The recorded value for core mechanic key Genesis does not match passive mirror COS_CFG_MECH_GENESIS.</content>
+  <content contentuid="h8f110030g0000g4000g8000g000000000030" version="1">Mirror Mismatch: Strike</content>
+  <content contentuid="h8f120030g0000g4000g8000g000000000030" version="1">The recorded value for core mechanic key Strike does not match passive mirror COS_CFG_MECH_STRIKE.</content>
+  <content contentuid="h8f110031g0000g4000g8000g000000000031" version="1">Mirror Mismatch: Mastery</content>
+  <content contentuid="h8f120031g0000g4000g8000g000000000031" version="1">The recorded value for core mechanic key Mastery does not match passive mirror COS_CFG_MECH_MASTERY.</content>
+  <content contentuid="h8f110032g0000g4000g8000g000000000032" version="1">Mirror Mismatch: Carry</content>
+  <content contentuid="h8f120032g0000g4000g8000g000000000032" version="1">The recorded value for carrying-capacity setting key Carry does not match passive mirror COS_CFG_CARRY.</content>
+  <content contentuid="h8f100001g0000g4000g8000g000000000001" version="1">Runtime Diagnostics</content>
+  <content contentuid="h8f100002g0000g4000g8000g000000000002" version="1">ChaosOriginsStory 1.0.1.98</content>
+  <content contentuid="h8f100003g0000g4000g8000g000000000003" version="1">Current State</content>
+  <content contentuid="h8f100004g0000g4000g8000g000000000004" version="1">Most Recent Sync Issue</content>
+  <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">Chaos Power Points</content>
+  <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">Remaining Chaos Mastery Points</content>
+  <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">Chaos Mastery Points Used: points already allocated to upgrades.</content>
 </contentList>

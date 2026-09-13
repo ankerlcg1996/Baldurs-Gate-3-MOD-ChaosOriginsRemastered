@@ -1050,4 +1050,75 @@
   <content contentuid="h7f000001g0000g4000g8000g000000000001" version="1">自分を含むパーティメンバーを最大10人選び、加速を付与する。1アクションと精神集中が必要。10ターン持続。現在のマップ内の遠くの仲間も対象にできる。</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000002" version="1">属性を選び、メインハンドに武器を持つパーティメンバーを自分を含め最大10人選んで武器を強化する。リソース消費なし。現在のマップ内の遠くの仲間も対象にできる。</content>
   <content contentuid="h7f000001g0000g4000g8000g000000000003" version="1">メインハンドに武器を持つパーティメンバーを自分を含め最大10人選ぶ。武器の攻撃ロールに+[1]、追加ダメージ[2]。大休憩まで持続。リソース消費なし。現在のマップ内の遠くの仲間も対象にできる。</content>
+  <content contentuid="h8f110001g0000g4000g8000g000000000001" version="1">混沌起源ではない</content>
+  <content contentuid="h8f120001g0000g4000g8000g000000000001" version="1">Story はメニューイベントを受信しました。現在のキャラクターには混沌起源マーカーがないため、その他の診断は適用されません。</content>
+  <content contentuid="h8f110002g0000g4000g8000g000000000002" version="1">設定記録が不完全</content>
+  <content contentuid="h8f120002g0000g4000g8000g000000000002" version="1">同期前または同期後に明確な設定欠落が検出されました。「直近の同期問題」を確認してください。</content>
+  <content contentuid="h8f110003g0000g4000g8000g000000000003" version="1">コア設定ミラー不一致</content>
+  <content contentuid="h8f120003g0000g4000g8000g000000000003" version="1">設定記録がメニューのミラーパッシブと一致しません。「直近の同期問題」を確認してください。</content>
+  <content contentuid="h8f110004g0000g4000g8000g000000000004" version="1">実行時診断準備完了</content>
+  <content contentuid="h8f120004g0000g4000g8000g000000000004" version="1">Story はメニューイベントを受信しました。現在のキャラクターは混沌起源として認識され、設定記録は完全で、コア設定はミラーと一致しています。</content>
+  <content contentuid="h8f110005g0000g4000g8000g000000000005" version="1">明確な問題の記録なし</content>
+  <content contentuid="h8f120005g0000g4000g8000g000000000005" version="1">このキャラクターには、明確な設定欠落またはミラー不一致がまだ記録されていません。</content>
+  <content contentuid="h8f110006g0000g4000g8000g000000000006" version="1">コア設定不足：Power</content>
+  <content contentuid="h8f120006g0000g4000g8000g000000000006" version="1">設定記録にコアメカニクスキー Power（混沌の力）がありません。</content>
+  <content contentuid="h8f110007g0000g4000g8000g000000000007" version="1">コア設定不足：Wound</content>
+  <content contentuid="h8f120007g0000g4000g8000g000000000007" version="1">設定記録にコアメカニクスキー Wound（混沌の傷）がありません。</content>
+  <content contentuid="h8f110008g0000g4000g8000g000000000008" version="1">コア設定不足：KillPower</content>
+  <content contentuid="h8f120008g0000g4000g8000g000000000008" version="1">設定記録にコアメカニクスキー KillPower（撃破時の混沌の力）がありません。</content>
+  <content contentuid="h8f110009g0000g4000g8000g000000000009" version="1">コア設定不足：Duality</content>
+  <content contentuid="h8f120009g0000g4000g8000g000000000009" version="1">設定記録にコアメカニクスキー Duality（混沌の二面性）がありません。</content>
+  <content contentuid="h8f110010g0000g4000g8000g000000000010" version="1">コア設定不足：AllIn</content>
+  <content contentuid="h8f120010g0000g4000g8000g000000000010" version="1">設定記録にコアメカニクスキー AllIn（オールイン）がありません。</content>
+  <content contentuid="h8f110011g0000g4000g8000g000000000011" version="1">コア設定不足：Fate</content>
+  <content contentuid="h8f120011g0000g4000g8000g000000000011" version="1">設定記録にコアメカニクスキー Fate（運命改変）がありません。</content>
+  <content contentuid="h8f110012g0000g4000g8000g000000000012" version="1">コア設定不足：Genesis</content>
+  <content contentuid="h8f120012g0000g4000g8000g000000000012" version="1">設定記録にコアメカニクスキー Genesis（混沌創世）がありません。</content>
+  <content contentuid="h8f110013g0000g4000g8000g000000000013" version="1">コア設定不足：Strike</content>
+  <content contentuid="h8f120013g0000g4000g8000g000000000013" version="1">設定記録にコアメカニクスキー Strike（混沌の一撃）がありません。</content>
+  <content contentuid="h8f110014g0000g4000g8000g000000000014" version="1">コア設定不足：Mastery</content>
+  <content contentuid="h8f120014g0000g4000g8000g000000000014" version="1">設定記録にコアメカニクスキー Mastery（混沌掌握）がありません。</content>
+  <content contentuid="h8f110015g0000g4000g8000g000000000015" version="1">設定不足：Life</content>
+  <content contentuid="h8f120015g0000g4000g8000g000000000015" version="1">設定記録に生活技能ボーナスキー Life がありません。</content>
+  <content contentuid="h8f110016g0000g4000g8000g000000000016" version="1">設定不足：FateCost</content>
+  <content contentuid="h8f120016g0000g4000g8000g000000000016" version="1">設定記録に運命改変コストキー FateCost がありません。</content>
+  <content contentuid="h8f110017g0000g4000g8000g000000000017" version="1">設定不足：GenesisCost</content>
+  <content contentuid="h8f120017g0000g4000g8000g000000000017" version="1">設定記録に混沌創世コストキー GenesisCost がありません。</content>
+  <content contentuid="h8f110018g0000g4000g8000g000000000018" version="1">設定カテゴリ不足：Racial</content>
+  <content contentuid="h8f120018g0000g4000g8000g000000000018" version="1">設定記録に公式種族パッシブ設定カテゴリ Racial がありません。</content>
+  <content contentuid="h8f110019g0000g4000g8000g000000000019" version="1">設定カテゴリ不足：Grant</content>
+  <content contentuid="h8f120019g0000g4000g8000g000000000019" version="1">設定記録に grant メニュー選択カテゴリ Grant がありません。</content>
+  <content contentuid="h8f110020g0000g4000g8000g000000000020" version="1">設定カテゴリ不足：TagSpells</content>
+  <content contentuid="h8f120020g0000g4000g8000g000000000020" version="1">設定記録にタグ呪文付与カテゴリ TagSpells がありません。</content>
+  <content contentuid="h8f110021g0000g4000g8000g000000000021" version="1">設定不足：Volo</content>
+  <content contentuid="h8f120021g0000g4000g8000g000000000021" version="1">設定記録にヴォーロの義眼設定キー Volo がありません。</content>
+  <content contentuid="h8f110022g0000g4000g8000g000000000022" version="1">設定不足：Carry</content>
+  <content contentuid="h8f120022g0000g4000g8000g000000000022" version="1">設定記録に運搬容量設定キー Carry がありません。</content>
+  <content contentuid="h8f110023g0000g4000g8000g000000000023" version="1">ミラー不一致：Power</content>
+  <content contentuid="h8f120023g0000g4000g8000g000000000023" version="1">コアメカニクスキー Power の記録値がパッシブミラー COS_CFG_MECH_POWER と一致しません。</content>
+  <content contentuid="h8f110024g0000g4000g8000g000000000024" version="1">ミラー不一致：Wound</content>
+  <content contentuid="h8f120024g0000g4000g8000g000000000024" version="1">コアメカニクスキー Wound の記録値がパッシブミラー COS_CFG_MECH_WOUND と一致しません。</content>
+  <content contentuid="h8f110025g0000g4000g8000g000000000025" version="1">ミラー不一致：KillPower</content>
+  <content contentuid="h8f120025g0000g4000g8000g000000000025" version="1">コアメカニクスキー KillPower の記録値がパッシブミラー COS_CFG_MECH_KILLPOWER と一致しません。</content>
+  <content contentuid="h8f110026g0000g4000g8000g000000000026" version="1">ミラー不一致：Duality</content>
+  <content contentuid="h8f120026g0000g4000g8000g000000000026" version="1">コアメカニクスキー Duality の記録値がパッシブミラー COS_CFG_MECH_DUALITY と一致しません。</content>
+  <content contentuid="h8f110027g0000g4000g8000g000000000027" version="1">ミラー不一致：AllIn</content>
+  <content contentuid="h8f120027g0000g4000g8000g000000000027" version="1">コアメカニクスキー AllIn の記録値がパッシブミラー COS_CFG_MECH_ALLIN と一致しません。</content>
+  <content contentuid="h8f110028g0000g4000g8000g000000000028" version="1">ミラー不一致：Fate</content>
+  <content contentuid="h8f120028g0000g4000g8000g000000000028" version="1">コアメカニクスキー Fate の記録値がパッシブミラー COS_CFG_MECH_FATE と一致しません。</content>
+  <content contentuid="h8f110029g0000g4000g8000g000000000029" version="1">ミラー不一致：Genesis</content>
+  <content contentuid="h8f120029g0000g4000g8000g000000000029" version="1">コアメカニクスキー Genesis の記録値がパッシブミラー COS_CFG_MECH_GENESIS と一致しません。</content>
+  <content contentuid="h8f110030g0000g4000g8000g000000000030" version="1">ミラー不一致：Strike</content>
+  <content contentuid="h8f120030g0000g4000g8000g000000000030" version="1">コアメカニクスキー Strike の記録値がパッシブミラー COS_CFG_MECH_STRIKE と一致しません。</content>
+  <content contentuid="h8f110031g0000g4000g8000g000000000031" version="1">ミラー不一致：Mastery</content>
+  <content contentuid="h8f120031g0000g4000g8000g000000000031" version="1">コアメカニクスキー Mastery の記録値がパッシブミラー COS_CFG_MECH_MASTERY と一致しません。</content>
+  <content contentuid="h8f110032g0000g4000g8000g000000000032" version="1">ミラー不一致：Carry</content>
+  <content contentuid="h8f120032g0000g4000g8000g000000000032" version="1">運搬容量設定キー Carry の記録値がパッシブミラー COS_CFG_CARRY と一致しません。</content>
+  <content contentuid="h8f100001g0000g4000g8000g000000000001" version="1">実行時診断</content>
+  <content contentuid="h8f100002g0000g4000g8000g000000000002" version="1">ChaosOriginsStory 1.0.1.98</content>
+  <content contentuid="h8f100003g0000g4000g8000g000000000003" version="1">現在の状態</content>
+  <content contentuid="h8f100004g0000g4000g8000g000000000004" version="1">直近の同期問題</content>
+  <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">混沌の力ポイント</content>
+  <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">残り混沌掌握ポイント</content>
+  <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">使用済み混沌掌握ポイント：アップグレードに割り当て済みのポイントです。</content>
 </contentList>

@@ -904,6 +904,11 @@ $lifeSkillDescriptionTemplates = @{
     Japanese = '混沌の起源はすべての技能判定に固定+5を得る。このレベル成長状態は能力値判定に+{0}を与える。習熟や専門化は付与せず、攻撃、セーヴ、呪文DCには影響しない。'
     Korean = '혼돈 기원은 모든 기술 판정에 고정 +5를 얻습니다. 이 레벨 성장 상태는 순수 능력 판정에 +{0} 보너스를 부여합니다. 숙련이나 전문화를 부여하지 않으며 공격, 내성, 주문 DC에는 영향을 주지 않습니다.'
 }
+$expectedExistingLocalizationHandleCount = 1050
+$expectedRuntimeDiagnosticLocalizationHandleCount = 71
+$expectedLocalizationHandleCount = 1121
+Require ($expectedLocalizationHandleCount -eq ($expectedExistingLocalizationHandleCount + $expectedRuntimeDiagnosticLocalizationHandleCount)) `
+    '完整本地化明确计数必须等于既有 1050 加运行诊断 71'
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少本地化源: $language"
@@ -931,7 +936,7 @@ foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $tuneDescription = [string]$contentsByHandle['h0cf72805gf1e4g4f89gbc8fgb4eb4561d859'].InnerText
     Require (-not [regex]::IsMatch($tuneDescription, '(?:\+1%|-1%)')) `
         "调律说明仍使用旧百分比: $language"
-    Require ($handles.Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 10 + 3) -and @($handles | Select-Object -Unique).Count -eq (720 + $grantMenu.Count + 8 + 75 + 2 + 3 + 150 + 5 + 10 + 3)) `
+    Require ($handles.Count -eq $expectedLocalizationHandleCount -and @($handles | Select-Object -Unique).Count -eq $expectedLocalizationHandleCount) `
         "完整本地化必须包含既有文本与逐项授予菜单文本: $language"
     foreach ($settingsHandle in @(
         'h74000001g0001g4001g8001g000000000001',
@@ -2560,10 +2565,31 @@ Require ([regex]::Matches($configGoal,
 
 $configPassiveEntries = @([regex]::Matches($configStats, '(?m)^new entry "([^"]+)"$') |
     ForEach-Object { $_.Groups[1].Value })
-$expectedConfigPassiveEntries = @($coreMechanicMirrors + $expectedRacialMirrors.Values + @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE', 'COS_VOLO_EYE_DISABLED'))
-Require ($configPassiveEntries.Count -eq 32 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 32 -and
+$expectedRuntimeDiagnosticStatusEntries = @(
+    'COS_DIAG_STATE_NOT_ORIGIN', 'COS_DIAG_STATE_CONFIG_INCOMPLETE', 'COS_DIAG_STATE_CORE_MISMATCH', 'COS_DIAG_STATE_READY',
+    'COS_DIAG_LAST_NONE',
+    'COS_DIAG_LAST_MISSING_POWER', 'COS_DIAG_LAST_MISSING_WOUND', 'COS_DIAG_LAST_MISSING_KILLPOWER',
+    'COS_DIAG_LAST_MISSING_DUALITY', 'COS_DIAG_LAST_MISSING_ALLIN', 'COS_DIAG_LAST_MISSING_FATE',
+    'COS_DIAG_LAST_MISSING_GENESIS', 'COS_DIAG_LAST_MISSING_STRIKE', 'COS_DIAG_LAST_MISSING_MASTERY',
+    'COS_DIAG_LAST_MISSING_LIFE', 'COS_DIAG_LAST_MISSING_FATE_COST', 'COS_DIAG_LAST_MISSING_GENESIS_COST',
+    'COS_DIAG_LAST_MISSING_RACIAL', 'COS_DIAG_LAST_MISSING_GRANT', 'COS_DIAG_LAST_MISSING_TAG_SPELLS',
+    'COS_DIAG_LAST_MISSING_VOLO', 'COS_DIAG_LAST_MISSING_CARRY',
+    'COS_DIAG_LAST_MISMATCH_POWER', 'COS_DIAG_LAST_MISMATCH_WOUND', 'COS_DIAG_LAST_MISMATCH_KILLPOWER',
+    'COS_DIAG_LAST_MISMATCH_DUALITY', 'COS_DIAG_LAST_MISMATCH_ALLIN', 'COS_DIAG_LAST_MISMATCH_FATE',
+    'COS_DIAG_LAST_MISMATCH_GENESIS', 'COS_DIAG_LAST_MISMATCH_STRIKE', 'COS_DIAG_LAST_MISMATCH_MASTERY',
+    'COS_DIAG_LAST_MISMATCH_CARRY'
+)
+$expectedConfigPassiveEntries = @(
+    $coreMechanicMirrors +
+    $expectedRacialMirrors.Values +
+    @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE', 'COS_VOLO_EYE_DISABLED') +
+    $expectedRuntimeDiagnosticStatusEntries
+)
+Require ($expectedConfigPassiveEntries.Count -eq 64) `
+    'ChaosConfig.txt 明确条目计数必须等于既有 32 加运行诊断 32'
+Require ($configPassiveEntries.Count -eq 64 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 64 -and
     -not (Compare-Object ($expectedConfigPassiveEntries | Sort-Object) ($configPassiveEntries | Sort-Object))) `
-    'ChaosConfig.txt 必须定义九个核心机制、20个种族回显及瓦罗开关与效果'
+    'ChaosConfig.txt 必须精确定义既有 32 个配置条目与 32 个只读运行诊断状态'
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
@@ -2733,13 +2759,37 @@ $uiOpenedBlocks = @($configIfBlocks | Where-Object {
 })
 Require ([regex]::Matches($configGoal,
     '(?m)^DB_COS_ConfigUiOpenedEvent\(\(TUTORIALEVENT\)COS_CFG_UI_OPENED_65247962-a3b0-417d-9044-85e4aad38079\);$').Count -eq 1 -and
-    $uiOpenedBlocks.Count -eq 1) 'UI_OPENED 必须只用固定 TutorialEvent 映射到一个读取入口'
-$uiOpenedActions = @((Get-StoryThen $uiOpenedBlocks[0]).Replace("`r`n", "`n") -split "`n" |
+    $uiOpenedBlocks.Count -eq 2) 'UI_OPENED 必须只用固定 TutorialEvent 映射到起源与非起源两个只读诊断入口'
+$nonOriginUiOpenedBlocks = @($uiOpenedBlocks | Where-Object {
+    $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 0)') -and
+    -not $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)')
+})
+$originUiOpenedBlocks = @($uiOpenedBlocks | Where-Object {
+    $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and
+    -not $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 0)')
+})
+Require ($nonOriginUiOpenedBlocks.Count -eq 1 -and $originUiOpenedBlocks.Count -eq 1) `
+    'UI_OPENED 必须精确拆分为一个非起源诊断入口和一个起源同步入口'
+$nonOriginUiOpenedBlock = $nonOriginUiOpenedBlocks[0]
+$originUiOpenedBlock = $originUiOpenedBlocks[0]
+$nonOriginUiOpenedActions = @((Get-StoryThen $nonOriginUiOpenedBlock).Replace("`r`n", "`n") -split "`n" |
     ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
-Require ($uiOpenedBlocks[0].Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 1)') -and
-    $uiOpenedBlocks[0].Contains('IsControlled(_Character, 1)') -and
-    $uiOpenedActions.Count -eq 2 -and $uiOpenedActions[0] -eq 'PROC_COS_ConfigSyncCharacter(_Character);' -and $uiOpenedActions[1] -eq 'PROC_COS_ShowLastFate(_Character);') `
-    'UI_OPENED 只允许受控混沌角色通过 ConfigSyncCharacter 初始化和同步，不得直接写配置值'
+Require ($nonOriginUiOpenedBlock.Contains('IsControlled(_Character, 1)') -and
+    $nonOriginUiOpenedActions.Count -eq 1 -and
+    $nonOriginUiOpenedActions[0] -eq 'PROC_COS_RuntimeDiagnosticUpdate(_Character);') `
+    '非起源 UI_OPENED 只允许受控角色执行一次只读运行诊断'
+$originUiOpenedActions = @((Get-StoryThen $originUiOpenedBlock).Replace("`r`n", "`n") -split "`n" |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
+$expectedOriginUiOpenedActions = @(
+    'PROC_COS_RuntimeDiagnosticUpdate(_Character);',
+    'PROC_COS_ConfigSyncCharacter(_Character);',
+    'PROC_COS_RuntimeDiagnosticUpdate(_Character);',
+    'PROC_COS_ShowLastFate(_Character);'
+)
+Require ($originUiOpenedBlock.Contains('IsControlled(_Character, 1)') -and
+    $originUiOpenedActions.Count -eq 4 -and
+    (($originUiOpenedActions -join '|') -ceq ($expectedOriginUiOpenedActions -join '|'))) `
+    '起源 UI_OPENED 必须按诊断、既有同步、再诊断、最近抽签的顺序执行'
 $allStoryBlocksForConfigSync = @(
     @(Get-AllStoryBlocks $configGoal) + $mechanicsAllBlocksForConfig +
     @(Get-AllStoryBlocks $goal) + @(Get-AllStoryBlocks $masteryGoal) + @(Get-AllStoryBlocks $rewardGoal)
@@ -2757,7 +2807,7 @@ foreach ($lifecycleEvent in $lifecycleSyncSpecs) {
     })
     Require ($lifecycleSyncBlocks.Count -eq 1) "ConfigSyncCharacter 必须只由带 OriginMarker 的生命周期事件调用: $lifecycleEvent"
 }
-Require ($allConfigSyncCallBlocks.Count -eq 5 -and $allConfigSyncCallBlocks -contains $uiOpenedBlocks[0]) `
+Require ($allConfigSyncCallBlocks.Count -eq 5 -and $allConfigSyncCallBlocks -contains $originUiOpenedBlock) `
     'ConfigSyncCharacter 的外部调用必须且只能是四个生命周期块和 UI_OPENED'
 Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore').Count -eq 1 -and
     (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors').Count -ge 1) `
@@ -4770,4 +4820,5 @@ Require ([regex]::Matches($statusText, 'DisableOverhead;DisablePortraitIndicator
 
 & (Join-Path $PSScriptRoot 'verify-level5-multitarget.ps1')
 & (Join-Path $PSScriptRoot 'verify-life-skill-exclusions.ps1')
+& (Join-Path $PSScriptRoot 'verify-runtime-diagnostics.ps1')
 Write-Host 'ChaosOriginsStory final native Story source verification: ok'
