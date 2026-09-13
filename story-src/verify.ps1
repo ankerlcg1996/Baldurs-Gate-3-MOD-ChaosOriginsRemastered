@@ -1,7 +1,14 @@
 #requires -Version 7.0
 
-param([switch]$GrantRuntimeIsolation, [switch]$GrantSeedOnly,
-    [ValidateSet('SeedOnly', 'CaptureApply')][string]$GrantPartition = 'SeedOnly')
+param(
+    [switch]$GrantRuntimeIsolation,
+    [switch]$GrantSeedOnly,
+    [ValidateSet('SeedOnly', 'CaptureApply')]
+    [string]$GrantPartition = 'SeedOnly',
+    [AllowNull()]
+    [AllowEmptyString()]
+    [string]$ExpectedDisplayVersion
+)
 if ($GrantSeedOnly -and -not $GrantRuntimeIsolation) { throw 'Seed-only testing requires runtime isolation' }
 
 $ErrorActionPreference = 'Stop'
@@ -4820,5 +4827,9 @@ Require ([regex]::Matches($statusText, 'DisableOverhead;DisablePortraitIndicator
 
 & (Join-Path $PSScriptRoot 'verify-level5-multitarget.ps1')
 & (Join-Path $PSScriptRoot 'verify-life-skill-exclusions.ps1')
-& (Join-Path $PSScriptRoot 'verify-runtime-diagnostics.ps1')
+$runtimeDiagnosticArguments = @{}
+if ($PSBoundParameters.ContainsKey('ExpectedDisplayVersion')) {
+    $runtimeDiagnosticArguments.ExpectedDisplayVersion = $ExpectedDisplayVersion
+}
+& (Join-Path $PSScriptRoot 'verify-runtime-diagnostics.ps1') @runtimeDiagnosticArguments
 Write-Host 'ChaosOriginsStory final native Story source verification: ok'

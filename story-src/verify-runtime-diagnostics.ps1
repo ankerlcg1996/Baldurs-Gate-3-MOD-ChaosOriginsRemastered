@@ -1,7 +1,10 @@
 #requires -Version 7.0
 
 param(
-    [string]$Root = $PSScriptRoot
+    [string]$Root = $PSScriptRoot,
+    [AllowNull()]
+    [AllowEmptyString()]
+    [string]$ExpectedDisplayVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,6 +31,116 @@ function Get-RequiredText {
 
     Require (Test-Path -LiteralPath $Path -PathType Leaf) "缺少文件: $Path"
     Get-Content -Raw -LiteralPath $Path
+}
+
+function Resolve-ExpectedDisplayVersion {
+    param(
+        [Parameter(Mandatory)]
+        [object]$Version,
+
+        [Parameter(Mandatory)]
+        [bool]$OverrideProvided,
+
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$Override
+    )
+
+    $currentDisplayVersion = '{0}.{1}.{2}.{3}' -f `
+        $Version.major, $Version.minor, $Version.revision, $Version.lastBuild
+    if (-not $OverrideProvided) {
+        return $currentDisplayVersion
+    }
+
+    Require (-not [string]::IsNullOrWhiteSpace($Override)) `
+        'ExpectedDisplayVersion 已显式提供但为空'
+    Require ([regex]::IsMatch(
+        $Override,
+        '^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\z'
+    )) "ExpectedDisplayVersion 格式错误: $Override"
+    return $Override
+}
+
+function Test-BuildNextVersionPreflightContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $tokens = [ordered]@{
+        VersionRead = '$version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json'
+        SchemaCheck = 'Require ($version.schema -eq 1)'
+        IntegerCheck = 'Require ($version.$field -is [int] -or $version.$field -is [long])'
+        NonNegativeCheck = 'Require ([int64]$version.$field -ge 0)'
+        NextBuild = '$nextBuild = [int64]$version.lastBuild + 1'
+        NextVersion64 = '$nextVersion64 = '
+        NextDisplayVersion = '$nextDisplayVersion = '
+        VerifyCall = '& (Join-Path $root ''verify.ps1'')'
+        ExpectedArgument = '-ExpectedDisplayVersion $nextDisplayVersion'
+        CompileStart = '$compileStoryScript = Join-Path $root ''compile-story.ps1'''
+        VersionWrite = '$version.lastBuild = $nextBuild'
+    }
+    $positions = @{}
+    foreach ($name in $tokens.Keys) {
+        $positions[$name] = $Content.IndexOf($tokens[$name], [StringComparison]::Ordinal)
+        if ($positions[$name] -lt 0) {
+            return $false
+        }
+    }
+
+    foreach ($singleUseName in @(
+        'VersionRead', 'NextBuild', 'NextVersion64', 'NextDisplayVersion',
+        'ExpectedArgument', 'VersionWrite'
+    )) {
+        if ([regex]::Matches(
+            $Content,
+            [regex]::Escape($tokens[$singleUseName])
+        ).Count -ne 1) {
+            return $false
+        }
+    }
+
+    return (
+        $positions.VersionRead -lt $positions.SchemaCheck -and
+        $positions.SchemaCheck -lt $positions.IntegerCheck -and
+        $positions.IntegerCheck -lt $positions.NonNegativeCheck -and
+        $positions.NonNegativeCheck -lt $positions.NextBuild -and
+        $positions.NextBuild -lt $positions.NextVersion64 -and
+        $positions.NextVersion64 -lt $positions.NextDisplayVersion -and
+        $positions.NextDisplayVersion -lt $positions.VerifyCall -and
+        $positions.VerifyCall -lt $positions.ExpectedArgument -and
+        $positions.ExpectedArgument -lt $positions.CompileStart -and
+        $positions.CompileStart -lt $positions.VersionWrite -and
+        -not $Content.Contains('$displayVersion')
+    )
+}
+
+function Test-VerifyDisplayVersionPassThroughContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $parameterToken = '[string]$ExpectedDisplayVersion'
+    $argumentsToken = '$runtimeDiagnosticArguments = @{}'
+    $conditionToken = 'if ($PSBoundParameters.ContainsKey(''ExpectedDisplayVersion'')) {'
+    $assignmentToken = '$runtimeDiagnosticArguments.ExpectedDisplayVersion = $ExpectedDisplayVersion'
+    $callToken = '& (Join-Path $PSScriptRoot ''verify-runtime-diagnostics.ps1'') @runtimeDiagnosticArguments'
+    $parameterIndex = $Content.IndexOf($parameterToken, [StringComparison]::Ordinal)
+    $argumentsIndex = $Content.IndexOf($argumentsToken, [StringComparison]::Ordinal)
+    $conditionIndex = $Content.IndexOf($conditionToken, [StringComparison]::Ordinal)
+    $assignmentIndex = $Content.IndexOf($assignmentToken, [StringComparison]::Ordinal)
+    $callIndex = $Content.IndexOf($callToken, [StringComparison]::Ordinal)
+
+    return (
+        $parameterIndex -ge 0 -and
+        $argumentsIndex -gt $parameterIndex -and
+        $conditionIndex -gt $argumentsIndex -and
+        $assignmentIndex -gt $conditionIndex -and
+        $callIndex -gt $assignmentIndex -and
+        [regex]::Matches($Content, [regex]::Escape($assignmentToken)).Count -eq 1 -and
+        [regex]::Matches($Content, [regex]::Escape($callToken)).Count -eq 1
+    )
 }
 
 function Test-ExactOrdinalSet {
@@ -1206,6 +1319,8 @@ $chaosConfigPath = Join-Path $Root 'Public\ChaosOriginsStory\Stats\Generated\Dat
 $grantMenuPath = Join-Path $Root 'grant-menu.json'
 $packageFilesPath = Join-Path $Root 'package-files.json'
 $versionPath = Join-Path $Root 'version.json'
+$buildScriptPath = Join-Path $Root 'build.ps1'
+$verifyScriptPath = Join-Path $Root 'verify.ps1'
 $contractPath = Join-Path $Root '..\docs\runtime-contract-1.0.1.97.md'
 
 Require (Test-Path -LiteralPath $goalRoot -PathType Container) "缺少 Goal 目录: $goalRoot"
@@ -1237,7 +1352,57 @@ Require ($characterLeftPartyCount -eq 0) "生产 Goal 包含 CharacterLeftParty 
 
 $version = Get-RequiredText $versionPath | ConvertFrom-Json
 Require ($version.major -eq 1 -and $version.minor -eq 0 -and $version.revision -eq 1) '版本号不是 1.0.1'
-Require ($version.lastBuild -eq 97) "version lastBuild 错误: 期望 97，实际 $($version.lastBuild)"
+foreach ($field in @('major', 'minor', 'revision', 'lastBuild')) {
+    Require ($version.$field -is [int] -or $version.$field -is [long]) "版本字段必须为整数: $field"
+    Require ([int64]$version.$field -ge 0) "版本字段不得为负数: $field"
+}
+$expectedDisplayVersion = Resolve-ExpectedDisplayVersion `
+    -Version $version `
+    -OverrideProvided ($PSBoundParameters.ContainsKey('ExpectedDisplayVersion')) `
+    -Override $ExpectedDisplayVersion
+
+$currentDisplayVersion = '{0}.{1}.{2}.{3}' -f `
+    $version.major, $version.minor, $version.revision, $version.lastBuild
+$defaultDisplayVersion = Resolve-ExpectedDisplayVersion `
+    -Version $version -OverrideProvided $false -Override $null
+Require ($defaultDisplayVersion -ceq $currentDisplayVersion) `
+    '未提供 ExpectedDisplayVersion 时必须精确使用 version.json 当前版本'
+
+foreach ($invalidDisplayVersion in @('', ' ', '1.0.1', '01.0.1.98', '1.0.1.-1', '1.0.1.98 ')) {
+    $invalidDisplayVersionRejected = $false
+    try {
+        [void](Resolve-ExpectedDisplayVersion `
+            -Version $version -OverrideProvided $true -Override $invalidDisplayVersion)
+    }
+    catch {
+        $invalidDisplayVersionRejected = $_.Exception.Message.Contains('ExpectedDisplayVersion')
+    }
+    Require $invalidDisplayVersionRejected `
+        "ExpectedDisplayVersion 非法值未被拒绝: [$invalidDisplayVersion]"
+}
+
+$buildScriptContent = Get-RequiredText $buildScriptPath
+$verifyScriptContent = Get-RequiredText $verifyScriptPath
+Require (Test-BuildNextVersionPreflightContract -Content $buildScriptContent) `
+    'build.ps1 未在写版本前以 nextDisplayVersion 执行严格预检'
+Require (Test-VerifyDisplayVersionPassThroughContract -Content $verifyScriptContent) `
+    'verify.ps1 未按是否显式提供参数原样透传 ExpectedDisplayVersion'
+
+$buildWithoutExpectedVersion = $buildScriptContent.Replace(
+    '-ExpectedDisplayVersion $nextDisplayVersion',
+    '-GrantPartition $GrantPartition'
+)
+Require ($buildWithoutExpectedVersion -cne $buildScriptContent -and
+    -not (Test-BuildNextVersionPreflightContract -Content $buildWithoutExpectedVersion)) `
+    '构建预检参数移除变异未被拒绝'
+
+$verifyWithoutPassThrough = $verifyScriptContent.Replace(
+    '$runtimeDiagnosticArguments.ExpectedDisplayVersion = $ExpectedDisplayVersion',
+    '$runtimeDiagnosticArguments.Unrelated = $ExpectedDisplayVersion'
+)
+Require ($verifyWithoutPassThrough -cne $verifyScriptContent -and
+    -not (Test-VerifyDisplayVersionPassThroughContract -Content $verifyWithoutPassThrough)) `
+    '验证参数透传移除变异未被拒绝'
 
 $packageFiles = Get-RequiredText $packageFilesPath | ConvertFrom-Json
 $packagedPaths = @($packageFiles.files)
@@ -1627,11 +1792,33 @@ foreach ($language in $localizationPaths.Keys) {
     }
 
     $staticVersionNode = @($contentNodes | Where-Object { $_.GetAttribute('contentuid') -ceq $uiHandles.StaticVersion })[0]
-    Require ($staticVersionNode.InnerText -ceq 'ChaosOriginsStory 1.0.1.98') "静态版本文本错误: $language"
+    Require ($staticVersionNode.InnerText -ceq "ChaosOriginsStory $expectedDisplayVersion") "静态版本文本错误: $language"
 }
+
+$wrongExpectedDisplayVersion = if ($expectedDisplayVersion -cne '0.0.0.0') {
+    '0.0.0.0'
+} else {
+    '0.0.0.1'
+}
+$wrongExpectedDisplayVersionRejected = $false
+try {
+    foreach ($language in $localizationPaths.Keys) {
+        $contentNodes = @($localizationNodesByLanguage[$language])
+        $staticVersionNode = @($contentNodes | Where-Object {
+            $_.GetAttribute('contentuid') -ceq $uiHandles.StaticVersion
+        })[0]
+        Require ($staticVersionNode.InnerText -ceq "ChaosOriginsStory $wrongExpectedDisplayVersion") `
+            "静态版本文本错误: $language"
+    }
+}
+catch {
+    $wrongExpectedDisplayVersionRejected = $_.Exception.Message.Contains('静态版本文本错误')
+}
+Require $wrongExpectedDisplayVersionRejected '错误的显式 ExpectedDisplayVersion 未被拒绝'
 
 Write-Output "Runtime diagnostic status count: $($diagnosticEntries.Count)"
 Write-Output "Runtime diagnostic localization handle count: $($requiredLocalizationHandles.Count)"
+Write-Output 'Runtime diagnostic version preflight: build-next=PASS; verify-pass-through=PASS; default-current=PASS; invalid-explicit=PASS; wrong-explicit=PASS'
 
 $diagnosticStoryBlocks = @(Assert-RuntimeDiagnosticStoryContract -Content $configGoal -CoreMechanics $coreMechanics -RacialKeys $expectedRacialDefaults -KnownDiagnosticStatuses $expectedDiagnosticStatuses)
 

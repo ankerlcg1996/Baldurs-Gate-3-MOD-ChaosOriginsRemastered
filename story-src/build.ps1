@@ -39,7 +39,26 @@ function Reset-WorkChild([string]$Path) {
 . (Join-Path $root 'build-process.ps1')
 . (Join-Path $root 'story-ir-attestation.ps1')
 
-& (Join-Path $root 'verify.ps1') -GrantRuntimeIsolation:$GrantRuntimeIsolation -GrantSeedOnly:$GrantSeedOnly -GrantPartition $GrantPartition
+Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
+$version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+Require ($version.schema -eq 1) '不支持的版本文件格式'
+foreach ($field in @('major', 'minor', 'revision', 'lastBuild')) {
+    Require ($version.$field -is [int] -or $version.$field -is [long]) "版本字段必须为整数: $field"
+    Require ([int64]$version.$field -ge 0) "版本字段不得为负数: $field"
+}
+$nextBuild = [int64]$version.lastBuild + 1
+Require ($nextBuild -ge 1 -and $nextBuild -le 2147483647) '末位版本号超出 BG3 Version64 范围'
+$nextVersion64 = ([int64]$version.major * 36028797018963968) + `
+    ([int64]$version.minor * 140737488355328) + `
+    ([int64]$version.revision * 2147483648) + $nextBuild
+$nextDisplayVersion = '{0}.{1}.{2}.{3}' -f `
+    $version.major, $version.minor, $version.revision, $nextBuild
+
+& (Join-Path $root 'verify.ps1') `
+    -GrantRuntimeIsolation:$GrantRuntimeIsolation `
+    -GrantSeedOnly:$GrantSeedOnly `
+    -GrantPartition $GrantPartition `
+    -ExpectedDisplayVersion $nextDisplayVersion
 $compileStoryScript = Join-Path $root 'compile-story.ps1'
 $compiledStoryPath = Join-Path $work 'compiled-story\story.div.osi'
 $storyDebugInfoPath = Join-Path $work 'compiled-story\story.debug-info.pb'
@@ -57,19 +76,6 @@ Require ($storyIrAttestation.validated -eq $true) 'Story IR 证明未通过构�
 
 $selectedLslibPath = [IO.Path]::GetFullPath($LslibPath)
 Require (Test-Path -LiteralPath $selectedLslibPath -PathType Leaf) "缺少 LSLib: $selectedLslibPath"
-Require (Test-Path -LiteralPath $versionPath -PathType Leaf) '缺少 version.json'
-
-$version = Get-Content -LiteralPath $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
-Require ($version.schema -eq 1) '不支持的版本文件格式'
-foreach ($field in @('major', 'minor', 'revision', 'lastBuild')) {
-    Require ($version.$field -is [int] -or $version.$field -is [long]) "版本字段必须为整数: $field"
-}
-$nextBuild = [int64]$version.lastBuild + 1
-Require ($nextBuild -ge 1 -and $nextBuild -le 2147483647) '末位版本号超出 BG3 Version64 范围'
-$nextVersion64 = ([int64]$version.major * 36028797018963968) + `
-    ([int64]$version.minor * 140737488355328) + `
-    ([int64]$version.revision * 2147483648) + $nextBuild
-$displayVersion = '{0}.{1}.{2}.{3}' -f $version.major, $version.minor, $version.revision, $nextBuild
 
 $manifestDocument = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 Require ($manifestDocument.schema -eq 1) '不支持的打包清单格式'
@@ -236,7 +242,7 @@ $version | ConvertTo-Json | Set-Content -LiteralPath $versionPath -Encoding UTF8
 
 $buildManifest = [ordered]@{
     schema = 1
-    displayVersion = $displayVersion
+    displayVersion = $nextDisplayVersion
     grantRuntimeIsolation = [bool]$GrantRuntimeIsolation
     grantStatusIsolation = [bool]$GrantStatusIsolation
     grantSeedOnly = [bool]$GrantSeedOnly
@@ -248,4 +254,4 @@ $buildManifest = [ordered]@{
     files = $actual
 }
 $buildManifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $dist 'build-manifest.json') -Encoding UTF8
-Write-Host "Story 最终候选 PAK 构建并反向校验完成: $displayVersion ($nextVersion64), $pak ($($actual.Count) files)"
+Write-Host "Story 最终候选 PAK 构建并反向校验完成: $nextDisplayVersion ($nextVersion64), $pak ($($actual.Count) files)"
