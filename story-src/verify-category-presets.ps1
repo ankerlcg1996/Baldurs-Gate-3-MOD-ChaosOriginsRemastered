@@ -2695,6 +2695,11 @@ function Assert-UiPageContract {
 
     $noticeNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetPreviewNotice')
     $actionNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetActions')
+    Require ($noticeNodes.Count -eq 1) "$PageName 预设 notice 容器缺失或重复"
+    Require ([string]::IsNullOrWhiteSpace($noticeNodes[0].GetAttribute('Margin')) -or $noticeNodes[0].GetAttribute('Margin') -ceq '0') "$PageName COSPresetPreviewNotice 不得在空状态保留外层间距"
+    $noticeEntryNodes = @($noticeNodes[0].SelectNodes('.//*') | Where-Object { (Get-XamlName -Node $_) -ceq 'PreviewNoticeEntry' })
+    Require ($noticeEntryNodes.Count -eq 1 -and $noticeEntryNodes[0].GetAttribute('Visibility') -ceq 'Collapsed') "$PageName notice 条目必须默认折叠"
+    Require ($noticeEntryNodes[0].GetAttribute('Margin') -ceq '12,4,12,18') "$PageName notice 间距必须位于可折叠条目内"
     $panelElementChildren = @($panelNodes[0].ChildNodes | Where-Object { $_.NodeType -eq [System.Xml.XmlNodeType]::Element })
     $previewIndex = [Array]::IndexOf($panelElementChildren, $previewNodes[0])
     $noticeIndex = [Array]::IndexOf($panelElementChildren, $noticeNodes[0])
@@ -4309,6 +4314,15 @@ $previewContainerSetter = @($previewContainerTrigger.SelectNodes('./*[local-name
 [void]$previewContainerSetter.SetAttribute('TargetName', 'COSPresetPreviewEntry')
 Assert-MutationRejected -Name 'xaml-preview-container-collapse' -ExpectedMessagePattern '^controller-probe preview 状态必须控制 COSPresetPreviewPanel 可见性: COS_PRESET_PREVIEW_CORE_ON$' -Probe {
     [void](Assert-UiPageContract -Content $previewContainerMutationDocument.OuterXml @controllerProbeArguments)
+}
+
+[xml]$noticeSpacingMutationDocument = $controllerXaml
+$noticeSpacingNode = @(Get-XamlNamedNodes -Document $noticeSpacingMutationDocument -Name 'COSPresetPreviewNotice')[0]
+$noticeSpacingEntry = @($noticeSpacingNode.SelectNodes('.//*') | Where-Object { (Get-XamlName -Node $_) -ceq 'PreviewNoticeEntry' })[0]
+[void]$noticeSpacingNode.SetAttribute('Margin', $noticeSpacingEntry.GetAttribute('Margin'))
+[void]$noticeSpacingEntry.RemoveAttribute('Margin')
+Assert-MutationRejected -Name 'xaml-notice-empty-spacing' -ExpectedMessagePattern '^controller-probe COSPresetPreviewNotice 不得在空状态保留外层间距$' -Probe {
+    [void](Assert-UiPageContract -Content $noticeSpacingMutationDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$pausedChildEnabledDocument = $controllerXaml
