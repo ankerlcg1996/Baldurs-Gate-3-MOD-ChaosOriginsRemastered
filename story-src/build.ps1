@@ -41,14 +41,20 @@ function Write-VersionedLocalization(
     [string]$DestinationPath,
     [string]$DisplayVersion
 ) {
-    [xml]$document = Get-Content -LiteralPath $SourcePath -Raw -Encoding UTF8
-    $nodes = @($document.SelectNodes(
-        '/contentList/content[@contentuid="h8f100002g0000g4000g8000g000000000002"]'
-    ))
-    Require ($nodes.Count -eq 1) "静态版本本地化句柄数量错误: $SourcePath"
-    $nodes[0].InnerText = "ChaosOriginsStory $DisplayVersion"
+    $content = Get-Content -LiteralPath $SourcePath -Raw -Encoding UTF8
+    $pattern = '(<content contentuid="h8f100002g0000g4000g8000g000000000002" version="1">)[^<]*(</content>)'
+    $matches = [regex]::Matches($content, $pattern)
+    Require ($matches.Count -eq 1) "静态版本本地化句柄数量错误: $SourcePath"
+    $match = $matches[0]
+    $replacement = $match.Groups[1].Value + "ChaosOriginsStory $DisplayVersion" + $match.Groups[2].Value
+    $versionedContent = $content.Substring(0, $match.Index) + $replacement + `
+        $content.Substring($match.Index + $match.Length)
     New-Item -ItemType Directory -Path (Split-Path $DestinationPath -Parent) -Force | Out-Null
-    $document.OuterXml | Set-Content -LiteralPath $DestinationPath -Encoding UTF8
+    [IO.File]::WriteAllText(
+        [IO.Path]::GetFullPath($DestinationPath),
+        $versionedContent,
+        [Text.UTF8Encoding]::new($false)
+    )
 }
 
 . (Join-Path $root 'build-process.ps1')
