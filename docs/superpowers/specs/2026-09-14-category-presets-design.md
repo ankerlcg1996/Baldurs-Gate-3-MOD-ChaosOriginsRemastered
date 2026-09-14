@@ -14,7 +14,7 @@
 
 - 继续使用单一纯 Story PAK。
 - 保持 6 个 Story Goal 和 38 个正式包内文件。
-- 只修改现有 `COS_Config.txt`、`ChaosConfig.txt`、键鼠页、手柄页、四语本地化和验证脚本。
+- 只修改现有 `COS_Config.txt`、`COS_ChaosMechanics.txt`、`COS_ChaosMastery.txt`、`ChaosConfig.txt`、键鼠页、手柄页、四语本地化和验证脚本。后两个 Goal 只增加 `Core` 分类门控，用来在不改写逐项选择的前提下暂停运行时触发。
 - 不引入 Script Extender、新 Goal、新 Stats 文件或新依赖 PAK。
 - 不实现统一存档迁移链、种族装备资格、掌控混沌重置、连续负面保护或新战斗机制。
 - 不恢复已删除的“已开启身份和能力汇总”下拉列表。
