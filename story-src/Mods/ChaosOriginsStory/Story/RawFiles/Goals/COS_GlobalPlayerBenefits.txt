@@ -38,6 +38,7 @@ PROC_COS_SyncGlobalPlayerBenefits((CHARACTER)_Character)
 AND
 DB_Players(_Character)
 THEN
+PROC_COS_ConfigInitializeCategories(_Character);
 PROC_COS_EnsureCarrySetting(_Character);
 PROC_COS_ApplyCarrySetting(_Character);
 PROC_COS_SyncCarryMirror(_Character);

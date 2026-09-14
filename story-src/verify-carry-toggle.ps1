@@ -21,8 +21,11 @@ $toggle = (Get-CarryRules 'PROC_COS_ToggleCarrySetting') -join "`n"
 foreach ($step in @('DB_COS_CarryEnabled(_Character, _Old)', 'IntegerSubtract(1, _Old, _Enabled)', 'NOT DB_COS_CarryEnabled(_Character, _Old);', 'DB_COS_CarryEnabled(_Character, _Enabled);', 'PROC_COS_ApplyCarrySetting(_Character);')) { Assert-Carry ($toggle.Contains($step)) "切换必须保存当前角色并即时刷新: $step" }
 Assert-Carry (-not $g.Contains('SetWeight') -and -not $g.Contains('AddBoosts')) '不得改写基础负重或加入其他实现'
 foreach ($eventName in @('LevelGameplayStarted', 'GainedControl', 'CharacterJoinedParty', 'RespecCompleted')) { Assert-Carry ($g.Contains("$eventName(")) "原同步生命周期丢失: $eventName" }
-$config = Get-Content (Join-Path $PSScriptRoot 'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt') -Raw
-Assert-Carry ($config.Replace("`r`n","`n").Contains("PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_SyncGlobalPlayerBenefits(_Character);")) '打开菜单必须初始化并同步负重'
+$config = (Get-Content (Join-Path $PSScriptRoot 'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt') -Raw).Replace("`r`n","`n")
+$configSync = [regex]::Match($config, '(?ms)^PROC\nPROC_COS_ConfigSyncCharacter\(\(CHARACTER\)_Character\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)').Value
+$expectedCarrySyncPrefix = "PROC`nPROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_ConfigSyncCategoryMirrors(_Character);`nPROC_COS_SyncGlobalPlayerBenefits(_Character);"
+Assert-Carry ($configSync.StartsWith($expectedCarrySyncPrefix, [System.StringComparison]::Ordinal)) '打开菜单必须先初始化分类，再按固定顺序同步分类镜像与负重'
+Assert-Carry ([regex]::Matches($configSync, '(?m)^PROC_COS_SyncGlobalPlayerBenefits\(_Character\);$').Count -eq 1) '统一角色同步必须且只能调用一次负重同步'
 $mirror = (Get-CarryRules 'PROC_COS_SyncCarryMirror') -join "`n"
 Assert-Carry ($mirror.Contains('AddPassive(_Character, "COS_CFG_CARRY");') -and $mirror.Contains('RemovePassive(_Character, "COS_CFG_CARRY");')) '负重必须拥有独立的可见镜像'
 foreach ($page in 'COS_ConfigMenu.xaml','COS_ConfigMenu_c.xaml') {

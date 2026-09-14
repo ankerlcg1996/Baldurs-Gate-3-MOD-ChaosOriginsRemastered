@@ -292,7 +292,10 @@ git commit -m "feat(story): define category preset states"
 **Files:**
 
 - Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt`
+- Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt`
+- Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_GlobalPlayerBenefits.txt`
 - Test: `story-src/verify-category-presets.ps1`
+- Test: `story-src/verify-carry-toggle.ps1`
 
 - [ ] Seed the seven category maps and events idempotently in `PROC_COS_ConfigSeedCategories()`. Every seed rule must use a matching `NOT DB_...` guard.
 
@@ -355,6 +358,8 @@ DB_COS_ConfigCategorySchema(_Character, 1);
 
 - [ ] Make `PROC_COS_ConfigInitializeCategories(_Character)` the first action in `PROC_COS_ConfigSyncCharacter`. Only after it returns may existing ensure procedures seed missing child settings.
 
+- [ ] Apply the same first-action rule at every lifecycle-reachable boundary that can seed any of the eight legacy-probe tables: the legacy-writing `PROC_COS_Sync` rule in `COS_ChaosMechanics.txt`, `PROC_COS_SyncGlobalPlayerBenefits`, `PROC_COS_ConfigSyncGrants`, and `PROC_COS_SyncVoloEye`. Together with `PROC_COS_ConfigSyncCharacter`, these are the exact five guarded entry points. Verify all five explicitly and mutation-test removal or downshifting at each newly guarded boundary so a new character cannot be misclassified as a legacy save.
+
 - [ ] Implement `PROC_COS_ConfigSyncCategoryMirrors`. Add a category mirror passive only for value `1`; remove it for value `0`. Missing rows are errors and must not be treated as enabled or disabled.
 
 - [ ] Implement category toggle handlers for the seven fixed TutorialEvents. Every handler must include:
@@ -376,6 +381,7 @@ At this stage, toggle only the matching `DB_COS_ConfigCategory` row, call one un
 
 ```powershell
 pwsh -NoProfile -File .\verify-category-presets.ps1 -Focus Task3
+pwsh -NoProfile -File .\verify-carry-toggle.ps1
 pwsh -NoProfile -File .\compile-story.ps1
 ```
 
@@ -384,7 +390,7 @@ Expected: focused verifier passes initialization checks; Story compiler exits `0
 - [ ] Commit:
 
 ```powershell
-git add story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt story-src/verify-category-presets.ps1
+git add story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_GlobalPlayerBenefits.txt story-src/verify-category-presets.ps1 story-src/verify-carry-toggle.ps1
 git commit -m "feat(story): persist category master switches"
 ```
 

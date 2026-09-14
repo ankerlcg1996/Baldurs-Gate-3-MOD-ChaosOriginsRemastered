@@ -853,6 +853,33 @@ function Assert-CategoryInitializationContract {
     Require ($syncModels[0].Actions.Count -gt 0 -and $syncModels[0].Actions[0] -ceq 'PROC_COS_ConfigInitializeCategories(_Character);') '首次分类初始化不是统一角色同步第一步'
 }
 
+function Assert-LegacyWriterInitializationContract {
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$Entrypoints
+    )
+
+    $expectedNames = @(
+        'ConfigSyncCharacter',
+        'MechanicsSync',
+        'GlobalPlayerBenefitsSync',
+        'GrantSync',
+        'VoloEyeSync'
+    )
+    Require (Test-ExactOrdinalSequence -Actual @($Entrypoints.Keys) -Expected $expectedNames) '生命周期 legacy-writer 入口集合不精确'
+
+    foreach ($name in $Entrypoints.Keys) {
+        $entry = $Entrypoints[$name]
+        $models = @(Get-ProcedureModels -Content $entry.Content -Name $entry.Procedure)
+        if (-not [string]::IsNullOrWhiteSpace($entry.SelectorAction)) {
+            $models = @($models | Where-Object { $_.Actions -ccontains $entry.SelectorAction })
+        }
+        Require ($models.Count -eq 1) "生命周期 legacy-writer 入口缺失或重复: $name"
+        Require ($models[0].Actions.Count -gt 0) "生命周期 legacy-writer 入口没有动作: $name"
+        Require ($models[0].Actions[0] -ceq 'PROC_COS_ConfigInitializeCategories(_Character);') "生命周期 legacy-writer 入口未先初始化分类: $name"
+    }
+}
+
 function Assert-EventGuardContract {
     param(
         [Parameter(Mandatory)]
@@ -2092,6 +2119,7 @@ function Assert-PackageContract {
 $paths = [ordered]@{
     Config = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_Config.txt'
     Mechanics = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_ChaosMechanics.txt'
+    GlobalBenefits = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_GlobalPlayerBenefits.txt'
     Mastery = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_ChaosMastery.txt'
     Stats = Join-Path $Root 'Public\ChaosOriginsStory\Stats\Generated\Data\ChaosConfig.txt'
     Keyboard = Join-Path $Root 'Mods\ChaosOriginsStory\GUI\Pages\COS_ConfigMenu.xaml'
@@ -2101,6 +2129,7 @@ $paths = [ordered]@{
 
 $config = Read-Required $paths.Config
 $mechanics = Read-Required $paths.Mechanics
+$globalBenefits = Read-Required $paths.GlobalBenefits
 $mastery = Read-Required $paths.Mastery
 $stats = Read-Required $paths.Stats
 $keyboardXaml = Read-Required $paths.Keyboard
@@ -2158,6 +2187,33 @@ $task3LegacyCategories = [ordered]@{
     RacialAbilities = 1
     Convenience = 1
 }
+$legacyWriterEntrypoints = [ordered]@{
+    ConfigSyncCharacter = [pscustomobject]@{
+        Content = $config
+        Procedure = 'PROC_COS_ConfigSyncCharacter'
+        SelectorAction = ''
+    }
+    MechanicsSync = [pscustomobject]@{
+        Content = $mechanics
+        Procedure = 'PROC_COS_Sync'
+        SelectorAction = 'PROC_COS_ConfigEnsureCosts(_Character);'
+    }
+    GlobalPlayerBenefitsSync = [pscustomobject]@{
+        Content = $globalBenefits
+        Procedure = 'PROC_COS_SyncGlobalPlayerBenefits'
+        SelectorAction = ''
+    }
+    GrantSync = [pscustomobject]@{
+        Content = $config
+        Procedure = 'PROC_COS_ConfigSyncGrants'
+        SelectorAction = ''
+    }
+    VoloEyeSync = [pscustomobject]@{
+        Content = $config
+        Procedure = 'PROC_COS_SyncVoloEye'
+        SelectorAction = ''
+    }
+}
 
 Assert-OsirisParserContract
 Assert-MutationHarnessContract
@@ -2167,6 +2223,7 @@ if ($Focus -ceq 'Task3') {
     Assert-LegacyDetectionContract -Content $config -ExpectedProbes $task3LegacyProbes
     Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($task3LegacyProbes.Keys)
     Assert-CategoryInitializationContract -Content $config -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
     Assert-CategoryMirrorContract -Content $config
     Assert-CategoryEventContract -Content $config
     Assert-CategoryToggleContract -Content $config -Task3Stage
@@ -2222,8 +2279,60 @@ if ($Focus -ceq 'Task3') {
         Assert-CategoryToggleContract -Content $toggleWriteMutation -Task3Stage
     }
 
+    $mechanicsSyncModel = @(Get-ProcedureModels -Content $mechanics -Name 'PROC_COS_Sync' | Where-Object { $_.Actions -ccontains 'PROC_COS_ConfigEnsureCosts(_Character);' })[0]
+    $mechanicsInitMutationBlock = Replace-FirstLiteral -Content $mechanicsSyncModel.Block -OldValue 'PROC_COS_ConfigInitializeCategories(_Character);' -NewValue '// mutation: category initialization removed' -ProbeName 'task3-mechanics-sync-init-removed'
+    $mechanicsInitMutation = Replace-RuleBlock -Content $mechanics -OldBlock $mechanicsSyncModel.Block -NewBlock $mechanicsInitMutationBlock -ProbeName 'task3-mechanics-sync-init-removed'
+    $mechanicsMutationEntrypoints = [ordered]@{} + $legacyWriterEntrypoints
+    $mechanicsMutationEntrypoints.MechanicsSync = [pscustomobject]@{
+        Content = $mechanicsInitMutation
+        Procedure = 'PROC_COS_Sync'
+        SelectorAction = 'PROC_COS_ConfigEnsureCosts(_Character);'
+    }
+    Assert-MutationRejected -Name 'task3-mechanics-sync-init-removed' -ExpectedMessagePattern '^生命周期 legacy-writer 入口未先初始化分类: MechanicsSync$' -Probe {
+        Assert-LegacyWriterInitializationContract -Entrypoints $mechanicsMutationEntrypoints
+    }
+
+    $globalSyncModel = @(Get-ProcedureModels -Content $globalBenefits -Name 'PROC_COS_SyncGlobalPlayerBenefits')[0]
+    $globalInitMutationBlock = Replace-FirstLiteral -Content $globalSyncModel.Block -OldValue "PROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_EnsureCarrySetting(_Character);" -NewValue "PROC_COS_EnsureCarrySetting(_Character);`nPROC_COS_ConfigInitializeCategories(_Character);" -ProbeName 'task3-global-sync-init-downshifted'
+    $globalInitMutation = Replace-RuleBlock -Content $globalBenefits -OldBlock $globalSyncModel.Block -NewBlock $globalInitMutationBlock -ProbeName 'task3-global-sync-init-downshifted'
+    $globalMutationEntrypoints = [ordered]@{} + $legacyWriterEntrypoints
+    $globalMutationEntrypoints.GlobalPlayerBenefitsSync = [pscustomobject]@{
+        Content = $globalInitMutation
+        Procedure = 'PROC_COS_SyncGlobalPlayerBenefits'
+        SelectorAction = ''
+    }
+    Assert-MutationRejected -Name 'task3-global-sync-init-downshifted' -ExpectedMessagePattern '^生命周期 legacy-writer 入口未先初始化分类: GlobalPlayerBenefitsSync$' -Probe {
+        Assert-LegacyWriterInitializationContract -Entrypoints $globalMutationEntrypoints
+    }
+
+    $grantSyncModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigSyncGrants')[0]
+    $grantInitMutationBlock = Replace-FirstLiteral -Content $grantSyncModel.Block -OldValue 'PROC_COS_ConfigInitializeCategories(_Character);' -NewValue '// mutation: category initialization removed' -ProbeName 'task3-grant-sync-init-removed'
+    $grantInitMutation = Replace-RuleBlock -Content $config -OldBlock $grantSyncModel.Block -NewBlock $grantInitMutationBlock -ProbeName 'task3-grant-sync-init-removed'
+    $grantMutationEntrypoints = [ordered]@{} + $legacyWriterEntrypoints
+    $grantMutationEntrypoints.GrantSync = [pscustomobject]@{
+        Content = $grantInitMutation
+        Procedure = 'PROC_COS_ConfigSyncGrants'
+        SelectorAction = ''
+    }
+    Assert-MutationRejected -Name 'task3-grant-sync-init-removed' -ExpectedMessagePattern '^生命周期 legacy-writer 入口未先初始化分类: GrantSync$' -Probe {
+        Assert-LegacyWriterInitializationContract -Entrypoints $grantMutationEntrypoints
+    }
+
+    $voloSyncModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_SyncVoloEye')[0]
+    $voloInitMutationBlock = Replace-FirstLiteral -Content $voloSyncModel.Block -OldValue "PROC_COS_ConfigInitializeCategories(_Character);`nEnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001);" -NewValue "EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001);`nPROC_COS_ConfigInitializeCategories(_Character);" -ProbeName 'task3-volo-sync-init-downshifted'
+    $voloInitMutation = Replace-RuleBlock -Content $config -OldBlock $voloSyncModel.Block -NewBlock $voloInitMutationBlock -ProbeName 'task3-volo-sync-init-downshifted'
+    $voloMutationEntrypoints = [ordered]@{} + $legacyWriterEntrypoints
+    $voloMutationEntrypoints.VoloEyeSync = [pscustomobject]@{
+        Content = $voloInitMutation
+        Procedure = 'PROC_COS_SyncVoloEye'
+        SelectorAction = ''
+    }
+    Assert-MutationRejected -Name 'task3-volo-sync-init-downshifted' -ExpectedMessagePattern '^生命周期 legacy-writer 入口未先初始化分类: VoloEyeSync$' -Probe {
+        Assert-LegacyWriterInitializationContract -Entrypoints $voloMutationEntrypoints
+    }
+
     Write-Output 'Task 3 category persistence contract: PASS'
-    Write-Output 'Task 3 mutation probes: new=PASS; legacy=PASS; partial=PASS; schema=PASS; idempotence=PASS; missing-row=PASS; toggle=PASS'
+    Write-Output 'Task 3 mutation probes: new=PASS; legacy=PASS; partial=PASS; schema=PASS; idempotence=PASS; missing-row=PASS; toggle=PASS; lifecycle-init=PASS'
     exit 0
 }
 
@@ -2242,6 +2351,7 @@ $legacyProbes = [ordered]@{
 }
 Assert-LegacyDetectionContract -Content $config -ExpectedProbes $legacyProbes
 Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($legacyProbes.Keys)
+Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
 
 $coreCategorySeedGuard = 'NOT DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")'
 $coreCategorySeedMutation = Replace-FirstLiteral -Content $config -OldValue $coreCategorySeedGuard -NewValue 'DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")' -ProbeName 'default-all-category-seed-missing-not-guard'

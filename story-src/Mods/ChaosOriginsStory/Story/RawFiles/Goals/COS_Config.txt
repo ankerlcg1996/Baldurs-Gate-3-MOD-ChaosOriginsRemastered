@@ -486,7 +486,6 @@ PROC_COS_RuntimeDiagnosticCheckConfig(_Character);
 PROC_COS_RuntimeDiagnosticCheckMirrors(_Character);
 PROC_COS_RuntimeDiagnosticResolve(_Character);
 
-// Category master-switch maps are seeded through guarded rules so upgraded saves receive them exactly once.
 PROC
 PROC_COS_ConfigSeedCategories()
 AND
@@ -494,6 +493,7 @@ NOT DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")
 THEN
 DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE");
 
+// Category master-switch maps are seeded through guarded rules so upgraded saves receive them exactly once.
 PROC
 PROC_COS_ConfigSeedCategories()
 AND
@@ -1795,6 +1795,7 @@ PROC_COS_ConfigSyncGrants((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
+PROC_COS_ConfigInitializeCategories(_Character);
 PROC_COS_SeedGrantMap();
 PROC_COS_CaptureNativeGrantTags(_Character);
 PROC_COS_CaptureExistingGrantTags(_Character);
@@ -1889,6 +1890,7 @@ PROC_COS_SyncVoloEye((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
+PROC_COS_ConfigInitializeCategories(_Character);
 EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001);
 PROC_COS_EnsureVoloEyeSetting(_Character);
 PROC_COS_UnlockVoloEye();

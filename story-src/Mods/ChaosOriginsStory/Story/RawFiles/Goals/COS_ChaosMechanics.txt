@@ -437,6 +437,7 @@ PROC_COS_Sync((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
+PROC_COS_ConfigInitializeCategories(_Character);
 PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_MigrateLegacyFatePending(_Character);
 PROC_COS_Register(_Character);
