@@ -36,6 +36,21 @@ function Reset-WorkChild([string]$Path) {
     New-Item -ItemType Directory -Path $pathFull -Force | Out-Null
 }
 
+function Write-VersionedLocalization(
+    [string]$SourcePath,
+    [string]$DestinationPath,
+    [string]$DisplayVersion
+) {
+    [xml]$document = Get-Content -LiteralPath $SourcePath -Raw -Encoding UTF8
+    $nodes = @($document.SelectNodes(
+        '/contentList/content[@contentuid="h8f100002g0000g4000g8000g000000000002"]'
+    ))
+    Require ($nodes.Count -eq 1) "静态版本本地化句柄数量错误: $SourcePath"
+    $nodes[0].InnerText = "ChaosOriginsStory $DisplayVersion"
+    New-Item -ItemType Directory -Path (Split-Path $DestinationPath -Parent) -Force | Out-Null
+    $document.OuterXml | Set-Content -LiteralPath $DestinationPath -Encoding UTF8
+}
+
 . (Join-Path $root 'build-process.ps1')
 . (Join-Path $root 'story-ir-attestation.ps1')
 
@@ -57,8 +72,7 @@ $nextDisplayVersion = '{0}.{1}.{2}.{3}' -f `
 & (Join-Path $root 'verify.ps1') `
     -GrantRuntimeIsolation:$GrantRuntimeIsolation `
     -GrantSeedOnly:$GrantSeedOnly `
-    -GrantPartition $GrantPartition `
-    -ExpectedDisplayVersion $nextDisplayVersion
+    -GrantPartition $GrantPartition
 $compileStoryScript = Join-Path $root 'compile-story.ps1'
 $compiledStoryPath = Join-Path $work 'compiled-story\story.div.osi'
 $storyDebugInfoPath = Join-Path $work 'compiled-story\story.debug-info.pb'
@@ -135,9 +149,11 @@ foreach ($requiredLslibType in @(
 }
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $xml = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
+    $versionedXml = Join-Path $work "localization-next\$language\ChaosOriginsStory.xml"
     $target = Join-Path $stage "Localization\$language\ChaosOriginsStory.loca"
     New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
-    $localization = [LSLib.LS.LocaUtils]::Load($xml)
+    Write-VersionedLocalization -SourcePath $xml -DestinationPath $versionedXml -DisplayVersion $nextDisplayVersion
+    $localization = [LSLib.LS.LocaUtils]::Load($versionedXml)
     [LSLib.LS.LocaUtils]::Save($localization, $target)
     Require (Test-Path -LiteralPath $target -PathType Leaf) "本地化编译失败: $language"
 }
@@ -237,6 +253,10 @@ Require ($null -ne $sourceModuleVersion -and $null -ne $sourcePublishVersion) '�
 $sourceModuleVersion.value = [string]$nextVersion64
 $sourcePublishVersion.value = [string]$nextVersion64
 $sourceMeta.OuterXml | Set-Content -LiteralPath $sourceMetaPath -Encoding UTF8
+foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
+    $xml = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
+    Write-VersionedLocalization -SourcePath $xml -DestinationPath $xml -DisplayVersion $nextDisplayVersion
+}
 $version.lastBuild = $nextBuild
 $version | ConvertTo-Json | Set-Content -LiteralPath $versionPath -Encoding UTF8
 

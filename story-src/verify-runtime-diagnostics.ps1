@@ -76,8 +76,9 @@ function Test-BuildNextVersionPreflightContract {
         NextVersion64 = '$nextVersion64 = '
         NextDisplayVersion = '$nextDisplayVersion = '
         VerifyCall = '& (Join-Path $root ''verify.ps1'')'
-        ExpectedArgument = '-ExpectedDisplayVersion $nextDisplayVersion'
         CompileStart = '$compileStoryScript = Join-Path $root ''compile-story.ps1'''
+        StagedLocalization = 'Write-VersionedLocalization -SourcePath $xml -DestinationPath $versionedXml -DisplayVersion $nextDisplayVersion'
+        SourceLocalization = 'Write-VersionedLocalization -SourcePath $xml -DestinationPath $xml -DisplayVersion $nextDisplayVersion'
         VersionWrite = '$version.lastBuild = $nextBuild'
     }
     $positions = @{}
@@ -90,7 +91,7 @@ function Test-BuildNextVersionPreflightContract {
 
     foreach ($singleUseName in @(
         'VersionRead', 'NextBuild', 'NextVersion64', 'NextDisplayVersion',
-        'ExpectedArgument', 'VersionWrite'
+        'VerifyCall', 'StagedLocalization', 'SourceLocalization', 'VersionWrite'
     )) {
         if ([regex]::Matches(
             $Content,
@@ -108,9 +109,11 @@ function Test-BuildNextVersionPreflightContract {
         $positions.NextBuild -lt $positions.NextVersion64 -and
         $positions.NextVersion64 -lt $positions.NextDisplayVersion -and
         $positions.NextDisplayVersion -lt $positions.VerifyCall -and
-        $positions.VerifyCall -lt $positions.ExpectedArgument -and
-        $positions.ExpectedArgument -lt $positions.CompileStart -and
-        $positions.CompileStart -lt $positions.VersionWrite -and
+        $positions.VerifyCall -lt $positions.CompileStart -and
+        $positions.CompileStart -lt $positions.StagedLocalization -and
+        $positions.StagedLocalization -lt $positions.SourceLocalization -and
+        $positions.SourceLocalization -lt $positions.VersionWrite -and
+        -not $Content.Contains('-ExpectedDisplayVersion $nextDisplayVersion') -and
         -not $Content.Contains('$displayVersion')
     )
 }
@@ -1480,17 +1483,25 @@ foreach ($invalidDisplayVersion in @('', ' ', '1.0.1', '01.0.1.98', '1.0.1.-1', 
 $buildScriptContent = Get-RequiredText $buildScriptPath
 $verifyScriptContent = Get-RequiredText $verifyScriptPath
 Require (Test-BuildNextVersionPreflightContract -Content $buildScriptContent) `
-    'build.ps1 未在写版本前以 nextDisplayVersion 执行严格预检'
+    'build.ps1 未先验证当前源码、再以 nextDisplayVersion 暂存并提交四语版本文本'
 Require (Test-VerifyDisplayVersionPassThroughContract -Content $verifyScriptContent) `
     'verify.ps1 未按是否显式提供参数原样透传 ExpectedDisplayVersion'
 
-$buildWithoutExpectedVersion = $buildScriptContent.Replace(
-    '-ExpectedDisplayVersion $nextDisplayVersion',
-    '-GrantPartition $GrantPartition'
+$buildWithoutStagedLocalizationVersion = $buildScriptContent.Replace(
+    'Write-VersionedLocalization -SourcePath $xml -DestinationPath $versionedXml -DisplayVersion $nextDisplayVersion',
+    'Write-VersionedLocalization -SourcePath $xml -DestinationPath $versionedXml -DisplayVersion $currentDisplayVersion'
 )
-Require ($buildWithoutExpectedVersion -cne $buildScriptContent -and
-    -not (Test-BuildNextVersionPreflightContract -Content $buildWithoutExpectedVersion)) `
-    '构建预检参数移除变异未被拒绝'
+Require ($buildWithoutStagedLocalizationVersion -cne $buildScriptContent -and
+    -not (Test-BuildNextVersionPreflightContract -Content $buildWithoutStagedLocalizationVersion)) `
+    '构建暂存版本降级变异未被拒绝'
+
+$buildWithoutSourceLocalizationVersion = $buildScriptContent.Replace(
+    'Write-VersionedLocalization -SourcePath $xml -DestinationPath $xml -DisplayVersion $nextDisplayVersion',
+    'Write-VersionedLocalization -SourcePath $xml -DestinationPath $xml -DisplayVersion $currentDisplayVersion'
+)
+Require ($buildWithoutSourceLocalizationVersion -cne $buildScriptContent -and
+    -not (Test-BuildNextVersionPreflightContract -Content $buildWithoutSourceLocalizationVersion)) `
+    '构建成功后源码版本降级变异未被拒绝'
 
 $verifyWithoutPassThrough = $verifyScriptContent.Replace(
     '$runtimeDiagnosticArguments.ExpectedDisplayVersion = $ExpectedDisplayVersion',
@@ -1914,7 +1925,7 @@ Require $wrongExpectedDisplayVersionRejected '错误的显式 ExpectedDisplayVer
 
 Write-Output "Runtime diagnostic status count: $($diagnosticEntries.Count)"
 Write-Output "Runtime diagnostic localization handle count: $($requiredLocalizationHandles.Count)"
-Write-Output 'Runtime diagnostic version preflight: build-next=PASS; verify-pass-through=PASS; default-current=PASS; invalid-explicit=PASS; wrong-explicit=PASS'
+Write-Output 'Runtime diagnostic version preflight: build-stage-next=PASS; build-source-commit=PASS; verify-pass-through=PASS; default-current=PASS; invalid-explicit=PASS; wrong-explicit=PASS'
 
 $diagnosticStoryBlocks = @(Assert-RuntimeDiagnosticStoryContract -Content $configGoal -CoreMechanics $coreMechanics -RacialKeys $expectedRacialDefaults -KnownDiagnosticStatuses $expectedDiagnosticStatuses)
 
