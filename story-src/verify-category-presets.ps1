@@ -127,6 +127,133 @@ function Get-ThenBody {
     $parts[1]
 }
 
+function Get-OsirisCodeLines {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    @(
+        foreach ($sourceLine in @($Content -split '\r?\n')) {
+            $line = $sourceLine
+            $commentIndex = $line.IndexOf('//', [System.StringComparison]::Ordinal)
+            if ($commentIndex -ge 0) {
+                $line = $line.Substring(0, $commentIndex)
+            }
+            $line = $line.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                $line
+            }
+        }
+    )
+}
+
+function Get-OsirisRuleModel {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Block
+    )
+
+    $lines = @(Get-OsirisCodeLines -Content $Block)
+    Require ($lines.Count -ge 3) 'Osiris 规则结构不完整'
+    $thenIndex = [Array]::IndexOf($lines, 'THEN')
+    Require ($thenIndex -ge 2) 'Osiris 规则缺少真实 THEN'
+
+    $kind = $lines[0]
+    Require ($kind -ceq 'PROC' -or $kind -ceq 'IF') "未知 Osiris 规则类型: $kind"
+    $head = $lines[1]
+    $conditionStart = if ($kind -ceq 'PROC') { 2 } else { 1 }
+    $conditions = @()
+    if ($thenIndex -gt $conditionStart) {
+        $conditions = @(
+            $lines[$conditionStart..($thenIndex - 1)] |
+                Where-Object { $_ -cne 'AND' }
+        )
+    }
+    $actions = @()
+    if ($thenIndex -lt $lines.Count - 1) {
+        $actions = @($lines[($thenIndex + 1)..($lines.Count - 1)])
+    }
+
+    [pscustomobject]@{
+        Kind = $kind
+        Head = $head
+        Conditions = $conditions
+        Actions = $actions
+        Block = $Block
+    }
+}
+
+function Get-OsirisRuleModels {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    @(Get-OsirisRuleBlocks -Content $Content | ForEach-Object { Get-OsirisRuleModel -Block $_ })
+}
+
+function Get-ProcedureModels {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [string]$Name
+    )
+
+    $headPattern = '^' + [regex]::Escape($Name) + '\('
+    @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'PROC' -and $_.Head -match $headPattern }
+    )
+}
+
+function Require-Condition {
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$Model,
+
+        [Parameter(Mandatory)]
+        [string]$Condition,
+
+        [Parameter(Mandatory)]
+        [string]$Context
+    )
+
+    Require (@($Model.Conditions | Where-Object { $_ -ceq $Condition }).Count -eq 1) "$Context 缺少或重复真实条件: $Condition"
+}
+
+function Require-ExactConditions {
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$Model,
+
+        [Parameter(Mandatory)]
+        [string[]]$Expected,
+
+        [Parameter(Mandatory)]
+        [string]$Context
+    )
+
+    Require (Test-ExactOrdinalSet -Actual @($Model.Conditions) -Expected $Expected) "$Context 条件集合不精确"
+}
+
+function Require-ExactActions {
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$Model,
+
+        [Parameter(Mandatory)]
+        [string[]]$Expected,
+
+        [Parameter(Mandatory)]
+        [string]$Context
+    )
+
+    Require (Test-ExactOrdinalSequence -Actual @($Model.Actions) -Expected $Expected) "$Context THEN 动作序列不精确"
+}
+
 function Assert-MutationRejected {
     param(
         [Parameter(Mandatory)]
@@ -304,10 +431,16 @@ function Assert-CategoryMappingContract {
         [System.Collections.IDictionary]$ExpectedCategories
     )
 
+    $codeLines = @(Get-OsirisCodeLines -Content $Content)
+    $code = $codeLines -join "`n"
     $matches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_ConfigCategoryMirror\("([^"]+)", "([^"]+)"\);\s*$'
     ))
+    $mappingRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_ConfigCategoryMirror(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($matches.Count -eq $mappingRows.Count) '分类映射包含无法解析的活动行'
 
     foreach ($category in $ExpectedCategories.Keys) {
         $categoryMatches = @($matches | Where-Object { $_.Groups[1].Value -ceq $category })
@@ -327,19 +460,48 @@ function Assert-LegacyDetectionContract {
         [string]$Content,
 
         [Parameter(Mandatory)]
-        [string[]]$ExpectedTables
+        [System.Collections.IDictionary]$ExpectedProbes
     )
 
+    $codeLines = @(Get-OsirisCodeLines -Content $Content)
+    $code = $codeLines -join "`n"
     $matches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_ConfigLegacyTable\("([^"]+)"\);\s*$'
     ))
+    $mappingRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_ConfigLegacyTable(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($matches.Count -eq $mappingRows.Count) '旧档识别表包含无法解析的活动行'
     $actualTables = @($matches | ForEach-Object { $_.Groups[1].Value })
-    Require (Test-ExactOrdinalSet -Actual $actualTables -Expected $ExpectedTables) '旧档识别表集合不精确'
+    Require (Test-ExactOrdinalSet -Actual $actualTables -Expected @($ExpectedProbes.Keys)) '旧档识别表集合不精确'
 
-    foreach ($table in $ExpectedTables) {
-        Require ([regex]::Matches($Content, [regex]::Escape($table)).Count -ge 2) "旧档识别未实际检查: $table"
+    $allProbeModels = @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'PROC' -and $_.Head.StartsWith('PROC_COS_ConfigProbeLegacy', [System.StringComparison]::Ordinal) }
+    )
+    Require ($allProbeModels.Count -eq 8) "旧档专用 probe 数量错误: 期望 8，实际 $($allProbeModels.Count)"
+
+    $actualProbeTables = [System.Collections.Generic.List[string]]::new()
+    foreach ($table in $ExpectedProbes.Keys) {
+        $procedure = $ExpectedProbes[$table]
+        $models = @(Get-ProcedureModels -Content $Content -Name $procedure)
+        Require ($models.Count -eq 1) "旧档专用 probe 缺失或重复: $procedure"
+        $tablePattern = '^' + [regex]::Escape($table) + '\(_Character(?:,.*)?\)$'
+        $tableConditions = @($models[0].Conditions | Where-Object { $_ -match $tablePattern })
+        Require ($tableConditions.Count -eq 1) "旧档 probe 未在条件区唯一查询: $table"
+        foreach ($condition in $models[0].Conditions) {
+            $queriedTableMatch = [regex]::Match($condition, '^(DB_COS_[A-Za-z0-9_]+)\(_Character(?:,.*)?\)$')
+            if ($queriedTableMatch.Success -and $ExpectedProbes.Contains($queriedTableMatch.Groups[1].Value)) {
+                $actualProbeTables.Add($queriedTableMatch.Groups[1].Value)
+            }
+        }
+        Require-ExactActions -Model $models[0] -Expected @(
+            "DB_COS_ConfigLegacyDetected(_Character, `"$table`");"
+        ) -Context "旧档 probe $table"
     }
+
+    Require (Test-ExactOrdinalSet -Actual @($actualProbeTables.ToArray()) -Expected @($ExpectedProbes.Keys)) '旧档专用 probe 查询集合不精确'
 }
 
 function Assert-PresetDetectionOrderContract {
@@ -351,24 +513,19 @@ function Assert-PresetDetectionOrderContract {
         [string[]]$ExpectedOrder
     )
 
-    $blocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetDetectCurrent')
-    Require ($blocks.Count -eq 1) '预设检测过程必须恰好有一个规则'
-    $block = $blocks[0]
-    $positions = [System.Collections.Generic.List[int]]::new()
+    $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetDetectCurrent')
+    Require ($models.Count -eq 1) '预设检测过程必须恰好有一个规则'
+    $expectedActions = [System.Collections.Generic.List[string]]::new()
     foreach ($preset in $ExpectedOrder) {
-        $token = if ($preset -ceq 'Custom') {
+        $action = if ($preset -ceq 'Custom') {
             'PROC_COS_PresetDetectCustom(_Character);'
         }
         else {
             "PROC_COS_PresetDetectCandidate(_Character, `"$preset`");"
         }
-        Require ([regex]::Matches($block, [regex]::Escape($token)).Count -eq 1) "预设检测步骤不唯一或缺失: $preset"
-        $positions.Add($block.IndexOf($token, [System.StringComparison]::Ordinal))
+        $expectedActions.Add($action)
     }
-
-    for ($index = 1; $index -lt $positions.Count; $index++) {
-        Require ($positions[$index] -gt $positions[$index - 1]) "预设检测顺序错误: $($ExpectedOrder[$index])"
-    }
+    Require-ExactActions -Model $models[0] -Expected @($expectedActions.ToArray()) -Context '预设检测'
 }
 
 function Assert-PresetMatrixContract {
@@ -383,10 +540,16 @@ function Assert-PresetMatrixContract {
         [System.Collections.IDictionary]$ExpectedLife
     )
 
+    $codeLines = @(Get-OsirisCodeLines -Content $Content)
+    $code = $codeLines -join "`n"
     $categoryMatches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_PresetCategory\("([^"]+)", "([^"]+)", (-?\d+)\);\s*$'
     ))
+    $categoryRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_PresetCategory(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($categoryMatches.Count -eq $categoryRows.Count) '预设分类矩阵包含无法解析的活动行'
     $actualRows = @(
         $categoryMatches | ForEach-Object {
             '{0}|{1}|{2}' -f $_.Groups[1].Value, $_.Groups[2].Value, $_.Groups[3].Value
@@ -403,9 +566,13 @@ function Assert-PresetMatrixContract {
     Require (Test-ExactOrdinalSet -Actual $actualRows -Expected $expectedRows) '预设分类矩阵不精确'
 
     $lifeMatches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_PresetLife\("([^"]+)", (\d+)\);\s*$'
     ))
+    $lifeRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_PresetLife(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($lifeMatches.Count -eq $lifeRows.Count) '预设生活加值矩阵包含无法解析的活动行'
     $actualLifeRows = @($lifeMatches | ForEach-Object { '{0}|{1}' -f $_.Groups[1].Value, $_.Groups[2].Value })
     $expectedLifeRows = @($ExpectedLife.Keys | ForEach-Object { '{0}|{1}' -f $_, $ExpectedLife[$_] })
     Require ($actualLifeRows.Count -eq 4) "预设生活加值矩阵行数错误: 期望 4，实际 $($actualLifeRows.Count)"
@@ -424,25 +591,39 @@ function Assert-EventMapContract {
         [System.Collections.IDictionary]$ExpectedPresetEvents
     )
 
+    $codeLines = @(Get-OsirisCodeLines -Content $Content)
+    $code = $codeLines -join "`n"
     $categoryMatches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_ConfigCategoryEvent\(\(TUTORIALEVENT\)[A-Za-z0-9_]*([0-9a-f]{8}-[0-9a-f-]{27}), "([^"]+)"\);\s*$'
     ))
+    $categoryRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_ConfigCategoryEvent(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($categoryMatches.Count -eq $categoryRows.Count) '分类事件映射包含无法解析的活动行'
     $actualCategoryRows = @($categoryMatches | ForEach-Object { '{0}|{1}' -f $_.Groups[2].Value, $_.Groups[1].Value })
     $expectedCategoryRows = @($ExpectedCategoryEvents.Keys | ForEach-Object { '{0}|{1}' -f $_, $ExpectedCategoryEvents[$_] })
     Require (Test-ExactOrdinalSet -Actual $actualCategoryRows -Expected $expectedCategoryRows) '分类事件 UUID 映射不精确'
 
     $selectMatches = @([regex]::Matches(
-        $Content,
+        $code,
         '(?m)^\s*DB_COS_PresetSelectEvent\(\(TUTORIALEVENT\)[A-Za-z0-9_]*([0-9a-f]{8}-[0-9a-f-]{27}), "([^"]+)"\);\s*$'
     ))
+    $selectRows = @($codeLines | Where-Object {
+        $_.StartsWith('DB_COS_PresetSelectEvent(', [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+    })
+    Require ($selectMatches.Count -eq $selectRows.Count) '预设选择事件映射包含无法解析的活动行'
     $actualPresetRows = @($selectMatches | ForEach-Object { '{0}|{1}' -f $_.Groups[2].Value, $_.Groups[1].Value })
     foreach ($action in @('Apply', 'Cancel')) {
         $tableName = "DB_COS_Preset${action}Event"
         $matches = @([regex]::Matches(
-            $Content,
+            $code,
             "(?m)^\s*$tableName\(\(TUTORIALEVENT\)[A-Za-z0-9_]*([0-9a-f]{8}-[0-9a-f-]{27})\);\s*$"
         ))
+        $actionRows = @($codeLines | Where-Object {
+            $_.StartsWith("$tableName(", [System.StringComparison]::Ordinal) -and $_.EndsWith(';', [System.StringComparison]::Ordinal)
+        })
+        Require ($matches.Count -eq $actionRows.Count) "预设事件映射包含无法解析的活动行: $action"
         Require ($matches.Count -eq 1) "预设事件映射缺失或重复: $action"
         $actualPresetRows += '{0}|{1}' -f $action, $matches[0].Groups[1].Value
     }
@@ -456,69 +637,116 @@ function Assert-CategoryInitializationContract {
         [string]$Content,
 
         [Parameter(Mandatory)]
-        [string[]]$Categories
+        [System.Collections.IDictionary]$NewCategories,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$LegacyCategories,
+
+        [Parameter(Mandatory)]
+        [int]$NewLife
     )
 
-    $ensureBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigEnsureCategories')
-    Require ($ensureBlocks.Count -eq 1) '分类统一初始化入口必须恰好有一个规则'
-    foreach ($token in @(
-        'NOT DB_COS_ConfigCategorySchema(_Character)',
+    Require (Test-ExactOrdinalSequence -Actual @($NewCategories.Keys) -Expected @($LegacyCategories.Keys)) '新旧分类键顺序不一致'
+    $categoryKeys = @($NewCategories.Keys)
+
+    $ensureModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigEnsureCategories')
+    Require ($ensureModels.Count -eq 1) '分类统一初始化入口必须恰好有一个规则'
+    Require-Condition -Model $ensureModels[0] -Condition 'NOT DB_COS_ConfigCategorySchema(_Character, 1)' -Context '分类统一初始化入口'
+    Require-ExactActions -Model $ensureModels[0] -Expected @(
         'PROC_COS_ConfigDetectLegacy(_Character);',
         'PROC_COS_ConfigInitCategoriesNew(_Character);',
         'PROC_COS_ConfigInitCategoriesLegacy(_Character);'
-    )) {
-        Require ($ensureBlocks[0].Contains($token)) "分类初始化入口缺少: $token"
-    }
+    ) -Context '分类统一初始化入口'
 
-    $initializerBlocks = [ordered]@{
-        New = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigInitCategoriesNew')
-        Legacy = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigInitCategoriesLegacy')
-    }
-    foreach ($kind in $initializerBlocks.Keys) {
-        $blocks = @($initializerBlocks[$kind])
-        Require ($blocks.Count -eq 1) "$kind 分类初始化规则必须唯一"
-        $block = $blocks[0]
-        Require ($block.Contains('NOT DB_COS_ConfigCategorySchema(_Character)')) "$kind 分类初始化缺少 schema 幂等门控"
-        $legacyToken = if ($kind -ceq 'Legacy') {
-            'DB_COS_ConfigLegacyDetected(_Character)'
+    $newModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigInitCategoriesNew')
+    Require ($newModels.Count -eq 1) '新角色分类初始化规则必须唯一'
+    Require-ExactConditions -Model $newModels[0] -Expected @(
+        'NOT DB_COS_ConfigCategorySchema(_Character, 1)',
+        'NOT DB_COS_ConfigLegacyDetected(_Character, _)'
+    ) -Context '新角色分类初始化'
+    $expectedNewActions = @(
+        foreach ($category in $categoryKeys) {
+            "PROC_COS_ConfigInitCategory(_Character, `"$category`", $($NewCategories[$category]));"
         }
-        else {
-            'NOT DB_COS_ConfigLegacyDetected(_Character)'
-        }
-        Require ($block.Contains($legacyToken)) "$kind 分类初始化分支门控错误"
-        foreach ($category in $Categories) {
-            Require ([regex]::Matches($block, "PROC_COS_ConfigInitCategory\(_Character, `"$category`", -?\d+\);").Count -eq 1) "$kind 分类初始化行缺失或重复: $category"
-        }
-        Require ([regex]::Matches($block, 'PROC_COS_ConfigCommitCategorySchema\(_Character\);').Count -eq 1) "$kind 分类 schema 提交调用缺失或重复"
-        $commitIndex = $block.IndexOf('PROC_COS_ConfigCommitCategorySchema(_Character);', [System.StringComparison]::Ordinal)
-        foreach ($category in $Categories) {
-            Require ($block.IndexOf("`"$category`"", [System.StringComparison]::Ordinal) -lt $commitIndex) "$kind 分类 schema 在七行之前提交"
-        }
-    }
-
-    $rowBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigInitCategory')
-    Require ($rowBlocks.Count -eq 1) '分类单行初始化规则必须唯一'
-    Require ($rowBlocks[0].Contains('NOT DB_COS_ConfigCategory(_Character, _Category, _)')) '分类单行初始化缺少幂等门控'
-    Require ([regex]::Matches((Get-ThenBody -Block $rowBlocks[0]), '(?m)^\s*DB_COS_ConfigCategory\(_Character, _Category, _Value\);\s*$').Count -eq 1) '分类单行初始化写入不精确'
-
-    $commitBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigCommitCategorySchema')
-    Require ($commitBlocks.Count -eq 1) '分类 schema 提交规则必须唯一'
-    $commitBlock = $commitBlocks[0]
-    foreach ($category in $Categories) {
-        Require ([regex]::Matches($commitBlock, "(?m)^\s*DB_COS_ConfigCategory\(_Character, `"$category`", _[A-Za-z0-9]+\)\s*$").Count -eq 1) "分类 schema 提交未检查: $category"
-    }
-    Require ($commitBlock.Contains('NOT DB_COS_ConfigCategorySchema(_Character)')) '分类 schema 提交缺少幂等门控'
-    $commitBody = Get-ThenBody -Block $commitBlock
-    Require ([regex]::Matches($commitBody, '(?m)^\s*DB_COS_ConfigCategorySchema\(_Character\);\s*$').Count -eq 1) '分类 schema 必须且只能提交一次'
-
-    $syncBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_ConfigSyncCharacter')
-    Require ($syncBlocks.Count -eq 1) '统一角色同步入口必须唯一'
-    $syncActions = @(
-        (Get-ThenBody -Block $syncBlocks[0]) -split '\r?\n' |
-            ForEach-Object { $_.Trim() } |
-            Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and -not $_.StartsWith('//') }
+        "DB_COS_ConfigLifeSkill(_Character, $NewLife);"
+        'PROC_COS_ConfigCommitCategorySchema(_Character);'
     )
-    Require ($syncActions.Count -gt 0 -and $syncActions[0] -ceq 'PROC_COS_ConfigEnsureCategories(_Character);') '首次分类初始化不是统一角色同步第一步'
+    Require ($expectedNewActions.Count -eq 9) '验证器内部错误: 新角色初始化必须定义九个动作'
+    Require-ExactActions -Model $newModels[0] -Expected $expectedNewActions -Context '新角色分类初始化'
+
+    $legacyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigInitCategoriesLegacy')
+    Require ($legacyModels.Count -eq 1) '旧角色分类初始化规则必须唯一'
+    Require-ExactConditions -Model $legacyModels[0] -Expected @(
+        'NOT DB_COS_ConfigCategorySchema(_Character, 1)',
+        'DB_COS_ConfigLegacyDetected(_Character, _)'
+    ) -Context '旧角色分类初始化'
+    $expectedLegacyActions = @(
+        foreach ($category in $categoryKeys) {
+            "PROC_COS_ConfigInitCategory(_Character, `"$category`", $($LegacyCategories[$category]));"
+        }
+        'PROC_COS_ConfigCommitCategorySchema(_Character);'
+    )
+    Require ($expectedLegacyActions.Count -eq 8) '验证器内部错误: 旧角色初始化必须定义八个动作'
+    Require-ExactActions -Model $legacyModels[0] -Expected $expectedLegacyActions -Context '旧角色分类初始化'
+
+    $forbiddenLegacyWrites = @(
+        'DB_COS_ConfigLifeSkill',
+        'DB_COS_ConfigMechanic',
+        'DB_COS_ConfigCost',
+        'DB_COS_ConfigRacial',
+        'DB_COS_GrantSetting',
+        'DB_COS_TagSpellsSetting',
+        'DB_COS_VoloEyeSetting',
+        'DB_COS_CarrySetting'
+    )
+    foreach ($action in $legacyModels[0].Actions) {
+        foreach ($table in $forbiddenLegacyWrites) {
+            Require (-not $action.StartsWith("$table(", [System.StringComparison]::Ordinal) -and -not $action.StartsWith("NOT $table(", [System.StringComparison]::Ordinal)) "旧角色初始化不得写入 child config: $table"
+        }
+    }
+
+    $rowModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigInitCategory')
+    Require ($rowModels.Count -eq 1) '分类单行初始化规则必须唯一'
+    Require-ExactConditions -Model $rowModels[0] -Expected @(
+        'NOT DB_COS_ConfigCategory(_Character, _Category, _)'
+    ) -Context '分类单行初始化'
+    Require-ExactActions -Model $rowModels[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, _Category, _Value);'
+    ) -Context '分类单行初始化'
+
+    $commitModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigCommitCategorySchema')
+    Require ($commitModels.Count -eq 1) '分类 schema 提交规则必须唯一'
+    Require ($commitModels[0].Conditions.Count -eq 8) "分类 schema 提交条件行数错误: 期望 8，实际 $($commitModels[0].Conditions.Count)"
+    Require-Condition -Model $commitModels[0] -Condition 'NOT DB_COS_ConfigCategorySchema(_Character, 1)' -Context '分类 schema 提交'
+    $commitCategories = @(
+        foreach ($condition in $commitModels[0].Conditions) {
+            $match = [regex]::Match($condition, '^DB_COS_ConfigCategory\(_Character, "([^"]+)", _[A-Za-z0-9_]+\)$')
+            if ($match.Success) {
+                $match.Groups[1].Value
+            }
+        }
+    )
+    Require (Test-ExactOrdinalSet -Actual $commitCategories -Expected $categoryKeys) '分类 schema 提交绑定键集合不精确'
+    Require-ExactActions -Model $commitModels[0] -Expected @(
+        'DB_COS_ConfigCategorySchema(_Character, 1);'
+    ) -Context '分类 schema 提交'
+    $schemaWriteSites = @(
+        Get-OsirisRuleModels -Content $Content |
+            ForEach-Object {
+                $model = $_
+                foreach ($action in $model.Actions) {
+                    if ($action.StartsWith('DB_COS_ConfigCategorySchema(', [System.StringComparison]::Ordinal)) {
+                        [pscustomobject]@{ Head = $model.Head; Action = $action }
+                    }
+                }
+            }
+    )
+    Require ($schemaWriteSites.Count -eq 1) "分类 schema 全局提交次数错误: 期望 1，实际 $($schemaWriteSites.Count)"
+    Require ($schemaWriteSites[0].Head -ceq $commitModels[0].Head -and $schemaWriteSites[0].Action -ceq 'DB_COS_ConfigCategorySchema(_Character, 1);') '分类 schema 只能由完整七行检查过程提交'
+
+    $syncModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCharacter')
+    Require ($syncModels.Count -eq 1) '统一角色同步入口必须唯一'
+    Require ($syncModels[0].Actions.Count -gt 0 -and $syncModels[0].Actions[0] -ceq 'PROC_COS_ConfigEnsureCategories(_Character);') '首次分类初始化不是统一角色同步第一步'
 }
 
 function Assert-EventGuardContract {
@@ -528,27 +756,31 @@ function Assert-EventGuardContract {
     )
 
     $families = [ordered]@{
-        Category = 'DB_COS_ConfigCategoryEvent\(_Event,'
-        PresetSelect = 'DB_COS_PresetSelectEvent\(_Event,'
-        PresetApply = 'DB_COS_PresetApplyEvent\(_Event\)'
-        PresetCancel = 'DB_COS_PresetCancelEvent\(_Event\)'
+        Category = [pscustomobject]@{ Table = 'DB_COS_ConfigCategoryEvent'; Condition = 'DB_COS_ConfigCategoryEvent(_Event, _Category)' }
+        PresetSelect = [pscustomobject]@{ Table = 'DB_COS_PresetSelectEvent'; Condition = 'DB_COS_PresetSelectEvent(_Event, _Preset)' }
+        PresetApply = [pscustomobject]@{ Table = 'DB_COS_PresetApplyEvent'; Condition = 'DB_COS_PresetApplyEvent(_Event)' }
+        PresetCancel = [pscustomobject]@{ Table = 'DB_COS_PresetCancelEvent'; Condition = 'DB_COS_PresetCancelEvent(_Event)' }
     }
     foreach ($family in $families.Keys) {
-        $blocks = @(
-            Get-OsirisRuleBlocks -Content $Content |
+        $tablePrefix = $families[$family].Table + '('
+        $models = @(
+            Get-OsirisRuleModels -Content $Content |
                 Where-Object {
-                    $_.StartsWith("IF`n", [System.StringComparison]::Ordinal) -or
-                    $_.StartsWith("IF`r`n", [System.StringComparison]::Ordinal)
-                } |
-                Where-Object { [regex]::IsMatch($_, $families[$family]) }
+                    $_.Kind -ceq 'IF' -and
+                    @($_.Conditions | Where-Object { $_.StartsWith($tablePrefix, [System.StringComparison]::Ordinal) }).Count -gt 0
+                }
         )
-        Require ($blocks.Count -eq 1) "修改事件处理规则缺失或重复: $family"
+        Require ($models.Count -eq 1) "修改事件处理规则缺失或重复: $family"
+        Require (@($models[0].Conditions | Where-Object { $_.StartsWith($tablePrefix, [System.StringComparison]::Ordinal) }).Count -eq 1) "修改事件映射条件不精确: $family"
+        Require-Condition -Model $models[0] -Condition $families[$family].Condition -Context "修改事件 $family"
         foreach ($guard in @(
+            'TutorialEvent(_Character, _Event)',
             'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
             'IsControlled(_Character, 1)',
-            'IsInCombat(_Character, 0)'
+            'IsInCombat(_Character, 0)',
+            'DB_COS_ConfigCategorySchema(_Character, 1)'
         )) {
-            Require ($blocks[0].Contains($guard)) "修改事件缺少门控: $family $guard"
+            Require-Condition -Model $models[0] -Condition $guard -Context "修改事件 $family"
         }
     }
 }
@@ -559,43 +791,117 @@ function Assert-PresetWorkflowContract {
         [string]$Content
     )
 
-    $selectionBlocks = @(
-        Get-OsirisRuleBlocks -Content $Content |
-            Where-Object { $_.Contains('DB_COS_PresetSelectEvent(_Event, _Preset)') }
+    $allPresetModels = @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'PROC' -and $_.Head.StartsWith('PROC_COS_Preset', [System.StringComparison]::Ordinal) }
     )
-    Require ($selectionBlocks.Count -eq 1) '预设选择事件规则必须唯一'
-    Require ($selectionBlocks[0].Contains('PROC_COS_PresetPreview(_Character, _Preset);')) '预设选择必须生成预览'
-    Require (-not $selectionBlocks[0].Contains('PROC_COS_PresetApply(')) '预设选择不得直接应用'
+    $selectionModels = @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_PresetSelectEvent(_Event, _Preset)' }
+    )
+    Require ($selectionModels.Count -eq 1) '预设选择事件规则必须唯一'
+    Require-ExactActions -Model $selectionModels[0] -Expected @(
+        'PROC_COS_PresetPreview(_Character, _Preset);'
+    ) -Context '预设选择事件'
 
-    $applyBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetApply')
-    Require ($applyBlocks.Count -eq 1) '预设应用过程必须唯一'
-    Require ($applyBlocks[0].Contains('DB_COS_PresetPending(_Character, _Preset)')) '预设应用缺少 pending 选择'
-    Require ($applyBlocks[0].Contains('DB_COS_PresetPreviewReady(_Character, _Preset)')) '预设应用绕过预览'
-    Require ($applyBlocks[0].Contains('PROC_COS_PresetApplyCategories(_Character, _Preset);')) '预设应用未连接分类矩阵'
-    Require ($applyBlocks[0].Contains('PROC_COS_PresetApplyLife(_Character, _Preset);')) '预设应用未连接生活加值矩阵'
-
-    $categoryLoopBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetApplyCategories')
-    Require ($categoryLoopBlocks.Count -eq 1) '预设分类矩阵应用规则必须唯一'
-    Require ($categoryLoopBlocks[0].Contains('DB_COS_PresetCategory(_Preset, _Category, _Value)')) '预设分类应用未读取矩阵'
-    Require ((Get-ThenBody -Block $categoryLoopBlocks[0]).Contains('PROC_COS_PresetApplyCategory(_Character, _Category, _Value);')) '预设分类矩阵未连接单行应用'
-
-    $categoryApplyBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetApplyCategory')
-    Require ($categoryApplyBlocks.Count -eq 1) '预设分类应用规则必须唯一'
-    Require ($categoryApplyBlocks[0].Contains('_Value >= 0')) '预设分类应用缺少 -1 通配保护'
-    Require ([regex]::IsMatch((Get-ThenBody -Block $categoryApplyBlocks[0]), '(?m)^\s*(?:NOT\s+)?DB_COS_ConfigCategory\(')) '预设分类应用没有写入分类记录'
-
-    $lifeApplyBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetApplyLife')
-    Require ($lifeApplyBlocks.Count -eq 1) '预设生活加值应用规则必须唯一'
-    Require ($lifeApplyBlocks[0].Contains('DB_COS_PresetLife(_Preset, _Value)')) '预设生活加值应用未读取矩阵'
-    Require ((Get-ThenBody -Block $lifeApplyBlocks[0]).Contains('PROC_COS_ConfigSetLifeSkill(_Character, _Value);')) '预设生活加值未写入批准配置'
-
-    foreach ($presetBlock in @($applyBlocks) + @($categoryLoopBlocks) + @($categoryApplyBlocks) + @($lifeApplyBlocks)) {
-        Require (-not [regex]::IsMatch((Get-ThenBody -Block $presetBlock), 'DB_COS_ConfigCategory\([^;\r\n]*"Origin"')) 'PureChaos Origin 通配被直接写入'
+    foreach ($action in $selectionModels[0].Actions) {
+        Require (-not $action.Contains('PROC_COS_ConfigSyncCharacter')) '预设选择不得触发统一同步'
+        Require (-not [regex]::IsMatch($action, '^(?:NOT )?DB_COS_Config(?:Category|LifeSkill)\(')) '预设选择不得写正式配置'
+    }
+    $previewModels = @($allPresetModels | Where-Object { $_.Head.StartsWith('PROC_COS_PresetPreview', [System.StringComparison]::Ordinal) })
+    Require ($previewModels.Count -gt 0) '预设预览过程集合缺失'
+    foreach ($model in $previewModels) {
+        foreach ($action in $model.Actions) {
+            Require (-not [regex]::IsMatch($action, '^(?:NOT\s+)?DB_COS_Config(?:Category|LifeSkill)\(')) '预设预览不得写正式配置'
+            Require (-not [regex]::IsMatch($action, '^PROC_COS_Config(?:SetLifeSkill|SyncCharacter)\(')) '预设预览不得调用正式配置写入或同步'
+            Require (-not [regex]::IsMatch($action, '^PROC_COS_PresetApply(?:\(|Categories\(|Category\(|Life\()')) '预设预览不得绕过应用入口'
+        }
     }
 
-    $cancelBlocks = @(Get-ProcedureBlocks -Content $Content -Name 'PROC_COS_PresetCancel')
-    Require ($cancelBlocks.Count -ge 1) '预设取消过程缺失'
-    Require (($cancelBlocks -join "`n").Contains('DB_COS_PresetPending')) '预设取消没有清理 pending 状态'
+    $applyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetApply')
+    Require ($applyModels.Count -eq 1) '预设应用过程必须唯一'
+    Require-Condition -Model $applyModels[0] -Condition 'DB_COS_PresetPending(_Character, _Preset)' -Context '预设应用'
+    Require-Condition -Model $applyModels[0] -Condition 'DB_COS_PresetPreviewReady(_Character, _Preset)' -Context '预设应用'
+    Require-Condition -Model $applyModels[0] -Condition 'DB_COS_ConfigCategorySchema(_Character, 1)' -Context '预设应用'
+    Require-ExactActions -Model $applyModels[0] -Expected @(
+        'PROC_COS_PresetValidate(_Character, _Preset);',
+        'PROC_COS_PresetApplyCategories(_Character, _Preset);',
+        'PROC_COS_PresetApplyLife(_Character, _Preset);',
+        'PROC_COS_ConfigSyncCharacter(_Character);',
+        'PROC_COS_PresetDetectCurrent(_Character);',
+        'PROC_COS_PresetRefreshActual(_Character);',
+        'PROC_COS_PresetPostValidate(_Character, _Preset);',
+        'PROC_COS_PresetClearOnSuccess(_Character, _Preset);'
+    ) -Context '预设应用'
+    Require (@($applyModels[0].Actions | Where-Object { $_ -ceq 'PROC_COS_ConfigSyncCharacter(_Character);' }).Count -eq 1) '预设应用必须恰好统一同步一次'
+    $syncSites = @(
+        foreach ($model in $allPresetModels) {
+            foreach ($action in $model.Actions) {
+                if ($action -ceq 'PROC_COS_ConfigSyncCharacter(_Character);') {
+                    $model.Head
+                }
+            }
+        }
+    )
+    Require ($syncSites.Count -eq 1 -and $syncSites[0] -ceq $applyModels[0].Head) '预设流程必须且只能在应用主过程统一同步一次'
+
+    $categoryLoopModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetApplyCategories')
+    Require ($categoryLoopModels.Count -eq 1) '预设分类矩阵应用规则必须唯一'
+    Require-Condition -Model $categoryLoopModels[0] -Condition 'DB_COS_PresetCategory(_Preset, _Category, _Value)' -Context '预设分类矩阵应用'
+    Require-ExactActions -Model $categoryLoopModels[0] -Expected @(
+        'PROC_COS_PresetApplyCategory(_Character, _Category, _Value);'
+    ) -Context '预设分类矩阵应用'
+
+    $categoryApplyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetApplyCategory')
+    Require ($categoryApplyModels.Count -eq 1) '预设分类应用规则必须唯一'
+    Require-ExactConditions -Model $categoryApplyModels[0] -Expected @(
+        '_Value >= 0',
+        'DB_COS_ConfigCategory(_Character, _Category, _OldValue)'
+    ) -Context '预设分类应用'
+    Require-ExactActions -Model $categoryApplyModels[0] -Expected @(
+        'NOT DB_COS_ConfigCategory(_Character, _Category, _OldValue);',
+        'DB_COS_ConfigCategory(_Character, _Category, _Value);'
+    ) -Context '预设分类应用'
+
+    $lifeApplyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetApplyLife')
+    Require ($lifeApplyModels.Count -eq 1) '预设生活加值应用规则必须唯一'
+    Require-ExactConditions -Model $lifeApplyModels[0] -Expected @(
+        'DB_COS_PresetLife(_Preset, _Value)'
+    ) -Context '预设生活加值应用'
+    Require-ExactActions -Model $lifeApplyModels[0] -Expected @(
+        'PROC_COS_ConfigSetLifeSkill(_Character, _Value);'
+    ) -Context '预设生活加值应用'
+
+    foreach ($model in $allPresetModels) {
+        foreach ($action in $model.Actions) {
+            if ([regex]::IsMatch($action, '^(?:NOT\s+)?DB_COS_ConfigCategory\(')) {
+                Require ($model.Head -ceq $categoryApplyModels[0].Head) '正式分类配置只能由预设分类应用过程写入'
+            }
+            if ($action.StartsWith('PROC_COS_ConfigSetLifeSkill(', [System.StringComparison]::Ordinal)) {
+                Require ($model.Head -ceq $lifeApplyModels[0].Head) '正式生活加值只能由预设生活应用过程写入'
+            }
+        }
+    }
+
+    foreach ($model in @($applyModels) + @($categoryLoopModels) + @($categoryApplyModels) + @($lifeApplyModels)) {
+        foreach ($action in $model.Actions) {
+            Require (-not [regex]::IsMatch($action, 'DB_COS_ConfigCategory\([^;\r\n]*"Origin"')) 'PureChaos Origin 通配被直接写入'
+        }
+    }
+
+    $successClearModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetClearOnSuccess')
+    Require ($successClearModels.Count -eq 1) '预设成功清理规则必须唯一'
+    Require-Condition -Model $successClearModels[0] -Condition 'DB_COS_PresetPostValidation(_Character, _Preset, 1)' -Context '预设成功清理'
+    Require-ExactActions -Model $successClearModels[0] -Expected @(
+        'PROC_COS_PresetClearPreview(_Character);'
+    ) -Context '预设成功清理'
+
+    $cancelModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetCancel')
+    Require ($cancelModels.Count -eq 1) '预设取消过程必须唯一'
+    Require-ExactActions -Model $cancelModels[0] -Expected @(
+        'PROC_COS_PresetClearPreview(_Character);',
+        'PROC_COS_PresetRefresh(_Character);'
+    ) -Context '预设取消'
 }
 
 function Assert-PresetWriteContract {
@@ -613,29 +919,77 @@ function Assert-PresetWriteContract {
         'DB_COS_CarrySetting',
         'DB_COS_ConfigCost'
     )
-    $applyBlocks = @(
-        Get-OsirisRuleBlocks -Content $Content |
-            Where-Object { [regex]::IsMatch($_, '(?m)^PROC_COS_PresetApply[A-Za-z0-9_]*\(') }
+    $allowedTables = @(
+        'DB_COS_ConfigCategory',
+        'DB_COS_ConfigLifeSkill',
+        'DB_COS_PresetCategory',
+        'DB_COS_PresetLife',
+        'DB_COS_PresetSelectEvent',
+        'DB_COS_PresetApplyEvent',
+        'DB_COS_PresetCancelEvent',
+        'DB_COS_PresetPending',
+        'DB_COS_PresetPreviewReady',
+        'DB_COS_PresetScratchCategory',
+        'DB_COS_PresetScratchLife',
+        'DB_COS_PresetCurrent',
+        'DB_COS_PresetValidation',
+        'DB_COS_PresetPostValidation',
+        'DB_COS_CategoryActual',
+        'DB_COS_RuntimeDiagnosticSelected',
+        'DB_COS_RuntimeDiagnosticApplied',
+        'DB_COS_RuntimeDiagnosticState',
+        'DB_COS_RuntimeDiagnosticCore',
+        'DB_COS_RuntimeDiagnosticCost'
     )
-    Require ($applyBlocks.Count -ge 2) '预设应用规则集合不完整'
+    $allowedProcedureCalls = @(
+        'PROC_COS_ConfigSetLifeSkill',
+        'PROC_COS_ConfigSyncCharacter',
+        'PROC_COS_PresetPreview',
+        'PROC_COS_PresetPreviewCategory',
+        'PROC_COS_PresetPreviewLife',
+        'PROC_COS_PresetValidate',
+        'PROC_COS_PresetApply',
+        'PROC_COS_PresetApplyCategories',
+        'PROC_COS_PresetApplyCategory',
+        'PROC_COS_PresetApplyLife',
+        'PROC_COS_PresetDetectCurrent',
+        'PROC_COS_PresetDetectCandidate',
+        'PROC_COS_PresetDetectCustom',
+        'PROC_COS_PresetRefreshActual',
+        'PROC_COS_PresetPostValidate',
+        'PROC_COS_PresetClearOnSuccess',
+        'PROC_COS_PresetClearPreview',
+        'PROC_COS_PresetRefresh',
+        'PROC_COS_PresetCancel',
+        'PROC_COS_RuntimeDiagnosticUpdate'
+    )
+    $presetModels = @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'PROC' -and $_.Head.StartsWith('PROC_COS_Preset', [System.StringComparison]::Ordinal) }
+    )
+    Require ($presetModels.Count -gt 0) '预设过程集合缺失'
 
-    foreach ($block in $applyBlocks) {
-        $body = Get-ThenBody -Block $block
-        $writes = @([regex]::Matches($body, '(?m)^\s*(?:NOT\s+)?(DB_COS_[A-Za-z0-9_]+)\s*\('))
-        foreach ($write in $writes) {
-            $table = $write.Groups[1].Value
-            $allowed = (
-                $table -ceq 'DB_COS_ConfigCategory' -or
-                $table -ceq 'DB_COS_ConfigLifeSkill' -or
-                $table.StartsWith('DB_COS_Preset', [System.StringComparison]::Ordinal) -or
-                $table.StartsWith('DB_COS_CategoryActual', [System.StringComparison]::Ordinal) -or
-                $table.StartsWith('DB_COS_RuntimeDiagnostic', [System.StringComparison]::Ordinal)
-            )
-            Require $allowed "预设应用写入未批准表: $table"
+    foreach ($model in $presetModels) {
+        foreach ($action in $model.Actions) {
+            $writeMatch = [regex]::Match($action, '^(?:NOT\s+)?(DB_[A-Za-z0-9_]+)\s*\(')
+            if ($writeMatch.Success) {
+                $table = $writeMatch.Groups[1].Value
+                Require ($allowedTables -ccontains $table) "预设过程写入未批准表: $table"
+            }
+
+            $callMatch = [regex]::Match($action, '^(PROC_[A-Za-z0-9_]+)\s*\(')
+            if ($callMatch.Success) {
+                $procedure = $callMatch.Groups[1].Value
+                Require ($allowedProcedureCalls -ccontains $procedure) "预设过程调用未批准过程: $procedure"
+            }
         }
 
         foreach ($table in $forbiddenTables) {
-            Require (-not [regex]::IsMatch($body, "(?m)^\s*(?:NOT\s+)?$table\s*\(")) "预设应用写入子配置/消耗表: $table"
+            $forbiddenWrites = @($model.Actions | Where-Object {
+                $_.StartsWith("$table(", [System.StringComparison]::Ordinal) -or
+                $_.StartsWith("NOT $table(", [System.StringComparison]::Ordinal)
+            })
+            Require ($forbiddenWrites.Count -eq 0) "预设过程写入子配置/消耗表: $table"
         }
     }
 }
@@ -694,7 +1048,10 @@ function Assert-StatsContract {
         [string[]]$ExpectedMirrors,
 
         [Parameter(Mandatory)]
-        [System.Collections.IDictionary]$StatusGroups
+        [System.Collections.IDictionary]$StatusGroups,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ExpectedHandlesByEntry
     )
 
     $entries = @(Get-StatsEntries -Content $Content)
@@ -702,6 +1059,10 @@ function Assert-StatsContract {
     Require (Test-ExactOrdinalSet -Actual @($mirrorEntries.Name) -Expected $ExpectedMirrors) '分类 mirror Stats 集合不精确'
     foreach ($entry in $mirrorEntries) {
         Assert-MirrorPassiveContract -Entry $entry
+        Require ($ExpectedHandlesByEntry.Contains($entry.Name)) "分类镜像缺少固定 handle 合同: $($entry.Name)"
+        $fields = Get-StatsDataFields -Entry $entry
+        Require ($fields.DisplayName -ceq $ExpectedHandlesByEntry[$entry.Name].DisplayName) "分类镜像 DisplayName handle 错误: $($entry.Name)"
+        Require ($fields.Description -ceq $ExpectedHandlesByEntry[$entry.Name].Description) "分类镜像 Description handle 错误: $($entry.Name)"
     }
 
     $statusPrefixes = @(
@@ -725,8 +1086,14 @@ function Assert-StatsContract {
             $matchingEntries = @($statusEntries | Where-Object { $_.Name -ceq $statusName })
             Require ($matchingEntries.Count -eq 1) "状态 entry 缺失或重复: $statusName"
             Assert-StatsStatusContract -Entry $matchingEntries[0] -ExpectedStackId $StatusGroups[$groupName][$statusName]
+            Require ($ExpectedHandlesByEntry.Contains($statusName)) "状态缺少固定 handle 合同: $statusName"
+            $fields = Get-StatsDataFields -Entry $matchingEntries[0]
+            Require ($fields.DisplayName -ceq "$($ExpectedHandlesByEntry[$statusName].DisplayName);1") "状态 DisplayName handle 错误: $statusName"
+            Require ($fields.Description -ceq "$($ExpectedHandlesByEntry[$statusName].Description);1") "状态 Description handle 错误: $statusName"
         }
     }
+
+    Require (Test-ExactOrdinalSet -Actual @($ExpectedHandlesByEntry.Keys) -Expected @($ExpectedMirrors + $expectedStatuses)) '固定 Stats handle entry 集合不精确'
 
     [pscustomobject]@{
         Entries = $entries
@@ -770,7 +1137,19 @@ function Assert-UiPageContract {
         [string[]]$PanelOrder,
 
         [Parameter(Mandatory)]
-        [string[]]$ButtonOrder
+        [string[]]$ButtonOrder,
+
+        [Parameter(Mandatory)]
+        [string[]]$ExpectedNamedNodes,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$UiHandleByNode,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ControllerNavigation,
+
+        [Parameter(Mandatory)]
+        [string[]]$ExpectedMirrors
     )
 
     [xml]$document = $Content
@@ -778,19 +1157,38 @@ function Assert-UiPageContract {
     Assert-OrderedSubset -Actual $allNames -Expected $PanelOrder -Context $PageName
     Assert-OrderedSubset -Actual $allNames -Expected $ButtonOrder -Context "$PageName 按钮"
 
+    $featureNames = @(
+        $allNames | Where-Object {
+            $_.StartsWith('COSPreset', [System.StringComparison]::Ordinal) -or
+            $_.StartsWith('COSCategory', [System.StringComparison]::Ordinal)
+        }
+    )
+    Require (Test-ExactOrdinalSet -Actual $featureNames -Expected $ExpectedNamedNodes) "$PageName 分类/预设命名节点批准集合错误"
+
     $eventMap = [ordered]@{}
     foreach ($buttonName in $ButtonEvents.Keys) {
         $nodes = @(Get-XamlNamedNodes -Document $document -Name $buttonName)
         Require ($nodes.Count -eq 1) "$PageName 按钮命名节点缺失或重复: $buttonName"
         $event = Get-UiButtonEvent -Node $nodes[0] -Context "$PageName $buttonName"
-        Require ($event -ceq $ButtonEvents[$buttonName]) "$PageName 按钮事件错误: $buttonName"
+        $clickTriggers = @($nodes[0].SelectNodes('.//*[local-name()="EventTrigger" and @EventName="Click"]'))
+        Require ($clickTriggers.Count -eq 1) "$PageName 按钮必须具有唯一 pointer Click: $buttonName"
+        $clickEvent = Get-UiButtonEvent -Node $clickTriggers[0] -Context "$PageName $buttonName pointer Click"
+        Require ($event -ceq $ButtonEvents[$buttonName] -and $clickEvent -ceq $event) "$PageName 按钮 Click 事件错误: $buttonName"
         $eventMap[$buttonName] = $event
 
-        if ($Controller) {
+        if ($Controller -and $ControllerNavigation.Contains($buttonName)) {
             Require ($nodes[0].GetAttribute('BoundEvent') -ceq 'UIAccept') "$PageName 手柄按钮缺少 UIAccept: $buttonName"
-            Require ($nodes[0].GetAttribute('Focusable') -ceq 'False') "$PageName 手柄按钮自身不应取得焦点: $buttonName"
-            Require ($nodes[0].GetAttribute('MoveFocus.Focusable', 'clr-namespace:ls;assembly=Code') -ceq 'False') "$PageName 手柄按钮 MoveFocus 语义错误: $buttonName"
-            Require ($nodes[0].GetAttribute('IsEnabled').Contains('IsFocused')) "$PageName 手柄按钮未绑定焦点行: $buttonName"
+            Require ($nodes[0].GetAttribute('MoveFocus.Focusable', 'clr-namespace:ls;assembly=Code') -ceq 'True') "$PageName 手柄按钮 MoveFocus.Focusable 必须为 True: $buttonName"
+            foreach ($direction in @('Up', 'Down', 'Left', 'Right')) {
+                $actualTarget = $nodes[0].GetAttribute("MoveFocus.$direction", 'clr-namespace:ls;assembly=Code')
+                $expectedTarget = $ControllerNavigation[$buttonName][$direction]
+                Require (-not [string]::IsNullOrWhiteSpace($actualTarget)) "$PageName 手柄焦点方向缺失: $buttonName $direction"
+                Require ($actualTarget -ceq $expectedTarget) "$PageName 手柄焦点方向错误: $buttonName $direction"
+                Require ($ControllerNavigation.Contains($actualTarget)) "$PageName 手柄焦点方向形成死路: $buttonName $direction"
+            }
+        }
+        elseif (-not $Controller) {
+            Require ([string]::IsNullOrWhiteSpace($nodes[0].GetAttribute('BoundEvent'))) "$PageName 键鼠按钮不得依赖手柄 BoundEvent: $buttonName"
         }
     }
 
@@ -804,40 +1202,67 @@ function Assert-UiPageContract {
             $nodes[0].SelectNodes('.//*[local-name()="DataTrigger" and @Value]') |
                 ForEach-Object { $_.GetAttribute('Value') }
         )
-        Require (Test-ExactOrdinalSet -Actual $actualValues -Expected $StatusNodeSets[$nodeName]) "$PageName 状态过滤集合错误: $nodeName"
+        Require (Test-ExactOrdinalSequence -Actual $actualValues -Expected $StatusNodeSets[$nodeName]) "$PageName 状态过滤集合或顺序错误: $nodeName"
         $statusMap[$nodeName] = $actualValues
     }
 
     $panelNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSCategoryPresetPanel')
     Require ($panelNodes.Count -eq 1) "$PageName 分类/预设面板缺失或重复"
-    $uiHandleReferences = @(
-        [regex]::Matches($panelNodes[0].OuterXml, '\bSource=[''"](h[^''"]+)[''"]') |
-            ForEach-Object { $_.Groups[1].Value }
+    $panelNames = @(
+        Get-XamlName -Node $panelNodes[0]
+        $panelNodes[0].SelectNodes('.//*') |
+            ForEach-Object { Get-XamlName -Node $_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     )
-    Require ($uiHandleReferences.Count -gt 0) "$PageName 分类/预设面板没有本地化 handle"
-    $uiHandles = @($uiHandleReferences | Sort-Object -Unique)
+    Require (Test-ExactOrdinalSet -Actual $panelNames -Expected $ExpectedNamedNodes) "$PageName 分类/预设面板命名节点批准集合错误"
+    $allEventValues = @(
+        $panelNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]') |
+            ForEach-Object { $_.GetAttribute('CommandParameter') }
+    )
+    $expectedEventValues = @($ButtonOrder | ForEach-Object { $ButtonEvents[$_] })
+    Require (Test-ExactOrdinalSequence -Actual $allEventValues -Expected $expectedEventValues) "$PageName 分类/预设事件批准集合或顺序错误"
+
+    $uiHandles = [System.Collections.Generic.List[string]]::new()
+    foreach ($nodeName in $UiHandleByNode.Keys) {
+        $nodes = @(Get-XamlNamedNodes -Document $document -Name $nodeName)
+        Require ($nodes.Count -eq 1) "$PageName 固定 handle 节点缺失或重复: $nodeName"
+        $handleReferences = @(
+            [regex]::Matches($nodes[0].OuterXml, '\bSource=[''"](h[^''"]+)[''"]') |
+                ForEach-Object { $_.Groups[1].Value }
+        )
+        Require ($handleReferences.Count -eq 1 -and $handleReferences[0] -ceq $UiHandleByNode[$nodeName]) "$PageName 固定 handle 错误: $nodeName"
+        $uiHandles.Add($handleReferences[0])
+    }
 
     $mirrorValues = @(
         $panelNodes[0].SelectNodes('.//*[local-name()="DataTrigger" and @Binding="{Binding Name.Str}" and @Value]') |
             ForEach-Object { $_.GetAttribute('Value') } |
             Where-Object { $_.StartsWith('COS_CFG_CATEGORY_', [System.StringComparison]::Ordinal) }
     )
-    Require (Test-ExactOrdinalSet -Actual $mirrorValues -Expected @(
-        'COS_CFG_CATEGORY_CORE',
-        'COS_CFG_CATEGORY_ORIGIN',
-        'COS_CFG_CATEGORY_RACETAGS',
-        'COS_CFG_CATEGORY_WEAPON',
-        'COS_CFG_CATEGORY_ARMOR',
-        'COS_CFG_CATEGORY_RACIAL',
-        'COS_CFG_CATEGORY_CONVENIENCE'
-    )) "$PageName 分类 mirror 过滤集合错误"
+    Require (Test-ExactOrdinalSequence -Actual $mirrorValues -Expected $ExpectedMirrors) "$PageName 分类 mirror 过滤集合或顺序错误"
+
+    $overlayNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetCombatReadonlyOverlay')
+    Require ($overlayNodes.Count -eq 1) "$PageName 战斗只读 overlay 缺失或重复"
+    Require ($overlayNodes[0].GetAttribute('Visibility') -ceq 'Collapsed') "$PageName 战斗只读 overlay 默认必须隐藏"
+    Require ($overlayNodes[0].GetAttribute('IsHitTestVisible') -ceq 'True') "$PageName 战斗只读 overlay 必须拦截输入"
+    Require ($overlayNodes[0].GetAttribute('Focusable') -ceq 'False') "$PageName 战斗只读 overlay 不得取得焦点"
+    $combatTriggers = @(
+        $overlayNodes[0].SelectNodes('.//*[local-name()="DataTrigger"]')
+    )
+    Require ($combatTriggers.Count -eq 1) "$PageName 战斗只读 overlay 条件数量不精确"
+    Require ($combatTriggers[0].GetAttribute('Value') -ceq 'True') "$PageName 战斗只读 overlay 条件值必须为 True"
+    Require ([regex]::IsMatch($combatTriggers[0].GetAttribute('Binding'), '(?:^|[^A-Za-z0-9_])IsInCombat(?:[^A-Za-z0-9_]|$)')) "$PageName 战斗只读 overlay 缺少 IsInCombat 条件"
+    $visibilitySetters = @($combatTriggers[0].SelectNodes('.//*[local-name()="Setter" and @Property="Visibility" and @Value="Visible"]'))
+    Require ($visibilitySetters.Count -eq 1) "$PageName 战斗只读 overlay 未切换 Visible"
+    Require (@($combatTriggers[0].SelectNodes('.//*[local-name()="Setter"]')).Count -eq 1) "$PageName 战斗只读 overlay Setter 集合不精确"
 
     [pscustomobject]@{
         Document = $document
         Events = $eventMap
         Statuses = $statusMap
-        Handles = $uiHandles
+        Handles = @($uiHandles.ToArray())
         Mirrors = $mirrorValues
+        Navigation = $ControllerNavigation
     }
 }
 
@@ -856,10 +1281,93 @@ function Assert-UiParityContract {
     }
     Require (Test-ExactOrdinalSequence -Actual @($Keyboard.Statuses.Keys) -Expected @($Controller.Statuses.Keys)) '键鼠/手柄状态节点不对称'
     foreach ($name in $Keyboard.Statuses.Keys) {
-        Require (Test-ExactOrdinalSet -Actual $Keyboard.Statuses[$name] -Expected $Controller.Statuses[$name]) "键鼠/手柄状态集合不对称: $name"
+        Require (Test-ExactOrdinalSequence -Actual $Keyboard.Statuses[$name] -Expected $Controller.Statuses[$name]) "键鼠/手柄状态集合或顺序不对称: $name"
     }
     Require (Test-ExactOrdinalSet -Actual $Keyboard.Handles -Expected $Controller.Handles) '键鼠/手柄本地化语义不对称'
-    Require (Test-ExactOrdinalSet -Actual $Keyboard.Mirrors -Expected $Controller.Mirrors) '键鼠/手柄分类 mirror 语义不对称'
+    Require (Test-ExactOrdinalSequence -Actual $Keyboard.Mirrors -Expected $Controller.Mirrors) '键鼠/手柄分类 mirror 语义不对称'
+}
+
+function New-CategoryPresetHandle {
+    param(
+        [Parameter(Mandatory)]
+        [ValidatePattern('^[0-9a-f]{4}$')]
+        [string]$Family,
+
+        [Parameter(Mandatory)]
+        [ValidateRange(1, 9999)]
+        [int]$Index
+    )
+
+    'h{0}{1:D4}g0000g4000g8000g{1:D12}' -f $Family, $Index
+}
+
+function Get-SemanticTokens {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Descriptor
+    )
+
+    $concepts = [ordered]@{
+        NEAR_VANILLA = @('原版', 'vanilla', 'バニラ', '바닐라')
+        PURE_CHAOS = @('混沌', 'chaos', 'カオス', '카오스')
+        ALL_CONVENIENCE = @('全部', 'all', 'すべて', '모두')
+        BALANCED = @('平衡', 'balanced', 'バランス', '균형')
+        CUSTOM = @('自定义', 'custom', 'カスタム', '사용자')
+        WEAPON = @('武器', 'weapon', '武器', '무기')
+        ARMOR = @('护甲', 'armor', '防具', '방어구')
+        RACETAGS = @('种族标签', 'race tag', '種族タグ', '종족 태그')
+        RACIAL = @('种族能力', 'racial', '種族能力', '종족 능력')
+        CONVENIENCE = @('便利', 'convenience', '便利', '편의')
+        ORIGIN = @('起源', 'origin', 'オリジン', '기원')
+        CORE = @('核心', 'core', 'コア', '핵심')
+        WAITING_CONDITION = @('等待', 'waiting', '待機', '대기')
+        MISSING_CONFIG = @('缺失', 'missing', '不足', '누락')
+        SYNC_FAILED = @('同步', 'sync', '同期', '동기화')
+        CONFIG_INCOMPLETE = @('不完整', 'incomplete', '不完全', '불완전')
+        COMBAT_READONLY = @('战斗', 'combat', '戦闘', '전투')
+        NO_SELECTION = @('选择', 'selection', '選択', '선택')
+        CURRENT = @('当前', 'current', '現在', '현재')
+        PENDING = @('待应用', 'pending', '保留', '대기')
+        PREVIEW = @('预览', 'preview', 'プレビュー', '미리보기')
+        ACTIVE = @('启用', 'active', '有効', '활성')
+        PAUSED = @('暂停', 'paused', '一時停止', '일시 중지')
+        ERROR = @('错误', 'error', 'エラー', '오류')
+        APPLY = @('应用', 'apply', '適用', '적용')
+        CANCEL = @('取消', 'cancel', 'キャンセル', '취소')
+        LIFE = @('生活', 'life', '生活', '생활')
+        CATEGORY = @('分类', 'category', 'カテゴリー', '분류')
+        PRESET = @('预设', 'preset', 'プリセット', '프리셋')
+        ACTUAL = @('实际', 'actual', '実際', '실제')
+        ON = @('开启', 'on', 'オン', '켜짐')
+        OFF = @('关闭', 'off', 'オフ', '꺼짐')
+        TITLE = @('设置', 'settings', '設定', '설정')
+        SELECT = @('选择', 'select', '選択', '선택')
+        REFRESH = @('刷新', 'refresh', '更新', '새로고침')
+    }
+
+    $tokens = [ordered]@{
+        Chinese = [System.Collections.Generic.List[string]]::new()
+        English = [System.Collections.Generic.List[string]]::new()
+        Japanese = [System.Collections.Generic.List[string]]::new()
+        Korean = [System.Collections.Generic.List[string]]::new()
+    }
+    foreach ($concept in $concepts.Keys) {
+        $conceptPattern = '(?:^|_)' + [regex]::Escape($concept) + '(?:_|$)'
+        if ([regex]::IsMatch($Descriptor, $conceptPattern)) {
+            $values = $concepts[$concept]
+            $tokens.Chinese.Add($values[0])
+            $tokens.English.Add($values[1])
+            $tokens.Japanese.Add($values[2])
+            $tokens.Korean.Add($values[3])
+        }
+    }
+    foreach ($number in @('0', '5', '20')) {
+        if ($Descriptor.EndsWith("_$number", [System.StringComparison]::Ordinal)) {
+            foreach ($language in $tokens.Keys) { $tokens[$language].Add($number) }
+        }
+    }
+    Require ($tokens.English.Count -gt 0) "验证器内部错误: 缺少语义 token 定义 $Descriptor"
+    $tokens
 }
 
 function Assert-LocalizationContract {
@@ -868,7 +1376,10 @@ function Assert-LocalizationContract {
         [System.Collections.IDictionary]$ContentByLanguage,
 
         [Parameter(Mandatory)]
-        [string[]]$RequiredHandles
+        [System.Collections.IDictionary]$SemanticByHandle,
+
+        [Parameter(Mandatory)]
+        [string]$FeatureHandlePrefix
     )
 
     $nodesByLanguage = [ordered]@{}
@@ -879,6 +1390,8 @@ function Assert-LocalizationContract {
         $nodesByLanguage[$language] = $nodes
         $handlesByLanguage[$language] = @($nodes | ForEach-Object { $_.GetAttribute('contentuid') })
         Require (Test-ExactOrdinalSet -Actual $handlesByLanguage[$language] -Expected $handlesByLanguage[$language]) "本地化 handle 重复: $language"
+        $featureHandles = @($handlesByLanguage[$language] | Where-Object { $_.StartsWith($FeatureHandlePrefix, [System.StringComparison]::Ordinal) })
+        Require (Test-ExactOrdinalSet -Actual $featureHandles -Expected @($SemanticByHandle.Keys)) "分类/预设批准 handle 集合错误: $language"
     }
 
     $referenceHandles = $handlesByLanguage.Chinese
@@ -886,7 +1399,7 @@ function Assert-LocalizationContract {
         Require (Test-ExactOrdinalSet -Actual $handlesByLanguage[$language] -Expected $referenceHandles) "四语 handle 集合不一致: $language"
     }
 
-    foreach ($handle in $RequiredHandles) {
+    foreach ($handle in $SemanticByHandle.Keys) {
         $texts = [ordered]@{}
         foreach ($language in $ContentByLanguage.Keys) {
             $nodes = @($nodesByLanguage[$language] | Where-Object { $_.GetAttribute('contentuid') -ceq $handle })
@@ -894,13 +1407,20 @@ function Assert-LocalizationContract {
             $text = $nodes[0].InnerText
             Require (-not [string]::IsNullOrWhiteSpace($text)) "本地化文本为空: $language $handle"
             Require (-not [regex]::IsMatch($text, '(?i)\bNot Found\b')) "本地化包含 Not Found: $language $handle"
+            Require ($text.Trim() -cne 'A') "本地化文本不得使用占位符 A: $language $handle"
             $texts[$language] = $text
         }
 
         Require ([regex]::IsMatch($texts.Chinese, '\p{IsCJKUnifiedIdeographs}')) "中文语义不完整: $handle"
         Require ([regex]::IsMatch($texts.English, '[A-Za-z]')) "英文语义不完整: $handle"
-        Require ([regex]::IsMatch($texts.Japanese, '[A-Za-z\p{IsHiragana}\p{IsKatakana}\p{IsCJKUnifiedIdeographs}]')) "日文语义不完整: $handle"
-        Require ([regex]::IsMatch($texts.Korean, '[A-Za-z\p{IsHangulSyllables}]')) "韩文语义不完整: $handle"
+        Require ([regex]::IsMatch($texts.Japanese, '[\p{IsHiragana}\p{IsKatakana}]')) "日文必须包含日文假名: $handle"
+        Require ([regex]::IsMatch($texts.Korean, '\p{IsHangulSyllables}')) "韩文必须包含韩文字符: $handle"
+        $semanticTokens = Get-SemanticTokens -Descriptor $SemanticByHandle[$handle]
+        foreach ($language in $ContentByLanguage.Keys) {
+            foreach ($token in $semanticTokens[$language]) {
+                Require ($texts[$language].IndexOf($token, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) "$language 缺少语义 token '$token': $handle"
+            }
+        }
         foreach ($language in @('English', 'Japanese', 'Korean')) {
             Require ($texts[$language] -cne $texts.Chinese) "$language 直接复制中文: $handle"
         }
@@ -964,17 +1484,17 @@ $categories = [ordered]@{
 # Fail first here on the .98 baseline. Later contracts must not mask a missing category implementation.
 Assert-CategoryMappingContract -Content $config -ExpectedCategories $categories
 
-$legacyTables = @(
-    'DB_COS_ConfigMechanic',
-    'DB_COS_ConfigLifeSkill',
-    'DB_COS_ConfigCost',
-    'DB_COS_ConfigRacial',
-    'DB_COS_GrantSetting',
-    'DB_COS_TagSpellsSetting',
-    'DB_COS_VoloEyeSetting',
-    'DB_COS_CarrySetting'
-)
-Assert-LegacyDetectionContract -Content $config -ExpectedTables $legacyTables
+$legacyProbes = [ordered]@{
+    DB_COS_ConfigMechanic = 'PROC_COS_ConfigProbeLegacyMechanic'
+    DB_COS_ConfigLifeSkill = 'PROC_COS_ConfigProbeLegacyLifeSkill'
+    DB_COS_ConfigCost = 'PROC_COS_ConfigProbeLegacyCost'
+    DB_COS_ConfigRacial = 'PROC_COS_ConfigProbeLegacyRacial'
+    DB_COS_GrantSetting = 'PROC_COS_ConfigProbeLegacyGrant'
+    DB_COS_TagSpellsSetting = 'PROC_COS_ConfigProbeLegacyTagSpells'
+    DB_COS_VoloEyeSetting = 'PROC_COS_ConfigProbeLegacyVoloEye'
+    DB_COS_CarrySetting = 'PROC_COS_ConfigProbeLegacyCarry'
+}
+Assert-LegacyDetectionContract -Content $config -ExpectedProbes $legacyProbes
 
 $presetOrder = @('AllConvenience', 'Balanced', 'NearVanilla', 'PureChaos', 'Custom')
 Assert-PresetDetectionOrderContract -Content $config -ExpectedOrder $presetOrder
@@ -1007,7 +1527,25 @@ $presetEvents = [ordered]@{
 }
 Assert-EventMapContract -Content $config -ExpectedCategoryEvents $categoryEvents -ExpectedPresetEvents $presetEvents
 
-Assert-CategoryInitializationContract -Content $config -Categories @($categories.Keys)
+$newCategoryInitialization = [ordered]@{
+    Core = 0
+    Origin = 1
+    RaceTags = 0
+    WeaponProficiencies = 0
+    ArmorProficiencies = 0
+    RacialAbilities = 0
+    Convenience = 0
+}
+$legacyCategoryInitialization = [ordered]@{
+    Core = 1
+    Origin = 1
+    RaceTags = 1
+    WeaponProficiencies = 1
+    ArmorProficiencies = 1
+    RacialAbilities = 1
+    Convenience = 1
+}
+Assert-CategoryInitializationContract -Content $config -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 Assert-EventGuardContract -Content $config
 Assert-PresetWorkflowContract -Content $config
 Assert-PresetWriteContract -Content $config
@@ -1092,9 +1630,35 @@ foreach ($status in $actualStatuses) {
 }
 foreach ($status in $errorStatuses) { $statusGroups.Error[$status] = 'COS_PRESET_ERROR' }
 
-$statsContract = Assert-StatsContract -Content $stats -ExpectedMirrors @($categories.Values) -StatusGroups $statusGroups
+$expectedHandlesByEntry = [ordered]@{}
+$semanticByHandle = [ordered]@{}
+$entryHandleFamilies = @(
+    [pscustomobject]@{ Names = @($categories.Values); Display = '8f20'; Description = '8f21' },
+    [pscustomobject]@{ Names = $currentStatuses; Display = '8f22'; Description = '8f23' },
+    [pscustomobject]@{ Names = $pendingStatuses; Display = '8f24'; Description = '8f25' },
+    [pscustomobject]@{ Names = $previewStatuses; Display = '8f26'; Description = '8f27' },
+    [pscustomobject]@{ Names = $actualStatuses; Display = '8f28'; Description = '8f29' },
+    [pscustomobject]@{ Names = $errorStatuses; Display = '8f2a'; Description = '8f2b' }
+)
+foreach ($family in $entryHandleFamilies) {
+    for ($index = 0; $index -lt $family.Names.Count; $index++) {
+        $name = $family.Names[$index]
+        $displayHandle = New-CategoryPresetHandle -Family $family.Display -Index ($index + 1)
+        $descriptionHandle = New-CategoryPresetHandle -Family $family.Description -Index ($index + 1)
+        $expectedHandlesByEntry[$name] = [pscustomobject]@{
+            DisplayName = $displayHandle
+            Description = $descriptionHandle
+        }
+        $semanticByHandle[$displayHandle] = $name
+        $semanticByHandle[$descriptionHandle] = $name
+    }
+}
+
+$statsContract = Assert-StatsContract -Content $stats -ExpectedMirrors @($categories.Values) -StatusGroups $statusGroups -ExpectedHandlesByEntry $expectedHandlesByEntry
+$configCode = (Get-OsirisCodeLines -Content $config) -join "`n"
 foreach ($status in @($statusGroups.Values | ForEach-Object { $_.Keys })) {
-    Require ($config.Contains($status)) "Story 未使用分类/预设状态: $status"
+    $statusPattern = '(?:^|[^A-Za-z0-9_])' + [regex]::Escape($status) + '(?:[^A-Za-z0-9_]|$)'
+    Require ([regex]::IsMatch($configCode, $statusPattern)) "Story 未使用分类/预设状态: $status"
 }
 
 $buttonEvents = [ordered]@{
@@ -1119,17 +1683,104 @@ $statusNodeSets = [ordered]@{
     COSCategoryActual = $actualStatuses
     COSPresetError = $errorStatuses
 }
+$uiHandleByNode = [ordered]@{}
+$uiHandleDescriptors = [ordered]@{
+    COSCategoryPresetTitle = 'PRESET_TITLE'
+    COSPresetCurrentTitle = 'PRESET_CURRENT'
+    COSPresetPendingTitle = 'PRESET_PENDING'
+    COSPresetSelectTitle = 'PRESET_SELECT'
+    COSPresetPreviewTitle = 'PRESET_PREVIEW'
+    COSCategoryTitle = 'CATEGORY_TITLE'
+    COSCategoryActualTitle = 'CATEGORY_ACTUAL'
+    COSPresetErrorTitle = 'PRESET_ERROR'
+    COSPresetNearVanilla = 'PRESET_NEAR_VANILLA'
+    COSPresetPureChaos = 'PRESET_PURE_CHAOS'
+    COSPresetBalanced = 'PRESET_BALANCED'
+    COSPresetAllConvenience = 'PRESET_ALL_CONVENIENCE'
+    COSCategoryToggleCore = 'CATEGORY_CORE'
+    COSCategoryToggleOrigin = 'CATEGORY_ORIGIN'
+    COSCategoryToggleRaceTags = 'CATEGORY_RACETAGS'
+    COSCategoryToggleWeaponProficiencies = 'CATEGORY_WEAPON'
+    COSCategoryToggleArmorProficiencies = 'CATEGORY_ARMOR'
+    COSCategoryToggleRacialAbilities = 'CATEGORY_RACIAL'
+    COSCategoryToggleConvenience = 'CATEGORY_CONVENIENCE'
+    COSPresetApply = 'PRESET_APPLY'
+    COSPresetCancel = 'PRESET_CANCEL'
+    COSPresetCombatReadonlyOverlay = 'PRESET_COMBAT_READONLY'
+}
+$uiHandleIndex = 0
+foreach ($nodeName in $uiHandleDescriptors.Keys) {
+    $uiHandleIndex++
+    $handle = New-CategoryPresetHandle -Family '8f2c' -Index $uiHandleIndex
+    $uiHandleByNode[$nodeName] = $handle
+    $semanticByHandle[$handle] = $uiHandleDescriptors[$nodeName]
+}
+
+$expectedFeatureNamedNodes = @(
+    'COSCategoryPresetPanel',
+    'COSCategoryPresetTitle',
+    'COSPresetCurrentTitle',
+    'COSPresetCurrent',
+    'COSPresetCurrentEntry',
+    'COSPresetPendingTitle',
+    'COSPresetPending',
+    'COSPresetPendingEntry',
+    'COSPresetSelectTitle',
+    'COSPresetButtons',
+    'COSPresetNearVanilla',
+    'COSPresetPureChaos',
+    'COSPresetBalanced',
+    'COSPresetAllConvenience',
+    'COSPresetPreviewTitle',
+    'COSPresetPreview',
+    'COSPresetPreviewEntry',
+    'COSCategoryTitle',
+    'COSCategoryButtons',
+    'COSCategoryToggleCore',
+    'COSCategoryMirrorCore',
+    'COSCategoryToggleOrigin',
+    'COSCategoryMirrorOrigin',
+    'COSCategoryToggleRaceTags',
+    'COSCategoryMirrorRaceTags',
+    'COSCategoryToggleWeaponProficiencies',
+    'COSCategoryMirrorWeaponProficiencies',
+    'COSCategoryToggleArmorProficiencies',
+    'COSCategoryMirrorArmorProficiencies',
+    'COSCategoryToggleRacialAbilities',
+    'COSCategoryMirrorRacialAbilities',
+    'COSCategoryToggleConvenience',
+    'COSCategoryMirrorConvenience',
+    'COSCategoryActualTitle',
+    'COSCategoryActual',
+    'COSCategoryActualEntry',
+    'COSPresetErrorTitle',
+    'COSPresetError',
+    'COSPresetErrorEntry',
+    'COSPresetActions',
+    'COSPresetApply',
+    'COSPresetCancel',
+    'COSPresetCombatReadonlyOverlay'
+)
 $panelOrder = @(
     'COSRuntimeDiagnosticPanel',
     'COSCategoryPresetPanel',
+    'COSCategoryPresetTitle',
+    'COSPresetCurrentTitle',
     'COSPresetCurrent',
+    'COSPresetPendingTitle',
     'COSPresetPending',
+    'COSPresetSelectTitle',
     'COSPresetButtons',
+    'COSPresetPreviewTitle',
     'COSPresetPreview',
+    'COSCategoryTitle',
     'COSCategoryButtons',
+    'COSCategoryActualTitle',
     'COSCategoryActual',
+    'COSPresetErrorTitle',
     'COSPresetError',
     'COSPresetActions',
+    'COSPresetCombatReadonlyOverlay',
     'COSConfigOverview'
 )
 $buttonOrder = @(
@@ -1148,20 +1799,20 @@ $buttonOrder = @(
     'COSPresetCancel'
 )
 
-$keyboardContract = Assert-UiPageContract -Content $keyboardXaml -PageName 'COS_ConfigMenu.xaml' -Controller $false -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder
-$controllerContract = Assert-UiPageContract -Content $controllerXaml -PageName 'COS_ConfigMenu_c.xaml' -Controller $true -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder
+$controllerNavigation = [ordered]@{
+    COSPresetNearVanilla = [ordered]@{ Up = 'COSPresetApply'; Down = 'COSPresetBalanced'; Left = 'COSPresetPureChaos'; Right = 'COSPresetPureChaos' }
+    COSPresetPureChaos = [ordered]@{ Up = 'COSPresetCancel'; Down = 'COSPresetAllConvenience'; Left = 'COSPresetNearVanilla'; Right = 'COSPresetNearVanilla' }
+    COSPresetBalanced = [ordered]@{ Up = 'COSPresetNearVanilla'; Down = 'COSPresetApply'; Left = 'COSPresetAllConvenience'; Right = 'COSPresetAllConvenience' }
+    COSPresetAllConvenience = [ordered]@{ Up = 'COSPresetPureChaos'; Down = 'COSPresetCancel'; Left = 'COSPresetBalanced'; Right = 'COSPresetBalanced' }
+    COSPresetApply = [ordered]@{ Up = 'COSPresetBalanced'; Down = 'COSPresetNearVanilla'; Left = 'COSPresetCancel'; Right = 'COSPresetCancel' }
+    COSPresetCancel = [ordered]@{ Up = 'COSPresetAllConvenience'; Down = 'COSPresetPureChaos'; Left = 'COSPresetApply'; Right = 'COSPresetApply' }
+}
+
+$keyboardContract = Assert-UiPageContract -Content $keyboardXaml -PageName 'COS_ConfigMenu.xaml' -Controller $false -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleByNode $uiHandleByNode -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values)
+$controllerContract = Assert-UiPageContract -Content $controllerXaml -PageName 'COS_ConfigMenu_c.xaml' -Controller $true -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleByNode $uiHandleByNode -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values)
 Assert-UiParityContract -Keyboard $keyboardContract -Controller $controllerContract
 
-$requiredHandles = [System.Collections.Generic.List[string]]::new()
-foreach ($entry in @($statsContract.Mirrors) + @($statsContract.Statuses)) {
-    $fields = Get-StatsDataFields -Entry $entry
-    foreach ($fieldName in @('DisplayName', 'Description')) {
-        $requiredHandles.Add((Get-HandleWithoutVersion -Value $fields[$fieldName] -Context "$($entry.Name).$fieldName"))
-    }
-}
-foreach ($handle in $keyboardContract.Handles) { $requiredHandles.Add($handle) }
-$requiredHandles = @($requiredHandles.ToArray() | Sort-Object -Unique)
-Assert-LocalizationContract -ContentByLanguage $localization -RequiredHandles $requiredHandles
+Assert-LocalizationContract -ContentByLanguage $localization -SemanticByHandle $semanticByHandle -FeatureHandlePrefix 'h8f2'
 
 $expectedPackagePaths = @(
     'Localization/Chinese/ChaosOriginsStory.loca',
@@ -1226,27 +1877,89 @@ Assert-MutationRejected -Name 'wrong-preset-value' -Probe {
     Assert-PresetMatrixContract -Content $wrongPresetMutation -ExpectedMatrix $presetMatrix -ExpectedLife $presetLife
 }
 
-$presetApplyBlock = @(Get-ProcedureBlocks -Content $config -Name 'PROC_COS_PresetApply')[0]
+$newInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitCategoriesNew')[0]
+$newInitMutationBlock = Replace-FirstLiteral -Content $newInitModel.Block -OldValue 'PROC_COS_ConfigCommitCategorySchema(_Character);' -NewValue "PROC_COS_ConfigInitCategory(_Character, `"Extra`", 0);`nPROC_COS_ConfigCommitCategorySchema(_Character);" -ProbeName 'new-init-ten-actions'
+$newInitMutation = Replace-RuleBlock -Content $config -OldBlock $newInitModel.Block -NewBlock $newInitMutationBlock -ProbeName 'new-init-ten-actions'
+Assert-MutationRejected -Name 'new-init-ten-actions' -Probe {
+    Assert-CategoryInitializationContract -Content $newInitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
+}
+
+$legacyInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitCategoriesLegacy')[0]
+$legacyInitMutationBlock = Replace-FirstLiteral -Content $legacyInitModel.Block -OldValue 'PROC_COS_ConfigCommitCategorySchema(_Character);' -NewValue "DB_COS_ConfigCost(_Character, `"Fate`", 99);`nPROC_COS_ConfigCommitCategorySchema(_Character);" -ProbeName 'legacy-init-child-write'
+$legacyInitMutation = Replace-RuleBlock -Content $config -OldBlock $legacyInitModel.Block -NewBlock $legacyInitMutationBlock -ProbeName 'legacy-init-child-write'
+Assert-MutationRejected -Name 'legacy-init-child-write' -Probe {
+    Assert-CategoryInitializationContract -Content $legacyInitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
+}
+
+$commitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigCommitCategorySchema')[0]
+$extraSchemaConditionBlock = Replace-FirstLiteral -Content $commitModel.Block -OldValue 'THEN' -NewValue "AND`nDB_COS_ConfigCategory(_Character, `"Extra`", _Extra)`nTHEN" -ProbeName 'schema-extra-condition'
+$extraSchemaConditionMutation = Replace-RuleBlock -Content $config -OldBlock $commitModel.Block -NewBlock $extraSchemaConditionBlock -ProbeName 'schema-extra-condition'
+Assert-MutationRejected -Name 'schema-extra-condition' -Probe {
+    Assert-CategoryInitializationContract -Content $extraSchemaConditionMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
+}
+
+$presetApplyModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetApply')[0]
+$presetApplyBlock = $presetApplyModel.Block
 $injectedApplyBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'preset-subconfig-write'
 $presetWriteMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $injectedApplyBlock -ProbeName 'preset-subconfig-write'
 Assert-MutationRejected -Name 'preset-subconfig-write' -Probe {
     Assert-PresetWriteContract -Content $presetWriteMutation
 }
 
+$unapprovedApplyBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'THEN' -NewValue "THEN`nDB_COS_PresetUnapproved(_Character);" -ProbeName 'preset-unapproved-db'
+$unapprovedApplyMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $unapprovedApplyBlock -ProbeName 'preset-unapproved-db'
+Assert-MutationRejected -Name 'preset-unapproved-db' -Probe {
+    Assert-PresetWriteContract -Content $unapprovedApplyMutation
+}
+
+$previewModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetPreview')[0]
+$previewCostBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'preview-subconfig-write'
+$previewCostMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewCostBlock -ProbeName 'preview-subconfig-write'
+Assert-MutationRejected -Name 'preview-subconfig-write' -Probe {
+    Assert-PresetWriteContract -Content $previewCostMutation
+}
+
+$previewFormalBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCategory(_Character, `"Core`", 1);" -ProbeName 'preview-formal-config-write'
+$previewFormalMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewFormalBlock -ProbeName 'preview-formal-config-write'
+Assert-MutationRejected -Name 'preview-formal-config-write' -Probe {
+    Assert-PresetWorkflowContract -Content $previewFormalMutation
+}
+
+$previewSyncBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nPROC_COS_ConfigSyncCharacter(_Character);" -ProbeName 'preview-extra-sync'
+$previewSyncMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewSyncBlock -ProbeName 'preview-extra-sync'
+Assert-MutationRejected -Name 'preview-extra-sync' -Probe {
+    Assert-PresetWorkflowContract -Content $previewSyncMutation
+}
+
 $legacyLine = 'DB_COS_ConfigLegacyTable("DB_COS_ConfigMechanic");'
 $legacyMutation = Replace-FirstLiteral -Content $config -OldValue $legacyLine -NewValue '// mutation: removed legacy mechanic check' -ProbeName 'missing-legacy-table'
 Assert-MutationRejected -Name 'missing-legacy-table' -Probe {
-    Assert-LegacyDetectionContract -Content $legacyMutation -ExpectedTables $legacyTables
+    Assert-LegacyDetectionContract -Content $legacyMutation -ExpectedProbes $legacyProbes
 }
 
-$categoryEventBlock = @(
-    Get-OsirisRuleBlocks -Content $config |
-        Where-Object { $_.Contains('DB_COS_ConfigCategoryEvent(_Event, _Category)') }
+$legacyMechanicModel = @(Get-ProcedureModels -Content $config -Name $legacyProbes.DB_COS_ConfigMechanic)[0]
+$legacyMechanicCondition = @($legacyMechanicModel.Conditions | Where-Object { $_ -match '^DB_COS_ConfigMechanic\(_Character' })[0]
+$legacyCommentOnlyBlock = Replace-FirstLiteral -Content $legacyMechanicModel.Block -OldValue $legacyMechanicCondition -NewValue "// $legacyMechanicCondition" -ProbeName 'legacy-comment-only'
+$legacyCommentOnlyMutation = Replace-RuleBlock -Content $config -OldBlock $legacyMechanicModel.Block -NewBlock $legacyCommentOnlyBlock -ProbeName 'legacy-comment-only'
+Assert-MutationRejected -Name 'legacy-comment-only' -Probe {
+    Assert-LegacyDetectionContract -Content $legacyCommentOnlyMutation -ExpectedProbes $legacyProbes
+}
+
+$categoryEventModel = @(
+    Get-OsirisRuleModels -Content $config |
+        Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_ConfigCategoryEvent(_Event, _Category)' }
 )[0]
+$categoryEventBlock = $categoryEventModel.Block
 $unguardedCategoryBlock = Replace-FirstLiteral -Content $categoryEventBlock -OldValue 'IsInCombat(_Character, 0)' -NewValue 'IsInCombat(_Character, 1)' -ProbeName 'missing-combat-guard'
 $combatMutation = Replace-RuleBlock -Content $config -OldBlock $categoryEventBlock -NewBlock $unguardedCategoryBlock -ProbeName 'missing-combat-guard'
 Assert-MutationRejected -Name 'missing-combat-guard' -Probe {
     Assert-EventGuardContract -Content $combatMutation
+}
+
+$schemaCommentBlock = Replace-FirstLiteral -Content $categoryEventBlock -OldValue 'DB_COS_ConfigCategorySchema(_Character, 1)' -NewValue '// DB_COS_ConfigCategorySchema(_Character, 1)' -ProbeName 'event-schema-comment-only'
+$schemaCommentMutation = Replace-RuleBlock -Content $config -OldBlock $categoryEventBlock -NewBlock $schemaCommentBlock -ProbeName 'event-schema-comment-only'
+Assert-MutationRejected -Name 'event-schema-comment-only' -Probe {
+    Assert-EventGuardContract -Content $schemaCommentMutation
 }
 
 $previewBypassBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'DB_COS_PresetPreviewReady(_Character, _Preset)' -NewValue 'DB_COS_PresetMutationBypass(_Character, _Preset)' -ProbeName 'preview-bypass'
@@ -1255,11 +1968,31 @@ Assert-MutationRejected -Name 'preview-bypass' -Probe {
     Assert-PresetWorkflowContract -Content $previewBypassMutation
 }
 
-$commitBlock = @(Get-ProcedureBlocks -Content $config -Name 'PROC_COS_ConfigCommitCategorySchema')[0]
-$duplicateCommitBlock = Replace-FirstLiteral -Content $commitBlock -OldValue 'DB_COS_ConfigCategorySchema(_Character);' -NewValue "DB_COS_ConfigCategorySchema(_Character);`nDB_COS_ConfigCategorySchema(_Character);" -ProbeName 'duplicate-schema-commit'
-$duplicateCommitMutation = Replace-RuleBlock -Content $config -OldBlock $commitBlock -NewBlock $duplicateCommitBlock -ProbeName 'duplicate-schema-commit'
+$applyOrderBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'PROC_COS_PresetValidate(_Character, _Preset);' -NewValue 'PROC_COS_PresetMutationOrderPlaceholder(_Character, _Preset);' -ProbeName 'apply-order'
+$applyOrderBlock = Replace-FirstLiteral -Content $applyOrderBlock -OldValue 'PROC_COS_PresetApplyCategories(_Character, _Preset);' -NewValue 'PROC_COS_PresetValidate(_Character, _Preset);' -ProbeName 'apply-order'
+$applyOrderBlock = Replace-FirstLiteral -Content $applyOrderBlock -OldValue 'PROC_COS_PresetMutationOrderPlaceholder(_Character, _Preset);' -NewValue 'PROC_COS_PresetApplyCategories(_Character, _Preset);' -ProbeName 'apply-order'
+$applyOrderMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $applyOrderBlock -ProbeName 'apply-order'
+Assert-MutationRejected -Name 'apply-order' -Probe {
+    Assert-PresetWorkflowContract -Content $applyOrderMutation
+}
+
+$duplicateCommitBlock = Replace-FirstLiteral -Content $commitModel.Block -OldValue 'DB_COS_ConfigCategorySchema(_Character, 1);' -NewValue "DB_COS_ConfigCategorySchema(_Character, 1);`nDB_COS_ConfigCategorySchema(_Character, 1);" -ProbeName 'duplicate-schema-commit'
+$duplicateCommitMutation = Replace-RuleBlock -Content $config -OldBlock $commitModel.Block -NewBlock $duplicateCommitBlock -ProbeName 'duplicate-schema-commit'
 Assert-MutationRejected -Name 'duplicate-schema-commit' -Probe {
-    Assert-CategoryInitializationContract -Content $duplicateCommitMutation -Categories @($categories.Keys)
+    Assert-CategoryInitializationContract -Content $duplicateCommitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
+}
+
+$controllerProbeArguments = [ordered]@{
+    PageName = 'controller-probe'
+    Controller = $true
+    ButtonEvents = $buttonEvents
+    StatusNodeSets = $statusNodeSets
+    PanelOrder = $panelOrder
+    ButtonOrder = $buttonOrder
+    ExpectedNamedNodes = $expectedFeatureNamedNodes
+    UiHandleByNode = $uiHandleByNode
+    ControllerNavigation = $controllerNavigation
+    ExpectedMirrors = @($categories.Values)
 }
 
 [xml]$controllerEventMutationDocument = $controllerXaml
@@ -1268,23 +2001,81 @@ $controllerPresetAction = @($controllerPresetButton.SelectNodes('.//*[local-name
 $controllerPresetAction.SetAttribute('CommandParameter', $presetEvents.PureChaos)
 $controllerEventMutation = $controllerEventMutationDocument.OuterXml
 Assert-MutationRejected -Name 'controller-event-drift' -Probe {
-    [void](Assert-UiPageContract -Content $controllerEventMutation -PageName 'controller-event-probe' -Controller $true -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder)
+    [void](Assert-UiPageContract -Content $controllerEventMutation @controllerProbeArguments)
 }
 
-$languageMutation = [ordered]@{}
-foreach ($language in $localization.Keys) { $languageMutation[$language] = $localization[$language] }
+[xml]$extraEventDocument = $controllerXaml
+$extraEventPanel = @(Get-XamlNamedNodes -Document $extraEventDocument -Name 'COSCategoryPresetPanel')[0]
+$extraEventAction = $extraEventDocument.CreateElement('b', 'InvokeCommandAction', 'http://schemas.microsoft.com/xaml/behaviors')
+$extraEventAction.SetAttribute('CommandParameter', '7e990000-0000-4000-8000-000000000099')
+[void]$extraEventPanel.AppendChild($extraEventAction)
+Assert-MutationRejected -Name 'xaml-extra-event' -Probe {
+    [void](Assert-UiPageContract -Content $extraEventDocument.OuterXml @controllerProbeArguments)
+}
+
+[xml]$extraStatusDocument = $controllerXaml
+$previewNode = @(Get-XamlNamedNodes -Document $extraStatusDocument -Name 'COSPresetPreview')[0]
+$firstPreviewTrigger = @($previewNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
+$extraPreviewTrigger = $firstPreviewTrigger.CloneNode($true)
+$extraPreviewTrigger.SetAttribute('Value', 'COS_PRESET_PREVIEW_UNAPPROVED')
+[void]$firstPreviewTrigger.ParentNode.AppendChild($extraPreviewTrigger)
+Assert-MutationRejected -Name 'xaml-extra-preview-status' -Probe {
+    [void](Assert-UiPageContract -Content $extraStatusDocument.OuterXml @controllerProbeArguments)
+}
+
+[xml]$wrongDirectionDocument = $controllerXaml
+$wrongDirectionButton = @(Get-XamlNamedNodes -Document $wrongDirectionDocument -Name 'COSPresetNearVanilla')[0]
+$wrongDirectionButton.SetAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code', 'COSPresetCancel')
+Assert-MutationRejected -Name 'controller-wrong-direction' -Probe {
+    [void](Assert-UiPageContract -Content $wrongDirectionDocument.OuterXml @controllerProbeArguments)
+}
+
+[xml]$missingDirectionDocument = $controllerXaml
+$missingDirectionButton = @(Get-XamlNamedNodes -Document $missingDirectionDocument -Name 'COSPresetNearVanilla')[0]
+$missingDirectionButton.RemoveAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code')
+Assert-MutationRejected -Name 'controller-missing-direction' -Probe {
+    [void](Assert-UiPageContract -Content $missingDirectionDocument.OuterXml @controllerProbeArguments)
+}
+
+[xml]$buttonOrderDocument = $controllerXaml
+$nearButton = @(Get-XamlNamedNodes -Document $buttonOrderDocument -Name 'COSPresetNearVanilla')[0]
+$pureButton = @(Get-XamlNamedNodes -Document $buttonOrderDocument -Name 'COSPresetPureChaos')[0]
+Require ([object]::ReferenceEquals($nearButton.ParentNode, $pureButton.ParentNode)) '按钮顺序探针要求两个预设按钮同属一个容器'
+[void]$nearButton.ParentNode.RemoveChild($pureButton)
+[void]$nearButton.ParentNode.InsertBefore($pureButton, $nearButton)
+Assert-MutationRejected -Name 'controller-button-order' -Probe {
+    [void](Assert-UiPageContract -Content $buttonOrderDocument.OuterXml @controllerProbeArguments)
+}
+
+$featureHandles = @($semanticByHandle.Keys)
+$mutationHandle = $featureHandles[0]
 [xml]$chineseDocument = $localization.Chinese
-[xml]$koreanDocument = $localization.Korean
-$mutationHandle = $requiredHandles[0]
 $chineseNode = @($chineseDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
-$koreanNode = @($koreanDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
-Require ($null -ne $chineseNode -and $null -ne $koreanNode) '本地化复制中文探针缺少真实节点'
-$koreanNode.InnerText = $chineseNode.InnerText
-$languageMutation.Korean = $koreanDocument.OuterXml
-Assert-MutationRejected -Name 'korean-copies-chinese' -Probe {
-    Assert-LocalizationContract -ContentByLanguage $languageMutation -RequiredHandles $requiredHandles
+Require ($null -ne $chineseNode) '本地化变异探针缺少中文真实节点'
+
+foreach ($language in @('English', 'Japanese', 'Korean')) {
+    $copyMutation = [ordered]@{}
+    foreach ($sourceLanguage in $localization.Keys) { $copyMutation[$sourceLanguage] = $localization[$sourceLanguage] }
+    [xml]$targetDocument = $localization[$language]
+    $targetNode = @($targetDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
+    Require ($null -ne $targetNode) "本地化复制中文探针缺少真实节点: $language"
+    $targetNode.InnerText = $chineseNode.InnerText
+    $copyMutation[$language] = $targetDocument.OuterXml
+    Assert-MutationRejected -Name "$($language.ToLowerInvariant())-copies-chinese" -Probe {
+        Assert-LocalizationContract -ContentByLanguage $copyMutation -SemanticByHandle $semanticByHandle -FeatureHandlePrefix 'h8f2'
+    }
+}
+
+$placeholderMutation = [ordered]@{}
+foreach ($language in $localization.Keys) { $placeholderMutation[$language] = $localization[$language] }
+[xml]$placeholderDocument = $localization.English
+$placeholderNode = @($placeholderDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
+$placeholderNode.InnerText = 'A'
+$placeholderMutation.English = $placeholderDocument.OuterXml
+Assert-MutationRejected -Name 'localization-placeholder-a' -Probe {
+    Assert-LocalizationContract -ContentByLanguage $placeholderMutation -SemanticByHandle $semanticByHandle -FeatureHandlePrefix 'h8f2'
 }
 
 Write-Output 'Category/preset contract counts: categories=7; preset-category-rows=28; preset-life-rows=4; events=13'
-Write-Output 'Category/preset mutation probes: category=PASS; matrix=PASS; write-allowlist=PASS; legacy=PASS; combat=PASS; preview=PASS; schema=PASS; controller=PASS; localization=PASS'
+Write-Output 'Category/preset mutation probes: initialization=PASS; category=PASS; matrix=PASS; write-allowlist=PASS; legacy=PASS; combat=PASS; preview=PASS; schema=PASS; xaml=PASS; localization=PASS'
 Write-Output 'ChaosOriginsStory category/preset verification: ok'
