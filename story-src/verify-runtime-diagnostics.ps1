@@ -610,9 +610,10 @@ function Assert-RuntimeDiagnosticUiPageContract {
     }
 
     $rowsNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSConfigRows')
+    $mutationPanelNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSMutationPanel')
     $overviewNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSConfigOverview')
-    Require ($rowsNodes.Count -eq 1 -and $overviewNodes.Count -eq 1) "设置页缺少 COSConfigRows 或 COSConfigOverview: $PageName"
-    Require ([object]::ReferenceEquals($panel.ParentNode, $rowsNodes[0]) -and [object]::ReferenceEquals((Get-NextElementSibling -Node $panel), $overviewNodes[0])) "运行诊断面板必须紧邻并位于 COSConfigOverview 之前: $PageName"
+    Require ($rowsNodes.Count -eq 1 -and $mutationPanelNodes.Count -eq 1 -and $overviewNodes.Count -eq 1) "设置页缺少 COSConfigRows、COSMutationPanel 或 COSConfigOverview: $PageName"
+    Require ([object]::ReferenceEquals($panel.ParentNode, $rowsNodes[0]) -and [object]::ReferenceEquals((Get-NextElementSibling -Node $panel), $mutationPanelNodes[0])) "运行诊断面板必须紧邻并位于 COSMutationPanel 之前: $PageName"
 
     $interactiveNodes = @(
         $panel.SelectNodes('.//*') |
@@ -923,9 +924,18 @@ function Assert-RuntimeDiagnosticStoryContract {
 
     $allBlocks = @(Get-StoryRuleBlocks -Content $Content)
     $diagnosticBlocks = @($allBlocks | Where-Object { $_.Name.StartsWith('PROC_COS_RuntimeDiagnostic', [System.StringComparison]::Ordinal) })
+    $categoryDiagnostics = [ordered]@{
+        Core = 'COS_CFG_CATEGORY_CORE'
+        Origin = 'COS_CFG_CATEGORY_ORIGIN'
+        RaceTags = 'COS_CFG_CATEGORY_RACETAGS'
+        WeaponProficiencies = 'COS_CFG_CATEGORY_WEAPON'
+        ArmorProficiencies = 'COS_CFG_CATEGORY_ARMOR'
+        RacialAbilities = 'COS_CFG_CATEGORY_RACIAL'
+        Convenience = 'COS_CFG_CATEGORY_CONVENIENCE'
+    }
     $expectedRuleCounts = [ordered]@{
         PROC_COS_RuntimeDiagnosticSeed = 15
-        PROC_COS_RuntimeDiagnosticBegin = 1
+        PROC_COS_RuntimeDiagnosticBegin = 7
         PROC_COS_RuntimeDiagnosticSelectFirst = 1
         PROC_COS_RuntimeDiagnosticCheckConfig = 1
         PROC_COS_RuntimeDiagnosticCheckCoreMissing = 1
@@ -936,14 +946,20 @@ function Assert-RuntimeDiagnosticStoryContract {
         PROC_COS_RuntimeDiagnosticCheckTagSpellsMissing = 1
         PROC_COS_RuntimeDiagnosticCheckVoloMissing = 1
         PROC_COS_RuntimeDiagnosticCheckCarryMissing = 1
+        PROC_COS_RuntimeDiagnosticCheckCategorySchema = 1
+        PROC_COS_RuntimeDiagnosticCheckCategoryMissing = 1
         PROC_COS_RuntimeDiagnosticCheckMirrors = 1
         PROC_COS_RuntimeDiagnosticCheckCoreMismatch = 2
         PROC_COS_RuntimeDiagnosticCheckCarryMismatch = 2
+        PROC_COS_RuntimeDiagnosticCheckCategoryMismatch = 2
+        PROC_COS_RuntimeDiagnosticCheckPresetFailure = 1
+        PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch = 1
+        PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch = 1
         PROC_COS_RuntimeDiagnosticSetCurrent = 1
         PROC_COS_RuntimeDiagnosticSetLast = 1
         PROC_COS_RuntimeDiagnosticApply = 2
         PROC_COS_RuntimeDiagnosticEnsureLast = 1
-        PROC_COS_RuntimeDiagnosticResolve = 3
+        PROC_COS_RuntimeDiagnosticResolve = 9
         PROC_COS_RuntimeDiagnosticUpdate = 2
     }
     $expectedRuleCount = ($expectedRuleCounts.Values | Measure-Object -Sum).Sum
@@ -1015,8 +1031,21 @@ function Assert-RuntimeDiagnosticStoryContract {
     }
 
     $beginBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticBegin' })
-    Require ($beginBlocks[0].Text.Contains('DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus)', [System.StringComparison]::Ordinal)) 'Begin 缺少本轮 Selected 清理条件'
-    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $beginBlocks[0]) -Expected @('NOT DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus);')) 'Begin 只能清理本轮 Selected'
+    $expectedBeginActions = @(
+        'NOT DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus);'
+        'NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);'
+        'NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);'
+        'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);'
+        'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);'
+        'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);'
+        'NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);'
+    )
+    Require ($beginBlocks.Count -eq $expectedBeginActions.Count) 'Begin 必须精确清理旧诊断选择与六类分类/预设 scratch'
+    $actualBeginActions = @($beginBlocks | ForEach-Object { Get-StoryThenActions -Block $_ })
+    Require (Test-ExactOrdinalSet -Actual $actualBeginActions -Expected $expectedBeginActions) 'Begin scratch 清理集合不精确'
+    foreach ($beginBlock in $beginBlocks) {
+        Require (@(Get-StoryThenActions -Block $beginBlock).Count -eq 1) '每条 Begin 规则只能清理一类诊断 scratch'
+    }
     $selectFirstBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticSelectFirst' })
     Require ($selectFirstBlocks.Count -eq 1) "SelectFirst 过程数量错误: 期望 1，实际 $($selectFirstBlocks.Count)"
     Require ($selectFirstBlocks[0].Text.Contains('NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)', [System.StringComparison]::Ordinal)) 'SelectFirst 缺少只取第一项门控'
@@ -1041,6 +1070,10 @@ function Assert-RuntimeDiagnosticStoryContract {
     $missingCalls.Add('PROC_COS_RuntimeDiagnosticCheckTagSpellsMissing(_Character);')
     $missingCalls.Add('PROC_COS_RuntimeDiagnosticCheckVoloMissing(_Character);')
     $missingCalls.Add('PROC_COS_RuntimeDiagnosticCheckCarryMissing(_Character);')
+    $missingCalls.Add('PROC_COS_RuntimeDiagnosticCheckCategorySchema(_Character);')
+    foreach ($category in $categoryDiagnostics.Keys) {
+        $missingCalls.Add("PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"$category`");")
+    }
     $lastPosition = -1
     foreach ($call in $missingCalls) {
         $position = $checkConfigText.IndexOf($call, [System.StringComparison]::Ordinal)
@@ -1068,6 +1101,12 @@ function Assert-RuntimeDiagnosticStoryContract {
     Require ($voloMissingText.Contains('NOT DB_COS_VoloEyeSetting(_Character, _)', [System.StringComparison]::Ordinal)) 'Volo 缺失检查不完整'
     $carryMissingText = (@($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckCarryMissing' }).Text) -join "`n"
     Require ($carryMissingText.Contains('NOT DB_COS_CarryEnabled(_Character, _)', [System.StringComparison]::Ordinal)) 'Carry 缺失检查不完整'
+    $categorySchemaBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckCategorySchema' })
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $categorySchemaBlocks[0]) -Expected @('NOT DB_COS_ConfigCategorySchema(_Character, 1)')) '分类 schema 缺失检查条件不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $categorySchemaBlocks[0]) -Expected @('DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);')) '分类 schema 缺失检查动作不精确'
+    $categoryMissingBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckCategoryMissing' })
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $categoryMissingBlocks[0]) -Expected @('NOT DB_COS_ConfigCategory(_Character, _Category, _)', 'NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)')) '首个缺失分类检查条件不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $categoryMissingBlocks[0]) -Expected @('DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);')) '首个缺失分类检查动作不精确'
     $expectedSingleMissingActions = [ordered]@{
         PROC_COS_RuntimeDiagnosticCheckLifeMissing = 'PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_LIFE");'
         PROC_COS_RuntimeDiagnosticCheckCostMissing = 'PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", _IssueStatus);'
@@ -1102,8 +1141,16 @@ function Assert-RuntimeDiagnosticStoryContract {
             "PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, `"$($mechanic.Key)`", `"$($mechanic.Mirror)`", `"COS_DIAG_LAST_MISMATCH_$suffix`");"
         }
         $carryMismatchCall
+        foreach ($category in $categoryDiagnostics.Keys) {
+            "PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, `"$category`", `"$($categoryDiagnostics[$category])`");"
+        }
+        'PROC_COS_RuntimeDiagnosticCheckPresetFailure(_Character);'
+        foreach ($category in $categoryDiagnostics.Keys) {
+            "PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, `"$category`");"
+        }
+        'PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch(_Character);'
     )
-    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $checkMirrorBlocks[0]) -Expected $expectedMirrorCalls) 'CheckMirrors 必须只按固定顺序调用九项核心与 Carry 检查'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $checkMirrorBlocks[0]) -Expected $expectedMirrorCalls) 'CheckMirrors 必须按固定顺序调用旧镜像、七分类镜像与预设应用检查'
 
     $coreMismatchBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckCoreMismatch' })
     $enabledCoreMismatch = @($coreMismatchBlocks | Where-Object { $_.Text.Contains('DB_COS_ConfigMechanic(_Character, _Key, 1)', [System.StringComparison]::Ordinal) -and $_.Text.Contains('HasPassive(_Character, _Mirror, 0)', [System.StringComparison]::Ordinal) })
@@ -1125,6 +1172,30 @@ function Assert-RuntimeDiagnosticStoryContract {
     $carryMismatchText = ($carryMismatchBlocks.Text) -join "`n"
     Require ($carryMismatchText.Contains('DB_COS_CarryEnabled(_Character, 1)', [System.StringComparison]::Ordinal) -and $carryMismatchText.Contains('HasPassive(_Character, "COS_CFG_CARRY", 0)', [System.StringComparison]::Ordinal)) 'Carry 镜像检查缺少 enabled=1 / passive=0 方向'
     Require ($carryMismatchText.Contains('DB_COS_CarryEnabled(_Character, 0)', [System.StringComparison]::Ordinal) -and $carryMismatchText.Contains('HasPassive(_Character, "COS_CFG_CARRY", 1)', [System.StringComparison]::Ordinal)) 'Carry 镜像检查缺少 enabled=0 / passive=1 方向'
+
+    $categoryMismatchBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckCategoryMismatch' })
+    $categoryMismatchConditions = @($categoryMismatchBlocks | ForEach-Object { ,@(Get-StoryConditionLines -Block $_) })
+    $expectedCategoryMismatchConditions = @(
+        ,@('DB_COS_ConfigCategory(_Character, _Category, 1)', 'HasPassive(_Character, _Mirror, 0)', 'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)')
+        ,@('DB_COS_ConfigCategory(_Character, _Category, 0)', 'HasPassive(_Character, _Mirror, 1)', 'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)')
+    )
+    Require ($categoryMismatchBlocks.Count -eq 2) '分类镜像诊断必须精确包含两个方向'
+    foreach ($expectedConditions in $expectedCategoryMismatchConditions) {
+        Require (@($categoryMismatchConditions | Where-Object { Test-ExactOrdinalSequence -Actual $_ -Expected $expectedConditions }).Count -eq 1) "分类镜像诊断方向缺失: $($expectedConditions[0])"
+    }
+    foreach ($categoryMismatchBlock in $categoryMismatchBlocks) {
+        Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $categoryMismatchBlock) -Expected @('DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);')) '分类镜像诊断只能记录首个分类 scratch'
+    }
+
+    $presetFailureBlock = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckPresetFailure' })[0]
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $presetFailureBlock) -Expected @('DB_COS_PresetValidated(_Character, _Preset, 1)', 'DB_COS_PresetMismatch(_Character, _Preset, _, 1)', 'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)')) '预设应用失败诊断条件不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetFailureBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);')) '预设应用失败诊断动作不精确'
+    $presetCategoryBlock = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch' })[0]
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $presetCategoryBlock) -Expected @('DB_COS_PresetMismatch(_Character, _Preset, _Category, 1)', 'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)')) '首个预设分类不一致诊断条件不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetCategoryBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);')) '首个预设分类不一致诊断动作不精确'
+    $presetLifeBlock = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch' })[0]
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $presetLifeBlock) -Expected @('DB_COS_PresetMismatch(_Character, _Preset, "Life", 1)', 'NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)')) '预设生活加值不一致诊断条件不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetLifeBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);')) '预设生活加值不一致诊断动作不精确'
 
     $applyBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticApply' })
     Require ($applyBlocks.Count -eq 2) "Apply 过程数量错误: 期望 2，实际 $($applyBlocks.Count)"
@@ -1215,11 +1286,20 @@ function Assert-RuntimeDiagnosticStoryContract {
     $resolveBlocks = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticResolve' })
     $missingResolve = @($resolveBlocks | Where-Object { $_.Text.Contains('DB_COS_RuntimeDiagnosticSelected(_Character, "Missing", _IssueStatus)', [System.StringComparison]::Ordinal) })
     $mismatchResolve = @($resolveBlocks | Where-Object { $_.Text.Contains('DB_COS_RuntimeDiagnosticSelected(_Character, "Mismatch", _IssueStatus)', [System.StringComparison]::Ordinal) })
-    $readyResolve = @($resolveBlocks | Where-Object { $_.Text.Contains('NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)', [System.StringComparison]::Ordinal) })
-    Require ($missingResolve.Count -eq 1 -and $mismatchResolve.Count -eq 1 -and $readyResolve.Count -eq 1) 'Resolve 规则没有严格分成 Missing、Mismatch、Ready 三类'
+    $readyResolve = @($resolveBlocks | Where-Object { @(Get-StoryThenActions -Block $_) -ccontains 'PROC_COS_RuntimeDiagnosticEnsureLast(_Character);' })
+    Require ($missingResolve.Count -eq 1 -and $mismatchResolve.Count -eq 1 -and $readyResolve.Count -eq 1) 'Resolve 规则缺少 legacy Missing、Mismatch 或唯一 Ready 分支'
     Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $missingResolve[0]) -Expected @('DB_COS_RuntimeDiagnosticSelected(_Character, "Missing", _IssueStatus)')) 'Missing Resolve 条件必须精确且不得包含额外阻断条件'
     Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $mismatchResolve[0]) -Expected @('DB_COS_RuntimeDiagnosticSelected(_Character, "Mismatch", _IssueStatus)')) 'Mismatch Resolve 条件必须精确且不得包含额外阻断条件'
-    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $readyResolve[0]) -Expected @('NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)')) 'Ready Resolve 条件必须精确且不得包含额外阻断条件'
+    $expectedReadyConditions = @(
+        'NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)'
+        'NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)'
+        'NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)'
+        'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)'
+        'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)'
+        'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)'
+        'NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)'
+    )
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $readyResolve[0]) -Expected $expectedReadyConditions) 'Ready Resolve 必须排除全部 legacy 与分类/预设诊断 scratch'
     $expectedMissingResolveActions = @(
         'PROC_COS_RuntimeDiagnosticSetLast(_Character, _IssueStatus);'
         'PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CONFIG_INCOMPLETE");'
@@ -1237,6 +1317,20 @@ function Assert-RuntimeDiagnosticStoryContract {
     Require ($actualMismatchResolveActions.Count -eq $expectedMismatchResolveActions.Count) 'Mismatch Resolve 动作数量错误或包含矛盾状态'
     for ($index = 0; $index -lt $expectedMismatchResolveActions.Count; $index++) {
         Require ($actualMismatchResolveActions[$index] -ceq $expectedMismatchResolveActions[$index]) "Mismatch Resolve 动作顺序错误: 索引 $index"
+    }
+    $extendedResolveContracts = @(
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)'; Current = 'COS_DIAG_STATE_CONFIG_INCOMPLETE' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category)'; Current = 'COS_DIAG_STATE_CONFIG_INCOMPLETE' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
+    )
+    foreach ($contract in $extendedResolveContracts) {
+        $matching = @($resolveBlocks | Where-Object { @(Get-StoryConditionLines -Block $_) -ccontains $contract.Condition })
+        Require ($matching.Count -eq 1) "分类/预设 Resolve 分支缺失: $($contract.Condition)"
+        Require (@(Get-StoryConditionLines -Block $matching[0]) -ccontains 'NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)') "分类/预设 Resolve 必须保留 legacy 诊断优先级: $($contract.Condition)"
+        Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $matching[0]) -Expected @("PROC_COS_RuntimeDiagnosticSetCurrent(_Character, `"$($contract.Current)`");")) "分类/预设 Resolve 动作不精确: $($contract.Condition)"
     }
     $expectedReadyResolveActions = @(
         'PROC_COS_RuntimeDiagnosticEnsureLast(_Character);'
@@ -1269,8 +1363,10 @@ function Assert-RuntimeDiagnosticStoryContract {
     Require ($nonOriginThen.Count -eq 1 -and $nonOriginThen[0].Trim() -ceq 'PROC_COS_RuntimeDiagnosticUpdate(_Character);') '非起源 UI_OPENED 规则必须只更新诊断'
     $originThen = @((Get-StoryThenLines -Block $originUi[0]) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
     $expectedOriginThen = @(
-        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+        'PROC_COS_PresetClearPreview(_Character);'
         'PROC_COS_ConfigSyncCharacter(_Character);'
+        'PROC_COS_PresetDetect(_Character);'
+        'PROC_COS_ConfigSyncCategoryActual(_Character);'
         'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
         'PROC_COS_ShowLastFate(_Character);'
     )

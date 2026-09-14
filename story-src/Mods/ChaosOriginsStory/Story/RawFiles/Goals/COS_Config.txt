@@ -233,6 +233,48 @@ THEN
 NOT DB_COS_RuntimeDiagnosticSelected(_Character, _Kind, _IssueStatus);
 
 PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+THEN
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category)
+THEN
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category)
+THEN
+NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)
+THEN
+NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);
+
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category)
+THEN
+NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
+AND
+DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)
+THEN
+NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);
+
+PROC
 PROC_COS_RuntimeDiagnosticSelectFirst((CHARACTER)_Character, (STRING)_Kind, (STRING)_IssueStatus)
 AND
 NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
@@ -279,6 +321,14 @@ PROC_COS_RuntimeDiagnosticCheckGrantMissing(_Character);
 PROC_COS_RuntimeDiagnosticCheckTagSpellsMissing(_Character);
 PROC_COS_RuntimeDiagnosticCheckVoloMissing(_Character);
 PROC_COS_RuntimeDiagnosticCheckCarryMissing(_Character);
+PROC_COS_RuntimeDiagnosticCheckCategorySchema(_Character);
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "Core");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "Origin");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "RaceTags");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "WeaponProficiencies");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "ArmorProficiencies");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "RacialAbilities");
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, "Convenience");
 
 PROC
 PROC_COS_RuntimeDiagnosticCheckCoreMissing((CHARACTER)_Character, (STRING)_Key, (STRING)_IssueStatus)
@@ -343,6 +393,22 @@ NOT DB_COS_CarryEnabled(_Character, _)
 THEN
 PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Missing", "COS_DIAG_LAST_MISSING_CARRY");
 
+PROC
+PROC_COS_RuntimeDiagnosticCheckCategorySchema((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCategoryMissing((CHARACTER)_Character, (STRING)_Category)
+AND
+NOT DB_COS_ConfigCategory(_Character, _Category, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+THEN
+DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);
+
 // Mirror checks are also called explicitly; each check covers both directions.
 PROC
 PROC_COS_RuntimeDiagnosticCheckMirrors((CHARACTER)_Character)
@@ -357,6 +423,22 @@ PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Genesis", "COS_CFG_MECH
 PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Strike", "COS_CFG_MECH_STRIKE", "COS_DIAG_LAST_MISMATCH_STRIKE");
 PROC_COS_RuntimeDiagnosticCheckCoreMismatch(_Character, "Mastery", "COS_CFG_MECH_MASTERY", "COS_DIAG_LAST_MISMATCH_MASTERY");
 PROC_COS_RuntimeDiagnosticCheckCarryMismatch(_Character);
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "Core", "COS_CFG_CATEGORY_CORE");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "Origin", "COS_CFG_CATEGORY_ORIGIN");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "RaceTags", "COS_CFG_CATEGORY_RACETAGS");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "WeaponProficiencies", "COS_CFG_CATEGORY_WEAPON");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "ArmorProficiencies", "COS_CFG_CATEGORY_ARMOR");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "RacialAbilities", "COS_CFG_CATEGORY_RACIAL");
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, "Convenience", "COS_CFG_CATEGORY_CONVENIENCE");
+PROC_COS_RuntimeDiagnosticCheckPresetFailure(_Character);
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "Core");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "Origin");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "RaceTags");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "WeaponProficiencies");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "ArmorProficiencies");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "RacialAbilities");
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, "Convenience");
+PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch(_Character);
 
 PROC
 PROC_COS_RuntimeDiagnosticCheckCoreMismatch((CHARACTER)_Character, (STRING)_Key, (STRING)_Mirror, (STRING)_IssueStatus)
@@ -397,6 +479,57 @@ AND
 HasPassive(_Character, "COS_CFG_CARRY", 1)
 THEN
 PROC_COS_RuntimeDiagnosticSelectFirst(_Character, "Mismatch", "COS_DIAG_LAST_MISMATCH_CARRY");
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch((CHARACTER)_Character, (STRING)_Category, (STRING)_Mirror)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+HasPassive(_Character, _Mirror, 0)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)
+THEN
+DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckCategoryMismatch((CHARACTER)_Character, (STRING)_Category, (STRING)_Mirror)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 0)
+AND
+HasPassive(_Character, _Mirror, 1)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)
+THEN
+DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckPresetFailure((CHARACTER)_Character)
+AND
+DB_COS_PresetValidated(_Character, _Preset, 1)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _, 1)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)
+THEN
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch((CHARACTER)_Character, (STRING)_Category)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _Category, 1)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)
+THEN
+DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);
+
+PROC
+PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, "Life", 1)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)
+THEN
+DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);
 
 PROC
 PROC_COS_RuntimeDiagnosticSetCurrent((CHARACTER)_Character, (STRING)_Status)
@@ -460,6 +593,88 @@ PROC
 PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
 AND
 NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CONFIG_INCOMPLETE");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CONFIG_INCOMPLETE");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+AND
+DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+AND
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+AND
+DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+AND
+DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)
+THEN
+PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
+
+PROC
+PROC_COS_RuntimeDiagnosticResolve((CHARACTER)_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticSelected(_Character, _, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
+AND
+NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)
+AND
+NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)
 THEN
 PROC_COS_RuntimeDiagnosticEnsureLast(_Character);
 PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_READY");

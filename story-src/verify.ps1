@@ -282,6 +282,8 @@ Require ($compileStorySource.Contains('Assert-CompiledStoryIr') -and
     $compileStorySource.Contains('story-ir-attestation.json')) `
     'compile-story.ps1 必须执行独立 IR root 验证并生成哈希证明'
 
+& (Join-Path $PSScriptRoot 'verify-category-presets.ps1')
+
 $compiledStoryPath = Join-Path $root 'work\compiled-story\story.div.osi'
 $compiledDebugInfoPath = Join-Path $root 'work\compiled-story\story.debug-info.pb'
 $compiledAttestationPath = Join-Path $root 'work\compiled-story\story-ir-attestation.json'
@@ -913,9 +915,10 @@ $lifeSkillDescriptionTemplates = @{
 }
 $expectedExistingLocalizationHandleCount = 1050
 $expectedRuntimeDiagnosticLocalizationHandleCount = 71
-$expectedLocalizationHandleCount = 1121
-Require ($expectedLocalizationHandleCount -eq ($expectedExistingLocalizationHandleCount + $expectedRuntimeDiagnosticLocalizationHandleCount)) `
-    '完整本地化明确计数必须等于既有 1050 加运行诊断 71'
+$expectedCategoryPresetLocalizationHandleCount = 161
+$expectedLocalizationHandleCount = 1282
+Require ($expectedLocalizationHandleCount -eq ($expectedExistingLocalizationHandleCount + $expectedRuntimeDiagnosticLocalizationHandleCount + $expectedCategoryPresetLocalizationHandleCount)) `
+    '完整本地化明确计数必须等于既有 1050 加运行诊断 71 加分类预设 161'
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
     $path = Join-Path $root "Localization\$language\ChaosOriginsStory.xml"
     Require (Test-Path -LiteralPath $path -PathType Leaf) "缺少本地化源: $language"
@@ -2166,6 +2169,7 @@ Require ($legacyFateMigrationBlocks.Count -eq 4 -and $legacyFateRefundBlocks.Cou
 $expectedLegacyFateRefundConditions = @(
     'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
     'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'DB_COS_ConfigCategory(_Character, "Core", 1)',
     'DB_COS_ConfigMechanic(_Character, "Power", 1)',
     'DB_COS_Power(_Character, _OldPower)',
     'IntegerSum(_OldPower, 1, _NewPower)'
@@ -2192,6 +2196,7 @@ $expectedLegacyFateMissingConfigConditions = @(
 $expectedLegacyFateMissingPowerConditions = @(
     'PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)',
     'HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)',
+    'DB_COS_ConfigCategory(_Character, "Core", 1)',
     'DB_COS_ConfigMechanic(_Character, "Power", 1)',
     'NOT DB_COS_Power(_Character, _)'
 )
@@ -2211,6 +2216,7 @@ $fateArmBlocks = @($mechanicsIfBlocks | Where-Object {
 $expectedFateArmConditions = @(
     'UsingSpell(_Character, _, _, _, _StoryActionID)',
     'DB_COS_Character((CHARACTER)_Character)',
+    'DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)',
     'HasPassive(_Character, "COS_FateRevision", 1)',
     'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)'
@@ -2242,6 +2248,7 @@ $dualityCommonConditions = @(
     'AttackedBy(_Target, _AttackOwner, _Attacker, _, _Damage, _, _StoryActionID)',
     '_AttackOwner == _Attacker',
     'DB_COS_Character((CHARACTER)_AttackOwner)',
+    'DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)',
     'DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)'
 )
 $dualityFateEnabledConditions = @($dualityCommonConditions + @(
@@ -2522,8 +2529,8 @@ Require ([regex]::Matches($configGoal,
     '(?m)^DB_COS_ConfigResetCoreEvent\(\(TUTORIALEVENT\)COS_CFG_RESET_CORE_08c8d67a-ace5-4830-8c2b-38b8c92bb470\);$').Count -eq 1) `
     '恢复默认必须只注册一个固定 TutorialEvent UUID'
 Require ([regex]::Matches($configGoal,
-    '(?m)^DB_COS_Config(?:MechanicEvent|UiOpenedEvent|ResetCoreEvent|LifeStepEvent|LifeResetEvent|RacialEvent|RacialBulkEvent)\(\(TUTORIALEVENT\)[A-Z0-9_]+_[0-9a-f-]{36}(?:, (?:"[^"]+"|-?\d+))?\);$').Count -eq 36) `
-    '全部36个原生设置事件必须按游戏 Story 头声明为 TUTORIALEVENT，不能使用普通 STRING'
+    '(?m)^DB_COS_(?:Config(?:MechanicEvent|UiOpenedEvent|ResetCoreEvent|LifeStepEvent|LifeResetEvent|RacialEvent|RacialBulkEvent|CategoryEvent)|Preset(?:SelectEvent|ApplyEvent|CancelEvent))\(\(TUTORIALEVENT\)(?:[A-Z0-9_]+_)?[0-9a-f-]{36}(?:, (?:"[^"]+"|-?\d+))?\);$').Count -eq 49) `
+    '全部49个原生设置、分类与预设事件必须按游戏 Story 头声明为 TUTORIALEVENT，不能使用普通 STRING'
 
 Require ([regex]::Matches($configGoal, '(?m)^DB_COS_ConfigLifeDefault\(5\);$').Count -eq 1) `
     '生活熟练项默认值必须唯一且为5'
@@ -2586,17 +2593,46 @@ $expectedRuntimeDiagnosticStatusEntries = @(
     'COS_DIAG_LAST_MISMATCH_GENESIS', 'COS_DIAG_LAST_MISMATCH_STRIKE', 'COS_DIAG_LAST_MISMATCH_MASTERY',
     'COS_DIAG_LAST_MISMATCH_CARRY'
 )
+$expectedCategoryActualStatusEntries = @(
+    foreach ($category in @('CORE', 'ORIGIN', 'RACETAGS', 'WEAPON', 'ARMOR', 'RACIAL', 'CONVENIENCE')) {
+        foreach ($state in @('ACTIVE', 'PAUSED', 'WAITING_CONDITION', 'MISSING_CONFIG', 'SYNC_FAILED')) {
+            "COS_CATEGORY_ACTUAL_${category}_${state}"
+        }
+    }
+)
+$expectedCategoryPresetStatusEntries = @(
+    'COS_CFG_CATEGORY_CORE', 'COS_CFG_CATEGORY_ORIGIN', 'COS_CFG_CATEGORY_RACETAGS',
+    'COS_CFG_CATEGORY_WEAPON', 'COS_CFG_CATEGORY_ARMOR', 'COS_CFG_CATEGORY_RACIAL',
+    'COS_CFG_CATEGORY_CONVENIENCE',
+    'COS_PRESET_CURRENT_NEAR_VANILLA', 'COS_PRESET_CURRENT_PURE_CHAOS',
+    'COS_PRESET_CURRENT_BALANCED', 'COS_PRESET_CURRENT_ALL_CONVENIENCE',
+    'COS_PRESET_CURRENT_CUSTOM',
+    'COS_PRESET_PENDING_NEAR_VANILLA', 'COS_PRESET_PENDING_PURE_CHAOS',
+    'COS_PRESET_PENDING_BALANCED', 'COS_PRESET_PENDING_ALL_CONVENIENCE',
+    'COS_PRESET_PREVIEW_CORE_ON', 'COS_PRESET_PREVIEW_CORE_OFF',
+    'COS_PRESET_PREVIEW_ORIGIN_ON', 'COS_PRESET_PREVIEW_ORIGIN_OFF',
+    'COS_PRESET_PREVIEW_RACETAGS_ON', 'COS_PRESET_PREVIEW_RACETAGS_OFF',
+    'COS_PRESET_PREVIEW_WEAPON_ON', 'COS_PRESET_PREVIEW_WEAPON_OFF',
+    'COS_PRESET_PREVIEW_ARMOR_ON', 'COS_PRESET_PREVIEW_ARMOR_OFF',
+    'COS_PRESET_PREVIEW_RACIAL_ON', 'COS_PRESET_PREVIEW_RACIAL_OFF',
+    'COS_PRESET_PREVIEW_CONVENIENCE_ON', 'COS_PRESET_PREVIEW_CONVENIENCE_OFF',
+    'COS_PRESET_PREVIEW_LIFE_0', 'COS_PRESET_PREVIEW_LIFE_5', 'COS_PRESET_PREVIEW_LIFE_20'
+) + $expectedCategoryActualStatusEntries + @(
+    'COS_PRESET_ERROR_NO_SELECTION', 'COS_PRESET_ERROR_COMBAT_READONLY',
+    'COS_PRESET_ERROR_CONFIG_INCOMPLETE', 'COS_PRESET_ERROR_SYNC_FAILED'
+)
 $expectedConfigPassiveEntries = @(
     $coreMechanicMirrors +
     $expectedRacialMirrors.Values +
     @('COS_CFG_VOLO_EYE', 'COS_VOLO_EYE', 'COS_VOLO_EYE_DISABLED') +
-    $expectedRuntimeDiagnosticStatusEntries
+    $expectedRuntimeDiagnosticStatusEntries +
+    $expectedCategoryPresetStatusEntries
 )
-Require ($expectedConfigPassiveEntries.Count -eq 64) `
-    'ChaosConfig.txt 明确条目计数必须等于既有 32 加运行诊断 32'
-Require ($configPassiveEntries.Count -eq 64 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 64 -and
+Require ($expectedCategoryPresetStatusEntries.Count -eq 72 -and $expectedConfigPassiveEntries.Count -eq 136) `
+    'ChaosConfig.txt 明确条目计数必须等于既有 32、运行诊断 32 与分类预设 72'
+Require ($configPassiveEntries.Count -eq 136 -and @($configPassiveEntries | Sort-Object -Unique).Count -eq 136 -and
     -not (Compare-Object ($expectedConfigPassiveEntries | Sort-Object) ($configPassiveEntries | Sort-Object))) `
-    'ChaosConfig.txt 必须精确定义既有 32 个配置条目与 32 个只读运行诊断状态'
+    'ChaosConfig.txt 必须精确定义既有 32 个配置条目、32 个只读运行诊断状态与 72 个分类预设状态'
 foreach ($mirror in $coreMechanicMirrors) {
     $mirrorBlock = [regex]::Match($configStats,
         '(?ms)^new entry "' + [regex]::Escape($mirror) + '".*?(?=^new entry |\z)').Value
@@ -2745,6 +2781,7 @@ foreach ($eventWriteBlock in $mechanicToggleBlocks) {
     Require ($eventWriteBlock.Contains('DB_COS_ConfigMechanicEvent(_Event, _Key)')) `
         '机制切换 TutorialEvent 写入必须通过固定事件映射，不得接受任意字符串键'
     foreach ($writeGate in @(
+        'DB_COS_ConfigCategory(_Character, "Core", 1)',
         'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
     )) {
         Require ($eventWriteBlock.Contains($writeGate)) "TutorialEvent 配置写入缺少同块门禁: $writeGate"
@@ -2754,6 +2791,7 @@ foreach ($eventWriteBlock in $resetBlocks) {
     Require ($eventWriteBlock.Contains('DB_COS_ConfigResetCoreEvent(_Event)')) `
         '恢复默认 TutorialEvent 写入必须通过固定事件映射，不得接受任意字符串键'
     foreach ($writeGate in @(
+        'DB_COS_ConfigCategory(_Character, "Core", 1)',
         'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)'
     )) {
         Require ($eventWriteBlock.Contains($writeGate)) "恢复默认 TutorialEvent 写入缺少同块门禁: $writeGate"
@@ -2788,15 +2826,17 @@ Require ($nonOriginUiOpenedBlock.Contains('IsControlled(_Character, 1)') -and
 $originUiOpenedActions = @((Get-StoryThen $originUiOpenedBlock).Replace("`r`n", "`n") -split "`n" |
     ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^PROC_' })
 $expectedOriginUiOpenedActions = @(
-    'PROC_COS_RuntimeDiagnosticUpdate(_Character);',
+    'PROC_COS_PresetClearPreview(_Character);',
     'PROC_COS_ConfigSyncCharacter(_Character);',
+    'PROC_COS_PresetDetect(_Character);',
+    'PROC_COS_ConfigSyncCategoryActual(_Character);',
     'PROC_COS_RuntimeDiagnosticUpdate(_Character);',
     'PROC_COS_ShowLastFate(_Character);'
 )
 Require ($originUiOpenedBlock.Contains('IsControlled(_Character, 1)') -and
-    $originUiOpenedActions.Count -eq 4 -and
+    $originUiOpenedActions.Count -eq 6 -and
     (($originUiOpenedActions -join '|') -ceq ($expectedOriginUiOpenedActions -join '|'))) `
-    '起源 UI_OPENED 必须按诊断、既有同步、再诊断、最近抽签的顺序执行'
+    '起源 UI_OPENED 必须按清预览、统一同步、预设检测、实际状态、诊断、最近抽签的顺序执行'
 $allStoryBlocksForConfigSync = @(
     @(Get-AllStoryBlocks $configGoal) + $mechanicsAllBlocksForConfig +
     @(Get-AllStoryBlocks $goal) + @(Get-AllStoryBlocks $masteryGoal) + @(Get-AllStoryBlocks $rewardGoal)
@@ -2814,8 +2854,44 @@ foreach ($lifecycleEvent in $lifecycleSyncSpecs) {
     })
     Require ($lifecycleSyncBlocks.Count -eq 1) "ConfigSyncCharacter 必须只由带 OriginMarker 的生命周期事件调用: $lifecycleEvent"
 }
-Require ($allConfigSyncCallBlocks.Count -eq 5 -and $allConfigSyncCallBlocks -contains $originUiOpenedBlock) `
-    'ConfigSyncCharacter 的外部调用必须且只能是四个生命周期块和 UI_OPENED'
+$presetApplySyncBlocks = @($allConfigSyncCallBlocks | Where-Object {
+    $_.StartsWith("PROC`nPROC_COS_PresetApply((CHARACTER)_Character)") -and
+    $_.Contains('DB_COS_PresetValidated(_Character, _Preset, 0)')
+})
+Require ($presetApplySyncBlocks.Count -eq 1) `
+    'ConfigSyncCharacter 必须只由预设验证通过后的应用块调用一次'
+$categoryToggleSyncBlocks = @($allConfigSyncCallBlocks | Where-Object {
+    $_.StartsWith("PROC`nPROC_COS_ConfigToggleCategory((CHARACTER)_Character, (STRING)_Key)") -and
+    $_.Contains('DB_COS_ConfigCategory(_Character, _Key, _Current)')
+})
+Require ($categoryToggleSyncBlocks.Count -eq 1) `
+    'ConfigSyncCharacter 必须只由分类总开关变更块调用一次'
+Require ($allConfigSyncCallBlocks.Count -eq 7 -and
+    $allConfigSyncCallBlocks -contains $originUiOpenedBlock -and
+    $allConfigSyncCallBlocks -contains $presetApplySyncBlocks[0] -and
+    $allConfigSyncCallBlocks -contains $categoryToggleSyncBlocks[0]) `
+    'ConfigSyncCharacter 的外部调用必须且只能是四个生命周期块、UI_OPENED、预设应用与分类切换'
+$coreCategoryEnabledCondition = 'DB_COS_ConfigCategory(_Character, "Core", 1)'
+$unguardedConfigProcedureNames = @(
+    'PROC_COS_ConfigSeedCategories', 'PROC_COS_ConfigDetectPreexisting',
+    'PROC_COS_ConfigInitializeCategories',
+    'PROC_COS_ConfigProbeLegacyMechanic', 'PROC_COS_ConfigProbeLegacyLifeSkill',
+    'PROC_COS_ConfigProbeLegacyCost', 'PROC_COS_ConfigProbeLegacyRacial',
+    'PROC_COS_ConfigProbeLegacyGrant', 'PROC_COS_ConfigProbeLegacyTagSpells',
+    'PROC_COS_ConfigProbeLegacyVoloEye', 'PROC_COS_ConfigProbeLegacyCarry'
+)
+foreach ($procedureName in $unguardedConfigProcedureNames) {
+    $procedureBlocks = @(Get-StoryBlocks $configGoal 'PROC' $procedureName)
+    Require ($procedureBlocks.Count -gt 0 -and
+        @($procedureBlocks | Where-Object { $_.Contains($coreCategoryEnabledCondition) }).Count -eq 0) `
+        "配置初始化与旧档识别不得依赖 Core 分类开启: $procedureName"
+}
+$runtimeDiagnosticProcedureBlocks = @(Get-AllStoryBlocks $configGoal | Where-Object {
+    $_.StartsWith("PROC`nPROC_COS_RuntimeDiagnostic", [System.StringComparison]::Ordinal)
+})
+Require ($runtimeDiagnosticProcedureBlocks.Count -gt 0 -and
+    @($runtimeDiagnosticProcedureBlocks | Where-Object { $_.Contains($coreCategoryEnabledCondition) }).Count -eq 0) `
+    '运行诊断过程必须在 Core 分类关闭时仍可读取并报告状态'
 Require ((Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigResetCore').Count -eq 1 -and
     (Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSyncMechanicMirrors').Count -ge 1) `
     '核心设置 Goal 必须实际定义 ResetCore 与 SyncMechanicMirrors PROC'
@@ -2874,14 +2950,23 @@ $racialEnableBlocks = @($racialApplyBlocks | Where-Object {
 $racialDisableBlocks = @($racialApplyBlocks | Where-Object {
     $_.Contains('_Enabled == 0') -and $_.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')
 })
-Require ($racialApplyBlocks.Count -eq 2 -and $racialEnableBlocks.Count -eq 1 -and
+$racialCategoryPausedBlocks = @($racialApplyBlocks | Where-Object {
+    $_.Contains('DB_COS_ConfigCategory(_Character, "RacialAbilities", 0)') -and
+    $_.Contains('DB_COS_RacialPassiveGranted(_Character, _Passive)')
+})
+Require ($racialApplyBlocks.Count -eq 3 -and $racialEnableBlocks.Count -eq 1 -and
+    $racialEnableBlocks[0].Contains('DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)') -and
     (Get-StoryThen $racialEnableBlocks[0]).Contains('AddPassive(_Character, _Passive);') -and
     (Get-StoryThen $racialEnableBlocks[0]).Contains('DB_COS_RacialPassiveGranted(_Character, _Passive);')) `
-    '开启种族被动只能在角色缺失时添加并记录模组归属'
+    '开启种族被动只能在分类开启且角色缺失时添加并记录模组归属'
 Require ($racialDisableBlocks.Count -eq 1 -and
     (Get-StoryThen $racialDisableBlocks[0]).Contains('RemovePassive(_Character, _Passive);') -and
     (Get-StoryThen $racialDisableBlocks[0]).Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive);')) `
     '关闭种族被动必须以模组授予账本为前置条件并同时清账'
+Require ($racialCategoryPausedBlocks.Count -eq 1 -and
+    (Get-StoryThen $racialCategoryPausedBlocks[0]).Contains('RemovePassive(_Character, _Passive);') -and
+    (Get-StoryThen $racialCategoryPausedBlocks[0]).Contains('NOT DB_COS_RacialPassiveGranted(_Character, _Passive);')) `
+    '种族能力分类暂停时必须只移除模组授予的被动并同时清账'
 $racialBulkBlocks = @(Get-StoryBlocks $configGoal 'PROC' 'PROC_COS_ConfigSetAllRacialPassives')
 Require ($racialBulkBlocks.Count -eq 1 -and
     $racialBulkBlocks[0].Contains('DB_COS_ConfigRacial(_Character, _Passive, _Current)') -and
@@ -2921,6 +3006,7 @@ $genesisGatePattern = 'DB_COS_ConfigMechanic\((?:\(CHARACTER\))?_Character, "Gen
 $genesisReadyBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_ApplyGenesisReady')
 $expectedGenesisReadyConditions = @(
     'PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)',
+    'DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)',
     'DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)',
     'DB_COS_ConfigCost(_Character, "Genesis", _Cost)',
@@ -2935,6 +3021,11 @@ function Test-GenesisReadyContract([string]$Block) {
 }
 Require ($genesisReadyBlocks.Count -eq 1 -and (Test-GenesisReadyContract $genesisReadyBlocks[0])) `
     'ApplyGenesisReady 必须且只能在 Genesis=1 且 Power>=10 时添加 READY'
+$genesisReadyCategoryGateDeletionProbe = $genesisReadyBlocks[0].Replace(
+    "`nDB_COS_ConfigCategory((CHARACTER)_Character, `"Core`", 1)", '')
+Require ($genesisReadyCategoryGateDeletionProbe -cne $genesisReadyBlocks[0] -and
+    -not (Test-GenesisReadyContract $genesisReadyCategoryGateDeletionProbe)) `
+    'GenesisReady Core category gate deletion mutation probe 必须被拒绝'
 $genesisReadyGenesisGateDeletionProbe = $genesisReadyBlocks[0].Replace(
     "`nDB_COS_ConfigMechanic((CHARACTER)_Character, `"Genesis`", 1)", '')
 Require ($genesisReadyGenesisGateDeletionProbe -cne $genesisReadyBlocks[0] -and
@@ -2953,6 +3044,7 @@ Require ($genesisReadyPowerGateDeletionProbe -cne $genesisReadyBlocks[0] -and
 $powerSyncBlocks = @(Get-StoryBlocks $mechanicsGoal 'PROC' 'PROC_COS_SyncPowerFromDatabase')
 $expectedPowerSyncEnabledConditions = @(
     'PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)',
+    'DB_COS_ConfigCategory(_Character, "Core", 1)',
     'DB_COS_ConfigMechanic(_Character, "Power", 1)',
     'DB_COS_Power(_Character, _Power)'
 )
@@ -3070,11 +3162,12 @@ Require ($actualCoreSpells.Count -eq 4 -and
 $coreSpellGrantPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
     'AND\r?\nGetLevel\(_Character, _Level\)\r?\n' +
     'AND\r?\nDB_COS_CoreSpell\(_RequiredLevel, _CoreSpell\)\r?\n' +
+    'AND\r?\nDB_COS_ConfigCategory\(_Character, "Core", 1\)\r?\n' +
     'AND\r?\n_Level >= _RequiredLevel\r?\n' +
     'AND\r?\nHasSpell\(_Character, _CoreSpell, 0\)\r?\n' +
     'THEN\r?\nAddSpell\(_Character, _CoreSpell, 0, 0\);'
 Require ([regex]::Matches($goal, $coreSpellGrantPattern).Count -eq 1) `
-    '基础同步必须在角色达到需求等级时授予 MOD 专用核心技能'
+    '基础同步必须在 Core 分类开启且角色达到需求等级时授予 MOD 专用核心技能'
 
 $coreSpellRemovalPattern = '(?ms)PROC\r?\nPROC_COS_SyncBaseAfterCreation\(\(CHARACTER\)_Character\)\r?\n' +
     'AND\r?\nGetLevel\(_Character, _Level\)\r?\n' +
@@ -3825,6 +3918,10 @@ $expectedConfigApplyContracts = @(
         )
     },
     @{
+        Conditions = @($configApplySignature, '_Key == "KillPower"', '_Enabled == 0')
+        Actions = @('RemoveStatus(_Character, "COS_CHAOS_KILL", _Character);')
+    },
+    @{
         Conditions = @($configApplySignature, '_Key == "Power"', '_Enabled == 1', 'DB_COS_Power(_Character, _Power)')
         Actions = @('PROC_COS_SyncPowerDisplay(_Character, _Power);')
     },
@@ -3872,7 +3969,7 @@ function Test-ConfigApplyMechanicContract([string]$Story) {
     return $true
 }
 Require (Test-ConfigApplyMechanicContract $configGoal) `
-    'ConfigApplyMechanic 必须严格只有 Fate0、Power0/1、Genesis0/1、AllIn0、Duality0、Strike0、Mastery0/1 十个具体副作用分支'
+    'ConfigApplyMechanic 必须严格只有 Fate0、Power0/1、KillPower0、Genesis0/1、AllIn0、Duality0、Strike0、Mastery0/1 十一个具体副作用分支'
 Require (-not (($applyMechanicBlocks -join "`n") -match 'COS_CHAOS_FATE_ENABLED') -and
     -not (($applyMechanicBlocks -join "`n") -match '(?m)^PROC_COS_ConfigSyncMechanicMirrors\(') -and
     -not (($applyMechanicBlocks -join "`n") -match '(?m)^(?:NOT )?DB_COS_Mastery')) `
@@ -3894,6 +3991,7 @@ $resetCoreActions = @(
 $resetEventConditions = @(
     'TutorialEvent(_Character, _Event)',
     'DB_COS_ConfigResetCoreEvent(_Event)',
+    'DB_COS_ConfigCategory(_Character, "Core", 1)',
     'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
     'IsControlled(_Character, 1)',
     'IsInCombat(_Character, 0)'
@@ -4055,6 +4153,19 @@ $expectedTutorialEvents['COS_CFG_FATE_COST_RESET'] = '7d000000-0000-4000-8000-00
 $expectedTutorialEvents['COS_CFG_GENESIS_COST_MINUS'] = '7d000000-0000-4000-8000-000000000004'
 $expectedTutorialEvents['COS_CFG_GENESIS_COST_PLUS'] = '7d000000-0000-4000-8000-000000000005'
 $expectedTutorialEvents['COS_CFG_GENESIS_COST_RESET'] = '7d000000-0000-4000-8000-000000000006'
+$expectedTutorialEvents['COS_CFG_CATEGORY_CORE'] = '7e990000-0000-4000-8000-000000000001'
+$expectedTutorialEvents['COS_CFG_CATEGORY_ORIGIN'] = '7e990000-0000-4000-8000-000000000002'
+$expectedTutorialEvents['COS_CFG_CATEGORY_RACETAGS'] = '7e990000-0000-4000-8000-000000000003'
+$expectedTutorialEvents['COS_CFG_CATEGORY_WEAPON'] = '7e990000-0000-4000-8000-000000000004'
+$expectedTutorialEvents['COS_CFG_CATEGORY_ARMOR'] = '7e990000-0000-4000-8000-000000000005'
+$expectedTutorialEvents['COS_CFG_CATEGORY_RACIAL'] = '7e990000-0000-4000-8000-000000000006'
+$expectedTutorialEvents['COS_CFG_CATEGORY_CONVENIENCE'] = '7e990000-0000-4000-8000-000000000007'
+$expectedTutorialEvents['COS_PRESET_NEAR_VANILLA'] = '7e990000-0000-4000-8000-000000000011'
+$expectedTutorialEvents['COS_PRESET_PURE_CHAOS'] = '7e990000-0000-4000-8000-000000000012'
+$expectedTutorialEvents['COS_PRESET_BALANCED'] = '7e990000-0000-4000-8000-000000000013'
+$expectedTutorialEvents['COS_PRESET_ALL_CONVENIENCE'] = '7e990000-0000-4000-8000-000000000014'
+$expectedTutorialEvents['COS_PRESET_APPLY'] = '7e990000-0000-4000-8000-000000000015'
+$expectedTutorialEvents['COS_PRESET_CANCEL'] = '7e990000-0000-4000-8000-000000000016'
 foreach ($entry in $grantMenu) { $expectedTutorialEvents['COS_GRANT_' + $entry.key] = $entry.event }
 $expectedTutorialEvents['COS_CFG_VOLO_EYE'] = '77000000-0000-4000-8000-000000000001'
 $expectedTutorialEvents['COS_CFG_TAG_SPELLS'] = '7a000000-0000-4000-8000-000000000001'
@@ -4066,7 +4177,7 @@ $expectedTutorialEvents['COS_BULK_Tag_All'] = '79000000-0000-4000-8000-000000000
 $expectedTutorialEvents['COS_BULK_Tag_Invert'] = '79000000-0000-4000-8000-000000000008'
 $expectedTutorialEvents['COS_BULK_Weapon_All'] = '79000000-0000-4000-8000-000000000009'
 $expectedTutorialEvents['COS_BULK_Weapon_Invert'] = '79000000-0000-4000-8000-000000000010'
-Require ($tutorialEventNodes.Count -eq (53 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、瓦罗、批量与逐项授予事件'
+Require ($tutorialEventNodes.Count -eq (66 + $grantMenu.Count)) 'TutorialEvents 必须完整覆盖既有、分类、预设、瓦罗、批量与逐项授予事件'
 foreach ($tutorialEvent in $expectedTutorialEvents.GetEnumerator()) {
     $matches = @($tutorialEventNodes | Where-Object {
         $_.SelectSingleNode('./attribute[@id="Name"]').value -eq $tutorialEvent.Key -and
@@ -4374,7 +4485,7 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
     Require ($setFocusActions.Count -eq 1 -and $loadedFocusActions.Count -eq 1 -and
         $setFocusActions[0].GetAttribute('TargetName') -eq 'COS_ConfigMenu_c') `
         "手柄核心设置页 Loaded 必须唯一把初始焦点交给根控件: $PageName"
-    foreach ($forbiddenResource in @('PageHeaderHeight', 'PageHeader', 'BrownButtonStyle', 'BigBrownButtonStyle')) {
+    foreach ($forbiddenResource in @('PageHeaderHeight', 'PageHeader', 'BrownButtonStyle')) {
         Require (-not $PageText.Contains("{StaticResource $forbiddenResource}")) `
             "手柄核心设置页不得引用键鼠专属资源 ${forbiddenResource}: $PageName"
     }
@@ -4387,8 +4498,16 @@ $racialControlIds = @(
     'HalflingLightfoot','HalflingLucky','HalflingStout','HumanMilitia','MountainDwarfArmor',
     'Relentless','RockGnomeLore','SavageAttacks','SuperiorDarkvision','TieflingResistance'
 )
+$categoryAcceptNames = @('Core', 'Origin', 'RaceTags', 'Weapon', 'Armor', 'Racial', 'Convenience') |
+    ForEach-Object { "COSCategory${_}Toggle" }
+$presetAcceptNames = @(
+    'COSPresetNearVanillaButton', 'COSPresetPureChaosButton', 'COSPresetBalancedButton',
+    'COSPresetAllConvenienceButton', 'COSPresetApplyButton', 'COSPresetCancelButton'
+)
 $expandedAcceptNames = @($legacyAcceptNames + @('COSConfigFateCostReset','COSConfigGenesisCostReset','COSConfigLifeReset','COSConfigRaceAll','COSConfigRaceNone','COSConfigToggleVoloEye','COSConfigToggleTagSpells') +
-    @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) + @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
+    @($racialControlIds | ForEach-Object { "COSConfigRaceToggle$_" }) +
+    $categoryAcceptNames + $presetAcceptNames +
+    @($grantMenu | ForEach-Object { "COSGrantToggle$($_.key)" }))
 function Test-ControllerAcceptContract([xml]$Document, [string]$PageName, [string[]]$ExpectedAcceptNames = $expandedAcceptNames) {
     $acceptButtons = @($Document.SelectNodes('//*') | Where-Object {
         ($_.LocalName -eq 'LSButton' -or $_.LocalName -eq 'LSToggleButton') -and
@@ -4528,22 +4647,31 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     if ($pageName -eq 'COS_ConfigMenu_c.xaml') {
         Test-ControllerPageContract $pageDocument $page $pageName
         Test-ControllerAcceptContract $pageDocument $pageName
-        $grantFocusOrder = @()
-        $seenBulkGroups = @{}
-        foreach ($grant in $grantMenu) {
-            if ($grant.group -in @('Origin','Tag','Weapon') -and !$seenBulkGroups.ContainsKey($grant.group)) {
-                $grantFocusOrder += "COS_BULK_$($grant.group)_All", "COS_BULK_$($grant.group)_Invert"
-                $seenBulkGroups[$grant.group] = $true
-            }
-            $grantFocusOrder += "COSGrantRow$($grant.key)"
-        }
+        $originGrantFocusOrder = @('COS_BULK_Origin_All', 'COS_BULK_Origin_Invert') +
+            @($grantMenu | Where-Object { $_.group -ceq 'Origin' } | ForEach-Object { "COSGrantRow$($_.key)" })
+        $tagGrantFocusOrder = @('COS_BULK_Tag_All', 'COS_BULK_Tag_Invert') +
+            @($grantMenu | Where-Object { $_.group -ceq 'Tag' } | ForEach-Object { "COSGrantRow$($_.key)" })
+        $weaponGrantFocusOrder = @('COS_BULK_Weapon_All', 'COS_BULK_Weapon_Invert') +
+            @($grantMenu | Where-Object { $_.group -ceq 'Weapon' } | ForEach-Object { "COSGrantRow$($_.key)" })
+        $armorGrantFocusOrder = @($grantMenu | Where-Object { $_.group -ceq 'Armor' } | ForEach-Object { "COSGrantRow$($_.key)" })
+        $instrumentGrantFocusOrder = @($grantMenu | Where-Object { $_.group -ceq 'Instrument' } | ForEach-Object { "COSGrantRow$($_.key)" })
         $expectedControllerFocusOrder = @(
+            'COSPresetNearVanillaButton', 'COSPresetPureChaosButton', 'COSPresetBalancedButton',
+            'COSPresetAllConvenienceButton', 'COSPresetApplyButton', 'COSPresetCancelButton',
+            'COSCategoryCoreToggle',
             'COS_BULK_Core_All', 'COS_BULK_Core_Invert',
             'COSConfigRowPower', 'COSConfigRowWound', 'COSConfigRowKillPower',
             'COSConfigRowDuality', 'COSConfigRowAllIn', 'COSConfigRowFate', 'COSConfigFateCostRow', 'COSConfigFateCostResetRow',
             'COSConfigRowGenesis', 'COSConfigGenesisCostRow', 'COSConfigGenesisCostResetRow', 'COSConfigRowStrike', 'COSConfigRowMastery',
-            'COSConfigRowTagSpells', 'COSConfigRowVoloEye', 'COSConfigRowCarry', 'COSConfigLifeRow', 'COSConfigLifeResetRow', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
-        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + $grantFocusOrder + @(
+            'COSCategoryOriginToggle'
+        ) + $originGrantFocusOrder + @('COSCategoryRaceTagsToggle') + $tagGrantFocusOrder +
+        @('COSCategoryWeaponToggle') + $weaponGrantFocusOrder +
+        @('COSCategoryArmorToggle') + $armorGrantFocusOrder + @(
+            'COSCategoryRacialToggle', 'COSConfigRaceAllRow', 'COSConfigRaceNoneRow'
+        ) + @($racialControlIds | ForEach-Object { "COSConfigRaceRow$_" }) + @(
+            'COSCategoryConvenienceToggle', 'COSConfigRowTagSpells', 'COSConfigRowVoloEye',
+            'COSConfigRowCarry', 'COSConfigLifeRow', 'COSConfigLifeResetRow'
+        ) + $instrumentGrantFocusOrder + @(
             'COSConfigResetRow', 'COSConfigCloseCore'
         )
         $controllerFocusableNodes = @($pageDocument.SelectNodes('//*') | Where-Object {
@@ -4591,9 +4719,9 @@ foreach ($pageName in @('COS_ConfigMenu.xaml', 'COS_ConfigMenu_c.xaml')) {
     $tutorialActions = @($pageDocument.SelectNodes('//*[local-name()="InvokeCommandAction"]'))
     $tutorialCommandParameters = @($tutorialActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
     $expectedTutorialUuids = @($expectedTutorialEvents.Values)
-    Require ($tutorialActions.Count -eq (53 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (53 + $grantMenu.Count) -and
+    Require ($tutorialActions.Count -eq (66 + $grantMenu.Count) -and @($tutorialCommandParameters | Sort-Object -Unique).Count -eq (66 + $grantMenu.Count) -and
         -not (Compare-Object ($expectedTutorialUuids | Sort-Object) ($tutorialCommandParameters | Sort-Object))) `
-        "设置页必须恰好调用36个唯一固定 TutorialEvent UUID: $pageName"
+        "设置页必须精确调用全部唯一固定 TutorialEvent UUID: $pageName"
     foreach ($tutorialAction in $tutorialActions) {
         Require ($tutorialAction.GetAttribute('Command') -eq $tutorialEventCommandBinding) `
             "核心设置页 InvokeCommandAction 必须精确绑定 DataContext.TutorialEvent: $pageName"

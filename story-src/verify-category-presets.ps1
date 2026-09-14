@@ -2329,6 +2329,105 @@ function Assert-PresetWriteContract {
     }
 }
 
+function Assert-RuntimeCategoryDiagnosticContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ExpectedCategories
+    )
+
+    $requiredProcedureCounts = [ordered]@{
+        PROC_COS_RuntimeDiagnosticCheckCategorySchema = 1
+        PROC_COS_RuntimeDiagnosticCheckCategoryMissing = 1
+        PROC_COS_RuntimeDiagnosticCheckCategoryMismatch = 2
+        PROC_COS_RuntimeDiagnosticCheckPresetFailure = 1
+        PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch = 1
+        PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch = 1
+    }
+    foreach ($procedureName in $requiredProcedureCounts.Keys) {
+        $models = @(Get-ProcedureModels -Content $Content -Name $procedureName)
+        Require ($models.Count -eq $requiredProcedureCounts[$procedureName]) "运行诊断过程数量错误: $procedureName"
+    }
+
+    $checkConfig = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckConfig')
+    Require ($checkConfig.Count -eq 1) '运行诊断 CheckConfig 必须唯一'
+    $expectedConfigSuffix = @(
+        'PROC_COS_RuntimeDiagnosticCheckCategorySchema(_Character);'
+        foreach ($category in $ExpectedCategories.Keys) {
+            "PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"$category`");"
+        }
+    )
+    $actualConfigActions = @($checkConfig[0].Actions)
+    Require ($actualConfigActions.Count -ge $expectedConfigSuffix.Count) '运行诊断缺少分类结构检查'
+    Require-ExactActions -Model ([pscustomobject]@{ Actions = @($actualConfigActions[($actualConfigActions.Count - $expectedConfigSuffix.Count)..($actualConfigActions.Count - 1)]) }) -Expected $expectedConfigSuffix -Context '运行诊断分类结构固定顺序'
+
+    $checkMirrors = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckMirrors')
+    Require ($checkMirrors.Count -eq 1) '运行诊断 CheckMirrors 必须唯一'
+    $expectedMirrorSuffix = @(
+        foreach ($category in $ExpectedCategories.Keys) {
+            $mirror = $ExpectedCategories[$category]
+            "PROC_COS_RuntimeDiagnosticCheckCategoryMismatch(_Character, `"$category`", `"$mirror`");"
+        }
+        'PROC_COS_RuntimeDiagnosticCheckPresetFailure(_Character);'
+        foreach ($category in $ExpectedCategories.Keys) {
+            "PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch(_Character, `"$category`");"
+        }
+        'PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch(_Character);'
+    )
+    $actualMirrorActions = @($checkMirrors[0].Actions)
+    Require ($actualMirrorActions.Count -ge $expectedMirrorSuffix.Count) '运行诊断缺少分类镜像或预设应用检查'
+    Require-ExactActions -Model ([pscustomobject]@{ Actions = @($actualMirrorActions[($actualMirrorActions.Count - $expectedMirrorSuffix.Count)..($actualMirrorActions.Count - 1)]) }) -Expected $expectedMirrorSuffix -Context '运行诊断分类镜像与预设固定顺序'
+
+    $schemaModel = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckCategorySchema')[0]
+    Require-ExactConditions -Model $schemaModel -Expected @('NOT DB_COS_ConfigCategorySchema(_Character, 1)') -Context '分类 schema 诊断'
+    Require-ExactActions -Model $schemaModel -Expected @('DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);') -Context '分类 schema 诊断'
+
+    $missingModel = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckCategoryMissing')[0]
+    Require-ExactConditions -Model $missingModel -Expected @(
+        'NOT DB_COS_ConfigCategory(_Character, _Category, _)'
+        'NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)'
+    ) -Context '首个缺失分类诊断'
+    Require-ExactActions -Model $missingModel -Expected @('DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);') -Context '首个缺失分类诊断'
+
+    $categoryMismatchModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckCategoryMismatch')
+    $expectedDirections = @(
+        [pscustomobject]@{ Conditions = @('DB_COS_ConfigCategory(_Character, _Category, 1)', 'HasPassive(_Character, _Mirror, 0)', 'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)') }
+        [pscustomobject]@{ Conditions = @('DB_COS_ConfigCategory(_Character, _Category, 0)', 'HasPassive(_Character, _Mirror, 1)', 'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _)') }
+    )
+    foreach ($direction in $expectedDirections) {
+        $matching = @($categoryMismatchModels | Where-Object { Test-ExactOrdinalSequence -Actual $_.Conditions -Expected $direction.Conditions })
+        Require ($matching.Count -eq 1) "分类镜像诊断方向缺失: $($direction.Conditions[0])"
+        Require-ExactActions -Model $matching[0] -Expected @('DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);') -Context '首个分类镜像不一致诊断'
+    }
+
+    $presetFailure = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckPresetFailure')[0]
+    Require-ExactConditions -Model $presetFailure -Expected @(
+        'DB_COS_PresetValidated(_Character, _Preset, 1)'
+        'DB_COS_PresetMismatch(_Character, _Preset, _, 1)'
+        'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)'
+    ) -Context '预设应用失败诊断'
+    Require-ExactActions -Model $presetFailure -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);') -Context '预设应用失败诊断'
+
+    $presetCategory = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch')[0]
+    Require-ExactConditions -Model $presetCategory -Expected @(
+        'DB_COS_PresetMismatch(_Character, _Preset, _Category, 1)'
+        'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)'
+    ) -Context '首个预设分类不一致诊断'
+    Require-ExactActions -Model $presetCategory -Expected @('DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);') -Context '首个预设分类不一致诊断'
+
+    $presetLife = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckPresetLifeMismatch')[0]
+    Require-ExactConditions -Model $presetLife -Expected @(
+        'DB_COS_PresetMismatch(_Character, _Preset, "Life", 1)'
+        'NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)'
+    ) -Context '预设生活加值不一致诊断'
+    Require-ExactActions -Model $presetLife -Expected @('DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);') -Context '预设生活加值不一致诊断'
+
+    $diagnosticText = (@(Get-OsirisRuleModels -Content $Content | Where-Object { $_.Kind -ceq 'PROC' -and $_.Head.StartsWith('PROC_COS_RuntimeDiagnostic', [System.StringComparison]::Ordinal) }).Block) -join "`n"
+    Require (-not [regex]::IsMatch($diagnosticText, '(?i)\b(?:Random|GetRandom|RollRandom|Randomize)\w*\s*\(')) '分类/预设运行诊断不得使用随机选择'
+}
+
 function Assert-StatsStatusContract {
     param(
         [Parameter(Mandatory)]
@@ -3089,6 +3188,39 @@ function Assert-PackageContract {
     Require (Test-ExactOrdinalSet -Actual $actualGoals -Expected $ExpectedGoals) '正式包六个 Goal 集合发生漂移'
 }
 
+function Assert-CategoryPresetTutorialEventContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ExpectedEvents
+    )
+
+    try {
+        [xml]$document = $Content
+    }
+    catch {
+        throw [CategoryPresetContractException]::new("TutorialEvents.lsx XML 无法解析: $($_.Exception.Message)")
+    }
+
+    $nodes = @($document.SelectNodes('//node[@id="TutorialEvent"]') | Where-Object {
+        $uuidNode = $_.SelectSingleNode('./attribute[@id="UUID"]')
+        $null -ne $uuidNode -and $uuidNode.GetAttribute('value').StartsWith('7e990000-', [System.StringComparison]::Ordinal)
+    })
+    $actual = @($nodes | ForEach-Object {
+        $name = $_.SelectSingleNode('./attribute[@id="Name"]').GetAttribute('value')
+        $uuid = $_.SelectSingleNode('./attribute[@id="UUID"]').GetAttribute('value')
+        $eventType = $_.SelectSingleNode('./attribute[@id="EventType"]').GetAttribute('value')
+        $userAction = $_.SelectSingleNode('./attribute[@id="UserAction"]').GetAttribute('value')
+        "$name|$uuid|$eventType|$userAction"
+    })
+    $expected = @($ExpectedEvents.Keys | ForEach-Object { "$_|$($ExpectedEvents[$_])|8|0" })
+    Require ($nodes.Count -eq $ExpectedEvents.Count -and
+        (Test-ExactOrdinalSet -Actual $actual -Expected $expected)) `
+        '分类预设 TutorialEvent 注册集合不精确'
+}
+
 $paths = [ordered]@{
     Config = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_Config.txt'
     Base = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_BaseAfterCreation.txt'
@@ -3098,6 +3230,7 @@ $paths = [ordered]@{
     Stats = Join-Path $Root 'Public\ChaosOriginsStory\Stats\Generated\Data\ChaosConfig.txt'
     Keyboard = Join-Path $Root 'Mods\ChaosOriginsStory\GUI\Pages\COS_ConfigMenu.xaml'
     Controller = Join-Path $Root 'Mods\ChaosOriginsStory\GUI\Pages\COS_ConfigMenu_c.xaml'
+    TutorialEvents = Join-Path $Root 'Public\ChaosOriginsStory\Tutorials\TutorialEvents.lsx'
     Package = Join-Path $Root 'package-files.json'
 }
 
@@ -3109,6 +3242,7 @@ $mastery = Read-Required $paths.Mastery
 $stats = Read-Required $paths.Stats
 $keyboardXaml = Read-Required $paths.Keyboard
 $controllerXaml = Read-Required $paths.Controller
+$tutorialEvents = Read-Required $paths.TutorialEvents
 $packageJson = Read-Required $paths.Package
 $localization = [ordered]@{}
 foreach ($language in @('Chinese', 'English', 'Japanese', 'Korean')) {
@@ -3177,6 +3311,29 @@ $task5PresetEvents = [ordered]@{
     AllConvenience = '7e990000-0000-4000-8000-000000000014'
     Apply = '7e990000-0000-4000-8000-000000000015'
     Cancel = '7e990000-0000-4000-8000-000000000016'
+}
+$categoryPresetTutorialEvents = [ordered]@{
+    COS_CFG_CATEGORY_CORE = $task3CategoryEvents.Core
+    COS_CFG_CATEGORY_ORIGIN = $task3CategoryEvents.Origin
+    COS_CFG_CATEGORY_RACETAGS = $task3CategoryEvents.RaceTags
+    COS_CFG_CATEGORY_WEAPON = $task3CategoryEvents.WeaponProficiencies
+    COS_CFG_CATEGORY_ARMOR = $task3CategoryEvents.ArmorProficiencies
+    COS_CFG_CATEGORY_RACIAL = $task3CategoryEvents.RacialAbilities
+    COS_CFG_CATEGORY_CONVENIENCE = $task3CategoryEvents.Convenience
+    COS_PRESET_NEAR_VANILLA = $task5PresetEvents.NearVanilla
+    COS_PRESET_PURE_CHAOS = $task5PresetEvents.PureChaos
+    COS_PRESET_BALANCED = $task5PresetEvents.Balanced
+    COS_PRESET_ALL_CONVENIENCE = $task5PresetEvents.AllConvenience
+    COS_PRESET_APPLY = $task5PresetEvents.Apply
+    COS_PRESET_CANCEL = $task5PresetEvents.Cancel
+}
+Assert-CategoryPresetTutorialEventContract -Content $tutorialEvents -ExpectedEvents $categoryPresetTutorialEvents
+$tutorialEventRegistrationMutation = $tutorialEvents.Replace(
+    'value="7e990000-0000-4000-8000-000000000001"',
+    'value="7e990000-0000-4000-8000-000000000099"')
+Require ($tutorialEventRegistrationMutation -cne $tutorialEvents) 'TutorialEvent 注册变异探针未命中'
+Assert-MutationRejected -Name 'tutorial-event-registration' -ExpectedMessagePattern '^分类预设 TutorialEvent 注册集合不精确$' -Probe {
+    Assert-CategoryPresetTutorialEventContract -Content $tutorialEventRegistrationMutation -ExpectedEvents $categoryPresetTutorialEvents
 }
 $task5CurrentStatuses = @(
     'COS_PRESET_CURRENT_NEAR_VANILLA', 'COS_PRESET_CURRENT_PURE_CHAOS',
@@ -3625,6 +3782,13 @@ Assert-EventGuardContract -Content $config
 Assert-CategoryToggleContract -Content $config
 Assert-PresetWorkflowContract -Content $config
 Assert-PresetFailureContract -Content $config
+Assert-RuntimeCategoryDiagnosticContract -Content $config -ExpectedCategories $categories
+$diagnosticOrderOld = "PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"Core`");`nPROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"Origin`");"
+$diagnosticOrderNew = "PROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"Origin`");`nPROC_COS_RuntimeDiagnosticCheckCategoryMissing(_Character, `"Core`");"
+$diagnosticOrderMutation = Replace-FirstLiteral -Content $config -OldValue $diagnosticOrderOld -NewValue $diagnosticOrderNew -ProbeName 'task7-category-diagnostic-order'
+Assert-MutationRejected -Name 'task7-category-diagnostic-order' -ExpectedMessagePattern '^运行诊断分类结构固定顺序 THEN 动作序列不精确$' -Probe {
+    Assert-RuntimeCategoryDiagnosticContract -Content $diagnosticOrderMutation -ExpectedCategories $categories
+}
 
 foreach ($goalContract in @(
     [pscustomobject]@{ Name = 'COS_ChaosMechanics'; Content = $mechanics },
