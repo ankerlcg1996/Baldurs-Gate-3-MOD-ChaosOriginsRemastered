@@ -4,6 +4,10 @@ param(
     [string]$Root = $PSScriptRoot
 )
 
+class CategoryPresetContractException : System.Exception {
+    CategoryPresetContractException([string]$message) : base($message) {}
+}
+
 $ErrorActionPreference = 'Stop'
 
 function Require {
@@ -16,7 +20,7 @@ function Require {
     )
 
     if (-not $Condition) {
-        throw $Message
+        throw [CategoryPresetContractException]::new($Message)
     }
 }
 
@@ -292,6 +296,9 @@ function Assert-MutationRejected {
         [string]$Name,
 
         [Parameter(Mandatory)]
+        [string]$ExpectedMessagePattern,
+
+        [Parameter(Mandatory)]
         [scriptblock]$Probe
     )
 
@@ -299,11 +306,39 @@ function Assert-MutationRejected {
     try {
         & $Probe
     }
-    catch {
+    catch [CategoryPresetContractException] {
+        if (-not [regex]::IsMatch($_.Exception.Message, $ExpectedMessagePattern, [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)) {
+            throw
+        }
         $rejected = $true
     }
 
     Require $rejected "变异探针未被拒绝: $Name"
+}
+
+function Assert-MutationHarnessContract {
+    $missingCommandEscaped = $false
+    try {
+        Assert-MutationRejected -Name 'harness-command-not-found' -ExpectedMessagePattern '^never matches$' -Probe {
+            Invoke-COSDefinitelyMissingCommand
+        }
+    }
+    catch [System.Management.Automation.CommandNotFoundException] {
+        $missingCommandEscaped = $true
+    }
+    Require $missingCommandEscaped 'mutation harness 吞掉 CommandNotFoundException'
+
+    $nullReferenceEscaped = $false
+    try {
+        $nullTarget = $null
+        Assert-MutationRejected -Name 'harness-null-reference' -ExpectedMessagePattern '^never matches$' -Probe {
+            $nullTarget.ToString()
+        }
+    }
+    catch [System.Management.Automation.RuntimeException] {
+        $nullReferenceEscaped = $true
+    }
+    Require $nullReferenceEscaped 'mutation harness 吞掉空引用异常'
 }
 
 function Replace-FirstLiteral {
@@ -1054,7 +1089,7 @@ function Assert-PresetWriteContract {
                         Require (-not $action.StartsWith('NOT ', [System.StringComparison]::Ordinal)) "BuildPreview 不得删除 preview scratch: $table"
                     }
                     PROC_COS_PresetApply {
-                        throw "PresetApply 不得直接写 DB: $table"
+                        Require $false "PresetApply 不得直接写 DB: $table"
                     }
                     PROC_COS_PresetSetCategory {
                         Require ($table -ceq 'DB_COS_ConfigCategory') "SetCategory 写入非分类配置: $table"
@@ -1073,7 +1108,7 @@ function Assert-PresetWriteContract {
                         }
                     }
                     default {
-                        throw "预设过程写入未分配过程: $procedureName $table"
+                        Require $false "预设过程写入未分配过程: $procedureName $table"
                     }
                 }
                 if ($table -ceq 'DB_COS_ConfigCategory') {
@@ -1167,7 +1202,7 @@ function Assert-PresetWriteContract {
                 continue
             }
 
-            throw "预设过程包含未批准 THEN 动作: $action"
+            Require $false "预设过程包含未批准 THEN 动作: $action"
         }
 
         foreach ($table in $forbiddenTables) {
@@ -1925,6 +1960,7 @@ $categories = [ordered]@{
 }
 
 Assert-OsirisParserContract
+Assert-MutationHarnessContract
 
 # Fail first here on the .98 baseline. Later contracts must not mask a missing category implementation.
 Assert-CategoryMappingContract -Content $config -ExpectedCategories $categories
@@ -2285,53 +2321,53 @@ Assert-PackageContract -Content $packageJson -ExpectedPaths $expectedPackagePath
 # In-memory mutation probes: each mutation must alter real source and be rejected by the matching assertion.
 $coreMapLine = 'DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE");'
 $missingCategoryMutation = Replace-FirstLiteral -Content $config -OldValue $coreMapLine -NewValue '// mutation: removed Core category' -ProbeName 'missing-category'
-Assert-MutationRejected -Name 'missing-category' -Probe {
+Assert-MutationRejected -Name 'missing-category' -ExpectedMessagePattern '^缺少分类映射: Core$' -Probe {
     Assert-CategoryMappingContract -Content $missingCategoryMutation -ExpectedCategories $categories
 }
 
 $coreMirrorEntry = @(Get-StatsEntries -Content $stats | Where-Object { $_.Name -ceq 'COS_CFG_CATEGORY_CORE' })[0]
 $coreMirrorIconSource = Replace-FirstLiteral -Content $coreMirrorEntry.Source -OldValue 'data "Properties" "Highlighted"' -NewValue "data `"Properties`" `"Highlighted`"`ndata `"Icon`" `"Mutation_Icon`"" -ProbeName 'mirror-illegal-icon'
 $mirrorIconMutation = Replace-FirstLiteral -Content $stats -OldValue $coreMirrorEntry.Source -NewValue $coreMirrorIconSource -ProbeName 'mirror-illegal-icon'
-Assert-MutationRejected -Name 'mirror-illegal-icon' -Probe {
+Assert-MutationRejected -Name 'mirror-illegal-icon' -ExpectedMessagePattern '^分类镜像字段或声明数量错误: COS_CFG_CATEGORY_CORE$' -Probe {
     [void](Assert-StatsContract -Content $mirrorIconMutation -ExpectedMirrors @($categories.Values) -StatusGroups $statusGroups -ExpectedMirrorHandles $expectedMirrorHandles)
 }
 
 $mirrorHandleMutation = Replace-FirstLiteral -Content $stats -OldValue $expectedMirrorHandles.COS_CFG_CATEGORY_CORE.DisplayName -NewValue 'h7e990000g0000g4000g8000g000000009999' -ProbeName 'mirror-handle-drift'
-Assert-MutationRejected -Name 'mirror-handle-drift' -Probe {
+Assert-MutationRejected -Name 'mirror-handle-drift' -ExpectedMessagePattern '^分类镜像 DisplayName handle 错误: COS_CFG_CATEGORY_CORE$' -Probe {
     [void](Assert-StatsContract -Content $mirrorHandleMutation -ExpectedMirrors @($categories.Values) -StatusGroups $statusGroups -ExpectedMirrorHandles $expectedMirrorHandles)
 }
 
 $balancedCoreLine = 'DB_COS_PresetCategory("Balanced", "Core", 1);'
 $wrongPresetMutation = Replace-FirstLiteral -Content $config -OldValue $balancedCoreLine -NewValue 'DB_COS_PresetCategory("Balanced", "Core", 0);' -ProbeName 'wrong-preset-value'
-Assert-MutationRejected -Name 'wrong-preset-value' -Probe {
+Assert-MutationRejected -Name 'wrong-preset-value' -ExpectedMessagePattern '^预设分类矩阵不精确$' -Probe {
     Assert-PresetMatrixContract -Content $wrongPresetMutation -ExpectedMatrix $presetMatrix -ExpectedLife $presetLife
 }
 
 $newInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeNew')[0]
 $newInitMutationBlock = Replace-FirstLiteral -Content $newInitModel.Block -OldValue 'THEN' -NewValue "THEN`nPROC_COS_ConfigInitCategory(_Character, `"Extra`", 0);" -ProbeName 'new-init-nine-actions'
 $newInitMutation = Replace-RuleBlock -Content $config -OldBlock $newInitModel.Block -NewBlock $newInitMutationBlock -ProbeName 'new-init-nine-actions'
-Assert-MutationRejected -Name 'new-init-nine-actions' -Probe {
+Assert-MutationRejected -Name 'new-init-nine-actions' -ExpectedMessagePattern '^新角色分类初始化 THEN 动作序列不精确$' -Probe {
     Assert-CategoryInitializationContract -Content $newInitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
 $legacyInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeLegacy')[0]
 $legacyInitMutationBlock = Replace-FirstLiteral -Content $legacyInitModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 99);" -ProbeName 'legacy-init-child-write'
 $legacyInitMutation = Replace-RuleBlock -Content $config -OldBlock $legacyInitModel.Block -NewBlock $legacyInitMutationBlock -ProbeName 'legacy-init-child-write'
-Assert-MutationRejected -Name 'legacy-init-child-write' -Probe {
+Assert-MutationRejected -Name 'legacy-init-child-write' -ExpectedMessagePattern '^旧角色分类初始化 THEN 动作序列不精确$' -Probe {
     Assert-CategoryInitializationContract -Content $legacyInitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
 $initializeModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeCategories')[0]
 $initializeNeverTrueBlock = Replace-FirstLiteral -Content $initializeModel.Block -OldValue 'THEN' -NewValue "AND`nDB_COS_NeverTrue(_Character)`nTHEN" -ProbeName 'initialize-never-true'
 $initializeNeverTrueMutation = Replace-RuleBlock -Content $config -OldBlock $initializeModel.Block -NewBlock $initializeNeverTrueBlock -ProbeName 'initialize-never-true'
-Assert-MutationRejected -Name 'initialize-never-true' -Probe {
+Assert-MutationRejected -Name 'initialize-never-true' -ExpectedMessagePattern '^分类统一初始化入口 条件集合不精确$' -Probe {
     Assert-CategoryInitializationContract -Content $initializeNeverTrueMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
 $commitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigCommitCategorySchema')[0]
 $extraSchemaConditionBlock = Replace-FirstLiteral -Content $commitModel.Block -OldValue 'THEN' -NewValue "AND`nDB_COS_ConfigCategory(_Character, `"Extra`", _Extra)`nTHEN" -ProbeName 'schema-extra-condition'
 $extraSchemaConditionMutation = Replace-RuleBlock -Content $config -OldBlock $commitModel.Block -NewBlock $extraSchemaConditionBlock -ProbeName 'schema-extra-condition'
-Assert-MutationRejected -Name 'schema-extra-condition' -Probe {
+Assert-MutationRejected -Name 'schema-extra-condition' -ExpectedMessagePattern '^分类 schema 提交条件行数错误: 期望 8，实际 9$' -Probe {
     Assert-CategoryInitializationContract -Content $extraSchemaConditionMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
@@ -2339,20 +2375,20 @@ $presetApplyModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_Prese
 $presetApplyBlock = $presetApplyModel.Block
 $injectedApplyBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'preset-subconfig-write'
 $presetWriteMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $injectedApplyBlock -ProbeName 'preset-subconfig-write'
-Assert-MutationRejected -Name 'preset-subconfig-write' -Probe {
+Assert-MutationRejected -Name 'preset-subconfig-write' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_ConfigCost$' -Probe {
     Assert-PresetWriteContract -Content $presetWriteMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
 $unapprovedApplyBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'THEN' -NewValue "THEN`nDB_COS_PresetUnapproved(_Character);" -ProbeName 'preset-unapproved-db'
 $unapprovedApplyMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $unapprovedApplyBlock -ProbeName 'preset-unapproved-db'
-Assert-MutationRejected -Name 'preset-unapproved-db' -Probe {
+Assert-MutationRejected -Name 'preset-unapproved-db' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_PresetUnapproved$' -Probe {
     Assert-PresetWriteContract -Content $unapprovedApplyMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
 $previewModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetBuildPreview')[0]
 $previewCostBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'preview-subconfig-write'
 $previewCostMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewCostBlock -ProbeName 'preview-subconfig-write'
-Assert-MutationRejected -Name 'preview-subconfig-write' -Probe {
+Assert-MutationRejected -Name 'preview-subconfig-write' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_ConfigCost$' -Probe {
     Assert-PresetWriteContract -Content $previewCostMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
@@ -2365,7 +2401,7 @@ DB_COS_PresetPending(_Character, _Preset)
 THEN // hidden action section
 PROC_COS_PresetDetect(_Character);
 '@
-Assert-MutationRejected -Name 'preset-new-procedure' -Probe {
+Assert-MutationRejected -Name 'preset-new-procedure' -ExpectedMessagePattern '^预设过程声明批准集合不精确$' -Probe {
     Assert-PresetWriteContract -Content $newPresetProcedureMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
@@ -2376,37 +2412,37 @@ PROC_COS_PresetBuildPreview((CHARACTERGUID)_Character, (STRING)_Preset)
 THEN // hidden illegal action section
 DB_COS_ConfigCost(_Character, "Fate", 999);
 '@
-Assert-MutationRejected -Name 'preset-comment-header-illegal-action' -Probe {
+Assert-MutationRejected -Name 'preset-comment-header-illegal-action' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_ConfigCost$' -Probe {
     Assert-PresetWriteContract -Content $commentedHeaderIllegalActionMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
 $unapprovedStatusBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nApplyStatus(_Character, `"COS_PRESET_UNAPPROVED`", -1, 1);" -ProbeName 'preset-unapproved-apply-status'
 $unapprovedStatusMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $unapprovedStatusBlock -ProbeName 'preset-unapproved-apply-status'
-Assert-MutationRejected -Name 'preset-unapproved-apply-status' -Probe {
+Assert-MutationRejected -Name 'preset-unapproved-apply-status' -ExpectedMessagePattern '^预设过程 ApplyStatus 使用未批准状态: COS_PRESET_UNAPPROVED$' -Probe {
     Assert-PresetWriteContract -Content $unapprovedStatusMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
 $directLifeBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigLifeSkill(_Character, 99);" -ProbeName 'preset-direct-life-write'
 $directLifeMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $directLifeBlock -ProbeName 'preset-direct-life-write'
-Assert-MutationRejected -Name 'preset-direct-life-write' -Probe {
+Assert-MutationRejected -Name 'preset-direct-life-write' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_ConfigLifeSkill$' -Probe {
     Assert-PresetWriteContract -Content $directLifeMutation -ExpectedProcedureNames $expectedPresetProcedures -ApprovedStatusIds $approvedStatusIds -ExpectedDetectionOrder $presetOrder
 }
 
 $previewFormalBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCategory(_Character, `"Core`", 1);" -ProbeName 'preview-formal-config-write'
 $previewFormalMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewFormalBlock -ProbeName 'preview-formal-config-write'
-Assert-MutationRejected -Name 'preview-formal-config-write' -Probe {
+Assert-MutationRejected -Name 'preview-formal-config-write' -ExpectedMessagePattern '^预设预览不得写正式配置$' -Probe {
     Assert-PresetWorkflowContract -Content $previewFormalMutation
 }
 
 $previewSyncBlock = Replace-FirstLiteral -Content $previewModel.Block -OldValue 'THEN' -NewValue "THEN`nPROC_COS_ConfigSyncCharacter(_Character);" -ProbeName 'preview-extra-sync'
 $previewSyncMutation = Replace-RuleBlock -Content $config -OldBlock $previewModel.Block -NewBlock $previewSyncBlock -ProbeName 'preview-extra-sync'
-Assert-MutationRejected -Name 'preview-extra-sync' -Probe {
+Assert-MutationRejected -Name 'preview-extra-sync' -ExpectedMessagePattern '^预设预览不得调用正式配置写入或同步$' -Probe {
     Assert-PresetWorkflowContract -Content $previewSyncMutation
 }
 
 $legacyLine = 'DB_COS_ConfigLegacyTable("DB_COS_ConfigMechanic");'
 $legacyMutation = Replace-FirstLiteral -Content $config -OldValue $legacyLine -NewValue '// mutation: removed legacy mechanic check' -ProbeName 'missing-legacy-table'
-Assert-MutationRejected -Name 'missing-legacy-table' -Probe {
+Assert-MutationRejected -Name 'missing-legacy-table' -ExpectedMessagePattern '^旧档识别表集合不精确$' -Probe {
     Assert-LegacyDetectionContract -Content $legacyMutation -ExpectedProbes $legacyProbes
 }
 
@@ -2414,7 +2450,7 @@ $legacyMechanicModel = @(Get-ProcedureModels -Content $config -Name $legacyProbe
 $legacyMechanicCondition = @($legacyMechanicModel.Conditions | Where-Object { $_ -match '^DB_COS_ConfigMechanic\(_Character' })[0]
 $legacyCommentOnlyBlock = Replace-FirstLiteral -Content $legacyMechanicModel.Block -OldValue $legacyMechanicCondition -NewValue "// $legacyMechanicCondition" -ProbeName 'legacy-comment-only'
 $legacyCommentOnlyMutation = Replace-RuleBlock -Content $config -OldBlock $legacyMechanicModel.Block -NewBlock $legacyCommentOnlyBlock -ProbeName 'legacy-comment-only'
-Assert-MutationRejected -Name 'legacy-comment-only' -Probe {
+Assert-MutationRejected -Name 'legacy-comment-only' -ExpectedMessagePattern '^旧档 probe 条件签名或 arity 错误: DB_COS_ConfigMechanic$' -Probe {
     Assert-LegacyDetectionContract -Content $legacyCommentOnlyMutation -ExpectedProbes $legacyProbes
 }
 
@@ -2423,13 +2459,13 @@ $firstLegacyTable = @($legacyProbes.Keys)[0]
 $firstLegacyProbeCall = "$($legacyProbes[$firstLegacyTable].Procedure)(_Character);"
 $legacyDeadBlock = Replace-FirstLiteral -Content $legacyDetectModel.Block -OldValue $firstLegacyProbeCall -NewValue "// mutation: removed dispatcher call $firstLegacyProbeCall" -ProbeName 'legacy-dead-probe'
 $legacyDeadMutation = Replace-RuleBlock -Content $config -OldBlock $legacyDetectModel.Block -NewBlock $legacyDeadBlock -ProbeName 'legacy-dead-probe'
-Assert-MutationRejected -Name 'legacy-dead-probe' -Probe {
+Assert-MutationRejected -Name 'legacy-dead-probe' -ExpectedMessagePattern '^旧档检测调度 THEN 动作序列不精确$' -Probe {
     Assert-LegacyDetectionContract -Content $legacyDeadMutation -ExpectedProbes $legacyProbes
 }
 
 $legacyNeverTrueBlock = Replace-FirstLiteral -Content $legacyMechanicModel.Block -OldValue 'THEN' -NewValue "AND`nDB_COS_NeverTrue(_Character)`nTHEN" -ProbeName 'legacy-never-true'
 $legacyNeverTrueMutation = Replace-RuleBlock -Content $config -OldBlock $legacyMechanicModel.Block -NewBlock $legacyNeverTrueBlock -ProbeName 'legacy-never-true'
-Assert-MutationRejected -Name 'legacy-never-true' -Probe {
+Assert-MutationRejected -Name 'legacy-never-true' -ExpectedMessagePattern '^旧档 probe 条件集合不精确: DB_COS_ConfigMechanic$' -Probe {
     Assert-LegacyDetectionContract -Content $legacyNeverTrueMutation -ExpectedProbes $legacyProbes
 }
 
@@ -2437,7 +2473,7 @@ $legacyFixedCondition = [regex]::Replace($legacyMechanicCondition, '\(_Character
 Require ($legacyFixedCondition -cne $legacyMechanicCondition) 'legacy-fixed-value 探针未改变条件'
 $legacyFixedBlock = Replace-FirstLiteral -Content $legacyMechanicModel.Block -OldValue $legacyMechanicCondition -NewValue $legacyFixedCondition -ProbeName 'legacy-fixed-value'
 $legacyFixedMutation = Replace-RuleBlock -Content $config -OldBlock $legacyMechanicModel.Block -NewBlock $legacyFixedBlock -ProbeName 'legacy-fixed-value'
-Assert-MutationRejected -Name 'legacy-fixed-value' -Probe {
+Assert-MutationRejected -Name 'legacy-fixed-value' -ExpectedMessagePattern '^旧档 probe 条件签名或 arity 错误: DB_COS_ConfigMechanic$' -Probe {
     Assert-LegacyDetectionContract -Content $legacyFixedMutation -ExpectedProbes $legacyProbes
 }
 
@@ -2448,32 +2484,32 @@ $categoryEventModel = @(
 $categoryEventBlock = $categoryEventModel.Block
 $unguardedCategoryBlock = Replace-FirstLiteral -Content $categoryEventBlock -OldValue 'IsInCombat(_Character, 0)' -NewValue 'IsInCombat(_Character, 1)' -ProbeName 'missing-combat-guard'
 $combatMutation = Replace-RuleBlock -Content $config -OldBlock $categoryEventBlock -NewBlock $unguardedCategoryBlock -ProbeName 'missing-combat-guard'
-Assert-MutationRejected -Name 'missing-combat-guard' -Probe {
+Assert-MutationRejected -Name 'missing-combat-guard' -ExpectedMessagePattern '^修改事件 Category 条件集合不精确$' -Probe {
     Assert-EventGuardContract -Content $combatMutation
 }
 
 $schemaCommentBlock = Replace-FirstLiteral -Content $categoryEventBlock -OldValue 'DB_COS_ConfigCategorySchema(_Character, 1)' -NewValue '// DB_COS_ConfigCategorySchema(_Character, 1)' -ProbeName 'event-schema-comment-only'
 $schemaCommentMutation = Replace-RuleBlock -Content $config -OldBlock $categoryEventBlock -NewBlock $schemaCommentBlock -ProbeName 'event-schema-comment-only'
-Assert-MutationRejected -Name 'event-schema-comment-only' -Probe {
+Assert-MutationRejected -Name 'event-schema-comment-only' -ExpectedMessagePattern '^修改事件 Category 条件集合不精确$' -Probe {
     Assert-EventGuardContract -Content $schemaCommentMutation
 }
 
 $categoryEventCostBlock = Replace-FirstLiteral -Content $categoryEventBlock -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'category-event-cost-write'
 $categoryEventCostMutation = Replace-RuleBlock -Content $config -OldBlock $categoryEventBlock -NewBlock $categoryEventCostBlock -ProbeName 'category-event-cost-write'
-Assert-MutationRejected -Name 'category-event-cost-write' -Probe {
+Assert-MutationRejected -Name 'category-event-cost-write' -ExpectedMessagePattern '^分类切换事件 THEN 动作序列不精确$' -Probe {
     Assert-EventGuardContract -Content $categoryEventCostMutation
 }
 
 $categoryToggleModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigToggleCategory')[0]
 $categoryToggleCostBlock = Replace-FirstLiteral -Content $categoryToggleModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'category-toggle-cost-write'
 $categoryToggleCostMutation = Replace-RuleBlock -Content $config -OldBlock $categoryToggleModel.Block -NewBlock $categoryToggleCostBlock -ProbeName 'category-toggle-cost-write'
-Assert-MutationRejected -Name 'category-toggle-cost-write' -Probe {
+Assert-MutationRejected -Name 'category-toggle-cost-write' -ExpectedMessagePattern '^分类切换过程 THEN 动作序列不精确$' -Probe {
     Assert-CategoryToggleContract -Content $categoryToggleCostMutation
 }
 
 $previewBypassBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'DB_COS_PresetValidated(_Character, _Preset, 0)' -NewValue 'DB_COS_PresetMutationBypass(_Character, _Preset)' -ProbeName 'preview-bypass'
 $previewBypassMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $previewBypassBlock -ProbeName 'preview-bypass'
-Assert-MutationRejected -Name 'preview-bypass' -Probe {
+Assert-MutationRejected -Name 'preview-bypass' -ExpectedMessagePattern '^预设应用主规则缺失或重复$' -Probe {
     Assert-PresetWorkflowContract -Content $previewBypassMutation
 }
 
@@ -2481,19 +2517,19 @@ $applyOrderBlock = Replace-FirstLiteral -Content $presetApplyBlock -OldValue 'PR
 $applyOrderBlock = Replace-FirstLiteral -Content $applyOrderBlock -OldValue 'PROC_COS_ConfigSetLifeSkill(_Character, _Life);' -NewValue 'PROC_COS_PresetSetCategory(_Character, _Preset);' -ProbeName 'apply-order'
 $applyOrderBlock = Replace-FirstLiteral -Content $applyOrderBlock -OldValue 'PROC_COS_PresetMutationOrderPlaceholder(_Character, _Preset);' -NewValue 'PROC_COS_ConfigSetLifeSkill(_Character, _Life);' -ProbeName 'apply-order'
 $applyOrderMutation = Replace-RuleBlock -Content $config -OldBlock $presetApplyBlock -NewBlock $applyOrderBlock -ProbeName 'apply-order'
-Assert-MutationRejected -Name 'apply-order' -Probe {
+Assert-MutationRejected -Name 'apply-order' -ExpectedMessagePattern '^预设应用主规则 THEN 动作序列不精确$' -Probe {
     Assert-PresetWorkflowContract -Content $applyOrderMutation
 }
 
 $duplicateCommitBlock = Replace-FirstLiteral -Content $commitModel.Block -OldValue 'DB_COS_ConfigCategorySchema(_Character, 1);' -NewValue "DB_COS_ConfigCategorySchema(_Character, 1);`nDB_COS_ConfigCategorySchema(_Character, 1);" -ProbeName 'duplicate-schema-commit'
 $duplicateCommitMutation = Replace-RuleBlock -Content $config -OldBlock $commitModel.Block -NewBlock $duplicateCommitBlock -ProbeName 'duplicate-schema-commit'
-Assert-MutationRejected -Name 'duplicate-schema-commit' -Probe {
+Assert-MutationRejected -Name 'duplicate-schema-commit' -ExpectedMessagePattern '^分类 schema 提交 THEN 动作序列不精确$' -Probe {
     Assert-CategoryInitializationContract -Content $duplicateCommitMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
 $schemaVersionBlock = Replace-FirstLiteral -Content $initializeModel.Block -OldValue 'NOT DB_COS_ConfigCategorySchema(_Character, _)' -NewValue 'NOT DB_COS_ConfigCategorySchema(_Character, 2)' -ProbeName 'schema-non-one-version'
 $schemaVersionMutation = Replace-RuleBlock -Content $config -OldBlock $initializeModel.Block -NewBlock $schemaVersionBlock -ProbeName 'schema-non-one-version'
-Assert-MutationRejected -Name 'schema-non-one-version' -Probe {
+Assert-MutationRejected -Name 'schema-non-one-version' -ExpectedMessagePattern '^分类统一初始化入口 条件集合不精确$' -Probe {
     Assert-CategoryInitializationContract -Content $schemaVersionMutation -NewCategories $newCategoryInitialization -LegacyCategories $legacyCategoryInitialization -NewLife 0
 }
 
@@ -2517,7 +2553,7 @@ $controllerPresetButton = @(Get-XamlNamedNodes -Document $controllerEventMutatio
 $controllerPresetAction = @($controllerPresetButton.SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))[0]
 $controllerPresetAction.SetAttribute('CommandParameter', $presetEvents.PureChaos)
 $controllerEventMutation = $controllerEventMutationDocument.OuterXml
-Assert-MutationRejected -Name 'controller-event-drift' -Probe {
+Assert-MutationRejected -Name 'controller-event-drift' -ExpectedMessagePattern '^controller-probe 按钮 Click 事件错误: COSPresetNearVanillaButton$' -Probe {
     [void](Assert-UiPageContract -Content $controllerEventMutation @controllerProbeArguments)
 }
 
@@ -2526,7 +2562,7 @@ $extraEventPanel = @(Get-XamlNamedNodes -Document $extraEventDocument -Name 'COS
 $extraEventAction = $extraEventDocument.CreateElement('b', 'InvokeCommandAction', 'http://schemas.microsoft.com/xaml/behaviors')
 $extraEventAction.SetAttribute('CommandParameter', '7e990000-0000-4000-8000-000000000099')
 [void]$extraEventPanel.AppendChild($extraEventAction)
-Assert-MutationRejected -Name 'xaml-extra-event' -Probe {
+Assert-MutationRejected -Name 'xaml-extra-event' -ExpectedMessagePattern '^controller-probe 分类/预设事件批准集合或顺序错误$' -Probe {
     [void](Assert-UiPageContract -Content $extraEventDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2536,7 +2572,7 @@ $firstPreviewTrigger = @($previewNode.SelectNodes('.//*[local-name()="DataTrigge
 $extraPreviewTrigger = $firstPreviewTrigger.CloneNode($true)
 $extraPreviewTrigger.SetAttribute('Value', 'COS_PRESET_PREVIEW_UNAPPROVED')
 [void]$firstPreviewTrigger.ParentNode.AppendChild($extraPreviewTrigger)
-Assert-MutationRejected -Name 'xaml-extra-preview-status' -Probe {
+Assert-MutationRejected -Name 'xaml-extra-preview-status' -ExpectedMessagePattern '^controller-probe 状态过滤集合或顺序错误: COSPresetPreview$' -Probe {
     [void](Assert-UiPageContract -Content $extraStatusDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2545,21 +2581,21 @@ $hiddenStatusPanel = @(Get-XamlNamedNodes -Document $hiddenStatusDocument -Name 
 $hiddenTrigger = $hiddenStatusDocument.CreateElement('DataTrigger', $hiddenStatusPanel.NamespaceURI)
 $hiddenTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_UNKNOWN_ACTIVE')
 [void]$hiddenStatusPanel.AppendChild($hiddenTrigger)
-Assert-MutationRejected -Name 'xaml-hidden-unknown-state' -Probe {
+Assert-MutationRejected -Name 'xaml-hidden-unknown-state' -ExpectedMessagePattern '^controller-probe 包含未批准状态引用: COS_CATEGORY_ACTUAL_UNKNOWN_ACTIVE$' -Probe {
     [void](Assert-UiPageContract -Content $hiddenStatusDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$wrongDirectionDocument = $controllerXaml
 $wrongDirectionButton = @(Get-XamlNamedNodes -Document $wrongDirectionDocument -Name 'COSPresetNearVanillaButton')[0]
 $wrongDirectionButton.SetAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code', 'COSPresetCancelButton')
-Assert-MutationRejected -Name 'controller-wrong-direction' -Probe {
+Assert-MutationRejected -Name 'controller-wrong-direction' -ExpectedMessagePattern '^controller-probe 手柄焦点方向错误: COSPresetNearVanillaButton Up$' -Probe {
     [void](Assert-UiPageContract -Content $wrongDirectionDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$missingDirectionDocument = $controllerXaml
 $missingDirectionButton = @(Get-XamlNamedNodes -Document $missingDirectionDocument -Name 'COSPresetNearVanillaButton')[0]
 $missingDirectionButton.RemoveAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code')
-Assert-MutationRejected -Name 'controller-missing-direction' -Probe {
+Assert-MutationRejected -Name 'controller-missing-direction' -ExpectedMessagePattern '^controller-probe 手柄焦点方向缺失: COSPresetNearVanillaButton Up$' -Probe {
     [void](Assert-UiPageContract -Content $missingDirectionDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2569,7 +2605,7 @@ $pureButton = @(Get-XamlNamedNodes -Document $buttonOrderDocument -Name 'COSPres
 Require ([object]::ReferenceEquals($nearButton.ParentNode, $pureButton.ParentNode)) '按钮顺序探针要求两个预设按钮同属一个容器'
 [void]$nearButton.ParentNode.RemoveChild($pureButton)
 [void]$nearButton.ParentNode.InsertBefore($pureButton, $nearButton)
-Assert-MutationRejected -Name 'controller-button-order' -Probe {
+Assert-MutationRejected -Name 'controller-button-order' -ExpectedMessagePattern '^controller-probe 按钮 节点顺序错误: COSPresetPureChaosButton$' -Probe {
     [void](Assert-UiPageContract -Content $buttonOrderDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2577,7 +2613,7 @@ Assert-MutationRejected -Name 'controller-button-order' -Probe {
 $currentNode = @(Get-XamlNamedNodes -Document $wrongBindingDocument -Name 'COSPresetCurrent')[0]
 $currentTrigger = @($currentNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
 $currentTrigger.SetAttribute('Binding', '{Binding Name.Str}')
-Assert-MutationRejected -Name 'xaml-wrong-status-binding' -Probe {
+Assert-MutationRejected -Name 'xaml-wrong-status-binding' -ExpectedMessagePattern '^controller-probe DataTrigger Binding 错误: COSPresetCurrent COS_PRESET_CURRENT_NEAR_VANILLA$' -Probe {
     [void](Assert-UiPageContract -Content $wrongBindingDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2585,7 +2621,7 @@ Assert-MutationRejected -Name 'xaml-wrong-status-binding' -Probe {
 $corePausedNode = @(Get-XamlNamedNodes -Document $crossPausedDocument -Name 'COSCategoryCorePausedOverlay')[0]
 $corePausedTrigger = @($corePausedNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
 $corePausedTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_ARMOR_PAUSED')
-Assert-MutationRejected -Name 'xaml-cross-category-paused' -Probe {
+Assert-MutationRejected -Name 'xaml-cross-category-paused' -ExpectedMessagePattern '^controller-probe 状态过滤集合或顺序错误: COSCategoryCorePausedOverlay$' -Probe {
     [void](Assert-UiPageContract -Content $crossPausedDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2605,7 +2641,7 @@ $textBlockTriggers = $movedCombatDocument.CreateElement('Style.Triggers', $moved
 [void]$textBlockStyleProperty.AppendChild($textBlockStyle)
 [void]$textBlock.AppendChild($textBlockStyleProperty)
 [void]$movedCombatPanel.AppendChild($textBlock)
-Assert-MutationRejected -Name 'xaml-combat-trigger-wrong-scope' -Probe {
+Assert-MutationRejected -Name 'xaml-combat-trigger-wrong-scope' -ExpectedMessagePattern '^controller-probe 战斗只读条件未覆盖 COSPresetPanel$' -Probe {
     [void](Assert-UiPageContract -Content $movedCombatDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -2623,7 +2659,12 @@ foreach ($language in @('English', 'Japanese', 'Korean')) {
     Require ($null -ne $targetNode) "本地化复制中文探针缺少真实节点: $language"
     $targetNode.InnerText = $chineseNode.InnerText
     $copyMutation[$language] = $targetDocument.OuterXml
-    Assert-MutationRejected -Name "$($language.ToLowerInvariant())-copies-chinese" -Probe {
+    $copyExpectedPattern = switch ($language) {
+        English { '^(?:英文语义不完整|English 缺少语义 token ''[^'']+''|English 直接复制中文): {0}$' -f [regex]::Escape($mutationHandle) }
+        Japanese { '^(?:日文必须包含日文假名|Japanese 缺少语义 token ''[^'']+''|Japanese 直接复制中文): {0}$' -f [regex]::Escape($mutationHandle) }
+        Korean { '^(?:韩文必须包含韩文字符|Korean 缺少语义 token ''[^'']+''|Korean 直接复制中文): {0}$' -f [regex]::Escape($mutationHandle) }
+    }
+    Assert-MutationRejected -Name "$($language.ToLowerInvariant())-copies-chinese" -ExpectedMessagePattern $copyExpectedPattern -Probe {
         Assert-LocalizationContract -ContentByLanguage $copyMutation -SemanticByHandle $semanticByHandle
     }
 }
@@ -2634,7 +2675,7 @@ foreach ($language in $localization.Keys) { $placeholderMutation[$language] = $l
 $placeholderNode = @($placeholderDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
 $placeholderNode.InnerText = 'A'
 $placeholderMutation.English = $placeholderDocument.OuterXml
-Assert-MutationRejected -Name 'localization-placeholder-a' -Probe {
+Assert-MutationRejected -Name 'localization-placeholder-a' -ExpectedMessagePattern ('^本地化文本不得使用占位符 A: English {0}$' -f [regex]::Escape($mutationHandle)) -Probe {
     Assert-LocalizationContract -ContentByLanguage $placeholderMutation -SemanticByHandle $semanticByHandle
 }
 
