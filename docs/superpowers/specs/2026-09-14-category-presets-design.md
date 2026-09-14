@@ -70,7 +70,7 @@ Story 使用角色级别的分类数据库作为配置真值，例如 `DB_COS_Co
 2. 角色存在任意现有配置记录时，按旧角色处理。Story 将七个分类全部初始化为开启，使 `.98` 的实际行为保持不变，且不改写已有生活技能加值。
 3. 角色只有部分现有记录时，仍按旧角色处理。Story 不为缺失的旧字段猜测值；运行诊断继续报告明确缺口。
 
-“现有配置记录”指以下任意数据库存在该角色的行：`DB_COS_ConfigMechanic`、`DB_COS_ConfigLifeSkill`、`DB_COS_ConfigCost`、`DB_COS_ConfigRacial`、`DB_COS_GrantSetting`、`DB_COS_TagSpellsSetting`、`DB_COS_VoloEyeSetting` 或 `DB_COS_CarrySetting`。实施验证器必须锁定这个精确集合。
+“现有配置记录”指以下任意数据库存在该角色的行：`DB_COS_ConfigMechanic`、`DB_COS_ConfigLifeSkill`、`DB_COS_ConfigCost`、`DB_COS_ConfigRacial`、`DB_COS_GrantSetting`、`DB_COS_TagSpellsSetting`、`DB_COS_VoloEyeSetting` 或 `DB_COS_CarryEnabled`。实施验证器必须锁定这个精确集合。
 
 ## 菜单结构
 

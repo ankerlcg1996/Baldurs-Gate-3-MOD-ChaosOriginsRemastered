@@ -132,12 +132,12 @@ $categories = [ordered]@{
 $legacyTables = @(
     'DB_COS_ConfigMechanic', 'DB_COS_ConfigLifeSkill', 'DB_COS_ConfigCost',
     'DB_COS_ConfigRacial', 'DB_COS_GrantSetting', 'DB_COS_TagSpellsSetting',
-    'DB_COS_VoloEyeSetting', 'DB_COS_CarrySetting'
+    'DB_COS_VoloEyeSetting', 'DB_COS_CarryEnabled'
 )
 $presetOrder = @('AllConvenience', 'Balanced', 'NearVanilla', 'PureChaos', 'Custom')
 $forbiddenPresetWrites = @(
     'DB_COS_ConfigMechanic', 'DB_COS_ConfigRacial', 'DB_COS_GrantSetting',
-    'DB_COS_TagSpellsSetting', 'DB_COS_VoloEyeSetting', 'DB_COS_CarrySetting',
+    'DB_COS_TagSpellsSetting', 'DB_COS_VoloEyeSetting', 'DB_COS_CarryEnabled',
     'DB_COS_ConfigCost'
 )
 
@@ -316,7 +316,7 @@ DB_COS_ConfigRacial
 DB_COS_GrantSetting
 DB_COS_TagSpellsSetting
 DB_COS_VoloEyeSetting
-DB_COS_CarrySetting
+DB_COS_CarryEnabled
 ```
 
 Do not inspect mirror passives, resources, tags, statuses, level, party membership, or runtime diagnostic DBs to classify the save.
@@ -366,7 +366,7 @@ IsInCombat(_Character, 0)
 DB_COS_ConfigCategorySchema(_Character, 1)
 ```
 
-Then toggle only the matching `DB_COS_ConfigCategory` row, call one unified sync, recalculate the preset, and refresh diagnostics.
+At this stage, toggle only the matching `DB_COS_ConfigCategory` row, call one unified sync, and refresh diagnostics. Task 4 inserts actual-state recalculation after the sync; Task 5 then inserts preset recalculation before actual-state recalculation. The final order remains unified sync, preset detection, actual-state refresh, diagnostics.
 
 - [ ] Add all seven events to `PROC_COS_ConfigEnableEvents` and verify repeat calls remain idempotent.
 
@@ -375,7 +375,7 @@ Then toggle only the matching `DB_COS_ConfigCategory` row, call one unified sync
 - [ ] Run:
 
 ```powershell
-pwsh -NoProfile -File .\verify-category-presets.ps1
+pwsh -NoProfile -File .\verify-category-presets.ps1 -Focus Task3
 pwsh -NoProfile -File .\compile-story.ps1
 ```
 
@@ -425,7 +425,7 @@ Never clear a tag or passive without the module’s existing ownership/mirror pr
 
 ```text
 DB_COS_TagSpellsSetting
-DB_COS_CarrySetting
+DB_COS_CarryEnabled
 DB_COS_VoloEyeSetting
 COS_FIXED_GUIDANCE_30
 ```
@@ -445,6 +445,8 @@ otherwise -> ACTIVE
 ```
 
 Apply exactly one actual-state status per category StackId.
+
+- [ ] Extend `PROC_COS_ConfigToggleCategory` by inserting `PROC_COS_ConfigSyncCategoryActual(_Character)` after the unified sync and before diagnostics. Do not add preset detection in this task.
 
 - [ ] Extend tests to parse all runtime `DB_COS_ConfigMechanic(..., 1)` consumers and require the Core guard, prove category-off child DB text remains byte-for-byte unchanged, prove `Instrument` is unchanged, and prove unowned tags/passives cannot enter a removal action.
 
@@ -516,7 +518,7 @@ refresh runtime diagnostics
 
 - [ ] Apply explicit errors. No pending preset produces `COS_PRESET_ERROR_NO_SELECTION`; combat attempts produce `COS_PRESET_ERROR_COMBAT_READONLY`; missing required records produce `COS_PRESET_ERROR_CONFIG_INCOMPLETE`; a post-sync mismatch produces `COS_PRESET_ERROR_SYNC_FAILED` and retains the mismatch scratch row for diagnostics.
 
-- [ ] In `PROC_COS_ConfigSyncCharacter`, menu-open handling, category toggles, and life-skill changes, recalculate the current preset after the effective state is synchronized. Reopening the menu and `GainedControl` clear stale pending preview before presenting the new controlled character.
+- [ ] In `PROC_COS_ConfigSyncCharacter`, menu-open handling, category toggles, and life-skill changes, recalculate the current preset after the effective state is synchronized. For `PROC_COS_ConfigToggleCategory`, insert `PROC_COS_PresetDetect(_Character)` between the unified sync and the Task 4 actual-state call, yielding the final fixed order: unified sync, preset detection, actual-state refresh, diagnostics. Reopening the menu and `GainedControl` clear stale pending preview before presenting the new controlled character.
 
 - [ ] Extend verifier AST/block checks so every `PROC_COS_Preset*` action is on an allowlist. Preset application may mutate only category rows, life rows, preset scratch/status rows, actual-state rows, and runtime diagnostic rows. Reject writes to the seven forbidden child/config-cost tables listed in Task 1.
 

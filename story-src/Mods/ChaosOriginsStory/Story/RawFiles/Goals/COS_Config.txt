@@ -486,6 +486,338 @@ PROC_COS_RuntimeDiagnosticCheckConfig(_Character);
 PROC_COS_RuntimeDiagnosticCheckMirrors(_Character);
 PROC_COS_RuntimeDiagnosticResolve(_Character);
 
+// Category master-switch maps are seeded through guarded rules so upgraded saves receive them exactly once.
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")
+THEN
+DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("Origin", "COS_CFG_CATEGORY_ORIGIN")
+THEN
+DB_COS_ConfigCategoryMap("Origin", "COS_CFG_CATEGORY_ORIGIN");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("RaceTags", "COS_CFG_CATEGORY_RACETAGS")
+THEN
+DB_COS_ConfigCategoryMap("RaceTags", "COS_CFG_CATEGORY_RACETAGS");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("WeaponProficiencies", "COS_CFG_CATEGORY_WEAPON")
+THEN
+DB_COS_ConfigCategoryMap("WeaponProficiencies", "COS_CFG_CATEGORY_WEAPON");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("ArmorProficiencies", "COS_CFG_CATEGORY_ARMOR")
+THEN
+DB_COS_ConfigCategoryMap("ArmorProficiencies", "COS_CFG_CATEGORY_ARMOR");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("RacialAbilities", "COS_CFG_CATEGORY_RACIAL")
+THEN
+DB_COS_ConfigCategoryMap("RacialAbilities", "COS_CFG_CATEGORY_RACIAL");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryMap("Convenience", "COS_CFG_CATEGORY_CONVENIENCE")
+THEN
+DB_COS_ConfigCategoryMap("Convenience", "COS_CFG_CATEGORY_CONVENIENCE");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000001, "Core")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000001, "Core");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000002, "Origin")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000002, "Origin");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000003, "RaceTags")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000003, "RaceTags");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000004, "WeaponProficiencies")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000004, "WeaponProficiencies");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000005, "ArmorProficiencies")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000005, "ArmorProficiencies");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000006, "RacialAbilities")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000006, "RacialAbilities");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000007, "Convenience")
+THEN
+DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000007, "Convenience");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_ConfigMechanic")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_ConfigMechanic");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_ConfigLifeSkill")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_ConfigLifeSkill");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_ConfigCost")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_ConfigCost");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_ConfigRacial")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_ConfigRacial");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_GrantSetting")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_GrantSetting");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_TagSpellsSetting")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_TagSpellsSetting");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_VoloEyeSetting")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_VoloEyeSetting");
+
+PROC
+PROC_COS_ConfigSeedCategories()
+AND
+NOT DB_COS_ConfigLegacyTable("DB_COS_CarryEnabled")
+THEN
+DB_COS_ConfigLegacyTable("DB_COS_CarryEnabled");
+
+PROC
+PROC_COS_ConfigDetectPreexisting((CHARACTER)_Character)
+THEN
+NOT DB_COS_ConfigPreexisting(_Character);
+PROC_COS_ConfigProbeLegacyMechanic(_Character);
+PROC_COS_ConfigProbeLegacyLifeSkill(_Character);
+PROC_COS_ConfigProbeLegacyCost(_Character);
+PROC_COS_ConfigProbeLegacyRacial(_Character);
+PROC_COS_ConfigProbeLegacyGrant(_Character);
+PROC_COS_ConfigProbeLegacyTagSpells(_Character);
+PROC_COS_ConfigProbeLegacyVoloEye(_Character);
+PROC_COS_ConfigProbeLegacyCarry(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyMechanic((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_ConfigMechanic(_Character, _, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyLifeSkill((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_ConfigLifeSkill(_Character, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyCost((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_ConfigCost(_Character, _, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyRacial((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_ConfigRacial(_Character, _, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyGrant((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_GrantSetting(_Character, _, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyTagSpells((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_TagSpellsSetting(_Character, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyVoloEye((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_VoloEyeSetting(_Character, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigProbeLegacyCarry((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+AND
+DB_COS_CarryEnabled(_Character, _)
+THEN
+DB_COS_ConfigPreexisting(_Character);
+
+PROC
+PROC_COS_ConfigInitializeCategories((CHARACTER)_Character)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+NOT DB_COS_ConfigCategorySchema(_Character, _)
+THEN
+PROC_COS_ConfigDetectPreexisting(_Character);
+PROC_COS_ConfigInitializeNew(_Character);
+PROC_COS_ConfigInitializeLegacy(_Character);
+PROC_COS_ConfigCommitCategorySchema(_Character);
+
+PROC
+PROC_COS_ConfigInitializeNew((CHARACTER)_Character)
+AND
+NOT DB_COS_ConfigPreexisting(_Character)
+THEN
+PROC_COS_ConfigInitCategory(_Character, "Core", 0);
+PROC_COS_ConfigInitCategory(_Character, "Origin", 1);
+PROC_COS_ConfigInitCategory(_Character, "RaceTags", 0);
+PROC_COS_ConfigInitCategory(_Character, "WeaponProficiencies", 0);
+PROC_COS_ConfigInitCategory(_Character, "ArmorProficiencies", 0);
+PROC_COS_ConfigInitCategory(_Character, "RacialAbilities", 0);
+PROC_COS_ConfigInitCategory(_Character, "Convenience", 0);
+DB_COS_ConfigLifeSkill(_Character, 0);
+
+PROC
+PROC_COS_ConfigInitializeLegacy((CHARACTER)_Character)
+AND
+DB_COS_ConfigPreexisting(_Character)
+THEN
+PROC_COS_ConfigInitCategory(_Character, "Core", 1);
+PROC_COS_ConfigInitCategory(_Character, "Origin", 1);
+PROC_COS_ConfigInitCategory(_Character, "RaceTags", 1);
+PROC_COS_ConfigInitCategory(_Character, "WeaponProficiencies", 1);
+PROC_COS_ConfigInitCategory(_Character, "ArmorProficiencies", 1);
+PROC_COS_ConfigInitCategory(_Character, "RacialAbilities", 1);
+PROC_COS_ConfigInitCategory(_Character, "Convenience", 1);
+
+PROC
+PROC_COS_ConfigInitCategory((CHARACTER)_Character, (STRING)_Category, (INTEGER)_Value)
+AND
+NOT DB_COS_ConfigCategory(_Character, _Category, _)
+THEN
+DB_COS_ConfigCategory(_Character, _Category, _Value);
+
+PROC
+PROC_COS_ConfigCommitCategorySchema((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", _Core)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", _Origin)
+AND
+DB_COS_ConfigCategory(_Character, "RaceTags", _RaceTags)
+AND
+DB_COS_ConfigCategory(_Character, "WeaponProficiencies", _WeaponProficiencies)
+AND
+DB_COS_ConfigCategory(_Character, "ArmorProficiencies", _ArmorProficiencies)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", _RacialAbilities)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", _Convenience)
+AND
+NOT DB_COS_ConfigCategorySchema(_Character, _)
+THEN
+DB_COS_ConfigCategorySchema(_Character, 1);
+
+PROC
+PROC_COS_ConfigAddEnabledCategoryMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+DB_COS_ConfigCategoryMap(_Category, _Passive)
+THEN
+AddPassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigRemoveDisabledCategoryMirrors((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 0)
+AND
+DB_COS_ConfigCategoryMap(_Category, _Passive)
+THEN
+RemovePassive(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigSyncCategoryMirrors((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigSeedCategories();
+PROC_COS_ConfigAddEnabledCategoryMirrors(_Character);
+PROC_COS_ConfigRemoveDisabledCategoryMirrors(_Character);
+
 PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
 AND
@@ -559,6 +891,13 @@ PROC
 PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
 AND
 DB_COS_ConfigRacialBulkEvent(_Event, _Enabled)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryEvent(_Event, _Key)
 THEN
 EnableTutorialEvent(_Character, _Event);
 
@@ -762,6 +1101,8 @@ PROC_COS_ConfigApplyRacialPassive(_Character, _Passive, _Enabled);
 PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
+PROC_COS_ConfigInitializeCategories(_Character);
+PROC_COS_ConfigSyncCategoryMirrors(_Character);
 PROC_COS_SyncGlobalPlayerBenefits(_Character);
 PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_SyncVoloEye(_Character);
@@ -779,6 +1120,18 @@ PROC_COS_ConfigSyncLifeSkill(_Character);
 PROC_COS_ConfigSyncCosts(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
 PROC_COS_SyncOverview(_Character);
+
+PROC
+PROC_COS_ConfigToggleCategory((CHARACTER)_Character, (STRING)_Key)
+AND
+DB_COS_ConfigCategory(_Character, _Key, _Current)
+AND
+IntegerSubtract(1, _Current, _Next)
+THEN
+NOT DB_COS_ConfigCategory(_Character, _Key, _Current);
+DB_COS_ConfigCategory(_Character, _Key, _Next);
+PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 PROC
 PROC_COS_EnsureFixedGuidance((CHARACTER)_Character)
@@ -917,6 +1270,21 @@ DB_COS_ConfigMechanic(_Character, _Key, _Default);
 PROC_COS_ConfigApplyMechanic(_Character, _Key, _Default);
 PROC_COS_SyncFateToggle(_Character);
 PROC_COS_SyncOverview(_Character);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_ConfigCategoryEvent(_Event, _Key)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+PROC_COS_ConfigToggleCategory(_Character, _Key);
 
 IF
 TutorialEvent(_Character, _Event)

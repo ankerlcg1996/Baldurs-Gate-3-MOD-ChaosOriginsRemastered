@@ -1,7 +1,10 @@
 #requires -Version 7.0
 
 param(
-    [string]$Root = $PSScriptRoot
+    [string]$Root = $PSScriptRoot,
+
+    [ValidateSet('All', 'Task3')]
+    [string]$Focus = 'All'
 )
 
 class CategoryPresetContractException : System.Exception {
@@ -798,7 +801,7 @@ function Assert-CategoryInitializationContract {
         'DB_COS_GrantSetting',
         'DB_COS_TagSpellsSetting',
         'DB_COS_VoloEyeSetting',
-        'DB_COS_CarrySetting'
+        'DB_COS_CarryEnabled'
     )
     foreach ($action in $legacyModels[0].Actions) {
         foreach ($table in $forbiddenLegacyWrites) {
@@ -914,7 +917,9 @@ function Assert-EventGuardContract {
 function Assert-CategoryToggleContract {
     param(
         [Parameter(Mandatory)]
-        [string]$Content
+        [string]$Content,
+
+        [switch]$Task3Stage
     )
 
     $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigToggleCategory')
@@ -923,14 +928,133 @@ function Assert-CategoryToggleContract {
         'DB_COS_ConfigCategory(_Character, _Key, _Current)',
         'IntegerSubtract(1, _Current, _Next)'
     ) -Context '分类切换过程'
-    Require-ExactActions -Model $models[0] -Expected @(
+    $expectedActions = @(
         'NOT DB_COS_ConfigCategory(_Character, _Key, _Current);',
         'DB_COS_ConfigCategory(_Character, _Key, _Next);',
-        'PROC_COS_ConfigSyncCharacter(_Character);',
-        'PROC_COS_PresetDetect(_Character);',
-        'PROC_COS_ConfigSyncCategoryActual(_Character);',
-        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
-    ) -Context '分类切换过程'
+        'PROC_COS_ConfigSyncCharacter(_Character);'
+    )
+    if (-not $Task3Stage) {
+        $expectedActions += @(
+            'PROC_COS_PresetDetect(_Character);',
+            'PROC_COS_ConfigSyncCategoryActual(_Character);'
+        )
+    }
+    $expectedActions += 'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    Require-ExactActions -Model $models[0] -Expected $expectedActions -Context '分类切换过程'
+}
+
+function Assert-CategorySeedContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ExpectedCategories,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ExpectedEvents,
+
+        [Parameter(Mandatory)]
+        [string[]]$ExpectedLegacyTables
+    )
+
+    $expectedRows = @(
+        foreach ($category in $ExpectedCategories.Keys) {
+            "DB_COS_ConfigCategoryMap(`"$category`", `"$($ExpectedCategories[$category])`")"
+        }
+        foreach ($category in $ExpectedEvents.Keys) {
+            "DB_COS_ConfigCategoryEvent((TUTORIALEVENT)$($ExpectedEvents[$category]), `"$category`")"
+        }
+        foreach ($table in $ExpectedLegacyTables) {
+            "DB_COS_ConfigLegacyTable(`"$table`")"
+        }
+    )
+
+    $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSeedCategories')
+    Require ($models.Count -eq $expectedRows.Count) "分类 seed 规则数量错误: 期望 $($expectedRows.Count)，实际 $($models.Count)"
+    $actualRows = [System.Collections.Generic.List[string]]::new()
+    foreach ($model in $models) {
+        Require ($model.Conditions.Count -eq 1) '分类 seed 每条规则必须只有一个幂等条件'
+        Require ($model.Actions.Count -eq 1) '分类 seed 每条规则必须只有一个数据动作'
+        $action = $model.Actions[0]
+        Require ($action.EndsWith(';', [System.StringComparison]::Ordinal)) '分类 seed 动作缺少分号'
+        $row = $action.Substring(0, $action.Length - 1)
+        Require ($model.Conditions[0] -ceq "NOT $row") "分类 seed 幂等条件与数据动作不匹配: $row"
+        $actualRows.Add($row)
+    }
+    Require (Test-ExactOrdinalSet -Actual @($actualRows.ToArray()) -Expected $expectedRows) '分类 seed 数据集合不精确'
+}
+
+function Assert-CategoryMirrorContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $enabledModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigAddEnabledCategoryMirrors')
+    Require ($enabledModels.Count -eq 1) '开启分类镜像规则必须唯一'
+    Require-ExactConditions -Model $enabledModels[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, _Category, 1)',
+        'DB_COS_ConfigCategoryMap(_Category, _Passive)'
+    ) -Context '开启分类镜像'
+    Require-ExactActions -Model $enabledModels[0] -Expected @(
+        'AddPassive(_Character, _Passive);'
+    ) -Context '开启分类镜像'
+
+    $disabledModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigRemoveDisabledCategoryMirrors')
+    Require ($disabledModels.Count -eq 1) '关闭分类镜像规则必须唯一'
+    Require-ExactConditions -Model $disabledModels[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, _Category, 0)',
+        'DB_COS_ConfigCategoryMap(_Category, _Passive)'
+    ) -Context '关闭分类镜像'
+    Require-ExactActions -Model $disabledModels[0] -Expected @(
+        'RemovePassive(_Character, _Passive);'
+    ) -Context '关闭分类镜像'
+
+    $syncModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCategoryMirrors')
+    Require ($syncModels.Count -eq 1) '分类镜像同步过程必须唯一'
+    Require-ExactConditions -Model $syncModels[0] -Expected @() -Context '分类镜像同步'
+    Require-ExactActions -Model $syncModels[0] -Expected @(
+        'PROC_COS_ConfigSeedCategories();',
+        'PROC_COS_ConfigAddEnabledCategoryMirrors(_Character);',
+        'PROC_COS_ConfigRemoveDisabledCategoryMirrors(_Character);'
+    ) -Context '分类镜像同步'
+}
+
+function Assert-CategoryEventContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $enableModels = @(
+        Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigEnableEvents' |
+            Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCategoryEvent(_Event, _Key)' }
+    )
+    Require ($enableModels.Count -eq 1) '分类 TutorialEvent 启用规则必须唯一'
+    Require-ExactConditions -Model $enableModels[0] -Expected @(
+        'DB_COS_ConfigCategoryEvent(_Event, _Key)'
+    ) -Context '分类 TutorialEvent 启用'
+    Require-ExactActions -Model $enableModels[0] -Expected @(
+        'EnableTutorialEvent(_Character, _Event);'
+    ) -Context '分类 TutorialEvent 启用'
+
+    $eventModels = @(
+        Get-OsirisRuleModels -Content $Content |
+            Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_ConfigCategoryEvent(_Event, _Key)' }
+    )
+    Require ($eventModels.Count -eq 1) '分类修改事件处理规则必须唯一'
+    Require-ExactConditions -Model $eventModels[0] -Expected @(
+        'TutorialEvent(_Character, _Event)',
+        'DB_COS_ConfigCategoryEvent(_Event, _Key)',
+        'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
+        'IsControlled(_Character, 1)',
+        'IsInCombat(_Character, 0)',
+        'DB_COS_ConfigCategorySchema(_Character, 1)'
+    ) -Context '分类修改事件'
+    Require-ExactActions -Model $eventModels[0] -Expected @(
+        'PROC_COS_ConfigToggleCategory(_Character, _Key);'
+    ) -Context '分类切换事件'
 }
 
 function Assert-PresetWorkflowContract {
@@ -1036,7 +1160,7 @@ function Assert-PresetWriteContract {
         'DB_COS_GrantSetting',
         'DB_COS_TagSpellsSetting',
         'DB_COS_VoloEyeSetting',
-        'DB_COS_CarrySetting',
+        'DB_COS_CarryEnabled',
         'DB_COS_ConfigCost'
     )
     $staticTables = @(
@@ -1997,8 +2121,111 @@ $categories = [ordered]@{
     Convenience = 'COS_CFG_CATEGORY_CONVENIENCE'
 }
 
+$task3LegacyProbes = [ordered]@{
+    DB_COS_ConfigMechanic = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyMechanic'; Arity = 3 }
+    DB_COS_ConfigLifeSkill = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyLifeSkill'; Arity = 2 }
+    DB_COS_ConfigCost = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyCost'; Arity = 3 }
+    DB_COS_ConfigRacial = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyRacial'; Arity = 3 }
+    DB_COS_GrantSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyGrant'; Arity = 3 }
+    DB_COS_TagSpellsSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyTagSpells'; Arity = 2 }
+    DB_COS_VoloEyeSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyVoloEye'; Arity = 2 }
+    DB_COS_CarryEnabled = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyCarry'; Arity = 2 }
+}
+$task3CategoryEvents = [ordered]@{
+    Core = '7e990000-0000-4000-8000-000000000001'
+    Origin = '7e990000-0000-4000-8000-000000000002'
+    RaceTags = '7e990000-0000-4000-8000-000000000003'
+    WeaponProficiencies = '7e990000-0000-4000-8000-000000000004'
+    ArmorProficiencies = '7e990000-0000-4000-8000-000000000005'
+    RacialAbilities = '7e990000-0000-4000-8000-000000000006'
+    Convenience = '7e990000-0000-4000-8000-000000000007'
+}
+$task3NewCategories = [ordered]@{
+    Core = 0
+    Origin = 1
+    RaceTags = 0
+    WeaponProficiencies = 0
+    ArmorProficiencies = 0
+    RacialAbilities = 0
+    Convenience = 0
+}
+$task3LegacyCategories = [ordered]@{
+    Core = 1
+    Origin = 1
+    RaceTags = 1
+    WeaponProficiencies = 1
+    ArmorProficiencies = 1
+    RacialAbilities = 1
+    Convenience = 1
+}
+
 Assert-OsirisParserContract
 Assert-MutationHarnessContract
+
+if ($Focus -ceq 'Task3') {
+    Assert-CategoryMappingContract -Content $config -ExpectedCategories $categories
+    Assert-LegacyDetectionContract -Content $config -ExpectedProbes $task3LegacyProbes
+    Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($task3LegacyProbes.Keys)
+    Assert-CategoryInitializationContract -Content $config -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    Assert-CategoryMirrorContract -Content $config
+    Assert-CategoryEventContract -Content $config
+    Assert-CategoryToggleContract -Content $config -Task3Stage
+
+    $newInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeNew')[0]
+    $newLifeMutationBlock = Replace-FirstLiteral -Content $newInitModel.Block -OldValue 'DB_COS_ConfigLifeSkill(_Character, 0);' -NewValue 'DB_COS_ConfigLifeSkill(_Character, 5);' -ProbeName 'task3-new-life-not-zero'
+    $newLifeMutation = Replace-RuleBlock -Content $config -OldBlock $newInitModel.Block -NewBlock $newLifeMutationBlock -ProbeName 'task3-new-life-not-zero'
+    Assert-MutationRejected -Name 'task3-new-life-not-zero' -ExpectedMessagePattern '^新角色分类初始化 THEN 动作序列不精确$' -Probe {
+        Assert-CategoryInitializationContract -Content $newLifeMutation -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    }
+
+    $legacyInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeLegacy')[0]
+    $legacyLifeMutationBlock = Replace-FirstLiteral -Content $legacyInitModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigLifeSkill(_Character, 0);" -ProbeName 'task3-legacy-life-write'
+    $legacyLifeMutation = Replace-RuleBlock -Content $config -OldBlock $legacyInitModel.Block -NewBlock $legacyLifeMutationBlock -ProbeName 'task3-legacy-life-write'
+    Assert-MutationRejected -Name 'task3-legacy-life-write' -ExpectedMessagePattern '^旧角色分类初始化 THEN 动作序列不精确$' -Probe {
+        Assert-CategoryInitializationContract -Content $legacyLifeMutation -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    }
+
+    $commitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigCommitCategorySchema')[0]
+    $sixRowCondition = @($commitModel.Conditions | Where-Object { $_ -match '^DB_COS_ConfigCategory\(_Character, "Convenience", ' })[0]
+    $sixRowBlock = Replace-FirstLiteral -Content $commitModel.Block -OldValue $sixRowCondition -NewValue "// mutation: removed seventh category row" -ProbeName 'task3-schema-six-rows'
+    $sixRowMutation = Replace-RuleBlock -Content $config -OldBlock $commitModel.Block -NewBlock $sixRowBlock -ProbeName 'task3-schema-six-rows'
+    Assert-MutationRejected -Name 'task3-schema-six-rows' -ExpectedMessagePattern '^分类 schema 提交条件行数错误: 期望 8，实际 7$' -Probe {
+        Assert-CategoryInitializationContract -Content $sixRowMutation -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    }
+
+    $rowModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitCategory')[0]
+    $rewriteBlock = Replace-FirstLiteral -Content $rowModel.Block -OldValue 'NOT DB_COS_ConfigCategory(_Character, _Category, _)' -NewValue 'DB_COS_ConfigCategory(_Character, _Category, _)' -ProbeName 'task3-second-init-rewrite'
+    $rewriteMutation = Replace-RuleBlock -Content $config -OldBlock $rowModel.Block -NewBlock $rewriteBlock -ProbeName 'task3-second-init-rewrite'
+    Assert-MutationRejected -Name 'task3-second-init-rewrite' -ExpectedMessagePattern '^分类单行初始化 条件集合不精确$' -Probe {
+        Assert-CategoryInitializationContract -Content $rewriteMutation -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    }
+
+    $partialProbeName = $task3LegacyProbes.DB_COS_ConfigMechanic.Procedure
+    $partialProbeModel = @(Get-ProcedureModels -Content $config -Name $partialProbeName)[0]
+    $partialProbeBlock = Replace-FirstLiteral -Content $partialProbeModel.Block -OldValue 'THEN' -NewValue "AND`nDB_COS_ConfigLifeSkill(_Character, _)`nTHEN" -ProbeName 'task3-partial-legacy-requires-two-tables'
+    $partialProbeMutation = Replace-RuleBlock -Content $config -OldBlock $partialProbeModel.Block -NewBlock $partialProbeBlock -ProbeName 'task3-partial-legacy-requires-two-tables'
+    Assert-MutationRejected -Name 'task3-partial-legacy-requires-two-tables' -ExpectedMessagePattern '^旧档 probe 条件集合不精确: DB_COS_ConfigMechanic$' -Probe {
+        Assert-LegacyDetectionContract -Content $partialProbeMutation -ExpectedProbes $task3LegacyProbes
+    }
+
+    $disabledMirrorModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigRemoveDisabledCategoryMirrors')[0]
+    $missingAsDisabledBlock = Replace-FirstLiteral -Content $disabledMirrorModel.Block -OldValue 'DB_COS_ConfigCategory(_Character, _Category, 0)' -NewValue 'NOT DB_COS_ConfigCategory(_Character, _Category, 1)' -ProbeName 'task3-missing-category-defaults-off'
+    $missingAsDisabledMutation = Replace-RuleBlock -Content $config -OldBlock $disabledMirrorModel.Block -NewBlock $missingAsDisabledBlock -ProbeName 'task3-missing-category-defaults-off'
+    Assert-MutationRejected -Name 'task3-missing-category-defaults-off' -ExpectedMessagePattern '^关闭分类镜像 条件集合不精确$' -Probe {
+        Assert-CategoryMirrorContract -Content $missingAsDisabledMutation
+    }
+
+    $toggleModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigToggleCategory')[0]
+    $toggleWriteBlock = Replace-FirstLiteral -Content $toggleModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 999);" -ProbeName 'task3-category-toggle-child-write'
+    $toggleWriteMutation = Replace-RuleBlock -Content $config -OldBlock $toggleModel.Block -NewBlock $toggleWriteBlock -ProbeName 'task3-category-toggle-child-write'
+    Assert-MutationRejected -Name 'task3-category-toggle-child-write' -ExpectedMessagePattern '^分类切换过程 THEN 动作序列不精确$' -Probe {
+        Assert-CategoryToggleContract -Content $toggleWriteMutation -Task3Stage
+    }
+
+    Write-Output 'Task 3 category persistence contract: PASS'
+    Write-Output 'Task 3 mutation probes: new=PASS; legacy=PASS; partial=PASS; schema=PASS; idempotence=PASS; missing-row=PASS; toggle=PASS'
+    exit 0
+}
 
 # Fail first here on the .98 baseline. Later contracts must not mask a missing category implementation.
 Assert-CategoryMappingContract -Content $config -ExpectedCategories $categories
@@ -2011,7 +2238,7 @@ $legacyProbes = [ordered]@{
     DB_COS_GrantSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyGrant'; Arity = 3 }
     DB_COS_TagSpellsSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyTagSpells'; Arity = 2 }
     DB_COS_VoloEyeSetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyVoloEye'; Arity = 2 }
-    DB_COS_CarrySetting = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyCarry'; Arity = 2 }
+    DB_COS_CarryEnabled = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyCarry'; Arity = 2 }
 }
 Assert-LegacyDetectionContract -Content $config -ExpectedProbes $legacyProbes
 
