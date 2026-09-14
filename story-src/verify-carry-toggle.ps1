@@ -25,7 +25,7 @@ Assert-Carry (-not $g.Contains('SetWeight') -and -not $g.Contains('AddBoosts')) 
 foreach ($eventName in @('LevelGameplayStarted', 'GainedControl', 'CharacterJoinedParty', 'RespecCompleted')) { Assert-Carry ($g.Contains("$eventName(")) "原同步生命周期丢失: $eventName" }
 $config = (Get-Content (Join-Path $PSScriptRoot 'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt') -Raw).Replace("`r`n","`n")
 $configSync = [regex]::Match($config, '(?ms)^PROC\nPROC_COS_ConfigSyncCharacter\(\(CHARACTER\)_Character\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)').Value
-$expectedCarrySyncPrefix = "PROC`nPROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_SeedGrantMap();`nPROC_COS_CaptureLegacyOriginOwnership(_Character);`nPROC_COS_ConfigSyncCategoryMirrors(_Character);`nPROC_COS_SyncBaseAfterCreation(_Character);`nPROC_COS_SyncGlobalPlayerBenefits(_Character);"
+$expectedCarrySyncPrefix = "PROC`nPROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_SeedGrantMap();`nPROC_COS_PresetSeed();`nPROC_COS_CaptureLegacyOriginOwnership(_Character);`nPROC_COS_ConfigSyncCategoryMirrors(_Character);`nPROC_COS_SyncBaseAfterCreation(_Character);`nPROC_COS_SyncGlobalPlayerBenefits(_Character);"
 Assert-Carry ($configSync.StartsWith($expectedCarrySyncPrefix, [System.StringComparison]::Ordinal)) '打开菜单必须先初始化分类，再按固定顺序同步分类镜像、基础效果与负重'
 Assert-Carry ([regex]::Matches($configSync, '(?m)^PROC_COS_SyncGlobalPlayerBenefits\(_Character\);$').Count -eq 1) '统一角色同步必须且只能调用一次负重同步'
 $mirror = (Get-CarryRules 'PROC_COS_SyncCarryMirror') -join "`n"

@@ -3,7 +3,7 @@
 param(
     [string]$Root = $PSScriptRoot,
 
-    [ValidateSet('All', 'Task3', 'Task4')]
+    [ValidateSet('All', 'Task3', 'Task4', 'Task5')]
     [string]$Focus = 'All'
 )
 
@@ -620,16 +620,22 @@ function Assert-PresetDetectionOrderContract {
     )
 
     $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetDetect')
-    Require ($models.Count -eq 1) '预设检测调度规则必须唯一'
-    Require-ExactConditions -Model $models[0] -Expected @() -Context '预设检测调度'
+    Require ($models.Count -eq 2) '预设检测必须恰好包含 phase2 清理与调度两条规则'
+    $cleanup = @($models | Where-Object { $_.Actions -ccontains 'NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 2);' })
+    Require ($cleanup.Count -eq 1) '预设检测 phase2 清理规则缺失或重复'
+    Require-ExactConditions -Model $cleanup[0] -Expected @(
+        'DB_COS_PresetMismatch(_Character, _Preset, _Field, 2)'
+    ) -Context '预设检测 phase2 清理'
+    $dispatch = @($models | Where-Object { $_.Conditions.Count -eq 0 })
+    Require ($dispatch.Count -eq 1) '预设检测调度规则必须唯一'
+    Require-ExactConditions -Model $dispatch[0] -Expected @() -Context '预设检测调度'
     $expectedActions = @(
-        'NOT DB_COS_PresetMismatch(_Character, _, _, 2);'
         foreach ($preset in @($ExpectedOrder | Where-Object { $_ -cne 'Custom' })) {
             "PROC_COS_PresetValidate(_Character, `"$preset`", 2);"
         }
         'PROC_COS_PresetSetCurrent(_Character);'
     )
-    Require-ExactActions -Model $models[0] -Expected $expectedActions -Context '预设检测调度'
+    Require-ExactActions -Model $dispatch[0] -Expected $expectedActions -Context '预设检测调度'
 }
 
 function Assert-PresetMatrixContract {
@@ -681,6 +687,24 @@ function Assert-PresetMatrixContract {
     $expectedLifeRows = @($ExpectedLife.Keys | ForEach-Object { '{0}|{1}' -f $_, $ExpectedLife[$_] })
     Require ($actualLifeRows.Count -eq 4) "预设生活加值矩阵行数错误: 期望 4，实际 $($actualLifeRows.Count)"
     Require (Test-ExactOrdinalSet -Actual $actualLifeRows -Expected $expectedLifeRows) '预设生活加值矩阵不精确'
+}
+
+function Assert-PresetSeedGuardContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetSeed')
+    Require ($models.Count -gt 0) 'PresetSeed 规则集合缺失'
+    foreach ($model in $models) {
+        Require ($model.Conditions.Count -eq 1) 'PresetSeed 每条规则必须只有一个幂等条件'
+        Require ($model.Actions.Count -eq 1) 'PresetSeed 每条规则必须只有一个数据动作'
+        $action = $model.Actions[0]
+        Require ($action.EndsWith(';', [System.StringComparison]::Ordinal)) 'PresetSeed 动作缺少分号'
+        $row = $action.Substring(0, $action.Length - 1)
+        Require ($model.Conditions[0] -ceq "NOT $row") "PresetSeed 幂等条件与数据动作不匹配: $row"
+    }
 }
 
 function Assert-EventMapContract {
@@ -901,6 +925,23 @@ function Assert-EventGuardContract {
                     @($_.Conditions | Where-Object { $_.StartsWith($tablePrefix, [System.StringComparison]::Ordinal) }).Count -gt 0
                 }
         )
+        if ($family -ceq 'PresetApply') {
+            Require ($models.Count -eq 2) '预设应用必须有非战斗修改与战斗只读错误两条事件规则'
+            $combatModels = @($models | Where-Object { $_.Conditions -ccontains 'IsInCombat(_Character, 1)' })
+            Require ($combatModels.Count -eq 1) '预设应用战斗只读错误规则缺失或重复'
+            Require-ExactConditions -Model $combatModels[0] -Expected @(
+                'TutorialEvent(_Character, _Event)',
+                'DB_COS_PresetApplyEvent(_Event)',
+                'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
+                'IsControlled(_Character, 1)',
+                'IsInCombat(_Character, 1)',
+                'DB_COS_ConfigCategorySchema(_Character, 1)'
+            ) -Context '预设应用战斗只读错误'
+            Require-ExactActions -Model $combatModels[0] -Expected @(
+                'PROC_COS_PresetValidate(_Character, -1);'
+            ) -Context '预设应用战斗只读错误'
+            $models = @($models | Where-Object { $_.Conditions -ccontains 'IsInCombat(_Character, 0)' })
+        }
         Require ($models.Count -eq 1) "修改事件处理规则缺失或重复: $family"
         Require (@($models[0].Conditions | Where-Object { $_.StartsWith($tablePrefix, [System.StringComparison]::Ordinal) }).Count -eq 1) "修改事件映射条件不精确: $family"
         $expectedConditions = @(
@@ -939,6 +980,72 @@ function Assert-EventGuardContract {
             }
         }
     }
+}
+
+function Assert-PresetLifecycleContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $sync = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCharacter')
+    Require ($sync.Count -eq 1) '预设生命周期统一同步规则必须唯一'
+    Require (@($sync[0].Actions | Where-Object { $_ -ceq 'PROC_COS_PresetSeed();' }).Count -eq 1) '统一同步必须恰好 seed 一次预设静态表'
+    Require (@($sync[0].Actions | Where-Object { $_ -ceq 'PROC_COS_PresetDetect(_Character);' }).Count -eq 1) '统一同步必须恰好检测一次当前预设'
+    $seedIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_PresetSeed();')
+    $enableIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ConfigEnableEvents(_Character);')
+    $detectIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_PresetDetect(_Character);')
+    $lastProjectionIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_SyncOverview(_Character);')
+    Require ($seedIndex -ge 0 -and $seedIndex -lt $enableIndex) '预设静态表必须在启用菜单事件前 seed'
+    Require ($detectIndex -gt $lastProjectionIndex) '当前预设必须在有效状态同步完成后检测'
+
+    $enableModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigEnableEvents')
+    foreach ($table in @('DB_COS_PresetSelectEvent', 'DB_COS_PresetApplyEvent', 'DB_COS_PresetCancelEvent')) {
+        $matches = @($enableModels | Where-Object { @($_.Conditions | Where-Object { $_.StartsWith("$table(", [System.StringComparison]::Ordinal) }).Count -eq 1 })
+        Require ($matches.Count -eq 1) "预设事件启用规则缺失或重复: $table"
+        Require-ExactActions -Model $matches[0] -Expected @('EnableTutorialEvent(_Character, _Event);') -Context "预设事件启用 $table"
+    }
+
+    $openModels = @(Get-OsirisRuleModels -Content $Content | Where-Object {
+        $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_ConfigUiOpenedEvent(_Event)' -and $_.Conditions -ccontains 'HasPassive(_Character, "COS_ChaosOriginMarker", 1)'
+    })
+    Require ($openModels.Count -eq 1) '混沌角色菜单打开规则必须唯一'
+    Require-ExactActions -Model $openModels[0] -Expected @(
+        'PROC_COS_PresetClearPreview(_Character);',
+        'PROC_COS_ConfigSyncCharacter(_Character);',
+        'PROC_COS_PresetDetect(_Character);',
+        'PROC_COS_ConfigSyncCategoryActual(_Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);',
+        'PROC_COS_ShowLastFate(_Character);'
+    ) -Context '菜单打开预设刷新'
+
+    $controlModels = @(Get-OsirisRuleModels -Content $Content | Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'GainedControl(_Character)' })
+    Require ($controlModels.Count -eq 1) 'GainedControl 预设刷新规则必须唯一'
+    Require-ExactActions -Model $controlModels[0] -Expected @(
+        'PROC_COS_PresetClearPreview(_Character);',
+        'PROC_COS_ConfigSyncCharacter(_Character);',
+        'PROC_COS_PresetDetect(_Character);',
+        'PROC_COS_ConfigSyncCategoryActual(_Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    ) -Context 'GainedControl 预设刷新'
+
+    $eventModels = @(Get-OsirisRuleModels -Content $Content | Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'TutorialEvent(_Character, _Event)' })
+    $lifeStep = @($eventModels | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigLifeStepEvent(_Event, _Delta)' })
+    Require ($lifeStep.Count -eq 1) '生活加值步进事件必须唯一'
+    Require-ExactActions -Model $lifeStep[0] -Expected @(
+        'PROC_COS_ConfigStepLifeSkill(_Character, _Delta);',
+        'PROC_COS_PresetDetect(_Character);',
+        'PROC_COS_ConfigSyncCategoryActual(_Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    ) -Context '生活加值步进后预设刷新'
+    $lifeReset = @($eventModels | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigLifeResetEvent(_Event)' })
+    Require ($lifeReset.Count -eq 1) '生活加值重置事件必须唯一'
+    Require-ExactActions -Model $lifeReset[0] -Expected @(
+        'PROC_COS_ConfigSetLifeSkill(_Character, _Default);',
+        'PROC_COS_PresetDetect(_Character);',
+        'PROC_COS_ConfigSyncCategoryActual(_Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    ) -Context '生活加值重置后预设刷新'
 }
 
 function Assert-CategoryToggleContract {
@@ -1644,10 +1751,10 @@ function Assert-CategoryActualStateContract {
         'NOT DB_COS_ConfigCategory(_Character, _Key, _Current);',
         'DB_COS_ConfigCategory(_Character, _Key, _Next);',
         'PROC_COS_ConfigSyncCharacter(_Character);',
+        'PROC_COS_PresetDetect(_Character);',
         'PROC_COS_ConfigSyncCategoryActual(_Character);',
         'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
-    ) -Context 'Task4 分类切换固定顺序'
-    Require (-not ($toggle[0].Actions -match '^PROC_COS_PresetDetect\(')) 'Task4 不得提前调用 PresetDetect'
+    ) -Context '分类切换最终固定顺序'
 }
 
 function Assert-PresetWorkflowContract {
@@ -1730,6 +1837,64 @@ function Assert-PresetWorkflowContract {
     foreach ($action in $setCategoryModels[0].Actions) {
         Require (-not $action.Contains('"Origin"', [System.StringComparison]::Ordinal)) 'PureChaos Origin 通配被直接写入'
     }
+}
+
+function Assert-PresetCurrentSelectionContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetSetCurrent')
+    Require ($models.Count -eq 7) '当前预设选择必须恰好包含清旧、五优先级和清 scratch 七条规则'
+
+    $remove = @($models | Where-Object { $_.Actions -ccontains 'RemoveStatus(_Character, _Status, _Character);' })
+    Require ($remove.Count -eq 1) '当前预设旧状态清理规则缺失或重复'
+    Require-ExactConditions -Model $remove[0] -Expected @('DB_COS_PresetCurrentStatus(_, _Status)') -Context '当前预设旧状态清理'
+    Require-ExactActions -Model $remove[0] -Expected @('RemoveStatus(_Character, _Status, _Character);') -Context '当前预设旧状态清理'
+
+    $contracts = [ordered]@{
+        AllConvenience = @(
+            'NOT DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)',
+            'DB_COS_PresetCurrentStatus("AllConvenience", _Status)'
+        )
+        Balanced = @(
+            'DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)',
+            'NOT DB_COS_PresetMismatch(_Character, "Balanced", _, 2)',
+            'DB_COS_PresetCurrentStatus("Balanced", _Status)'
+        )
+        NearVanilla = @(
+            'DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "Balanced", _, 2)',
+            'NOT DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)',
+            'DB_COS_PresetCurrentStatus("NearVanilla", _Status)'
+        )
+        PureChaos = @(
+            'DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "Balanced", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)',
+            'NOT DB_COS_PresetMismatch(_Character, "PureChaos", _, 2)',
+            'DB_COS_PresetCurrentStatus("PureChaos", _Status)'
+        )
+        Custom = @(
+            'DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "Balanced", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)',
+            'DB_COS_PresetMismatch(_Character, "PureChaos", _, 2)',
+            'DB_COS_PresetCurrentStatus("Custom", _Status)'
+        )
+    }
+    foreach ($preset in $contracts.Keys) {
+        $statusCondition = "DB_COS_PresetCurrentStatus(`"$preset`", _Status)"
+        $matches = @($models | Where-Object { $_.Conditions -ccontains $statusCondition })
+        Require ($matches.Count -eq 1) "当前预设优先级规则缺失或重复: $preset"
+        Require-ExactConditions -Model $matches[0] -Expected $contracts[$preset] -Context "当前预设优先级 $preset"
+        Require-ExactActions -Model $matches[0] -Expected @('ApplyStatus(_Character, _Status, -1.0, 1, _Character);') -Context "当前预设优先级 $preset"
+    }
+
+    $cleanup = @($models | Where-Object { $_.Actions -ccontains 'NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 2);' })
+    Require ($cleanup.Count -eq 1) '当前预设 phase2 scratch 清理规则缺失或重复'
+    Require-ExactConditions -Model $cleanup[0] -Expected @('DB_COS_PresetMismatch(_Character, _Preset, _Field, 2)') -Context '当前预设 phase2 scratch 清理'
 }
 
 function Assert-PresetWriteContract {
@@ -1927,7 +2092,7 @@ function Assert-PresetWriteContract {
                 continue
             }
 
-            $removeStatusMatch = [regex]::Match($action, '^RemoveStatus\(_Character, (?:(?:"([^"]+)")|(_Status))\);$')
+            $removeStatusMatch = [regex]::Match($action, '^RemoveStatus\(_Character, (?:(?:"([^"]+)")|(_Status)), _Character\);$')
             if ($removeStatusMatch.Success) {
                 $allowedForProcedure = switch ($procedureName) {
                     PROC_COS_PresetClearPreview { @($pendingStatuses + $previewStatuses + $errorStatuses) }
@@ -2017,7 +2182,7 @@ function Assert-PresetWriteContract {
         $covered = [System.Collections.Generic.List[string]]::new()
         foreach ($coverageModel in $Models) {
             foreach ($coverageAction in $coverageModel.Actions) {
-                $match = [regex]::Match($coverageAction, '^' + [regex]::Escape($Verb) + '\(_Character, (?:(?:"([^"]+)")|(_Status))(?:, [^,]+, [^)]+)?\);$')
+                $match = [regex]::Match($coverageAction, '^' + [regex]::Escape($Verb) + '\(_Character, (?:(?:"([^"]+)")|(_Status))(?:, [^)]+)?\);$')
                 if (-not $match.Success) { continue }
                 if ($match.Groups[1].Success) {
                     $covered.Add($match.Groups[1].Value)
@@ -2755,6 +2920,57 @@ $task3LegacyCategories = [ordered]@{
     RacialAbilities = 1
     Convenience = 1
 }
+$task5PresetOrder = @('AllConvenience', 'Balanced', 'NearVanilla', 'PureChaos', 'Custom')
+$task5PresetMatrix = [ordered]@{
+    NearVanilla = [ordered]@{ Core = 0; Origin = 1; RaceTags = 0; WeaponProficiencies = 0; ArmorProficiencies = 0; RacialAbilities = 0; Convenience = 0 }
+    PureChaos = [ordered]@{ Core = 1; Origin = -1; RaceTags = 0; WeaponProficiencies = 0; ArmorProficiencies = 0; RacialAbilities = 0; Convenience = 0 }
+    Balanced = [ordered]@{ Core = 1; Origin = 1; RaceTags = 0; WeaponProficiencies = 0; ArmorProficiencies = 0; RacialAbilities = 0; Convenience = 0 }
+    AllConvenience = [ordered]@{ Core = 1; Origin = 1; RaceTags = 1; WeaponProficiencies = 1; ArmorProficiencies = 1; RacialAbilities = 1; Convenience = 1 }
+}
+$task5PresetLife = [ordered]@{ NearVanilla = 0; PureChaos = 0; Balanced = 5; AllConvenience = 20 }
+$task5PresetEvents = [ordered]@{
+    NearVanilla = '7e990000-0000-4000-8000-000000000011'
+    PureChaos = '7e990000-0000-4000-8000-000000000012'
+    Balanced = '7e990000-0000-4000-8000-000000000013'
+    AllConvenience = '7e990000-0000-4000-8000-000000000014'
+    Apply = '7e990000-0000-4000-8000-000000000015'
+    Cancel = '7e990000-0000-4000-8000-000000000016'
+}
+$task5CurrentStatuses = @(
+    'COS_PRESET_CURRENT_NEAR_VANILLA', 'COS_PRESET_CURRENT_PURE_CHAOS',
+    'COS_PRESET_CURRENT_BALANCED', 'COS_PRESET_CURRENT_ALL_CONVENIENCE',
+    'COS_PRESET_CURRENT_CUSTOM'
+)
+$task5PendingStatuses = @(
+    'COS_PRESET_PENDING_NEAR_VANILLA', 'COS_PRESET_PENDING_PURE_CHAOS',
+    'COS_PRESET_PENDING_BALANCED', 'COS_PRESET_PENDING_ALL_CONVENIENCE'
+)
+$task5PreviewStatuses = @(
+    'COS_PRESET_PREVIEW_CORE_ON', 'COS_PRESET_PREVIEW_CORE_OFF',
+    'COS_PRESET_PREVIEW_ORIGIN_ON', 'COS_PRESET_PREVIEW_ORIGIN_OFF',
+    'COS_PRESET_PREVIEW_RACETAGS_ON', 'COS_PRESET_PREVIEW_RACETAGS_OFF',
+    'COS_PRESET_PREVIEW_WEAPON_ON', 'COS_PRESET_PREVIEW_WEAPON_OFF',
+    'COS_PRESET_PREVIEW_ARMOR_ON', 'COS_PRESET_PREVIEW_ARMOR_OFF',
+    'COS_PRESET_PREVIEW_RACIAL_ON', 'COS_PRESET_PREVIEW_RACIAL_OFF',
+    'COS_PRESET_PREVIEW_CONVENIENCE_ON', 'COS_PRESET_PREVIEW_CONVENIENCE_OFF',
+    'COS_PRESET_PREVIEW_LIFE_0', 'COS_PRESET_PREVIEW_LIFE_5', 'COS_PRESET_PREVIEW_LIFE_20'
+)
+$task5ActualStatuses = @(
+    foreach ($category in @('CORE', 'ORIGIN', 'RACETAGS', 'WEAPON', 'ARMOR', 'RACIAL', 'CONVENIENCE')) {
+        foreach ($state in @('ACTIVE', 'PAUSED', 'WAITING_CONDITION', 'MISSING_CONFIG', 'SYNC_FAILED')) {
+            "COS_CATEGORY_ACTUAL_${category}_${state}"
+        }
+    }
+)
+$task5ErrorStatuses = @(
+    'COS_PRESET_ERROR_NO_SELECTION', 'COS_PRESET_ERROR_COMBAT_READONLY',
+    'COS_PRESET_ERROR_CONFIG_INCOMPLETE', 'COS_PRESET_ERROR_SYNC_FAILED'
+)
+$task5ExpectedProcedures = @(
+    'PROC_COS_PresetSeed', 'PROC_COS_PresetClearPreview', 'PROC_COS_PresetSelect',
+    'PROC_COS_PresetBuildPreview', 'PROC_COS_PresetApply', 'PROC_COS_PresetSetCategory',
+    'PROC_COS_PresetDetect', 'PROC_COS_PresetSetCurrent', 'PROC_COS_PresetValidate'
+)
 $legacyWriterEntrypoints = [ordered]@{
     ConfigSyncCharacter = [pscustomobject]@{
         Content = $config
@@ -2785,6 +3001,71 @@ $legacyWriterEntrypoints = [ordered]@{
 
 Assert-OsirisParserContract
 Assert-MutationHarnessContract
+
+if ($Focus -ceq 'Task5') {
+    Assert-PresetSeedGuardContract -Content $config
+    Assert-PresetDetectionOrderContract -Content $config -ExpectedOrder $task5PresetOrder
+    Assert-PresetMatrixContract -Content $config -ExpectedMatrix $task5PresetMatrix -ExpectedLife $task5PresetLife
+    Assert-EventMapContract -Content $config -ExpectedCategoryEvents $task3CategoryEvents -ExpectedPresetEvents $task5PresetEvents
+    Assert-EventGuardContract -Content $config
+    Assert-CategoryToggleContract -Content $config
+    Assert-PresetLifecycleContract -Content $config
+    Assert-PresetWorkflowContract -Content $config
+    Assert-PresetCurrentSelectionContract -Content $config
+    Assert-PresetWriteContract -Content $config -ExpectedProcedureNames $task5ExpectedProcedures -ApprovedStatusIds @($task5CurrentStatuses + $task5PendingStatuses + $task5PreviewStatuses + $task5ActualStatuses + $task5ErrorStatuses) -ExpectedDetectionOrder $task5PresetOrder
+
+    $task5ApplyModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetApply' | Where-Object { $_.Conditions -ccontains 'DB_COS_PresetValidated(_Character, _Preset, 0)' })[0]
+    $task5SelectModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetSelect')[0]
+    $task5ClearModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetClearPreview')[0]
+    $task5SetCategoryModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetSetCategory')[0]
+    $task5CombatApplyModel = @(Get-OsirisRuleModels -Content $config | Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_PresetApplyEvent(_Event)' -and $_.Conditions -ccontains 'IsInCombat(_Character, 1)' })[0]
+
+    $wildcardBlock = Replace-FirstLiteral -Content $task5SetCategoryModel.Block -OldValue '_Target != -1' -NewValue '_Target == -1' -ProbeName 'task5-wildcard-origin-write'
+    $wildcardMutation = Replace-RuleBlock -Content $config -OldBlock $task5SetCategoryModel.Block -NewBlock $wildcardBlock -ProbeName 'task5-wildcard-origin-write'
+    Assert-MutationRejected -Name 'task5-wildcard-origin-write' -ExpectedMessagePattern '^预设分类写入 条件集合不精确$' -Probe { Assert-PresetWorkflowContract -Content $wildcardMutation }
+
+    $selectSyncBlock = Replace-FirstLiteral -Content $task5SelectModel.Block -OldValue 'PROC_COS_PresetBuildPreview(_Character, _Preset);' -NewValue "PROC_COS_ConfigSyncCharacter(_Character);`nPROC_COS_PresetBuildPreview(_Character, _Preset);" -ProbeName 'task5-select-sync'
+    $selectSyncMutation = Replace-RuleBlock -Content $config -OldBlock $task5SelectModel.Block -NewBlock $selectSyncBlock -ProbeName 'task5-select-sync'
+    Assert-MutationRejected -Name 'task5-select-sync' -ExpectedMessagePattern '^预设选择动作数量不精确$' -Probe { Assert-PresetWorkflowContract -Content $selectSyncMutation }
+
+    $clearFormalBlock = Replace-FirstLiteral -Content $task5ClearModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCategory(_Character, `"Core`", 0);" -ProbeName 'task5-clear-formal'
+    $clearFormalMutation = Replace-RuleBlock -Content $config -OldBlock $task5ClearModel.Block -NewBlock $clearFormalBlock -ProbeName 'task5-clear-formal'
+    Assert-MutationRejected -Name 'task5-clear-formal' -ExpectedMessagePattern '^ClearPreview 写入未批准 scratch: DB_COS_ConfigCategory$' -Probe { Assert-PresetWriteContract -Content $clearFormalMutation -ExpectedProcedureNames $task5ExpectedProcedures -ApprovedStatusIds @($task5CurrentStatuses + $task5PendingStatuses + $task5PreviewStatuses + $task5ActualStatuses + $task5ErrorStatuses) -ExpectedDetectionOrder $task5PresetOrder }
+
+    $applyChildBlock = Replace-FirstLiteral -Content $task5ApplyModel.Block -OldValue 'THEN' -NewValue "THEN`nDB_COS_ConfigCost(_Character, `"Fate`", 99);" -ProbeName 'task5-apply-child'
+    $applyChildMutation = Replace-RuleBlock -Content $config -OldBlock $task5ApplyModel.Block -NewBlock $applyChildBlock -ProbeName 'task5-apply-child'
+    Assert-MutationRejected -Name 'task5-apply-child' -ExpectedMessagePattern '^预设过程写入未批准表: DB_COS_ConfigCost$' -Probe { Assert-PresetWriteContract -Content $applyChildMutation -ExpectedProcedureNames $task5ExpectedProcedures -ApprovedStatusIds @($task5CurrentStatuses + $task5PendingStatuses + $task5PreviewStatuses + $task5ActualStatuses + $task5ErrorStatuses) -ExpectedDetectionOrder $task5PresetOrder }
+
+    $noPendingBlock = Replace-FirstLiteral -Content $task5ApplyModel.Block -OldValue 'DB_COS_PresetPending(_Character, _Preset)' -NewValue 'NOT DB_COS_PresetPending(_Character, _Preset)' -ProbeName 'task5-no-pending-mutation'
+    $noPendingMutation = Replace-RuleBlock -Content $config -OldBlock $task5ApplyModel.Block -NewBlock $noPendingBlock -ProbeName 'task5-no-pending-mutation'
+    Assert-MutationRejected -Name 'task5-no-pending-mutation' -ExpectedMessagePattern '^预设应用主规则 条件集合不精确$' -Probe { Assert-PresetWorkflowContract -Content $noPendingMutation }
+
+    $combatWriteBlock = Replace-FirstLiteral -Content $task5CombatApplyModel.Block -OldValue 'PROC_COS_PresetValidate(_Character, -1);' -NewValue 'PROC_COS_PresetApply(_Character);' -ProbeName 'task5-combat-write'
+    $combatWriteMutation = Replace-RuleBlock -Content $config -OldBlock $task5CombatApplyModel.Block -NewBlock $combatWriteBlock -ProbeName 'task5-combat-write'
+    Assert-MutationRejected -Name 'task5-combat-write' -ExpectedMessagePattern '^预设应用战斗只读错误 THEN 动作序列不精确$' -Probe { Assert-EventGuardContract -Content $combatWriteMutation }
+
+    $earlyClearBlock = Replace-FirstLiteral -Content $task5ApplyModel.Block -OldValue 'PROC_COS_PresetValidate(_Character, _Preset, 1);' -NewValue "PROC_COS_PresetClearPreview(_Character);`nPROC_COS_PresetValidate(_Character, _Preset, 1);" -ProbeName 'task5-early-clear'
+    $earlyClearMutation = Replace-RuleBlock -Content $config -OldBlock $task5ApplyModel.Block -NewBlock $earlyClearBlock -ProbeName 'task5-early-clear'
+    Assert-MutationRejected -Name 'task5-early-clear' -ExpectedMessagePattern '^预设应用主规则 THEN 动作序列不精确$' -Probe { Assert-PresetWorkflowContract -Content $earlyClearMutation }
+
+    $extraSyncBlock = Replace-FirstLiteral -Content $task5ApplyModel.Block -OldValue 'PROC_COS_ConfigSyncCharacter(_Character);' -NewValue "PROC_COS_ConfigSyncCharacter(_Character);`nPROC_COS_ConfigSyncCharacter(_Character);" -ProbeName 'task5-double-sync'
+    $extraSyncMutation = Replace-RuleBlock -Content $config -OldBlock $task5ApplyModel.Block -NewBlock $extraSyncBlock -ProbeName 'task5-double-sync'
+    Assert-MutationRejected -Name 'task5-double-sync' -ExpectedMessagePattern '^预设应用主规则 THEN 动作序列不精确$' -Probe { Assert-PresetWorkflowContract -Content $extraSyncMutation }
+
+    $detectModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetDetect' | Where-Object { $_.Conditions.Count -eq 0 })[0]
+    $detectOrderBlock = Replace-FirstLiteral -Content $detectModel.Block -OldValue "PROC_COS_PresetValidate(_Character, `"AllConvenience`", 2);`nPROC_COS_PresetValidate(_Character, `"Balanced`", 2);" -NewValue "PROC_COS_PresetValidate(_Character, `"Balanced`", 2);`nPROC_COS_PresetValidate(_Character, `"AllConvenience`", 2);" -ProbeName 'task5-detect-order'
+    $detectOrderMutation = Replace-RuleBlock -Content $config -OldBlock $detectModel.Block -NewBlock $detectOrderBlock -ProbeName 'task5-detect-order'
+    Assert-MutationRejected -Name 'task5-detect-order' -ExpectedMessagePattern '^预设检测调度 THEN 动作序列不精确$' -Probe { Assert-PresetDetectionOrderContract -Content $detectOrderMutation -ExpectedOrder $task5PresetOrder }
+
+    $balancedCurrentModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetSetCurrent' | Where-Object { $_.Conditions -ccontains 'DB_COS_PresetCurrentStatus("Balanced", _Status)' })[0]
+    $duplicateCurrentBlock = Replace-FirstLiteral -Content $balancedCurrentModel.Block -OldValue 'DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)' -NewValue 'NOT DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)' -ProbeName 'task5-duplicate-current'
+    $duplicateCurrentMutation = Replace-RuleBlock -Content $config -OldBlock $balancedCurrentModel.Block -NewBlock $duplicateCurrentBlock -ProbeName 'task5-duplicate-current'
+    Assert-MutationRejected -Name 'task5-duplicate-current' -ExpectedMessagePattern '^当前预设优先级 Balanced 条件集合不精确$' -Probe { Assert-PresetCurrentSelectionContract -Content $duplicateCurrentMutation }
+
+    Write-Output 'Task 5 preset workflow contract: PASS'
+    Write-Output 'Task 5 mutation probes: wildcard=PASS; select-sync=PASS; clear-scope=PASS; child-write=PASS; no-pending=PASS; combat=PASS; early-clear=PASS; sync-count=PASS; current-order=PASS'
+    exit 0
+}
 
 if ($Focus -ceq 'Task4') {
     Assert-CoreGameplayGuardContract -ContentByGoal ([ordered]@{
@@ -2892,7 +3173,7 @@ if ($Focus -ceq 'Task3') {
     Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
     Assert-CategoryMirrorContract -Content $config
     Assert-CategoryEventContract -Content $config
-    Assert-CategoryToggleContract -Content $config -Task4Stage
+    Assert-CategoryToggleContract -Content $config
 
     $newInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeNew')[0]
     $newLifeMutationBlock = Replace-FirstLiteral -Content $newInitModel.Block -OldValue 'DB_COS_ConfigLifeSkill(_Character, 0);' -NewValue 'DB_COS_ConfigLifeSkill(_Character, 5);' -ProbeName 'task3-new-life-not-zero'
@@ -3091,8 +3372,14 @@ Assert-EventGuardContract -Content $config
 Assert-CategoryToggleContract -Content $config
 Assert-PresetWorkflowContract -Content $config
 
-Require (-not [regex]::IsMatch($mechanics, '(?m)^\s*(?:NOT\s+)?DB_COS_ConfigCategory\(')) 'COS_ChaosMechanics 不得写分类配置'
-Require (-not [regex]::IsMatch($mastery, '(?m)^\s*(?:NOT\s+)?DB_COS_ConfigCategory\(')) 'COS_ChaosMastery 不得写分类配置'
+foreach ($goalContract in @(
+    [pscustomobject]@{ Name = 'COS_ChaosMechanics'; Content = $mechanics },
+    [pscustomobject]@{ Name = 'COS_ChaosMastery'; Content = $mastery }
+)) {
+    foreach ($model in @(Get-OsirisRuleModels -Content $goalContract.Content)) {
+        Require (@($model.Actions | Where-Object { $_ -match '^(?:NOT\s+)?DB_COS_ConfigCategory\(' }).Count -eq 0) "$($goalContract.Name) 不得写分类配置"
+    }
+}
 
 $currentStatuses = @(
     'COS_PRESET_CURRENT_NEAR_VANILLA',

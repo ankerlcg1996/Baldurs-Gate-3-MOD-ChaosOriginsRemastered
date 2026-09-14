@@ -680,6 +680,916 @@ NOT DB_COS_ConfigLegacyTable("DB_COS_CarryEnabled")
 THEN
 DB_COS_ConfigLegacyTable("DB_COS_CarryEnabled");
 
+// Presets are immutable configuration templates. Every row is guarded so upgraded saves can reseed safely.
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "Core", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "Core", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "Origin", 1)
+THEN
+DB_COS_PresetCategory("NearVanilla", "Origin", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "RaceTags", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "RaceTags", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "WeaponProficiencies", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "WeaponProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "ArmorProficiencies", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "ArmorProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "RacialAbilities", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "RacialAbilities", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("NearVanilla", "Convenience", 0)
+THEN
+DB_COS_PresetCategory("NearVanilla", "Convenience", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetLife("NearVanilla", 0)
+THEN
+DB_COS_PresetLife("NearVanilla", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "Core", 1)
+THEN
+DB_COS_PresetCategory("PureChaos", "Core", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "Origin", -1)
+THEN
+DB_COS_PresetCategory("PureChaos", "Origin", -1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "RaceTags", 0)
+THEN
+DB_COS_PresetCategory("PureChaos", "RaceTags", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "WeaponProficiencies", 0)
+THEN
+DB_COS_PresetCategory("PureChaos", "WeaponProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "ArmorProficiencies", 0)
+THEN
+DB_COS_PresetCategory("PureChaos", "ArmorProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "RacialAbilities", 0)
+THEN
+DB_COS_PresetCategory("PureChaos", "RacialAbilities", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("PureChaos", "Convenience", 0)
+THEN
+DB_COS_PresetCategory("PureChaos", "Convenience", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetLife("PureChaos", 0)
+THEN
+DB_COS_PresetLife("PureChaos", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "Core", 1)
+THEN
+DB_COS_PresetCategory("Balanced", "Core", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "Origin", 1)
+THEN
+DB_COS_PresetCategory("Balanced", "Origin", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "RaceTags", 0)
+THEN
+DB_COS_PresetCategory("Balanced", "RaceTags", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "WeaponProficiencies", 0)
+THEN
+DB_COS_PresetCategory("Balanced", "WeaponProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "ArmorProficiencies", 0)
+THEN
+DB_COS_PresetCategory("Balanced", "ArmorProficiencies", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "RacialAbilities", 0)
+THEN
+DB_COS_PresetCategory("Balanced", "RacialAbilities", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("Balanced", "Convenience", 0)
+THEN
+DB_COS_PresetCategory("Balanced", "Convenience", 0);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetLife("Balanced", 5)
+THEN
+DB_COS_PresetLife("Balanced", 5);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "Core", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "Core", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "Origin", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "Origin", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "RaceTags", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "RaceTags", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "WeaponProficiencies", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "WeaponProficiencies", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "ArmorProficiencies", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "ArmorProficiencies", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "RacialAbilities", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "RacialAbilities", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCategory("AllConvenience", "Convenience", 1)
+THEN
+DB_COS_PresetCategory("AllConvenience", "Convenience", 1);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetLife("AllConvenience", 20)
+THEN
+DB_COS_PresetLife("AllConvenience", 20);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetDetectionOrder(1, "AllConvenience")
+THEN
+DB_COS_PresetDetectionOrder(1, "AllConvenience");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetDetectionOrder(2, "Balanced")
+THEN
+DB_COS_PresetDetectionOrder(2, "Balanced");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetDetectionOrder(3, "NearVanilla")
+THEN
+DB_COS_PresetDetectionOrder(3, "NearVanilla");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetDetectionOrder(4, "PureChaos")
+THEN
+DB_COS_PresetDetectionOrder(4, "PureChaos");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetDetectionOrder(5, "Custom")
+THEN
+DB_COS_PresetDetectionOrder(5, "Custom");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000011, "NearVanilla")
+THEN
+DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000011, "NearVanilla");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000012, "PureChaos")
+THEN
+DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000012, "PureChaos");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000013, "Balanced")
+THEN
+DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000013, "Balanced");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000014, "AllConvenience")
+THEN
+DB_COS_PresetSelectEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000014, "AllConvenience");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetApplyEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000015)
+THEN
+DB_COS_PresetApplyEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000015);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCancelEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000016)
+THEN
+DB_COS_PresetCancelEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000016);
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPendingStatus("NearVanilla", "COS_PRESET_PENDING_NEAR_VANILLA")
+THEN
+DB_COS_PresetPendingStatus("NearVanilla", "COS_PRESET_PENDING_NEAR_VANILLA");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPendingStatus("PureChaos", "COS_PRESET_PENDING_PURE_CHAOS")
+THEN
+DB_COS_PresetPendingStatus("PureChaos", "COS_PRESET_PENDING_PURE_CHAOS");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPendingStatus("Balanced", "COS_PRESET_PENDING_BALANCED")
+THEN
+DB_COS_PresetPendingStatus("Balanced", "COS_PRESET_PENDING_BALANCED");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPendingStatus("AllConvenience", "COS_PRESET_PENDING_ALL_CONVENIENCE")
+THEN
+DB_COS_PresetPendingStatus("AllConvenience", "COS_PRESET_PENDING_ALL_CONVENIENCE");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Core", 0, "COS_PRESET_PREVIEW_CORE_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Core", 0, "COS_PRESET_PREVIEW_CORE_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Core", 1, "COS_PRESET_PREVIEW_CORE_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Core", 1, "COS_PRESET_PREVIEW_CORE_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Origin", 0, "COS_PRESET_PREVIEW_ORIGIN_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Origin", 0, "COS_PRESET_PREVIEW_ORIGIN_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Origin", 1, "COS_PRESET_PREVIEW_ORIGIN_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Origin", 1, "COS_PRESET_PREVIEW_ORIGIN_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("RaceTags", 0, "COS_PRESET_PREVIEW_RACETAGS_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("RaceTags", 0, "COS_PRESET_PREVIEW_RACETAGS_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("RaceTags", 1, "COS_PRESET_PREVIEW_RACETAGS_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("RaceTags", 1, "COS_PRESET_PREVIEW_RACETAGS_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("WeaponProficiencies", 0, "COS_PRESET_PREVIEW_WEAPON_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("WeaponProficiencies", 0, "COS_PRESET_PREVIEW_WEAPON_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("WeaponProficiencies", 1, "COS_PRESET_PREVIEW_WEAPON_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("WeaponProficiencies", 1, "COS_PRESET_PREVIEW_WEAPON_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("ArmorProficiencies", 0, "COS_PRESET_PREVIEW_ARMOR_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("ArmorProficiencies", 0, "COS_PRESET_PREVIEW_ARMOR_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("ArmorProficiencies", 1, "COS_PRESET_PREVIEW_ARMOR_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("ArmorProficiencies", 1, "COS_PRESET_PREVIEW_ARMOR_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("RacialAbilities", 0, "COS_PRESET_PREVIEW_RACIAL_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("RacialAbilities", 0, "COS_PRESET_PREVIEW_RACIAL_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("RacialAbilities", 1, "COS_PRESET_PREVIEW_RACIAL_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("RacialAbilities", 1, "COS_PRESET_PREVIEW_RACIAL_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Convenience", 0, "COS_PRESET_PREVIEW_CONVENIENCE_OFF")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Convenience", 0, "COS_PRESET_PREVIEW_CONVENIENCE_OFF");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewCategoryStatus("Convenience", 1, "COS_PRESET_PREVIEW_CONVENIENCE_ON")
+THEN
+DB_COS_PresetPreviewCategoryStatus("Convenience", 1, "COS_PRESET_PREVIEW_CONVENIENCE_ON");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewLifeStatus(0, "COS_PRESET_PREVIEW_LIFE_0")
+THEN
+DB_COS_PresetPreviewLifeStatus(0, "COS_PRESET_PREVIEW_LIFE_0");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewLifeStatus(5, "COS_PRESET_PREVIEW_LIFE_5")
+THEN
+DB_COS_PresetPreviewLifeStatus(5, "COS_PRESET_PREVIEW_LIFE_5");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetPreviewLifeStatus(20, "COS_PRESET_PREVIEW_LIFE_20")
+THEN
+DB_COS_PresetPreviewLifeStatus(20, "COS_PRESET_PREVIEW_LIFE_20");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCurrentStatus("NearVanilla", "COS_PRESET_CURRENT_NEAR_VANILLA")
+THEN
+DB_COS_PresetCurrentStatus("NearVanilla", "COS_PRESET_CURRENT_NEAR_VANILLA");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCurrentStatus("PureChaos", "COS_PRESET_CURRENT_PURE_CHAOS")
+THEN
+DB_COS_PresetCurrentStatus("PureChaos", "COS_PRESET_CURRENT_PURE_CHAOS");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCurrentStatus("Balanced", "COS_PRESET_CURRENT_BALANCED")
+THEN
+DB_COS_PresetCurrentStatus("Balanced", "COS_PRESET_CURRENT_BALANCED");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCurrentStatus("AllConvenience", "COS_PRESET_CURRENT_ALL_CONVENIENCE")
+THEN
+DB_COS_PresetCurrentStatus("AllConvenience", "COS_PRESET_CURRENT_ALL_CONVENIENCE");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetCurrentStatus("Custom", "COS_PRESET_CURRENT_CUSTOM")
+THEN
+DB_COS_PresetCurrentStatus("Custom", "COS_PRESET_CURRENT_CUSTOM");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetErrorStatus("NoSelection", "COS_PRESET_ERROR_NO_SELECTION")
+THEN
+DB_COS_PresetErrorStatus("NoSelection", "COS_PRESET_ERROR_NO_SELECTION");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetErrorStatus("CombatReadonly", "COS_PRESET_ERROR_COMBAT_READONLY")
+THEN
+DB_COS_PresetErrorStatus("CombatReadonly", "COS_PRESET_ERROR_COMBAT_READONLY");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetErrorStatus("ConfigIncomplete", "COS_PRESET_ERROR_CONFIG_INCOMPLETE")
+THEN
+DB_COS_PresetErrorStatus("ConfigIncomplete", "COS_PRESET_ERROR_CONFIG_INCOMPLETE");
+
+PROC
+PROC_COS_PresetSeed()
+AND
+NOT DB_COS_PresetErrorStatus("SyncFailed", "COS_PRESET_ERROR_SYNC_FAILED")
+THEN
+DB_COS_PresetErrorStatus("SyncFailed", "COS_PRESET_ERROR_SYNC_FAILED");
+
+PROC
+PROC_COS_PresetDetect((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _Field, 2)
+THEN
+NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 2);
+
+PROC
+PROC_COS_PresetDetect((CHARACTER)_Character)
+THEN
+PROC_COS_PresetValidate(_Character, "AllConvenience", 2);
+PROC_COS_PresetValidate(_Character, "Balanced", 2);
+PROC_COS_PresetValidate(_Character, "NearVanilla", 2);
+PROC_COS_PresetValidate(_Character, "PureChaos", 2);
+PROC_COS_PresetSetCurrent(_Character);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPending(_Character, _Preset)
+THEN
+NOT DB_COS_PresetPending(_Character, _Preset);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPreviewCategory(_Character, _Category, _Target)
+THEN
+NOT DB_COS_PresetPreviewCategory(_Character, _Category, _Target);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPreviewLife(_Character, _Target)
+THEN
+NOT DB_COS_PresetPreviewLife(_Character, _Target);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetValidated(_Character, _Preset, 0)
+THEN
+NOT DB_COS_PresetValidated(_Character, _Preset, 0);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetValidated(_Character, _Preset, 1)
+THEN
+NOT DB_COS_PresetValidated(_Character, _Preset, 1);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _Field, 0)
+THEN
+NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 0);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _Field, 1)
+THEN
+NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 1);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPendingStatus(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPreviewCategoryStatus(_, _, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetPreviewLifeStatus(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetClearPreview((CHARACTER)_Character)
+AND
+DB_COS_PresetErrorStatus(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetSelect((CHARACTER)_Character, (STRING)_Preset)
+AND
+DB_COS_PresetPendingStatus(_Preset, _Status)
+THEN
+PROC_COS_PresetClearPreview(_Character);
+DB_COS_PresetPending(_Character, _Preset);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+PROC_COS_PresetBuildPreview(_Character, _Preset);
+
+PROC
+PROC_COS_PresetBuildPreview((CHARACTER)_Character, (STRING)_Preset)
+AND
+DB_COS_PresetCategory(_Preset, _Category, _Target)
+AND
+_Target != -1
+AND
+DB_COS_ConfigCategory(_Character, _Category, _Current)
+AND
+_Current != _Target
+AND
+DB_COS_PresetPreviewCategoryStatus(_Category, _Target, _Status)
+THEN
+DB_COS_PresetPreviewCategory(_Character, _Category, _Target);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetBuildPreview((CHARACTER)_Character, (STRING)_Preset)
+AND
+DB_COS_PresetLife(_Preset, _Target)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Current)
+AND
+_Current != _Target
+AND
+DB_COS_PresetPreviewLifeStatus(_Target, _Status)
+THEN
+DB_COS_PresetPreviewLife(_Character, _Target);
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCategory((CHARACTER)_Character, (STRING)_Preset)
+AND
+DB_COS_PresetCategory(_Preset, _Category, _Target)
+AND
+_Target != -1
+AND
+DB_COS_ConfigCategory(_Character, _Category, _OldValue)
+AND
+_OldValue != _Target
+THEN
+NOT DB_COS_ConfigCategory(_Character, _Category, _OldValue);
+DB_COS_ConfigCategory(_Character, _Category, _Target);
+
+// Phase 0 validates an apply request before any formal configuration is changed.
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+DB_COS_PresetErrorStatus(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+_Phase == 0
+AND
+NOT DB_COS_PresetPending(_Character, _)
+AND
+DB_COS_PresetErrorStatus("NoSelection", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+_Phase == -1
+AND
+DB_COS_PresetErrorStatus("CombatReadonly", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+_Phase == 0
+AND
+DB_COS_PresetPending(_Character, _Preset)
+AND
+DB_COS_ConfigCategoryMap(_Category, _Mirror)
+AND
+NOT DB_COS_ConfigCategory(_Character, _Category, _)
+AND
+DB_COS_PresetErrorStatus("ConfigIncomplete", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+_Phase == 0
+AND
+DB_COS_PresetPending(_Character, _Preset)
+AND
+NOT DB_COS_ConfigLifeSkill(_Character, _)
+AND
+DB_COS_PresetErrorStatus("ConfigIncomplete", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (INTEGER)_Phase)
+AND
+_Phase == 0
+AND
+DB_COS_PresetPending(_Character, _Preset)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+AND
+DB_COS_ConfigCategory(_Character, "Core", _Core)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", _Origin)
+AND
+DB_COS_ConfigCategory(_Character, "RaceTags", _RaceTags)
+AND
+DB_COS_ConfigCategory(_Character, "WeaponProficiencies", _Weapon)
+AND
+DB_COS_ConfigCategory(_Character, "ArmorProficiencies", _Armor)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", _Racial)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", _Convenience)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Life)
+THEN
+DB_COS_PresetValidated(_Character, _Preset, 0);
+
+// Phases 1 and 2 compare only the non-wildcard target fields. Phase 1 is retained on failure.
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (STRING)_Preset, (INTEGER)_Phase)
+AND
+_Phase > 0
+AND
+DB_COS_PresetCategory(_Preset, _Category, _Target)
+AND
+_Target != -1
+AND
+DB_COS_ConfigCategory(_Character, _Category, _Current)
+AND
+_Current != _Target
+THEN
+DB_COS_PresetMismatch(_Character, _Preset, _Category, _Phase);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (STRING)_Preset, (INTEGER)_Phase)
+AND
+_Phase > 0
+AND
+DB_COS_PresetLife(_Preset, _Target)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Current)
+AND
+_Current != _Target
+THEN
+DB_COS_PresetMismatch(_Character, _Preset, "Life", _Phase);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (STRING)_Preset, (INTEGER)_Phase)
+AND
+_Phase == 1
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+AND
+DB_COS_ConfigCategory(_Character, "Core", _Core)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", _Origin)
+AND
+DB_COS_ConfigCategory(_Character, "RaceTags", _RaceTags)
+AND
+DB_COS_ConfigCategory(_Character, "WeaponProficiencies", _Weapon)
+AND
+DB_COS_ConfigCategory(_Character, "ArmorProficiencies", _Armor)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", _Racial)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", _Convenience)
+AND
+DB_COS_ConfigLifeSkill(_Character, _Life)
+THEN
+DB_COS_PresetValidated(_Character, _Preset, 1);
+
+PROC
+PROC_COS_PresetValidate((CHARACTER)_Character, (STRING)_Preset, (INTEGER)_Phase)
+AND
+_Phase == 1
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _, 1)
+AND
+DB_COS_PresetErrorStatus("SyncFailed", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetApply((CHARACTER)_Character)
+AND
+DB_COS_PresetPending(_Character, _Preset)
+AND
+DB_COS_PresetValidated(_Character, _Preset, 0)
+AND
+DB_COS_PresetLife(_Preset, _Life)
+THEN
+PROC_COS_PresetSetCategory(_Character, _Preset);
+PROC_COS_ConfigSetLifeSkill(_Character, _Life);
+PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
+PROC_COS_PresetValidate(_Character, _Preset, 1);
+
+PROC
+PROC_COS_PresetApply((CHARACTER)_Character)
+AND
+DB_COS_PresetValidated(_Character, _Preset, 1)
+AND
+NOT DB_COS_PresetMismatch(_Character, _Preset, _, 1)
+THEN
+PROC_COS_PresetClearPreview(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetCurrentStatus(_, _Status)
+THEN
+RemoveStatus(_Character, _Status, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+NOT DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)
+AND
+DB_COS_PresetCurrentStatus("AllConvenience", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)
+AND
+NOT DB_COS_PresetMismatch(_Character, "Balanced", _, 2)
+AND
+DB_COS_PresetCurrentStatus("Balanced", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "Balanced", _, 2)
+AND
+NOT DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)
+AND
+DB_COS_PresetCurrentStatus("NearVanilla", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "Balanced", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)
+AND
+NOT DB_COS_PresetMismatch(_Character, "PureChaos", _, 2)
+AND
+DB_COS_PresetCurrentStatus("PureChaos", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, "AllConvenience", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "Balanced", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "NearVanilla", _, 2)
+AND
+DB_COS_PresetMismatch(_Character, "PureChaos", _, 2)
+AND
+DB_COS_PresetCurrentStatus("Custom", _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_PresetSetCurrent((CHARACTER)_Character)
+AND
+DB_COS_PresetMismatch(_Character, _Preset, _Field, 2)
+THEN
+NOT DB_COS_PresetMismatch(_Character, _Preset, _Field, 2);
+
 PROC
 PROC_COS_ConfigDetectPreexisting((CHARACTER)_Character)
 THEN
@@ -1545,6 +2455,27 @@ THEN
 EnableTutorialEvent(_Character, _Event);
 
 PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_PresetSelectEvent(_Event, _Preset)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_PresetApplyEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
+PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
+AND
+DB_COS_PresetCancelEvent(_Event)
+THEN
+EnableTutorialEvent(_Character, _Event);
+
+PROC
 PROC_COS_ConfigAddEnabledMechanicMirrors((CHARACTER)_Character)
 AND
 DB_COS_ConfigMechanic(_Character, _Key, 1)
@@ -1758,6 +2689,7 @@ PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
 PROC_COS_ConfigInitializeCategories(_Character);
 PROC_COS_SeedGrantMap();
+PROC_COS_PresetSeed();
 PROC_COS_CaptureLegacyOriginOwnership(_Character);
 PROC_COS_ConfigSyncCategoryMirrors(_Character);
 PROC_COS_SyncBaseAfterCreation(_Character);
@@ -1780,6 +2712,7 @@ PROC_COS_ConfigSyncLifeSkill(_Character);
 PROC_COS_ConfigSyncCosts(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
 PROC_COS_SyncOverview(_Character);
+PROC_COS_PresetDetect(_Character);
 
 PROC
 PROC_COS_ConfigToggleCategory((CHARACTER)_Character, (STRING)_Key)
@@ -1791,6 +2724,7 @@ THEN
 NOT DB_COS_ConfigCategory(_Character, _Key, _Current);
 DB_COS_ConfigCategory(_Character, _Key, _Next);
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_PresetDetect(_Character);
 PROC_COS_ConfigSyncCategoryActual(_Character);
 PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
@@ -1995,6 +2929,70 @@ PROC_COS_ConfigToggleCategory(_Character, _Key);
 IF
 TutorialEvent(_Character, _Event)
 AND
+DB_COS_PresetSelectEvent(_Event, _Preset)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+PROC_COS_PresetSelect(_Character, _Preset);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_PresetApplyEvent(_Event)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+PROC_COS_PresetValidate(_Character, 0);
+PROC_COS_PresetApply(_Character);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_PresetApplyEvent(_Event)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 1)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+PROC_COS_PresetValidate(_Character, -1);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_PresetCancelEvent(_Event)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+AND
+DB_COS_ConfigCategorySchema(_Character, 1)
+THEN
+PROC_COS_PresetClearPreview(_Character);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
 DB_COS_ConfigLifeStepEvent(_Event, _Delta)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
@@ -2004,6 +3002,9 @@ AND
 IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigStepLifeSkill(_Character, _Delta);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 IF
 TutorialEvent(_Character, _Event)
@@ -2019,6 +3020,9 @@ AND
 IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigSetLifeSkill(_Character, _Default);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 IF
 TutorialEvent(_Character, _Event)
@@ -2071,8 +3075,10 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
 THEN
-PROC_COS_RuntimeDiagnosticUpdate(_Character);
+PROC_COS_PresetClearPreview(_Character);
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
 PROC_COS_RuntimeDiagnosticUpdate(_Character);
 PROC_COS_ShowLastFate(_Character);
 
@@ -2121,7 +3127,11 @@ GainedControl(_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 THEN
+PROC_COS_PresetClearPreview(_Character);
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_PresetDetect(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
+PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 IF
 LeveledUp(_Character)
