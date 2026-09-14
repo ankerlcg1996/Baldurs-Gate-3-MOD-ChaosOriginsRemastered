@@ -1039,7 +1039,7 @@ function Assert-RuntimeDiagnosticStoryContract {
         'NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character);'
         'NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category);'
         'NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);'
-        'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);'
+        'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset);'
         'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);'
         'NOT DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character);'
     )
@@ -1192,7 +1192,7 @@ function Assert-RuntimeDiagnosticStoryContract {
 
     $presetFailureBlock = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckPresetFailure' })[0]
     Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $presetFailureBlock) -Expected @('DB_COS_PresetValidated(_Character, _Preset, 1)', 'DB_COS_PresetMismatch(_Character, _Preset, _, 1)', 'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)')) '预设应用失败诊断条件不精确'
-    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetFailureBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);')) '预设应用失败诊断动作不精确'
+    Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetFailureBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset);')) '预设应用失败诊断动作不精确'
     $presetCategoryBlock = @($diagnosticBlocks | Where-Object { $_.Name -ceq 'PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch' })[0]
     Require (Test-ExactOrdinalSequence -Actual @(Get-StoryConditionLines -Block $presetCategoryBlock) -Expected @('DB_COS_PresetMismatch(_Character, _Preset, _Category, 1)', 'NOT DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _)')) '首个预设分类不一致诊断条件不精确'
     Require (Test-ExactOrdinalSequence -Actual @(Get-StoryThenActions -Block $presetCategoryBlock) -Expected @('DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category);')) '首个预设分类不一致诊断动作不精确'
@@ -1325,7 +1325,7 @@ function Assert-RuntimeDiagnosticStoryContract {
         [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)'; Current = 'COS_DIAG_STATE_CONFIG_INCOMPLETE' }
         [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _Category)'; Current = 'COS_DIAG_STATE_CONFIG_INCOMPLETE' }
         [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
-        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
+        [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
         [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetCategoryMismatch(_Character, _Category)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
         [pscustomobject]@{ Condition = 'DB_COS_RuntimeDiagnosticPresetLifeMismatch(_Character)'; Current = 'COS_DIAG_STATE_CORE_MISMATCH' }
     )

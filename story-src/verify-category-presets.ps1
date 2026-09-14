@@ -2474,7 +2474,7 @@ function Assert-RuntimeCategoryDiagnosticContract {
         'DB_COS_PresetMismatch(_Character, _Preset, _, 1)'
         'NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)'
     ) -Context '预设应用失败诊断'
-    Require-ExactActions -Model $presetFailure -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);') -Context '预设应用失败诊断'
+    Require-ExactActions -Model $presetFailure -Expected @('DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset);') -Context '预设应用失败诊断'
 
     $presetCategory = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch')[0]
     Require-ExactConditions -Model $presetCategory -Expected @(

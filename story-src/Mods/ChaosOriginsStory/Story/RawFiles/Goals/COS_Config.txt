@@ -256,9 +256,9 @@ NOT DB_COS_RuntimeDiagnosticCategoryMismatch(_Character, _Category);
 PROC
 PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
 AND
-DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset)
 THEN
-NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);
+NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset);
 
 PROC
 PROC_COS_RuntimeDiagnosticBegin((CHARACTER)_Character)
@@ -511,7 +511,7 @@ DB_COS_PresetMismatch(_Character, _Preset, _, 1)
 AND
 NOT DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _)
 THEN
-DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset);
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset);
 
 PROC
 PROC_COS_RuntimeDiagnosticCheckPresetCategoryMismatch((CHARACTER)_Character, (STRING)_Category)
@@ -629,7 +629,7 @@ NOT DB_COS_RuntimeDiagnosticCategorySchemaIssue(_Character)
 AND
 NOT DB_COS_RuntimeDiagnosticCategoryMissing(_Character, _)
 AND
-DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, _Preset)
+DB_COS_RuntimeDiagnosticPresetApplyFailed(_Character, (STRING)_Preset)
 THEN
 PROC_COS_RuntimeDiagnosticSetCurrent(_Character, "COS_DIAG_STATE_CORE_MISMATCH");
 
@@ -4622,7 +4622,7 @@ NOT DB_COS_FateSyncing(_Character);
 IF
 StatusRemoved(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
 AND
-DB_COS_ConfigCategory(_Character, "Core", 1)
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -4654,7 +4654,7 @@ NOT DB_COS_FateSyncing(_Character);
 IF
 StatusApplied(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
 AND
-DB_COS_ConfigCategory(_Character, "Core", 1)
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND

@@ -55,6 +55,6 @@ foreach ($action in @('SetTag', 'ClearTag')) {
     $originBlocks = @([regex]::Matches($goal.Replace("`r`n", "`n"), '(?ms)^IF\nStatus(?:Applied|Removed)\(_Character, _Status, _, _\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)') | ForEach-Object Value)
     $matching = @($originBlocks | Where-Object { $_.Contains("$action(_Character, _Tag);") -and $_.Contains('DB_COS_OriginIdentityToggle(_, _Status, _Tag)') })
     if ($matching.Count -ne 1 -or !$matching[0].Contains('PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);')) { throw "Origin status handler does not sync menu: $action" }
-    if ($action -eq 'SetTag' -and (!$matching[0].Contains('DB_COS_ConfigCategory(_Character, "Origin", 1)') -or !$matching[0].Contains('DB_COS_OriginTagOwned(_Character, _Tag);'))) { throw 'Origin tag grant must be category-gated and ownership-recorded.' }
-    if ($action -eq 'ClearTag' -and (!$matching[0].Contains('DB_COS_OriginTagOwned(_Character, _Tag)') -or !$matching[0].Contains('NOT DB_COS_OriginTagOwned(_Character, _Tag);'))) { throw 'Origin tag removal must require and clear ownership.' }
+    if ($action -eq 'SetTag' -and (!$matching[0].Contains('DB_COS_ConfigCategory((CHARACTER)_Character, "Origin", 1)') -or !$matching[0].Contains('DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag);'))) { throw 'Origin tag grant must be category-gated and ownership-recorded.' }
+    if ($action -eq 'ClearTag' -and (!$matching[0].Contains('DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag)') -or !$matching[0].Contains('NOT DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag);'))) { throw 'Origin tag removal must require and clear ownership.' }
 }

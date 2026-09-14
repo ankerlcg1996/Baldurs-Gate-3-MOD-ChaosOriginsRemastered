@@ -348,12 +348,12 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentitySpell(_Status, _Spell)
 AND
-DB_COS_ConfigCategory(_Character, "Origin", 1)
+DB_COS_ConfigCategory((CHARACTER)_Character, "Origin", 1)
 AND
 HasSpell((CHARACTER)_Character, _Spell, 0)
 THEN
 AddSpell((CHARACTER)_Character, _Spell, 0, 0);
-DB_COS_OriginSpellOwned(_Character, _Spell);
+DB_COS_OriginSpellOwned((CHARACTER)_Character, _Spell);
 
 IF
 StatusApplied(_Character, _Status, _, _)
@@ -362,12 +362,12 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentityPassive(_Status, _FeaturePassive)
 AND
-DB_COS_ConfigCategory(_Character, "Origin", 1)
+DB_COS_ConfigCategory((CHARACTER)_Character, "Origin", 1)
 AND
 HasPassive(_Character, _FeaturePassive, 0)
 THEN
 AddPassive(_Character, _FeaturePassive);
-DB_COS_OriginPassiveOwned(_Character, _FeaturePassive);
+DB_COS_OriginPassiveOwned((CHARACTER)_Character, _FeaturePassive);
 
 IF
 LevelGameplayStarted(_, _)
@@ -406,12 +406,12 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 AND
-DB_COS_ConfigCategory(_Character, "Origin", 1)
+DB_COS_ConfigCategory((CHARACTER)_Character, "Origin", 1)
 AND
 IsTagged(_Character, _Tag, 0)
 THEN
 SetTag(_Character, _Tag);
-DB_COS_OriginTagOwned(_Character, _Tag);
+DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag);
 PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);
 
 IF
@@ -421,10 +421,10 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentityToggle(_, _Status, _Tag)
 AND
-DB_COS_OriginTagOwned(_Character, _Tag)
+DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag)
 THEN
 ClearTag(_Character, _Tag);
-NOT DB_COS_OriginTagOwned(_Character, _Tag);
+NOT DB_COS_OriginTagOwned((CHARACTER)_Character, _Tag);
 PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);
 
 IF
@@ -434,12 +434,12 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentitySpell(_Status, _Spell)
 AND
-DB_COS_OriginSpellOwned(_Character, _Spell)
+DB_COS_OriginSpellOwned((CHARACTER)_Character, _Spell)
 AND
 HasSpell((CHARACTER)_Character, _Spell, 1)
 THEN
 RemoveSpell((CHARACTER)_Character, _Spell, 0);
-NOT DB_COS_OriginSpellOwned(_Character, _Spell);
+NOT DB_COS_OriginSpellOwned((CHARACTER)_Character, _Spell);
 
 IF
 StatusRemoved(_Character, _Status, _, _)
@@ -448,12 +448,12 @@ HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 DB_COS_OriginIdentityPassive(_Status, _FeaturePassive)
 AND
-DB_COS_OriginPassiveOwned(_Character, _FeaturePassive)
+DB_COS_OriginPassiveOwned((CHARACTER)_Character, _FeaturePassive)
 AND
 HasPassive(_Character, _FeaturePassive, 1)
 THEN
 RemovePassive(_Character, _FeaturePassive);
-NOT DB_COS_OriginPassiveOwned(_Character, _FeaturePassive);
+NOT DB_COS_OriginPassiveOwned((CHARACTER)_Character, _FeaturePassive);
 
 // New-character adventurer bag: eligibility is never created by loading an old save.
 IF

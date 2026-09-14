@@ -4977,6 +4977,7 @@ Require ([regex]::Matches($statusText, 'DisableOverhead;DisablePortraitIndicator
 
 & (Join-Path $PSScriptRoot 'verify-level5-multitarget.ps1')
 & (Join-Path $PSScriptRoot 'verify-life-skill-exclusions.ps1')
+& (Join-Path $PSScriptRoot 'verify-game-merge-types.ps1')
 $runtimeDiagnosticArguments = @{}
 if ($PSBoundParameters.ContainsKey('ExpectedDisplayVersion')) {
     $runtimeDiagnosticArguments.ExpectedDisplayVersion = $ExpectedDisplayVersion
