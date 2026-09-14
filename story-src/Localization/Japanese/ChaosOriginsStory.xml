@@ -1121,19 +1121,19 @@
   <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">混沌の力ポイント</content>
   <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">残り混沌掌握ポイント</content>
   <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">使用済み混沌掌握ポイント：アップグレードに割り当て済みのポイントです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">カテゴリー：コア</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">COS_CFG_CATEGORY_CORE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000102" version="1">コアカテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">カテゴリー：オリジン</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">COS_CFG_CATEGORY_ORIGIN</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000104" version="1">オリジンカテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">カテゴリー：種族タグ</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">COS_CFG_CATEGORY_RACETAGS</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000106" version="1">種族タグカテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">カテゴリー：武器習熟</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">COS_CFG_CATEGORY_WEAPON</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000108" version="1">武器習熟カテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">カテゴリー：防具習熟</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">COS_CFG_CATEGORY_ARMOR</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000110" version="1">防具習熟カテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">カテゴリー：種族能力</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">COS_CFG_CATEGORY_RACIAL</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000112" version="1">種族能力カテゴリー用の読み取り専用ミラーです。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">カテゴリー：便利</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">COS_CFG_CATEGORY_CONVENIENCE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000114" version="1">便利カテゴリー用の読み取り専用ミラーです。</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">現在のプリセット：バニラ寄り</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">現在のプリセットは「バニラ寄り」です。</content>
@@ -1265,4 +1265,21 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">プリセットエラー：プリセットの設定が不完全です。</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">プリセットエラー：プリセットの同期に失敗しました</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">プリセットエラー：プリセットの同期に失敗しました。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000331" version="1">バニラに近いプリセット</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000332" version="1">ピュアカオスプリセット</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000333" version="1">バランス重視プリセット</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000334" version="1">すべての便利機能プリセット</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000335" version="1">プリセットのプレビュー：個別の選択内容は削除されません。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000336" version="1">プリセットを適用</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000337" version="1">プリセットをキャンセル</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000338" version="1">プリセット設定</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000339" version="1">現在の設定</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000343" version="1">カテゴリーは一時停止中です。選択内容は保存されています。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000344" version="1">コアメカニズム</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000345" version="1">オリジンの身分</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000346" version="1">種族タグ</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000347" version="1">武器の習熟</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000348" version="1">防具の習熟</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000349" version="1">種族能力の設定</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000350" version="1">追加の便利機能</content>
 </contentList>

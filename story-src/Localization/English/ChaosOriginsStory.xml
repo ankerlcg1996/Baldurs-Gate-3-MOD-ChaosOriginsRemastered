@@ -1121,19 +1121,19 @@
   <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">Chaos Power Points</content>
   <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">Remaining Chaos Mastery Points</content>
   <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">Chaos Mastery Points Used: points already allocated to upgrades.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">Category: Core</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">COS_CFG_CATEGORY_CORE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000102" version="1">Read-only mirror for the Core category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">Category: Origin</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">COS_CFG_CATEGORY_ORIGIN</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000104" version="1">Read-only mirror for the Origin category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">Category: Race Tags</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">COS_CFG_CATEGORY_RACETAGS</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000106" version="1">Read-only mirror for the Race Tags category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">Category: Weapon Proficiencies</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">COS_CFG_CATEGORY_WEAPON</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000108" version="1">Read-only mirror for the Weapon Proficiencies category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">Category: Armor Proficiencies</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">COS_CFG_CATEGORY_ARMOR</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000110" version="1">Read-only mirror for the Armor Proficiencies category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">Category: Racial Abilities</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">COS_CFG_CATEGORY_RACIAL</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000112" version="1">Read-only mirror for the Racial Abilities category.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">Category: Convenience</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">COS_CFG_CATEGORY_CONVENIENCE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000114" version="1">Read-only mirror for the Convenience category.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">Current preset: Near Vanilla</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">The current preset is Near Vanilla.</content>
@@ -1265,4 +1265,21 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">Preset error: the preset configuration is incomplete.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">Preset error: preset sync failed</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">Preset error: the preset failed to sync.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000331" version="1">Near Vanilla preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000332" version="1">Pure Chaos preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000333" version="1">Balanced preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000334" version="1">All Convenience preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000335" version="1">Preset preview: individual selections will not be deleted.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000336" version="1">Apply preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000337" version="1">Cancel preset</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000338" version="1">Preset Configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000339" version="1">Current configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000343" version="1">Category paused; selections remain saved.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000344" version="1">Core mechanisms</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000345" version="1">Origin identity</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000346" version="1">Race tags</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000347" version="1">Weapon proficiencies</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000348" version="1">Armor proficiencies</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000349" version="1">Racial abilities</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000350" version="1">Extra convenience</content>
 </contentList>

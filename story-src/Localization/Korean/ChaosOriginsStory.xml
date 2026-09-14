@@ -1121,19 +1121,19 @@
   <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">혼돈의 힘 점수</content>
   <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">남은 혼돈 통제 점수</content>
   <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">사용한 혼돈 통제 점수: 업그레이드에 이미 배분한 점수입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">분류: 핵심</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">COS_CFG_CATEGORY_CORE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000102" version="1">핵심 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">분류: 기원</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">COS_CFG_CATEGORY_ORIGIN</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000104" version="1">기원 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">분류: 종족 태그</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">COS_CFG_CATEGORY_RACETAGS</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000106" version="1">종족 태그 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">분류: 무기 숙련</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">COS_CFG_CATEGORY_WEAPON</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000108" version="1">무기 숙련 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">분류: 방어구 숙련</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">COS_CFG_CATEGORY_ARMOR</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000110" version="1">방어구 숙련 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">분류: 종족 능력</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">COS_CFG_CATEGORY_RACIAL</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000112" version="1">종족 능력 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">분류: 편의</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">COS_CFG_CATEGORY_CONVENIENCE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000114" version="1">편의 분류의 읽기 전용 미러입니다.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">현재 프리셋: ‘바닐라에 가까운 설정’</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">현재 프리셋은 ‘바닐라에 가까운 설정’입니다.</content>
@@ -1265,4 +1265,21 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">프리셋 오류: 프리셋 설정이 불완전합니다.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">프리셋 오류: 프리셋 동기화에 실패했습니다</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">프리셋 오류: 프리셋 동기화에 실패했습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000331" version="1">바닐라에 가까운 프리셋</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000332" version="1">순수 카오스 프리셋</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000333" version="1">균형 프리셋</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000334" version="1">모두 켜는 편의 프리셋</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000335" version="1">프리셋 미리보기: 개별 선택은 삭제되지 않습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000336" version="1">프리셋 적용</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000337" version="1">프리셋 취소</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000338" version="1">프리셋 설정</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000339" version="1">현재 구성</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000343" version="1">분류가 일시 중지되었습니다. 선택 항목은 저장되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000344" version="1">핵심 메커니즘</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000345" version="1">기원 정체성</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000346" version="1">종족 태그</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000347" version="1">무기 숙련</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000348" version="1">방어구 숙련</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000349" version="1">종족 능력</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000350" version="1">추가 편의 기능</content>
 </contentList>

@@ -1121,19 +1121,19 @@
   <content contentuid="h8f100005g0000g4000g8000g000000000005" version="1">混沌之力点数</content>
   <content contentuid="h8f100006g0000g4000g8000g000000000006" version="1">掌控混沌剩余点数</content>
   <content contentuid="h8f100007g0000g4000g8000g000000000007" version="1">已用掌控混沌点数：已分配到升级中的掌控混沌点数。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">分类：核心</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000101" version="1">COS_CFG_CATEGORY_CORE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000102" version="1">“核心”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">分类：起源</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000103" version="1">COS_CFG_CATEGORY_ORIGIN</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000104" version="1">“起源”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">分类：种族标签</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000105" version="1">COS_CFG_CATEGORY_RACETAGS</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000106" version="1">“种族标签”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">分类：武器熟练</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000107" version="1">COS_CFG_CATEGORY_WEAPON</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000108" version="1">“武器熟练”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">分类：护甲熟练</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000109" version="1">COS_CFG_CATEGORY_ARMOR</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000110" version="1">“护甲熟练”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">分类：种族能力</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000111" version="1">COS_CFG_CATEGORY_RACIAL</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000112" version="1">“种族能力”分类的只读镜像。</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">分类：便利</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">COS_CFG_CATEGORY_CONVENIENCE</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000114" version="1">“便利”分类的只读镜像。</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">当前预设：接近原版</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">当前预设为“接近原版”。</content>
@@ -1265,4 +1265,21 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">发生预设错误：配置不完整。</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">预设错误：同步失败</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">发生预设错误：同步失败。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000331" version="1">接近原版预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000332" version="1">纯混沌预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000333" version="1">平衡体验预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000334" version="1">全部便利预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000335" version="1">预设预览：逐项选择不会被删除。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000336" version="1">应用预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000337" version="1">取消预设</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000338" version="1">预设配置</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000339" version="1">当前配置</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000343" version="1">分类已暂停，选择仍已保存。</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000344" version="1">核心机制</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000345" version="1">起源身份</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000346" version="1">种族标签</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000347" version="1">武器熟练项</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000348" version="1">护甲熟练项</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000349" version="1">种族能力</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000350" version="1">额外便利</content>
 </contentList>

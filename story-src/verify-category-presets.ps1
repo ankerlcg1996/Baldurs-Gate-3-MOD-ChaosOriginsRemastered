@@ -2590,7 +2590,10 @@ function Assert-UiPageContract {
         [string[]]$ExpectedCategorySections,
 
         [Parameter(Mandatory)]
-        [string[]]$ApprovedStatusIds
+        [string[]]$ApprovedStatusIds,
+
+        [Parameter(Mandatory)]
+        [string[]]$ExpectedLegacyPanelEvents
     )
 
     [xml]$document = $Content
@@ -2718,12 +2721,31 @@ function Assert-UiPageContract {
             }
         }
     }
-    $allEventValues = @(
+    $allEventActions = @(
         $panelNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]') |
-            ForEach-Object { $_.GetAttribute('CommandParameter') }
+            ForEach-Object { $_ }
     )
     $expectedEventValues = @($ButtonOrder | ForEach-Object { $ButtonEvents[$_] })
-    Require (Test-ExactOrdinalSequence -Actual $allEventValues -Expected $expectedEventValues) "$PageName 分类/预设事件批准集合或顺序错误"
+    $featureEventActions = [System.Collections.Generic.List[System.Xml.XmlElement]]::new()
+    foreach ($buttonName in $ButtonOrder) {
+        $buttonNode = @(Get-XamlNamedNodes -Document $document -Name $buttonName)[0]
+        $actions = @($buttonNode.SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))
+        Require ($actions.Count -eq 1) "$PageName 新增按钮事件动作缺失或重复: $buttonName"
+        $featureEventActions.Add($actions[0])
+    }
+    $featureEventValues = @($featureEventActions | ForEach-Object { $_.GetAttribute('CommandParameter') })
+    Require (Test-ExactOrdinalSequence -Actual $featureEventValues -Expected $expectedEventValues) "$PageName 分类/预设事件批准集合或顺序错误"
+
+    $legacyEventValues = @(
+        $allEventActions |
+            Where-Object { -not $featureEventActions.Contains($_) } |
+            ForEach-Object { $_.GetAttribute('CommandParameter') }
+    )
+    Require (
+        $legacyEventValues.Count -eq $ExpectedLegacyPanelEvents.Count -and
+        (Test-ExactOrdinalSet -Actual $legacyEventValues -Expected $ExpectedLegacyPanelEvents)
+    ) "$PageName 旧 child 事件集合或数量漂移"
+    Require ($allEventActions.Count -eq ($expectedEventValues.Count + $ExpectedLegacyPanelEvents.Count)) "$PageName 面板包含未批准事件"
 
     $uiHandles = [ordered]@{}
     foreach ($nodeName in $UiHandleDescriptors.Keys) {
@@ -2868,7 +2890,9 @@ function Assert-LocalizationContract {
         [System.Collections.IDictionary]$ContentByLanguage,
 
         [Parameter(Mandatory)]
-        [System.Collections.IDictionary]$SemanticByHandle
+        [System.Collections.IDictionary]$SemanticByHandle,
+
+        [System.Collections.IDictionary]$MachineKeyByHandle = [ordered]@{}
     )
 
     $nodesByLanguage = [ordered]@{}
@@ -2901,6 +2925,14 @@ function Assert-LocalizationContract {
             $texts[$language] = $text
         }
 
+        if ($MachineKeyByHandle.Contains($handle)) {
+            $expectedMachineKey = $MachineKeyByHandle[$handle]
+            foreach ($language in $ContentByLanguage.Keys) {
+                Require ($texts[$language] -ceq $expectedMachineKey) "machine mirror 本地化必须精确等于 stat key: $language $handle"
+            }
+            continue
+        }
+
         Require ([regex]::IsMatch($texts.Chinese, '\p{IsCJKUnifiedIdeographs}')) "中文语义不完整: $handle"
         Require ([regex]::IsMatch($texts.English, '[A-Za-z]')) "英文语义不完整: $handle"
         Require ([regex]::IsMatch($texts.Japanese, '[\p{IsHiragana}\p{IsKatakana}]')) "日文必须包含日文假名: $handle"
@@ -2914,6 +2946,32 @@ function Assert-LocalizationContract {
         foreach ($language in @('English', 'Japanese', 'Korean')) {
             Require ($texts[$language] -cne $texts.Chinese) "$language 直接复制中文: $handle"
         }
+    }
+}
+
+function Assert-CategoryDisplayHandleContract {
+    param(
+        [Parameter(Mandatory)]
+        [psobject]$UiContract,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$CategoryHandleContracts,
+
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$MachineKeyByHandle,
+
+        [Parameter(Mandatory)]
+        [string]$Context
+    )
+
+    Require ($CategoryHandleContracts.Count -eq 7) '分类可见名称合同必须精确覆盖 7 个分类'
+    foreach ($nodeName in $CategoryHandleContracts.Keys) {
+        $contract = $CategoryHandleContracts[$nodeName]
+        Require ($UiContract.Handles.Contains($nodeName)) "$Context 分类可见名称节点缺失: $nodeName"
+        Require ($UiContract.Handles[$nodeName] -ceq $contract.Visible) "$Context 分类可见名称 handle 错误: $nodeName"
+        Require ($contract.Visible -cne $contract.Machine) "$Context 分类可见名称 handle 与 machine mirror 未分离: $nodeName"
+        Require ($MachineKeyByHandle.Contains($contract.Machine)) "$Context machine mirror handle 未登记: $nodeName"
+        Require ($MachineKeyByHandle[$contract.Machine] -ceq $contract.Mirror) "$Context machine mirror stat key 错误: $nodeName"
     }
 }
 
@@ -3572,6 +3630,26 @@ $expectedMirrorHandles = [ordered]@{
     COS_CFG_CATEGORY_CONVENIENCE = [pscustomobject]@{ DisplayName = 'h7e990000g0000g4000g8000g000000000113'; Description = 'h7e990000g0000g4000g8000g000000000114' }
 }
 
+$machineKeyByHandle = [ordered]@{
+    'h7e990000g0000g4000g8000g000000000101' = 'COS_CFG_CATEGORY_CORE'
+    'h7e990000g0000g4000g8000g000000000103' = 'COS_CFG_CATEGORY_ORIGIN'
+    'h7e990000g0000g4000g8000g000000000105' = 'COS_CFG_CATEGORY_RACETAGS'
+    'h7e990000g0000g4000g8000g000000000107' = 'COS_CFG_CATEGORY_WEAPON'
+    'h7e990000g0000g4000g8000g000000000109' = 'COS_CFG_CATEGORY_ARMOR'
+    'h7e990000g0000g4000g8000g000000000111' = 'COS_CFG_CATEGORY_RACIAL'
+    'h7e990000g0000g4000g8000g000000000113' = 'COS_CFG_CATEGORY_CONVENIENCE'
+}
+
+$categoryHandleContracts = [ordered]@{
+    COSCategoryCoreToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000344'; Machine = 'h7e990000g0000g4000g8000g000000000101'; Mirror = 'COS_CFG_CATEGORY_CORE' }
+    COSCategoryOriginToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000345'; Machine = 'h7e990000g0000g4000g8000g000000000103'; Mirror = 'COS_CFG_CATEGORY_ORIGIN' }
+    COSCategoryRaceTagsToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000346'; Machine = 'h7e990000g0000g4000g8000g000000000105'; Mirror = 'COS_CFG_CATEGORY_RACETAGS' }
+    COSCategoryWeaponToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000347'; Machine = 'h7e990000g0000g4000g8000g000000000107'; Mirror = 'COS_CFG_CATEGORY_WEAPON' }
+    COSCategoryArmorToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000348'; Machine = 'h7e990000g0000g4000g8000g000000000109'; Mirror = 'COS_CFG_CATEGORY_ARMOR' }
+    COSCategoryRacialToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000349'; Machine = 'h7e990000g0000g4000g8000g000000000111'; Mirror = 'COS_CFG_CATEGORY_RACIAL' }
+    COSCategoryConvenienceToggle = [pscustomobject]@{ Visible = 'h7e990000g0000g4000g8000g000000000350'; Machine = 'h7e990000g0000g4000g8000g000000000113'; Mirror = 'COS_CFG_CATEGORY_CONVENIENCE' }
+}
+
 $semanticByHandle = Assert-StatsContract -Content $stats -ExpectedMirrors @($categories.Values) -StatusGroups $statusGroups -ExpectedMirrorHandles $expectedMirrorHandles
 $configCode = (Get-OsirisCodeLines -Content $config) -join "`n"
 foreach ($status in @($statusGroups.Values | ForEach-Object { $_.Keys })) {
@@ -3619,13 +3697,13 @@ $uiHandleDescriptors = [ordered]@{
     COSPresetBalancedButton = 'PRESET_BALANCED'
     COSPresetAllConvenienceButton = 'PRESET_ALL_CONVENIENCE'
     COSPresetPreviewNotice = 'PRESET_PREVIEW'
-    COSCategoryCoreToggle = 'COS_CFG_CATEGORY_CORE'
-    COSCategoryOriginToggle = 'COS_CFG_CATEGORY_ORIGIN'
-    COSCategoryRaceTagsToggle = 'COS_CFG_CATEGORY_RACETAGS'
-    COSCategoryWeaponToggle = 'COS_CFG_CATEGORY_WEAPON'
-    COSCategoryArmorToggle = 'COS_CFG_CATEGORY_ARMOR'
-    COSCategoryRacialToggle = 'COS_CFG_CATEGORY_RACIAL'
-    COSCategoryConvenienceToggle = 'COS_CFG_CATEGORY_CONVENIENCE'
+    COSCategoryCoreToggle = 'VISIBLE_CORE'
+    COSCategoryOriginToggle = 'VISIBLE_ORIGIN'
+    COSCategoryRaceTagsToggle = 'VISIBLE_RACETAGS'
+    COSCategoryWeaponToggle = 'VISIBLE_WEAPON'
+    COSCategoryArmorToggle = 'VISIBLE_ARMOR'
+    COSCategoryRacialToggle = 'VISIBLE_RACIAL'
+    COSCategoryConvenienceToggle = 'VISIBLE_CONVENIENCE'
     COSPresetApplyButton = 'PRESET_APPLY'
     COSPresetCancelButton = 'PRESET_CANCEL'
 }
@@ -3691,9 +3769,68 @@ $controllerNavigation = [ordered]@{
     COSPresetCancelButton = [ordered]@{ Up = 'COSPresetAllConvenienceButton'; Down = 'COSPresetPureChaosButton'; Left = 'COSPresetApplyButton'; Right = 'COSPresetApplyButton' }
 }
 
-$keyboardContract = Assert-UiPageContract -Content $keyboardXaml -PageName 'COS_ConfigMenu.xaml' -Controller $false -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleDescriptors $uiHandleDescriptors -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values) -ExpectedCategorySections $expectedCategorySections -ApprovedStatusIds $approvedStatusIds
-$controllerContract = Assert-UiPageContract -Content $controllerXaml -PageName 'COS_ConfigMenu_c.xaml' -Controller $true -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleDescriptors $uiHandleDescriptors -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values) -ExpectedCategorySections $expectedCategorySections -ApprovedStatusIds $approvedStatusIds
+$expectedLegacyPanelEvents = @(
+    '79000000-0000-4000-8000-000000000001'
+    '79000000-0000-4000-8000-000000000002'
+    '7f818c10-3f23-49f8-838a-d161c57bb35d'
+    '0574b4b8-549a-4b39-b810-6890c68642b1'
+    '71abdeef-69d2-4385-8885-4f9ebbd829ca'
+    'aa88abcb-5f2e-452c-bdce-3ca6176db1e0'
+    '2dd4ef80-1686-4989-8773-3cf6f12b9a36'
+    'aff82c28-d71a-4dad-837d-d41d8519051a'
+    '7d000000-0000-4000-8000-000000000001'
+    '7d000000-0000-4000-8000-000000000002'
+    '7d000000-0000-4000-8000-000000000003'
+    '063cc1a5-fe65-43e5-8531-d6974a7b1dce'
+    '7d000000-0000-4000-8000-000000000004'
+    '7d000000-0000-4000-8000-000000000005'
+    '7d000000-0000-4000-8000-000000000006'
+    '78baf203-f60c-4dac-99ea-a7f5d1339d71'
+    '146d28dc-aa94-40e8-9bad-91b069055526'
+    '7a000000-0000-4000-8000-000000000001'
+    '77000000-0000-4000-8000-000000000001'
+    '7e000000-0000-4000-8000-000000000001'
+    'e438f411-6a7e-4060-9e0b-c7f6c26e751a'
+    'ddcf4293-e7d1-4154-a9c4-19fa24a35f38'
+    '563ba5fe-c808-4a2f-80b5-a1b4feb54649'
+    'e0927578-b7bd-42d8-b497-4f6fa2d57053'
+    '8d98892a-4cc3-4fb3-88b0-7bcbff3d7abe'
+    '2535def3-de94-4a94-b5be-b7e08e143709'
+    '712d9a0d-7d5f-4f42-a808-cd2dfb9e3685'
+    'd523163f-95a3-459b-92f4-59b9dc499b75'
+    'dd78b5d4-1cab-48eb-91b6-583b00eede31'
+    '6394ac5c-d9ae-4fe8-94bb-88900fc50d46'
+    '0aab1270-5408-4fc2-a473-9f6c893f018a'
+    '342a9ee6-2aec-4448-885c-8724af4d6c6b'
+    '8a7fb402-80c6-424e-a90c-a627bf6187e8'
+    '50b71015-0ed0-4b12-8f46-322e5c9de3fe'
+    '7937b010-b9cb-4a6b-b732-33e12a5e08a3'
+    'aa96a380-d8a4-475e-ac9e-b24502b914aa'
+    'ed99bd77-fd4e-4bbc-80d1-de2b125ce4ce'
+    '69bf2c6d-7e8c-4dc6-91cd-8ef359b8bcd1'
+    'a18a929b-1faa-44ac-b364-b03858bd6504'
+    'a99eb828-5907-489d-8492-81e833c25e68'
+    '8ddf3765-2814-4085-a0e1-376aaf9d984c'
+    'b227b0fd-026e-4931-af70-dd436277ddc0'
+    '108ff1c7-b025-46cc-8b10-e9729e3fb4c3'
+    'c0888d3b-4c97-4c50-95b9-34620ba1fdef'
+    '022d736c-8b4b-4599-9e51-e584a0e1c05d'
+    '79000000-0000-4000-8000-000000000005'
+    '79000000-0000-4000-8000-000000000006'
+    '79000000-0000-4000-8000-000000000007'
+    '79000000-0000-4000-8000-000000000008'
+    '79000000-0000-4000-8000-000000000009'
+    '79000000-0000-4000-8000-000000000010'
+    foreach ($number in @((1..12) + (14..74))) {
+        '76000000-0000-4000-8000-{0:D12}' -f $number
+    }
+)
+
+$keyboardContract = Assert-UiPageContract -Content $keyboardXaml -PageName 'COS_ConfigMenu.xaml' -Controller $false -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleDescriptors $uiHandleDescriptors -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values) -ExpectedCategorySections $expectedCategorySections -ApprovedStatusIds $approvedStatusIds -ExpectedLegacyPanelEvents $expectedLegacyPanelEvents
+$controllerContract = Assert-UiPageContract -Content $controllerXaml -PageName 'COS_ConfigMenu_c.xaml' -Controller $true -ButtonEvents $buttonEvents -StatusNodeSets $statusNodeSets -PanelOrder $panelOrder -ButtonOrder $buttonOrder -ExpectedNamedNodes $expectedFeatureNamedNodes -UiHandleDescriptors $uiHandleDescriptors -ControllerNavigation $controllerNavigation -ExpectedMirrors @($categories.Values) -ExpectedCategorySections $expectedCategorySections -ApprovedStatusIds $approvedStatusIds -ExpectedLegacyPanelEvents $expectedLegacyPanelEvents
 Assert-UiParityContract -Keyboard $keyboardContract -Controller $controllerContract
+Assert-CategoryDisplayHandleContract -UiContract $keyboardContract -CategoryHandleContracts $categoryHandleContracts -MachineKeyByHandle $machineKeyByHandle -Context 'COS_ConfigMenu.xaml'
+Assert-CategoryDisplayHandleContract -UiContract $controllerContract -CategoryHandleContracts $categoryHandleContracts -MachineKeyByHandle $machineKeyByHandle -Context 'COS_ConfigMenu_c.xaml'
 
 foreach ($nodeName in $keyboardContract.Handles.Keys) {
     $handle = $keyboardContract.Handles[$nodeName]
@@ -3706,7 +3843,7 @@ foreach ($nodeName in $keyboardContract.Handles.Keys) {
     }
 }
 
-Assert-LocalizationContract -ContentByLanguage $localization -SemanticByHandle $semanticByHandle
+Assert-LocalizationContract -ContentByLanguage $localization -SemanticByHandle $semanticByHandle -MachineKeyByHandle $machineKeyByHandle
 
 $expectedPackagePaths = @(
     'Localization/Chinese/ChaosOriginsStory.loca',
@@ -3986,6 +4123,15 @@ $controllerProbeArguments = [ordered]@{
     ExpectedMirrors = @($categories.Values)
     ExpectedCategorySections = $expectedCategorySections
     ApprovedStatusIds = $approvedStatusIds
+    ExpectedLegacyPanelEvents = $expectedLegacyPanelEvents
+}
+
+[xml]$visibleHandleMutationDocument = $controllerXaml
+$visibleHandleMutationNode = @(Get-XamlNamedNodes -Document $visibleHandleMutationDocument -Name 'COSCategoryCoreToggle')[0]
+$visibleHandleMutationNode.SetAttribute('Content', "{Binding Source='$($categoryHandleContracts.COSCategoryCoreToggle.Machine)', Converter={StaticResource TranslatedStringConverter}}")
+Assert-MutationRejected -Name 'category-visible-machine-handle' -ExpectedMessagePattern '^controller-probe 分类可见名称 handle 错误: COSCategoryCoreToggle$' -Probe {
+    $visibleHandleMutationContract = Assert-UiPageContract -Content $visibleHandleMutationDocument.OuterXml @controllerProbeArguments
+    Assert-CategoryDisplayHandleContract -UiContract $visibleHandleMutationContract -CategoryHandleContracts $categoryHandleContracts -MachineKeyByHandle $machineKeyByHandle -Context 'controller-probe'
 }
 
 [xml]$controllerEventMutationDocument = $controllerXaml
@@ -4002,7 +4148,7 @@ $extraEventPanel = @(Get-XamlNamedNodes -Document $extraEventDocument -Name 'COS
 $extraEventAction = $extraEventDocument.CreateElement('b', 'InvokeCommandAction', 'http://schemas.microsoft.com/xaml/behaviors')
 $extraEventAction.SetAttribute('CommandParameter', '7e990000-0000-4000-8000-000000000099')
 [void]$extraEventPanel.AppendChild($extraEventAction)
-Assert-MutationRejected -Name 'xaml-extra-event' -ExpectedMessagePattern '^controller-probe 分类/预设事件批准集合或顺序错误$' -Probe {
+Assert-MutationRejected -Name 'xaml-extra-event' -ExpectedMessagePattern '^controller-probe 旧 child 事件集合或数量漂移$' -Probe {
     [void](Assert-UiPageContract -Content $extraEventDocument.OuterXml @controllerProbeArguments)
 }
 
@@ -4085,8 +4231,19 @@ Assert-MutationRejected -Name 'xaml-combat-trigger-wrong-scope' -ExpectedMessage
     [void](Assert-UiPageContract -Content $movedCombatDocument.OuterXml @controllerProbeArguments)
 }
 
+$machineLocalizationMutation = [ordered]@{}
+foreach ($language in $localization.Keys) { $machineLocalizationMutation[$language] = $localization[$language] }
+$machineMutationHandle = $categoryHandleContracts.COSCategoryCoreToggle.Machine
+[xml]$machineMutationDocument = $localization.Chinese
+$machineMutationNode = @($machineMutationDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $machineMutationHandle })[0]
+$machineMutationNode.InnerText = '核心分类'
+$machineLocalizationMutation.Chinese = $machineMutationDocument.OuterXml
+Assert-MutationRejected -Name 'machine-mirror-localized-label' -ExpectedMessagePattern ('^machine mirror 本地化必须精确等于 stat key: Chinese {0}$' -f [regex]::Escape($machineMutationHandle)) -Probe {
+    Assert-LocalizationContract -ContentByLanguage $machineLocalizationMutation -SemanticByHandle $semanticByHandle -MachineKeyByHandle $machineKeyByHandle
+}
+
 $featureHandles = @($semanticByHandle.Keys)
-$mutationHandle = $featureHandles[0]
+$mutationHandle = @($featureHandles | Where-Object { -not $machineKeyByHandle.Contains($_) })[0]
 [xml]$chineseDocument = $localization.Chinese
 $chineseNode = @($chineseDocument.SelectNodes('/contentList/content') | Where-Object { $_.GetAttribute('contentuid') -ceq $mutationHandle })[0]
 Require ($null -ne $chineseNode) '本地化变异探针缺少中文真实节点'
@@ -4105,7 +4262,7 @@ foreach ($language in @('English', 'Japanese', 'Korean')) {
         Korean { '^(?:韩文必须包含韩文字符|Korean 缺少语义 token ''[^'']+''|Korean 直接复制中文): {0}$' -f [regex]::Escape($mutationHandle) }
     }
     Assert-MutationRejected -Name "$($language.ToLowerInvariant())-copies-chinese" -ExpectedMessagePattern $copyExpectedPattern -Probe {
-        Assert-LocalizationContract -ContentByLanguage $copyMutation -SemanticByHandle $semanticByHandle
+        Assert-LocalizationContract -ContentByLanguage $copyMutation -SemanticByHandle $semanticByHandle -MachineKeyByHandle $machineKeyByHandle
     }
 }
 
@@ -4116,7 +4273,7 @@ $placeholderNode = @($placeholderDocument.SelectNodes('/contentList/content') | 
 $placeholderNode.InnerText = 'A'
 $placeholderMutation.English = $placeholderDocument.OuterXml
 Assert-MutationRejected -Name 'localization-placeholder-a' -ExpectedMessagePattern ('^本地化文本不得使用占位符 A: English {0}$' -f [regex]::Escape($mutationHandle)) -Probe {
-    Assert-LocalizationContract -ContentByLanguage $placeholderMutation -SemanticByHandle $semanticByHandle
+    Assert-LocalizationContract -ContentByLanguage $placeholderMutation -SemanticByHandle $semanticByHandle -MachineKeyByHandle $machineKeyByHandle
 }
 
 Write-Output 'Category/preset contract counts: categories=7; preset-category-rows=28; preset-life-rows=4; events=13'
