@@ -265,6 +265,8 @@ DB_COS_ConfigWound(_Character, "MoveMinus9", 1);
 PROC
 PROC_COS_EnsurePowerState((CHARACTER)_Character)
 AND
+DB_COS_ConfigInitializationKind(_Character, "New")
+AND
 NOT DB_COS_ConfigMechanic(_Character, "Power", _)
 THEN
 DB_COS_ConfigMechanic(_Character, "Power", 1);

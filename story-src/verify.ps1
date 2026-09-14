@@ -1036,7 +1036,29 @@ foreach ($event in @('LevelGameplayStarted(_, _)','GainedControl(_Character)','C
 Require ([regex]::Matches($globalBenefitsGoal,
     '(?m)^NOT DB_Players\(\(CHARACTER\)NULL_00000000-0000-0000-0000-000000000000\);$').Count -eq 1) `
     '独立模块必须用NULL删除声明官方合并Story的DB_Players签名，且不得写入虚构玩家'
-Require (-not ([regex]::Match($globalBenefitsGoal, '(?ms)^PROC\nPROC_COS_ApplyCarrySetting.*?(?=^IF)').Value.Contains('COS_ChaosOriginMarker'))) '自动负重同步不得限制为混沌起源'
+$globalCarryEnsureRules = @([regex]::Matches(
+    $globalBenefitsGoal,
+    '(?ms)^PROC\nPROC_COS_EnsureCarrySetting\([^\n]*\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)'
+) | ForEach-Object { $_.Value })
+Require ($globalCarryEnsureRules.Count -eq 2 -and
+    @($globalCarryEnsureRules | Where-Object { $_.Contains('DB_COS_ConfigInitializationKind(_Character, "New")') }).Count -eq 1 -and
+    @($globalCarryEnsureRules | Where-Object {
+        $_.Contains('DB_Players(_Character)') -and
+        $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 0)') -and
+        -not $_.Contains('DB_COS_ConfigInitializationKind(')
+    }).Count -eq 1) `
+    '负重默认初始化必须同时保留混沌新角色设置和无混沌前置的全体玩家范围'
+$globalCarryApplyRules = @([regex]::Matches(
+    $globalBenefitsGoal,
+    '(?ms)^PROC\nPROC_COS_ApplyCarrySetting\([^\n]*\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)'
+) | ForEach-Object { $_.Value })
+Require (@($globalCarryApplyRules | Where-Object {
+        $_.Contains('DB_Players(_Character)') -and
+        $_.Contains('HasPassive(_Character, "COS_ChaosOriginMarker", 0)') -and
+        $_.Contains('AddPassive(_Character, "COS_GlobalCarryCapacity50x");') -and
+        -not $_.Contains('DB_COS_ConfigCategory(')
+    }).Count -eq 1) `
+    '非混沌玩家的自动负重发放不得依赖混沌分类'
 $masteryGoal = Normalize-LineEndings ([IO.File]::ReadAllText($masteryGoalPath))
 if ($masteryGoal.EndsWith("`n")) {
     $masteryGoal = $masteryGoal.Substring(0, $masteryGoal.Length - 1)
@@ -1428,11 +1450,11 @@ foreach ($requiredMechanicsText in @(
 Require ([regex]::Matches($mechanicsGoal, '(?ms)IF\r?\nLevelGameplayStarted\(_, _\)\r?\nAND\r?\nDB_Avatars\(_Character\)\r?\nAND\r?\nHasPassive\(_Character, "COS_ChaosOriginMarker", 1\)\r?\nTHEN\r?\nPROC_COS_Sync\(_Character\);').Count -eq 1 -and `
     -not $mechanicsGoal.Contains('GetHostCharacter(')) `
     '读档时必须为每个混沌起源玩家角色同步核心机制数据'
-Require ([regex]::Matches($mechanicsGoal, '(?ms)^PROC\r?\nPROC_COS_EnsurePowerState\(\(CHARACTER\)_Character\)\r?\nAND\r?\nNOT DB_COS_ConfigMechanic\(_Character, "Power", _\)\r?\nTHEN\r?\nDB_COS_ConfigMechanic\(_Character, "Power", 1\);').Count -eq 1 -and `
+Require ([regex]::Matches($mechanicsGoal, '(?ms)^PROC\r?\nPROC_COS_EnsurePowerState\(\(CHARACTER\)_Character\)\r?\nAND\r?\nDB_COS_ConfigInitializationKind\(_Character, "New"\)\r?\nAND\r?\nNOT DB_COS_ConfigMechanic\(_Character, "Power", _\)\r?\nTHEN\r?\nDB_COS_ConfigMechanic\(_Character, "Power", 1\);').Count -eq 1 -and `
     [regex]::Matches($mechanicsGoal, '(?ms)^PROC\r?\nPROC_COS_EnsurePowerState\(\(CHARACTER\)_Character\)\r?\nAND\r?\nNOT DB_COS_Power\(_Character, _\)\r?\nTHEN\r?\nDB_COS_Power\(_Character, 0\);').Count -eq 1 -and `
     ($mechanicsGoal.Contains("PROC_COS_MigrateLegacyFatePending(_Character);`r`nPROC_COS_Register(_Character);`r`nPROC_COS_EnsurePowerState(_Character);`r`nPROC_COS_SyncPowerFromDatabase(_Character);") -or `
      $mechanicsGoal.Contains("PROC_COS_MigrateLegacyFatePending(_Character);`nPROC_COS_Register(_Character);`nPROC_COS_EnsurePowerState(_Character);`nPROC_COS_SyncPowerFromDatabase(_Character);"))) `
-    '核心同步必须明确补齐旧存档缺失的混沌之力配置和数值行'
+    '核心同步只能为明确判定的新角色补齐混沌之力配置，并确保运行数值行存在'
 foreach ($forbiddenMechanicsText in @(
     'UserAvatarCreated', 'LevelGameplayReady', 'TemplateAddTo', 'TemplateAddedTo', 'TutorialEvent',
     'PROC_COS_ConfigEnsureBook', 'PROC_COS_ConfigSyncOrigins', 'PROC_COS_ConfigSyncRacialPassives',
@@ -4485,7 +4507,7 @@ function Test-ControllerPageContract([xml]$Document, [string]$PageText, [string]
     Require ($setFocusActions.Count -eq 1 -and $loadedFocusActions.Count -eq 1 -and
         $setFocusActions[0].GetAttribute('TargetName') -eq 'COS_ConfigMenu_c') `
         "手柄核心设置页 Loaded 必须唯一把初始焦点交给根控件: $PageName"
-    foreach ($forbiddenResource in @('PageHeaderHeight', 'PageHeader', 'BrownButtonStyle')) {
+    foreach ($forbiddenResource in @('PageHeaderHeight', 'PageHeader', 'BrownButtonStyle', 'BigBrownButtonStyle')) {
         Require (-not $PageText.Contains("{StaticResource $forbiddenResource}")) `
             "手柄核心设置页不得引用键鼠专属资源 ${forbiddenResource}: $PageName"
     }

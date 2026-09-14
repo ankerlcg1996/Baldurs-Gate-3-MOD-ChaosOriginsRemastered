@@ -1912,14 +1912,34 @@ AND
 NOT DB_COS_ConfigCategorySchema(_Character, _)
 THEN
 PROC_COS_ConfigDetectPreexisting(_Character);
+PROC_COS_ConfigClassifyNew(_Character);
+PROC_COS_ConfigClassifyLegacy(_Character);
 PROC_COS_ConfigInitializeNew(_Character);
 PROC_COS_ConfigInitializeLegacy(_Character);
 PROC_COS_ConfigCommitCategorySchema(_Character);
 
 PROC
-PROC_COS_ConfigInitializeNew((CHARACTER)_Character)
+PROC_COS_ConfigClassifyNew((CHARACTER)_Character)
 AND
 NOT DB_COS_ConfigPreexisting(_Character)
+AND
+NOT DB_COS_ConfigInitializationKind(_Character, _)
+THEN
+DB_COS_ConfigInitializationKind(_Character, "New");
+
+PROC
+PROC_COS_ConfigClassifyLegacy((CHARACTER)_Character)
+AND
+DB_COS_ConfigPreexisting(_Character)
+AND
+NOT DB_COS_ConfigInitializationKind(_Character, _)
+THEN
+DB_COS_ConfigInitializationKind(_Character, "Legacy");
+
+PROC
+PROC_COS_ConfigInitializeNew((CHARACTER)_Character)
+AND
+DB_COS_ConfigInitializationKind(_Character, "New")
 THEN
 PROC_COS_ConfigInitCategory(_Character, "Core", 0);
 PROC_COS_ConfigInitCategory(_Character, "Origin", 1);
@@ -1933,7 +1953,7 @@ DB_COS_ConfigLifeSkill(_Character, 0);
 PROC
 PROC_COS_ConfigInitializeLegacy((CHARACTER)_Character)
 AND
-DB_COS_ConfigPreexisting(_Character)
+DB_COS_ConfigInitializationKind(_Character, "Legacy")
 THEN
 PROC_COS_ConfigInitCategory(_Character, "Core", 1);
 PROC_COS_ConfigInitCategory(_Character, "Origin", 1);
@@ -2603,6 +2623,8 @@ PROC_COS_ConfigApplyCategoryActual(_Character);
 PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
 AND
+DB_COS_ConfigInitializationKind(_Character, "New")
+AND
 DB_COS_ConfigMechanicDefault(_Key, _Default)
 AND
 NOT DB_COS_ConfigMechanic(_Character, _Key, _)
@@ -2612,6 +2634,8 @@ DB_COS_ConfigMechanic(_Character, _Key, _Default);
 PROC
 PROC_COS_ConfigEnsureLifeSkill((CHARACTER)_Character)
 AND
+DB_COS_ConfigInitializationKind(_Character, "New")
+AND
 DB_COS_ConfigLifeDefault(_Default)
 AND
 NOT DB_COS_ConfigLifeSkill(_Character, _)
@@ -2620,6 +2644,8 @@ DB_COS_ConfigLifeSkill(_Character, _Default);
 
 PROC
 PROC_COS_ConfigEnsureRacialPassives((CHARACTER)_Character)
+AND
+DB_COS_ConfigInitializationKind(_Character, "New")
 AND
 DB_COS_ConfigRacialDefault(_Passive, _Default)
 AND
@@ -3655,6 +3681,8 @@ DB_COS_GrantUnresolved(_Character, _Key);
 PROC
 PROC_COS_EnsureGrantOptions((CHARACTER)_Character)
 AND
+DB_COS_ConfigInitializationKind(_Character, "New")
+AND
 DB_COS_GrantOption(_Key, _Mirror)
 AND
 NOT DB_COS_GrantSetting(_Character, _Key, _)
@@ -3913,6 +3941,8 @@ PROC_COS_SuspendVoloEye(_Character);
 
 PROC
 PROC_COS_EnsureVoloEyeSetting((CHARACTER)_Character)
+AND
+DB_COS_ConfigInitializationKind(_Character, "New")
 AND
 NOT DB_COS_VoloEyeSetting(_Character, _)
 THEN
@@ -4338,6 +4368,8 @@ PROC_COS_SyncTagSpells(_Character);
 PROC
 PROC_COS_EnsureTagSpells((CHARACTER)_Character)
 AND
+DB_COS_ConfigInitializationKind(_Character, "New")
+AND
 NOT DB_COS_TagSpellsSetting(_Character, _)
 THEN
 DB_COS_TagSpellsSetting(_Character, 0);
@@ -4468,6 +4500,8 @@ PROC_COS_ConfigInitCosts(_Character);
 
 PROC
 PROC_COS_ConfigInitCosts((CHARACTER)_Character)
+AND
+DB_COS_ConfigInitializationKind(_Character, "New")
 AND
 DB_COS_ConfigCostDefault(_Key, _Default, _Resource)
 AND

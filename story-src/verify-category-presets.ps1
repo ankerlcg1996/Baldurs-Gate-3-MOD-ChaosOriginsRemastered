@@ -785,15 +785,37 @@ function Assert-CategoryInitializationContract {
     ) -Context '分类统一初始化入口'
     Require-ExactActions -Model $initializeModels[0] -Expected @(
         'PROC_COS_ConfigDetectPreexisting(_Character);',
+        'PROC_COS_ConfigClassifyNew(_Character);',
+        'PROC_COS_ConfigClassifyLegacy(_Character);',
         'PROC_COS_ConfigInitializeNew(_Character);',
         'PROC_COS_ConfigInitializeLegacy(_Character);',
         'PROC_COS_ConfigCommitCategorySchema(_Character);'
     ) -Context '分类统一初始化入口'
 
+    $classifyNewModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigClassifyNew')
+    Require ($classifyNewModels.Count -eq 1) '新角色分类判定规则必须唯一'
+    Require-ExactConditions -Model $classifyNewModels[0] -Expected @(
+        'NOT DB_COS_ConfigPreexisting(_Character)',
+        'NOT DB_COS_ConfigInitializationKind(_Character, _)'
+    ) -Context '新角色分类判定'
+    Require-ExactActions -Model $classifyNewModels[0] -Expected @(
+        'DB_COS_ConfigInitializationKind(_Character, "New");'
+    ) -Context '新角色分类判定'
+
+    $classifyLegacyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigClassifyLegacy')
+    Require ($classifyLegacyModels.Count -eq 1) '旧角色分类判定规则必须唯一'
+    Require-ExactConditions -Model $classifyLegacyModels[0] -Expected @(
+        'DB_COS_ConfigPreexisting(_Character)',
+        'NOT DB_COS_ConfigInitializationKind(_Character, _)'
+    ) -Context '旧角色分类判定'
+    Require-ExactActions -Model $classifyLegacyModels[0] -Expected @(
+        'DB_COS_ConfigInitializationKind(_Character, "Legacy");'
+    ) -Context '旧角色分类判定'
+
     $newModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigInitializeNew')
     Require ($newModels.Count -eq 1) '新角色分类初始化规则必须唯一'
     Require-ExactConditions -Model $newModels[0] -Expected @(
-        'NOT DB_COS_ConfigPreexisting(_Character)'
+        'DB_COS_ConfigInitializationKind(_Character, "New")'
     ) -Context '新角色分类初始化'
     $expectedNewActions = @(
         foreach ($category in $categoryKeys) {
@@ -807,7 +829,7 @@ function Assert-CategoryInitializationContract {
     $legacyModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigInitializeLegacy')
     Require ($legacyModels.Count -eq 1) '旧角色分类初始化规则必须唯一'
     Require-ExactConditions -Model $legacyModels[0] -Expected @(
-        'DB_COS_ConfigPreexisting(_Character)'
+        'DB_COS_ConfigInitializationKind(_Character, "Legacy")'
     ) -Context '旧角色分类初始化'
     $expectedLegacyActions = @(
         foreach ($category in $categoryKeys) {
@@ -875,6 +897,50 @@ function Assert-CategoryInitializationContract {
     $syncModels = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCharacter')
     Require ($syncModels.Count -eq 1) '统一角色同步入口必须唯一'
     Require ($syncModels[0].Actions.Count -gt 0 -and $syncModels[0].Actions[0] -ceq 'PROC_COS_ConfigInitializeCategories(_Character);') '首次分类初始化不是统一角色同步第一步'
+}
+
+function Assert-PartialLegacyDefaultPreservationContract {
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ContentByGoal
+    )
+
+    $expectedWriters = @(
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_ConfigEnsureMechanics'; ActionPattern = '^DB_COS_ConfigMechanic\(_Character, _Key, _Default\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_ConfigEnsureLifeSkill'; ActionPattern = '^DB_COS_ConfigLifeSkill\(_Character, _Default\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_ConfigEnsureRacialPassives'; ActionPattern = '^DB_COS_ConfigRacial\(_Character, _Passive, _Default\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_EnsureGrantOptions'; ActionPattern = '^DB_COS_GrantSetting\(_Character, _Key, 1\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_EnsureVoloEyeSetting'; ActionPattern = '^DB_COS_VoloEyeSetting\(_Character, 1\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_EnsureTagSpells'; ActionPattern = '^DB_COS_TagSpellsSetting\(_Character, 0\);$' }
+        [pscustomobject]@{ Goal = 'Config'; Procedure = 'PROC_COS_ConfigInitCosts'; ActionPattern = '^DB_COS_ConfigCost\(_Character, _Key, _Default\);$' }
+        [pscustomobject]@{ Goal = 'ChaosMechanics'; Procedure = 'PROC_COS_EnsurePowerState'; ActionPattern = '^DB_COS_ConfigMechanic\(_Character, "Power", 1\);$' }
+    )
+
+    foreach ($writer in $expectedWriters) {
+        Require ($ContentByGoal.Contains($writer.Goal)) "部分旧档默认写入验证缺少 Goal: $($writer.Goal)"
+        $models = @(Get-ProcedureModels -Content $ContentByGoal[$writer.Goal] -Name $writer.Procedure | Where-Object {
+            @($_.Actions | Where-Object { $_ -match $writer.ActionPattern }).Count -eq 1
+        })
+        Require ($models.Count -eq 1) "部分旧档默认写入过程缺失或重复: $($writer.Procedure)"
+        Require-Condition -Model $models[0] -Condition 'DB_COS_ConfigInitializationKind(_Character, "New")' -Context "部分旧档默认写入门禁 $($writer.Procedure)"
+        Require (-not ($models[0].Conditions -ccontains 'DB_COS_ConfigInitializationKind(_Character, "Legacy")')) "旧档不得获得默认写入权限: $($writer.Procedure)"
+    }
+
+    Require ($ContentByGoal.Contains('GlobalPlayerBenefits')) '部分旧档默认写入验证缺少 Goal: GlobalPlayerBenefits'
+    $carryModels = @(Get-ProcedureModels -Content $ContentByGoal.GlobalPlayerBenefits -Name 'PROC_COS_EnsureCarrySetting' | Where-Object {
+        $_.Actions -ccontains 'DB_COS_CarryEnabled(_Character, 1);'
+    })
+    Require ($carryModels.Count -eq 2) '负重默认写入必须精确拆分为混沌新角色与非混沌玩家两个分支'
+    $newChaosCarry = @($carryModels | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigInitializationKind(_Character, "New")' })
+    Require ($newChaosCarry.Count -eq 1) '混沌新角色负重默认写入分支缺失或重复'
+    Require-Condition -Model $newChaosCarry[0] -Condition 'NOT DB_COS_CarryEnabled(_Character, _)' -Context '混沌新角色负重默认写入'
+    Require (-not ($newChaosCarry[0].Conditions -ccontains 'DB_COS_ConfigInitializationKind(_Character, "Legacy")')) '部分旧档不得获得负重默认写入权限'
+    $nonChaosCarry = @($carryModels | Where-Object { $_.Conditions -ccontains 'HasPassive(_Character, "COS_ChaosOriginMarker", 0)' })
+    Require ($nonChaosCarry.Count -eq 1) '非混沌玩家负重默认写入分支缺失或重复'
+    foreach ($condition in @('DB_Players(_Character)', 'HasPassive(_Character, "COS_ChaosOriginMarker", 0)', 'NOT DB_COS_CarryEnabled(_Character, _)')) {
+        Require-Condition -Model $nonChaosCarry[0] -Condition $condition -Context '非混沌玩家负重默认写入'
+    }
+    Require (-not ($nonChaosCarry[0].Conditions -match '^DB_COS_ConfigInitializationKind\(')) '非混沌玩家负重默认写入不得依赖混沌配置分类'
 }
 
 function Assert-LegacyWriterInitializationContract {
@@ -3580,6 +3646,11 @@ if ($Focus -ceq 'Task3') {
     Assert-LegacyDetectionContract -Content $config -ExpectedProbes $task3LegacyProbes
     Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($task3LegacyProbes.Keys)
     Assert-CategoryInitializationContract -Content $config -NewCategories $task3NewCategories -LegacyCategories $task3LegacyCategories -NewLife 0
+    Assert-PartialLegacyDefaultPreservationContract -ContentByGoal ([ordered]@{
+        Config = $config
+        GlobalPlayerBenefits = $globalBenefits
+        ChaosMechanics = $mechanics
+    })
     Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
     Assert-CategoryMirrorContract -Content $config
     Assert-CategoryEventContract -Content $config
@@ -3620,6 +3691,17 @@ if ($Focus -ceq 'Task3') {
     $partialProbeMutation = Replace-RuleBlock -Content $config -OldBlock $partialProbeModel.Block -NewBlock $partialProbeBlock -ProbeName 'task3-partial-legacy-requires-two-tables'
     Assert-MutationRejected -Name 'task3-partial-legacy-requires-two-tables' -ExpectedMessagePattern '^旧档 probe 条件集合不精确: DB_COS_ConfigMechanic$' -Probe {
         Assert-LegacyDetectionContract -Content $partialProbeMutation -ExpectedProbes $task3LegacyProbes
+    }
+
+    $grantDefaultModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_EnsureGrantOptions')[0]
+    $unguardedDefaultBlock = Replace-FirstLiteral -Content $grantDefaultModel.Block -OldValue 'DB_COS_ConfigInitializationKind(_Character, "New")' -NewValue '// mutation: partial legacy default guard removed' -ProbeName 'task3-partial-legacy-default-fill'
+    $unguardedDefaultMutation = Replace-RuleBlock -Content $config -OldBlock $grantDefaultModel.Block -NewBlock $unguardedDefaultBlock -ProbeName 'task3-partial-legacy-default-fill'
+    Assert-MutationRejected -Name 'task3-partial-legacy-default-fill' -ExpectedMessagePattern '^部分旧档默认写入门禁 PROC_COS_EnsureGrantOptions 缺少或重复真实条件:' -Probe {
+        Assert-PartialLegacyDefaultPreservationContract -ContentByGoal ([ordered]@{
+            Config = $unguardedDefaultMutation
+            GlobalPlayerBenefits = $globalBenefits
+            ChaosMechanics = $mechanics
+        })
     }
 
     $disabledMirrorModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigRemoveDisabledCategoryMirrors')[0]
@@ -3689,7 +3771,7 @@ if ($Focus -ceq 'Task3') {
     }
 
     Write-Output 'Task 3 category persistence contract: PASS'
-    Write-Output 'Task 3 mutation probes: new=PASS; legacy=PASS; partial=PASS; schema=PASS; idempotence=PASS; missing-row=PASS; toggle=PASS; lifecycle-init=PASS'
+    Write-Output 'Task 3 mutation probes: new=PASS; legacy=PASS; partial=PASS; partial-default-preservation=PASS; schema=PASS; idempotence=PASS; missing-row=PASS; toggle=PASS; lifecycle-init=PASS'
     exit 0
 }
 
@@ -3708,6 +3790,11 @@ $legacyProbes = [ordered]@{
 }
 Assert-LegacyDetectionContract -Content $config -ExpectedProbes $legacyProbes
 Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($legacyProbes.Keys)
+Assert-PartialLegacyDefaultPreservationContract -ContentByGoal ([ordered]@{
+    Config = $config
+    GlobalPlayerBenefits = $globalBenefits
+    ChaosMechanics = $mechanics
+})
 Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
 
 $coreCategorySeedGuard = 'NOT DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")'
