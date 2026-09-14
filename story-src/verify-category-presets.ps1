@@ -339,6 +339,40 @@ function Assert-MutationHarnessContract {
         $nullReferenceEscaped = $true
     }
     Require $nullReferenceEscaped 'mutation harness 吞掉空引用异常'
+
+    $emptyStatsRejected = $false
+    $emptyStatusGroups = [ordered]@{ Current = [ordered]@{ COS_PRESET_CURRENT_CUSTOM = 'COS_PRESET_CURRENT' } }
+    $emptyMirrorHandles = [ordered]@{
+        COS_CFG_CATEGORY_CORE = [pscustomobject]@{
+            DisplayName = 'h7e990000g0000g4000g8000g000000000101'
+            Description = 'h7e990000g0000g4000g8000g000000000102'
+        }
+    }
+    try {
+        [void](Assert-StatsContract -Content '' -ExpectedMirrors @('COS_CFG_CATEGORY_CORE') -StatusGroups $emptyStatusGroups -ExpectedMirrorHandles $emptyMirrorHandles)
+    }
+    catch [CategoryPresetContractException] {
+        Require ($_.Exception.Message -ceq '分类 mirror Stats 集合不精确') "空 Stats 合同错误不精确: $($_.Exception.Message)"
+        $emptyStatsRejected = $true
+    }
+    Require $emptyStatsRejected '空 Stats 未以合同异常拒绝'
+
+    $emptyLocalizationRejected = $false
+    $emptyLocalization = [ordered]@{
+        Chinese = '<contentList />'
+        English = '<contentList />'
+        Japanese = '<contentList />'
+        Korean = '<contentList />'
+    }
+    $missingHandle = 'h7e990000g0000g4000g8000g000000000101'
+    try {
+        Assert-LocalizationContract -ContentByLanguage $emptyLocalization -SemanticByHandle ([ordered]@{ $missingHandle = 'COS_CFG_CATEGORY_CORE' })
+    }
+    catch [CategoryPresetContractException] {
+        Require ($_.Exception.Message -ceq "分类/预设批准 handle 缺失或重复: Chinese $missingHandle") "空本地化 handle 合同错误不精确: $($_.Exception.Message)"
+        $emptyLocalizationRejected = $true
+    }
+    Require $emptyLocalizationRejected '空本地化 handle 未以合同异常拒绝'
 }
 
 function Replace-FirstLiteral {
@@ -384,6 +418,7 @@ function Replace-RuleBlock {
 function Get-StatsEntries {
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string]$Content
     )
 
@@ -1375,6 +1410,7 @@ function Assert-MirrorPassiveContract {
 function Assert-StatsContract {
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string]$Content,
 
         [Parameter(Mandatory)]
@@ -1407,7 +1443,8 @@ function Assert-StatsContract {
         }
     }
     $mirrorEntries = @($entries | Where-Object { $_.Name.StartsWith('COS_CFG_CATEGORY_', [System.StringComparison]::Ordinal) })
-    Require (Test-ExactOrdinalSet -Actual @($mirrorEntries.Name) -Expected $ExpectedMirrors) '分类 mirror Stats 集合不精确'
+    $mirrorNames = @($mirrorEntries | ForEach-Object { $_.Name })
+    Require (Test-ExactOrdinalSet -Actual $mirrorNames -Expected $ExpectedMirrors) '分类 mirror Stats 集合不精确'
     foreach ($entry in $mirrorEntries) {
         Assert-MirrorPassiveContract -Entry $entry
         Require ($ExpectedMirrorHandles.Contains($entry.Name)) "分类镜像缺少固定 handle 合同: $($entry.Name)"
@@ -1432,7 +1469,8 @@ function Assert-StatsContract {
         }
     )
     $expectedStatuses = @($StatusGroups.Values | ForEach-Object { $_.Keys })
-    Require (Test-ExactOrdinalSet -Actual @($statusEntries.Name) -Expected $expectedStatuses) '分类/预设状态批准集合不精确'
+    $statusNames = @($statusEntries | ForEach-Object { $_.Name })
+    Require (Test-ExactOrdinalSet -Actual $statusNames -Expected $expectedStatuses) '分类/预设状态批准集合不精确'
 
     foreach ($groupName in $StatusGroups.Keys) {
         foreach ($statusName in $StatusGroups[$groupName].Keys) {
