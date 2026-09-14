@@ -586,6 +586,45 @@ THEN
 DB_COS_ConfigCategoryEvent((TUTORIALEVENT)7e990000-0000-4000-8000-000000000007, "Convenience");
 
 PROC
+PROC_COS_ConfigSeedCategoryActualMap()
+THEN
+DB_COS_ConfigCategoryActualMap("Core", "ACTIVE", "COS_CATEGORY_ACTUAL_CORE_ACTIVE");
+DB_COS_ConfigCategoryActualMap("Core", "PAUSED", "COS_CATEGORY_ACTUAL_CORE_PAUSED");
+DB_COS_ConfigCategoryActualMap("Core", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_CORE_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("Core", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_CORE_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("Core", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_CORE_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("Origin", "ACTIVE", "COS_CATEGORY_ACTUAL_ORIGIN_ACTIVE");
+DB_COS_ConfigCategoryActualMap("Origin", "PAUSED", "COS_CATEGORY_ACTUAL_ORIGIN_PAUSED");
+DB_COS_ConfigCategoryActualMap("Origin", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_ORIGIN_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("Origin", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_ORIGIN_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("Origin", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_ORIGIN_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("RaceTags", "ACTIVE", "COS_CATEGORY_ACTUAL_RACETAGS_ACTIVE");
+DB_COS_ConfigCategoryActualMap("RaceTags", "PAUSED", "COS_CATEGORY_ACTUAL_RACETAGS_PAUSED");
+DB_COS_ConfigCategoryActualMap("RaceTags", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_RACETAGS_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("RaceTags", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_RACETAGS_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("RaceTags", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_RACETAGS_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("WeaponProficiencies", "ACTIVE", "COS_CATEGORY_ACTUAL_WEAPON_ACTIVE");
+DB_COS_ConfigCategoryActualMap("WeaponProficiencies", "PAUSED", "COS_CATEGORY_ACTUAL_WEAPON_PAUSED");
+DB_COS_ConfigCategoryActualMap("WeaponProficiencies", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_WEAPON_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("WeaponProficiencies", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_WEAPON_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("WeaponProficiencies", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_WEAPON_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("ArmorProficiencies", "ACTIVE", "COS_CATEGORY_ACTUAL_ARMOR_ACTIVE");
+DB_COS_ConfigCategoryActualMap("ArmorProficiencies", "PAUSED", "COS_CATEGORY_ACTUAL_ARMOR_PAUSED");
+DB_COS_ConfigCategoryActualMap("ArmorProficiencies", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_ARMOR_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("ArmorProficiencies", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_ARMOR_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("ArmorProficiencies", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_ARMOR_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("RacialAbilities", "ACTIVE", "COS_CATEGORY_ACTUAL_RACIAL_ACTIVE");
+DB_COS_ConfigCategoryActualMap("RacialAbilities", "PAUSED", "COS_CATEGORY_ACTUAL_RACIAL_PAUSED");
+DB_COS_ConfigCategoryActualMap("RacialAbilities", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_RACIAL_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("RacialAbilities", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_RACIAL_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("RacialAbilities", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_RACIAL_SYNC_FAILED");
+DB_COS_ConfigCategoryActualMap("Convenience", "ACTIVE", "COS_CATEGORY_ACTUAL_CONVENIENCE_ACTIVE");
+DB_COS_ConfigCategoryActualMap("Convenience", "PAUSED", "COS_CATEGORY_ACTUAL_CONVENIENCE_PAUSED");
+DB_COS_ConfigCategoryActualMap("Convenience", "WAITING_CONDITION", "COS_CATEGORY_ACTUAL_CONVENIENCE_WAITING_CONDITION");
+DB_COS_ConfigCategoryActualMap("Convenience", "MISSING_CONFIG", "COS_CATEGORY_ACTUAL_CONVENIENCE_MISSING_CONFIG");
+DB_COS_ConfigCategoryActualMap("Convenience", "SYNC_FAILED", "COS_CATEGORY_ACTUAL_CONVENIENCE_SYNC_FAILED");
+
+PROC
 PROC_COS_ConfigSeedCategories()
 AND
 NOT DB_COS_ConfigLegacyTable("DB_COS_ConfigMechanic")
@@ -819,6 +858,610 @@ PROC_COS_ConfigAddEnabledCategoryMirrors(_Character);
 PROC_COS_ConfigRemoveDisabledCategoryMirrors(_Character);
 
 PROC
+PROC_COS_ConfigClearCategoryActualIssues((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, _State)
+THEN
+NOT DB_COS_ConfigCategoryActualIssue(_Character, _Category, _State);
+
+PROC
+PROC_COS_ConfigClearCategoryActualSelected((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State)
+THEN
+NOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State);
+
+PROC
+PROC_COS_ConfigClearOriginActualSources((CHARACTER)_Character)
+AND
+DB_COS_ConfigOriginActualSource(_Character)
+THEN
+NOT DB_COS_ConfigOriginActualSource(_Character);
+
+PROC
+PROC_COS_ConfigCollectOriginActualSources((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _Tag)
+AND
+HasActiveStatus(_Character, _Status, 1)
+THEN
+DB_COS_ConfigOriginActualSource(_Character);
+
+// Missing records are explicit errors. Actual-state reporting never invents a child default.
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryMap(_Category, _Mirror)
+AND
+NOT DB_COS_ConfigCategory(_Character, _Category, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_ConfigMechanicDefault(_Key, _Default)
+AND
+NOT DB_COS_ConfigMechanic(_Character, _Key, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_ConfigCostDefault(_Key, _Default, _Resource)
+AND
+NOT DB_COS_ConfigCost(_Character, _Key, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_GrantOrigin(_Key, _Passive, _Status, _Mirror)
+AND
+NOT DB_COS_GrantSetting(_Character, _Key, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+NOT DB_COS_GrantSetting(_Character, _Key, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+DB_COS_ConfigRacialDefault(_Passive, _Default)
+AND
+NOT DB_COS_ConfigRacial(_Character, _Passive, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "RacialAbilities", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_TagSpellsSetting(_Character, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_VoloEyeSetting(_Character, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualMissing((CHARACTER)_Character)
+AND
+NOT DB_COS_CarryEnabled(_Character, _)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "MISSING_CONFIG");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualPaused((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "PAUSED");
+
+// Origin is enabled but has no selected module identity yet.  This is a real,
+// reachable waiting condition and cannot coexist with an active identity source.
+PROC
+PROC_COS_ConfigMarkCategoryActualWaiting((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+NOT DB_COS_ConfigOriginActualSource(_Character)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "WAITING_CONDITION");
+
+// Core base effects are the durable, directly observable projection of the Core category.
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_CorePassive(_RequiredLevel, _Passive)
+AND
+_Level >= _RequiredLevel
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+GetLevel(_Character, _Level)
+AND
+DB_COS_CoreSpell(_RequiredLevel, _Spell)
+AND
+_Level >= _RequiredLevel
+AND
+HasSpell(_Character, _Spell, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+// Core actual-state checks model only durable runtime projections with exact
+// existing semantics.  Contextual or already-resolved chaos outcomes are not
+// treated as synchronisation failures.
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
+DB_COS_Power(_Character, _Power)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 0)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Genesis", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Power", 1)
+AND
+DB_COS_Power(_Character, _Power)
+AND
+DB_COS_ConfigCost(_Character, "Genesis", _Cost)
+AND
+_Power >= _Cost
+AND
+HasActiveStatus(_Character, "COS_CHAOS_GENESIS_READY", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Fate", 1)
+AND
+HasPassive(_Character, "COS_FateRevision", 1)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Fate", 0)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Mastery", 1)
+AND
+DB_COS_MasteryAvailableCount(_Character, _Count)
+AND
+_Count > 0
+AND
+HasSpell(_Character, "Shout_COS_ChaosMastery", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Mastery", 1)
+AND
+DB_COS_MasteryAvailableCount(_Character, 0)
+AND
+HasSpell(_Character, "Shout_COS_ChaosMastery", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "AllIn", 0)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_ALLIN_TOGGLE", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Strike", 0)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "KillPower", 0)
+AND
+HasActiveStatus(_Character, "COS_CHAOS_KILL", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, "Duality", 0)
+AND
+DB_COS_DualityDelayedOwnerTotal(_Character, _Target, _Contribution)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");
+
+// Origin effects are checked only through module-owned projections.
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _Tag)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+IsTagged(_Character, _Tag, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentitySpell(_Status, _Spell)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+HasSpell(_Character, _Spell, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentityPassive(_Status, _Passive)
+AND
+HasActiveStatus(_Character, _Status, 1)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentityToggle(_, _Status, _Tag)
+AND
+HasActiveStatus(_Character, _Status, 0)
+AND
+DB_COS_OriginTagOwned(_Character, _Tag)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentitySpell(_Status, _Spell)
+AND
+HasActiveStatus(_Character, _Status, 0)
+AND
+DB_COS_OriginSpellOwned(_Character, _Spell)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
+AND
+DB_COS_OriginIdentityPassive(_Status, _Passive)
+AND
+HasActiveStatus(_Character, _Status, 0)
+AND
+DB_COS_OriginPassiveOwned(_Character, _Passive)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "SYNC_FAILED");
+
+// Grant categories use the effective desired projection; Instrument never enters this map.
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_GrantDesired(_Character, _Key)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+AND
+HasPassive(_Character, _Mirror, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+NOT DB_COS_GrantDesired(_Character, _Key)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+AND
+HasPassive(_Character, _Mirror, 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_GrantDesired(_Character, _Key)
+AND
+DB_COS_GrantTag(_Key, _Tag)
+AND
+IsTagged(_Character, _Tag, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+NOT DB_COS_GrantDesired(_Character, _Key)
+AND
+DB_COS_GrantTagOwned(_Character, _Tag)
+AND
+DB_COS_GrantTag(_Key, _Tag)
+AND
+NOT DB_COS_NativeGrantTag(_Character, _Tag)
+AND
+IsTagged(_Character, _Tag, 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, 1)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "RacialAbilities", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)
+AND
+DB_COS_ConfigRacial(_Character, _Passive, 0)
+AND
+DB_COS_RacialPassiveGranted(_Character, _Passive)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "RacialAbilities", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+HasPassive(_Character, "COS_FixedGuidance30", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_CarryEnabled(_Character, 1)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_CarryEnabled(_Character, 0)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_TagSpellDesired(_Character, _Passive)
+AND
+HasPassive(_Character, _Passive, 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_TagSpellMap(_, _, _Passive)
+AND
+NOT DB_COS_TagSpellDesired(_Character, _Passive)
+AND
+HasPassive(_Character, _Passive, 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_VoloEyeUnlocked(1)
+AND
+DB_COS_VoloEyeSetting(_Character, 1)
+AND
+HasPassive(_Character, "CAMP_Volo_ErsatzEye", 0)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE", 0)
+AND
+HasActiveStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", 0)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigMarkCategoryActualSyncFailed((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
+DB_COS_VoloEyeSetting(_Character, 0)
+AND
+HasActiveStatus(_Character, "COS_VOLO_EYE", 1)
+THEN
+DB_COS_ConfigCategoryActualIssue(_Character, "Convenience", "SYNC_FAILED");
+
+PROC
+PROC_COS_ConfigSelectCategoryActual((CHARACTER)_Character, (STRING)_State)
+AND
+DB_COS_ConfigCategoryActualIssue(_Character, _Category, _State)
+AND
+NOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _)
+THEN
+DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State);
+
+PROC
+PROC_COS_ConfigSelectCategoryActualActive((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryMap(_Category, _Mirror)
+AND
+NOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _)
+THEN
+DB_COS_ConfigCategoryActualSelected(_Character, _Category, "ACTIVE");
+
+PROC
+PROC_COS_ConfigApplyCategoryActual((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State)
+AND
+DB_COS_ConfigCategoryActualMap(_Category, _State, _Status)
+THEN
+ApplyStatus(_Character, _Status, -1.0, 1, _Character);
+
+PROC
+PROC_COS_ConfigSyncCategoryActual((CHARACTER)_Character)
+THEN
+PROC_COS_ConfigSeedCategoryActualMap();
+PROC_COS_ConfigClearCategoryActualIssues(_Character);
+PROC_COS_ConfigClearCategoryActualSelected(_Character);
+PROC_COS_ConfigClearOriginActualSources(_Character);
+PROC_COS_ConfigCollectOriginActualSources(_Character);
+PROC_COS_ConfigMarkCategoryActualMissing(_Character);
+PROC_COS_ConfigMarkCategoryActualPaused(_Character);
+PROC_COS_ConfigMarkCategoryActualSyncFailed(_Character);
+PROC_COS_ConfigMarkCategoryActualWaiting(_Character);
+PROC_COS_ConfigSelectCategoryActual(_Character, "MISSING_CONFIG");
+PROC_COS_ConfigSelectCategoryActual(_Character, "PAUSED");
+PROC_COS_ConfigSelectCategoryActual(_Character, "SYNC_FAILED");
+PROC_COS_ConfigSelectCategoryActual(_Character, "WAITING_CONDITION");
+PROC_COS_ConfigSelectCategoryActualActive(_Character);
+PROC_COS_ConfigApplyCategoryActual(_Character);
+
+PROC
 PROC_COS_ConfigEnsureMechanics((CHARACTER)_Character)
 AND
 DB_COS_ConfigMechanicDefault(_Key, _Default)
@@ -1049,6 +1692,8 @@ PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTE
 AND
 _Enabled == 1
 AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)
+AND
 HasPassive(_Character, _Passive, 0)
 THEN
 AddPassive(_Character, _Passive);
@@ -1058,6 +1703,16 @@ PROC
 PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
 AND
 _Enabled == 0
+AND
+DB_COS_RacialPassiveGranted(_Character, _Passive)
+THEN
+RemovePassive(_Character, _Passive);
+NOT DB_COS_RacialPassiveGranted(_Character, _Passive);
+
+PROC
+PROC_COS_ConfigApplyRacialPassive((CHARACTER)_Character, (STRING)_Passive, (INTEGER)_Enabled)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 0)
 AND
 DB_COS_RacialPassiveGranted(_Character, _Passive)
 THEN
@@ -1102,13 +1757,18 @@ PROC
 PROC_COS_ConfigSyncCharacter((CHARACTER)_Character)
 THEN
 PROC_COS_ConfigInitializeCategories(_Character);
+PROC_COS_SeedGrantMap();
+PROC_COS_CaptureLegacyOriginOwnership(_Character);
 PROC_COS_ConfigSyncCategoryMirrors(_Character);
+PROC_COS_SyncBaseAfterCreation(_Character);
 PROC_COS_SyncGlobalPlayerBenefits(_Character);
 PROC_COS_ConfigEnsureCosts(_Character);
 PROC_COS_SyncVoloEye(_Character);
 PROC_COS_ConfigSyncGrants(_Character);
 PROC_COS_EnsureFixedGuidance(_Character);
 PROC_COS_ConfigEnsureMechanics(_Character);
+PROC_COS_ConfigSuspendCoreRuntime(_Character);
+PROC_COS_ConfigResumeCoreRuntime(_Character);
 PROC_COS_SyncFateToggle(_Character);
 PROC_COS_ConfigEnsureLifeSkill(_Character);
 PROC_COS_ConfigEnsureRacialPassives(_Character);
@@ -1131,14 +1791,26 @@ THEN
 NOT DB_COS_ConfigCategory(_Character, _Key, _Current);
 DB_COS_ConfigCategory(_Character, _Key, _Next);
 PROC_COS_ConfigSyncCharacter(_Character);
+PROC_COS_ConfigSyncCategoryActual(_Character);
 PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 PROC
 PROC_COS_EnsureFixedGuidance((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
 HasPassive(_Character, "COS_FixedGuidance30", 0)
 THEN
 AddPassive(_Character, "COS_FixedGuidance30");
+
+PROC
+PROC_COS_EnsureFixedGuidance((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 0)
+AND
+HasPassive(_Character, "COS_FixedGuidance30", 1)
+THEN
+RemovePassive(_Character, "COS_FixedGuidance30");
 
 PROC
 PROC_COS_ConfigSuspendMastery((CHARACTER)_Character)
@@ -1146,6 +1818,31 @@ THEN
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_TUNE", _Character);
 RemoveStatus(_Character, "COS_CHAOS_MASTERY_CORRECT", _Character);
 RemoveSpell(_Character, "Shout_COS_ChaosMastery", 1);
+
+PROC
+PROC_COS_ConfigSuspendCoreRuntime((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 0)
+THEN
+PROC_COS_ClearFateAction(_Character);
+RemoveStatus(_Character, "COS_CHAOS_FATE_ENABLED", _Character);
+RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
+RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
+RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+PROC_COS_ClearAllIn(_Character);
+PROC_COS_ClearDelayedDualityForOwner(_Character);
+RemoveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", _Character);
+RemoveStatus(_Character, "COS_CHAOS_KILL", _Character);
+PROC_COS_ConfigSuspendMastery(_Character);
+
+PROC
+PROC_COS_ConfigResumeCoreRuntime((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
+DB_COS_ConfigMechanic(_Character, _Key, _Enabled)
+THEN
+PROC_COS_ConfigApplyMechanic(_Character, _Key, _Enabled);
 
 PROC
 PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
@@ -1165,6 +1862,15 @@ _Enabled == 0
 THEN
 RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);
 RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);
+
+PROC
+PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
+AND
+_Key == "KillPower"
+AND
+_Enabled == 0
+THEN
+RemoveStatus(_Character, "COS_CHAOS_KILL", _Character);
 
 PROC
 PROC_COS_ConfigApplyMechanic((CHARACTER)_Character, (STRING)_Key, (INTEGER)_Enabled)
@@ -1319,6 +2025,8 @@ TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigRacialEvent(_Event, _Passive)
 AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
@@ -1331,6 +2039,8 @@ IF
 TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigRacialBulkEvent(_Event, _Enabled)
+AND
+DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -1371,6 +2081,8 @@ TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigMechanicEvent(_Event, _Key)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
@@ -1383,6 +2095,8 @@ IF
 TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigResetCoreEvent(_Event)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -1720,9 +2434,43 @@ THEN
 EnableTutorialEvent(_Character, _Event);
 
 PROC
-PROC_COS_ApplyGrantOptions((CHARACTER)_Character)
+PROC_COS_ClearGrantDesired((CHARACTER)_Character)
+AND
+DB_COS_GrantDesired(_Character, _Key)
+THEN
+NOT DB_COS_GrantDesired(_Character, _Key);
+
+PROC
+PROC_COS_CollectGrantDesired((CHARACTER)_Character)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
 AND
 DB_COS_GrantSetting(_Character, _Key, 1)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+THEN
+DB_COS_GrantDesired(_Character, _Key);
+
+// Musical-instrument proficiency deliberately remains outside the seven category masters.
+PROC
+PROC_COS_CollectGrantDesired((CHARACTER)_Character)
+AND
+DB_COS_BulkMember("Instrument", _Key)
+AND
+DB_COS_GrantSetting(_Character, _Key, 1)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+THEN
+DB_COS_GrantDesired(_Character, _Key);
+
+PROC
+PROC_COS_ApplyGrantOptions((CHARACTER)_Character)
+AND
+DB_COS_GrantDesired(_Character, _Key)
 AND
 DB_COS_GrantOption(_Key, _Mirror)
 AND
@@ -1733,9 +2481,9 @@ AddPassive(_Character, _Mirror);
 PROC
 PROC_COS_ApplyGrantOptions((CHARACTER)_Character)
 AND
-DB_COS_GrantSetting(_Character, _Key, 0)
-AND
 DB_COS_GrantOption(_Key, _Mirror)
+AND
+NOT DB_COS_GrantDesired(_Character, _Key)
 AND
 HasPassive(_Character, _Mirror, 1)
 THEN
@@ -1744,7 +2492,7 @@ RemovePassive(_Character, _Mirror);
 PROC
 PROC_COS_ApplyGrantOptions((CHARACTER)_Character)
 AND
-DB_COS_GrantSetting(_Character, _Key, 1)
+DB_COS_GrantDesired(_Character, _Key)
 AND
 DB_COS_GrantTag(_Key, _Tag)
 AND
@@ -1756,9 +2504,9 @@ DB_COS_GrantTagOwned(_Character, _Tag);
 PROC
 PROC_COS_ApplyGrantOptions((CHARACTER)_Character)
 AND
-DB_COS_GrantSetting(_Character, _Key, 0)
-AND
 DB_COS_GrantTag(_Key, _Tag)
+AND
+NOT DB_COS_GrantDesired(_Character, _Key)
 AND
 DB_COS_GrantTagOwned(_Character, _Tag)
 AND
@@ -1805,6 +2553,8 @@ PROC_COS_EnsureGrantOptions(_Character);
 DB_COS_GrantInitialized(_Character);
 RemovePassive(_Character, "COS_BaseProficiencies");
 PROC_COS_EnableGrantEvents(_Character);
+PROC_COS_ClearGrantDesired(_Character);
+PROC_COS_CollectGrantDesired(_Character);
 PROC_COS_ApplyGrantOptions(_Character);
 PROC_COS_SyncTagSpells(_Character);
 PROC_COS_SyncOriginGrantMirrors(_Character);
@@ -1820,6 +2570,8 @@ IntegerSubtract(1, _Value, _Next)
 THEN
 NOT DB_COS_GrantSetting(_Character, _Key, _Value);
 DB_COS_GrantSetting(_Character, _Key, _Next);
+PROC_COS_ClearGrantDesired(_Character);
+PROC_COS_CollectGrantDesired(_Character);
 PROC_COS_ApplyGrantOptions(_Character);
 PROC_COS_SyncTagSpells(_Character);
 DB_COS_ConfigClickTrace(_Character, _Key, "Applied");
@@ -1839,6 +2591,29 @@ DB_COS_GrantEvent(_Event, _Key)
 AND
 DB_COS_GrantOption(_Key, _Mirror)
 AND
+DB_COS_BulkMember(_Group, _Key)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
+AND
+HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+IsControlled(_Character, 1)
+AND
+IsInCombat(_Character, 0)
+THEN
+PROC_COS_ToggleGrantOption(_Character, _Key);
+
+IF
+TutorialEvent(_Character, _Event)
+AND
+DB_COS_GrantEvent(_Event, _Key)
+AND
+DB_COS_GrantOption(_Key, _Mirror)
+AND
+DB_COS_BulkMember("Instrument", _Key)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
@@ -1853,6 +2628,8 @@ AND
 DB_COS_GrantEvent(_Event, _Key)
 AND
 DB_COS_GrantOrigin(_Key, _Passive, _Status, _Mirror)
+AND
+DB_COS_ConfigCategory(_Character, "Origin", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -1897,6 +2674,7 @@ PROC_COS_UnlockVoloEye();
 PROC_COS_UnblockVoloEye(_Character);
 PROC_COS_SuppressNativeVoloEye(_Character);
 PROC_COS_ApplyVoloEye(_Character);
+PROC_COS_SuspendVoloEye(_Character);
 
 PROC
 PROC_COS_EnsureVoloEyeSetting((CHARACTER)_Character)
@@ -1916,6 +2694,8 @@ AddPassive(_Character, "COS_CFG_VOLO_EYE");
 
 PROC
 PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 DB_COS_VoloEyeSetting(_Character, 1)
 AND
@@ -1946,6 +2726,8 @@ RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
 
 IF
 TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_VOLO_EYE_77000000-0000-4000-8000-000000000001)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -2019,6 +2801,8 @@ PROC_COS_SyncVoloEye(_Character);
 PROC
 PROC_COS_UnblockVoloEye((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
 DB_COS_VoloEyeSetting(_Character, 1)
 AND
 HasActiveStatus(_Character, "COS_VOLO_EYE_DISABLED", 1)
@@ -2027,6 +2811,8 @@ RemoveStatus(_Character, "COS_VOLO_EYE_DISABLED", _Character);
 
 PROC
 PROC_COS_SuppressNativeVoloEye((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 DB_COS_VoloEyeUnlocked(1)
 AND
@@ -2038,6 +2824,8 @@ ApplyStatus(_Character, "COS_VOLO_EYE_DISABLED", -1.0, 1, _Character);
 
 PROC
 PROC_COS_SuppressNativeVoloEye((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 DB_COS_VoloEyeUnlocked(1)
 AND
@@ -2051,6 +2839,8 @@ RemoveStatus(_Character, "MAG_SEE_INVISIBILITY_HIDDEN_IGNORE_RESTING", _Characte
 
 PROC
 PROC_COS_ApplyVoloEye((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 DB_COS_VoloEyeUnlocked(1)
 AND
@@ -2071,11 +2861,25 @@ HasActiveStatus(_Character, "COS_VOLO_EYE", 1)
 THEN
 RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
 
+PROC
+PROC_COS_SuspendVoloEye((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 0)
+THEN
+RemoveStatus(_Character, "COS_VOLO_EYE", _Character);
+RemoveStatus(_Character, "COS_VOLO_EYE_DISABLED", _Character);
+
 
 // Group-local bulk controls: reuse the existing single-option ownership rules.
 PROC
 PROC_COS_SeedGrantMap()
 THEN
+DB_COS_GrantGroupCategory("Core", "Core");
+DB_COS_GrantGroupCategory("Origin", "Origin");
+DB_COS_GrantGroupCategory("Tag", "RaceTags");
+DB_COS_GrantGroupCategory("Weapon", "WeaponProficiencies");
+DB_COS_GrantGroupCategory("Armor", "ArmorProficiencies");
+DB_COS_GrantGroupCategory("Race", "RacialAbilities");
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_All_79000000-0000-4000-8000-000000000001, "Core", 1);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Core_Invert_79000000-0000-4000-8000-000000000002, "Core", 2);
 DB_COS_BulkEvent((TUTORIALEVENT)COS_BULK_Origin_All_79000000-0000-4000-8000-000000000005, "Origin", 1);
@@ -2146,6 +2950,11 @@ DB_COS_BulkMember("Weapon", "PROF_Spears");
 DB_COS_BulkMember("Weapon", "PROF_Tridents");
 DB_COS_BulkMember("Weapon", "PROF_Warhammers");
 DB_COS_BulkMember("Weapon", "PROF_Warpicks");
+DB_COS_BulkMember("Armor", "PROF_LightArmor");
+DB_COS_BulkMember("Armor", "PROF_MediumArmor");
+DB_COS_BulkMember("Armor", "PROF_HeavyArmor");
+DB_COS_BulkMember("Armor", "PROF_Shields");
+DB_COS_BulkMember("Instrument", "PROF_MusicalInstrument");
 
 PROC
 PROC_COS_ConfigEnableEvents((CHARACTER)_Character)
@@ -2158,6 +2967,10 @@ IF
 TutorialEvent(_Character, _Event)
 AND
 DB_COS_BulkEvent(_Event, _Group, _Mode)
+AND
+DB_COS_GrantGroupCategory(_Group, _Category)
+AND
+DB_COS_ConfigCategory(_Character, _Category, 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -2271,6 +3084,8 @@ EnableTutorialEvent(_Character, (TUTORIALEVENT)7a000000-0000-4000-8000-000000000
 IF
 TutorialEvent(_Character, (TUTORIALEVENT)7a000000-0000-4000-8000-000000000001)
 AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
@@ -2314,6 +3129,8 @@ NOT DB_COS_TagSpellDesired(_Character, _Passive);
 
 PROC
 PROC_COS_CollectTagSpellDesired((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 DB_COS_TagSpellsSetting(_Character, 1)
 AND
@@ -2491,6 +3308,8 @@ TutorialEvent(_Character, _Event)
 AND
 DB_COS_ConfigCostStepEvent(_Event, _Key, _Delta)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 IsControlled(_Character, 1)
@@ -2505,6 +3324,8 @@ AND
 DB_COS_ConfigCostResetEvent(_Event, _Key)
 AND
 DB_COS_ConfigCostDefault(_Key, _Default, _Resource)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
@@ -2532,6 +3353,8 @@ NOT DB_COS_FateSyncing(_Character);
 IF
 StatusRemoved(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
 HasPassive(_Character, "COS_FateRevision", 1)
@@ -2547,6 +3370,8 @@ PROC_COS_AcceptFateToggle((CHARACTER)_Character, 0);
 PROC
 PROC_COS_SyncFateToggle((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic(_Character, "Fate", 1)
 AND
 HasPassive(_Character, "COS_FateRevision", 1)
@@ -2559,6 +3384,8 @@ NOT DB_COS_FateSyncing(_Character);
 
 IF
 StatusApplied(_Character, "COS_CHAOS_FATE_ENABLED", _, _)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND

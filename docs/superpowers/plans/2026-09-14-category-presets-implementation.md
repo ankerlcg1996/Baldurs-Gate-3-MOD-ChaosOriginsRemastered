@@ -399,9 +399,13 @@ git commit -m "feat(story): persist category master switches"
 **Files:**
 
 - Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt`
+- Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_BaseAfterCreation.txt`
 - Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMechanics.txt`
 - Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_ChaosMastery.txt`
+- Modify: `story-src/Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_GlobalPlayerBenefits.txt`
 - Test: `story-src/verify-category-presets.ps1`
+- Test: `story-src/verify-grant-menu.ps1`
+- Test: `story-src/verify-carry-toggle.ps1`
 
 - [ ] Add `DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)` beside every gameplay-time enabled `DB_COS_ConfigMechanic` condition in `COS_ChaosMechanics.txt` and `COS_ChaosMastery.txt`. Do not add the guard to default seeding, configuration mutation, diagnostics, or mirror synchronization.
 

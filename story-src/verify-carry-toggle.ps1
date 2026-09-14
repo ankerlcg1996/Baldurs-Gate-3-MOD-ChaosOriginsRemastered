@@ -9,22 +9,24 @@ Assert-Carry ($sync.Contains('DB_Players(_Character)')) '保留原 DB_Players �
 Assert-Carry ($sync.Contains('PROC_COS_EnsureCarrySetting(_Character);') -and $sync.Contains('PROC_COS_ApplyCarrySetting(_Character);')) '每次同步必须先补设置再按设置施加'
 Assert-Carry ($sync.Contains('EnableTutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001);')) '旧档同步需启用负重开关事件'
 $apply = Get-CarryRules 'PROC_COS_ApplyCarrySetting'
-Assert-Carry ($apply.Count -eq 2) '开启与关闭必须是明确的两个分支'
-$on = @($apply | Where-Object { $_.Contains('DB_COS_CarryEnabled(_Character, 1)') })
+Assert-Carry ($apply.Count -eq 3) '开启、child关闭与分类暂停必须是明确的三个分支'
+$on = @($apply | Where-Object { $_.Contains('DB_COS_CarryEnabled(_Character, 1)') -and $_.Contains('DB_COS_ConfigCategory(_Character, "Convenience", 1)') })
 $off = @($apply | Where-Object { $_.Contains('DB_COS_CarryEnabled(_Character, 0)') })
-Assert-Carry ($on.Count -eq 1 -and $on[0].Contains('AddPassive(_Character, "COS_GlobalCarryCapacity50x");')) '只有开启角色可以获得负重被动'
-Assert-Carry ($off.Count -eq 1 -and $off[0].Contains('RemovePassive(_Character, "COS_GlobalCarryCapacity50x");') -and -not $off[0].Contains('AddPassive(')) '关闭同步必须保持本被动移除'
-Assert-Carry ([regex]::Matches($g, 'RemovePassive\(').Count -eq 2) '不得移除其他来源或其他被动'
+$paused = @($apply | Where-Object { $_.Contains('DB_COS_ConfigCategory(_Character, "Convenience", 0)') })
+Assert-Carry ($on.Count -eq 1 -and $on[0].Contains('AddPassive(_Character, "COS_GlobalCarryCapacity50x");')) '只有分类与 child 均开启的角色可以获得负重被动'
+Assert-Carry ($off.Count -eq 1 -and $off[0].Contains('RemovePassive(_Character, "COS_GlobalCarryCapacity50x");') -and -not $off[0].Contains('AddPassive(')) 'child 关闭同步必须保持本被动移除'
+Assert-Carry ($paused.Count -eq 1 -and $paused[0].Contains('RemovePassive(_Character, "COS_GlobalCarryCapacity50x");') -and -not $paused[0].Contains('DB_COS_CarryEnabled(_Character,')) '分类暂停必须移除实际负重效果但保留 child DB'
+Assert-Carry ([regex]::Matches($g, 'RemovePassive\(').Count -eq 3) '不得移除其他来源或其他被动'
 $event = [regex]::Match($g, '(?ms)^IF\nTutorialEvent\(_Character, \(TUTORIALEVENT\)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)').Value
-foreach ($gate in @('DB_Players(_Character)', 'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)')) { Assert-Carry ($event.Contains($gate)) "负重设置事件缺少门禁: $gate" }
+foreach ($gate in @('DB_Players(_Character)', 'DB_COS_ConfigCategory(_Character, "Convenience", 1)', 'HasPassive(_Character, "COS_ChaosOriginMarker", 1)', 'IsControlled(_Character, 1)', 'IsInCombat(_Character, 0)')) { Assert-Carry ($event.Contains($gate)) "负重设置事件缺少门禁: $gate" }
 $toggle = (Get-CarryRules 'PROC_COS_ToggleCarrySetting') -join "`n"
 foreach ($step in @('DB_COS_CarryEnabled(_Character, _Old)', 'IntegerSubtract(1, _Old, _Enabled)', 'NOT DB_COS_CarryEnabled(_Character, _Old);', 'DB_COS_CarryEnabled(_Character, _Enabled);', 'PROC_COS_ApplyCarrySetting(_Character);')) { Assert-Carry ($toggle.Contains($step)) "切换必须保存当前角色并即时刷新: $step" }
 Assert-Carry (-not $g.Contains('SetWeight') -and -not $g.Contains('AddBoosts')) '不得改写基础负重或加入其他实现'
 foreach ($eventName in @('LevelGameplayStarted', 'GainedControl', 'CharacterJoinedParty', 'RespecCompleted')) { Assert-Carry ($g.Contains("$eventName(")) "原同步生命周期丢失: $eventName" }
 $config = (Get-Content (Join-Path $PSScriptRoot 'Mods/ChaosOriginsStory/Story/RawFiles/Goals/COS_Config.txt') -Raw).Replace("`r`n","`n")
 $configSync = [regex]::Match($config, '(?ms)^PROC\nPROC_COS_ConfigSyncCharacter\(\(CHARACTER\)_Character\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)').Value
-$expectedCarrySyncPrefix = "PROC`nPROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_ConfigSyncCategoryMirrors(_Character);`nPROC_COS_SyncGlobalPlayerBenefits(_Character);"
-Assert-Carry ($configSync.StartsWith($expectedCarrySyncPrefix, [System.StringComparison]::Ordinal)) '打开菜单必须先初始化分类，再按固定顺序同步分类镜像与负重'
+$expectedCarrySyncPrefix = "PROC`nPROC_COS_ConfigSyncCharacter((CHARACTER)_Character)`nTHEN`nPROC_COS_ConfigInitializeCategories(_Character);`nPROC_COS_SeedGrantMap();`nPROC_COS_CaptureLegacyOriginOwnership(_Character);`nPROC_COS_ConfigSyncCategoryMirrors(_Character);`nPROC_COS_SyncBaseAfterCreation(_Character);`nPROC_COS_SyncGlobalPlayerBenefits(_Character);"
+Assert-Carry ($configSync.StartsWith($expectedCarrySyncPrefix, [System.StringComparison]::Ordinal)) '打开菜单必须先初始化分类，再按固定顺序同步分类镜像、基础效果与负重'
 Assert-Carry ([regex]::Matches($configSync, '(?m)^PROC_COS_SyncGlobalPlayerBenefits\(_Character\);$').Count -eq 1) '统一角色同步必须且只能调用一次负重同步'
 $mirror = (Get-CarryRules 'PROC_COS_SyncCarryMirror') -join "`n"
 Assert-Carry ($mirror.Contains('AddPassive(_Character, "COS_CFG_CARRY");') -and $mirror.Contains('RemovePassive(_Character, "COS_CFG_CARRY");')) '负重必须拥有独立的可见镜像'

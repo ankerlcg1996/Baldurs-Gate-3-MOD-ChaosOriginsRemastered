@@ -3,7 +3,7 @@
 param(
     [string]$Root = $PSScriptRoot,
 
-    [ValidateSet('All', 'Task3')]
+    [ValidateSet('All', 'Task3', 'Task4')]
     [string]$Focus = 'All'
 )
 
@@ -946,7 +946,9 @@ function Assert-CategoryToggleContract {
         [Parameter(Mandatory)]
         [string]$Content,
 
-        [switch]$Task3Stage
+        [switch]$Task3Stage,
+
+        [switch]$Task4Stage
     )
 
     $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigToggleCategory')
@@ -960,7 +962,10 @@ function Assert-CategoryToggleContract {
         'DB_COS_ConfigCategory(_Character, _Key, _Next);',
         'PROC_COS_ConfigSyncCharacter(_Character);'
     )
-    if (-not $Task3Stage) {
+    if ($Task4Stage) {
+        $expectedActions += 'PROC_COS_ConfigSyncCategoryActual(_Character);'
+    }
+    elseif (-not $Task3Stage) {
         $expectedActions += @(
             'PROC_COS_PresetDetect(_Character);',
             'PROC_COS_ConfigSyncCategoryActual(_Character);'
@@ -1082,6 +1087,567 @@ function Assert-CategoryEventContract {
     Require-ExactActions -Model $eventModels[0] -Expected @(
         'PROC_COS_ConfigToggleCategory(_Character, _Key);'
     ) -Context '分类切换事件'
+}
+
+function Assert-CoreGameplayGuardContract {
+    param(
+        [Parameter(Mandatory)]
+        [System.Collections.IDictionary]$ContentByGoal
+    )
+
+    $consumerCount = 0
+    foreach ($goalName in $ContentByGoal.Keys) {
+        foreach ($model in @(Get-OsirisRuleModels -Content $ContentByGoal[$goalName])) {
+            $enabledConditions = @($model.Conditions | Where-Object {
+                $_ -match '^DB_COS_ConfigMechanic\((?:\(CHARACTER\))?(_[A-Za-z][A-Za-z0-9_]*), "[^"]+", 1\)$'
+            })
+            if ($enabledConditions.Count -eq 0) { continue }
+            $consumerCount++
+            $characters = @($enabledConditions | ForEach-Object {
+                [regex]::Match($_, '^DB_COS_ConfigMechanic\((?:\(CHARACTER\))?(_[A-Za-z][A-Za-z0-9_]*)').Groups[1].Value
+            } | Select-Object -Unique)
+            foreach ($character in $characters) {
+                $expectedPattern = '^DB_COS_ConfigCategory\((?:\(CHARACTER\))?' + [regex]::Escape($character) + ', "Core", 1\)$'
+                $guards = @($model.Conditions | Where-Object { $_ -match $expectedPattern })
+                Require ($guards.Count -eq 1) "Core gameplay consumer 缺少唯一分类门禁: $goalName / $($model.Head) / $character"
+            }
+        }
+    }
+    Require ($consumerCount -eq 37) "Core gameplay consumer 枚举漂移: 期望 37，实际 $consumerCount"
+}
+
+function Assert-GrantCategoryGatingContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [array]$GrantMenu
+    )
+
+    $expectedGroupCategories = @(
+        'Core|Core',
+        'Origin|Origin',
+        'Tag|RaceTags',
+        'Weapon|WeaponProficiencies',
+        'Armor|ArmorProficiencies',
+        'Race|RacialAbilities'
+    )
+    $actualGroupCategories = @([regex]::Matches(
+        ($Content -replace '\r\n', "`n"),
+        '(?m)^DB_COS_GrantGroupCategory\("([^"]+)", "([^"]+)"\);$'
+    ) | ForEach-Object { '{0}|{1}' -f $_.Groups[1].Value, $_.Groups[2].Value })
+    Require (Test-ExactOrdinalSet -Actual $actualGroupCategories -Expected $expectedGroupCategories) 'grant-menu 分组到分类映射不精确'
+    Require (-not ($actualGroupCategories -ccontains 'Instrument|Instrument')) 'Instrument 不得进入七个分类总开关'
+
+    $membershipRows = @([regex]::Matches(
+        ($Content -replace '\r\n', "`n"),
+        '(?m)^DB_COS_BulkMember\("([^"]+)", "([^"]+)"\);$'
+    ) | ForEach-Object { '{0}|{1}' -f $_.Groups[1].Value, $_.Groups[2].Value })
+    $expectedMembership = @($GrantMenu | Where-Object { $_.group -cne 'Origin' } | ForEach-Object { '{0}|{1}' -f $_.group, $_.key })
+    Require (Test-ExactOrdinalSet -Actual $membershipRows -Expected $expectedMembership) 'grant-menu 非 Origin 分组成员集合不精确'
+
+    $clear = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ClearGrantDesired')
+    Require ($clear.Count -eq 1) 'grant effective desired 清理过程必须唯一'
+    Require-ExactConditions -Model $clear[0] -Expected @('DB_COS_GrantDesired(_Character, _Key)') -Context 'grant desired 清理'
+    Require-ExactActions -Model $clear[0] -Expected @('NOT DB_COS_GrantDesired(_Character, _Key);') -Context 'grant desired 清理'
+
+    $collect = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_CollectGrantDesired')
+    Require ($collect.Count -eq 2) 'grant effective desired 必须只有分类与 Instrument 两个收集分支'
+    $categoryCollect = @($collect | Where-Object { $_.Conditions -ccontains 'DB_COS_GrantGroupCategory(_Group, _Category)' })
+    Require ($categoryCollect.Count -eq 1) 'grant 分类 desired 收集分支缺失或重复'
+    foreach ($condition in @(
+        'DB_COS_GrantGroupCategory(_Group, _Category)',
+        'DB_COS_BulkMember(_Group, _Key)',
+        'DB_COS_ConfigCategory(_Character, _Category, 1)',
+        'DB_COS_GrantSetting(_Character, _Key, 1)',
+        'DB_COS_GrantOption(_Key, _Mirror)'
+    )) { Require-Condition -Model $categoryCollect[0] -Condition $condition -Context 'grant 分类 desired 收集' }
+    Require-ExactActions -Model $categoryCollect[0] -Expected @('DB_COS_GrantDesired(_Character, _Key);') -Context 'grant 分类 desired 收集'
+
+    $instrumentCollect = @($collect | Where-Object { $_.Conditions -ccontains 'DB_COS_BulkMember("Instrument", _Key)' })
+    Require ($instrumentCollect.Count -eq 1) 'Instrument desired 收集分支缺失或重复'
+    Require (-not ($instrumentCollect[0].Conditions | Where-Object { $_ -like 'DB_COS_ConfigCategory(*' })) 'Instrument desired 不得依赖分类总开关'
+    Require-Condition -Model $instrumentCollect[0] -Condition 'DB_COS_GrantSetting(_Character, _Key, 1)' -Context 'Instrument desired 收集'
+    Require-ExactActions -Model $instrumentCollect[0] -Expected @('DB_COS_GrantDesired(_Character, _Key);') -Context 'Instrument desired 收集'
+
+    $apply = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ApplyGrantOptions')
+    $addMirror = @($apply | Where-Object { $_.Actions -ccontains 'AddPassive(_Character, _Mirror);' })
+    $removeMirror = @($apply | Where-Object { $_.Actions -ccontains 'RemovePassive(_Character, _Mirror);' })
+    $addTag = @($apply | Where-Object { $_.Actions -ccontains 'SetTag(_Character, _Tag);' })
+    $removeTag = @($apply | Where-Object { $_.Actions -ccontains 'ClearTag(_Character, _Tag);' })
+    Require ($addMirror.Count -eq 1 -and $addMirror[0].Conditions -ccontains 'DB_COS_GrantDesired(_Character, _Key)') 'grant mirror 发放必须消费 effective desired'
+    Require ($removeMirror.Count -eq 1 -and $removeMirror[0].Conditions -ccontains 'NOT DB_COS_GrantDesired(_Character, _Key)') 'grant mirror 移除必须消费 effective desired 反集'
+    Require ($addTag.Count -eq 1 -and $addTag[0].Conditions -ccontains 'DB_COS_GrantDesired(_Character, _Key)') 'grant tag 发放必须消费 effective desired'
+    Require ($addTag[0].Actions -ccontains 'DB_COS_GrantTagOwned(_Character, _Tag);') 'grant tag 发放必须记录模块所有权'
+    Require ($removeTag.Count -eq 1) 'grant tag 移除路径必须唯一'
+    foreach ($condition in @(
+        'NOT DB_COS_GrantDesired(_Character, _Key)',
+        'DB_COS_GrantTagOwned(_Character, _Tag)',
+        'NOT DB_COS_NativeGrantTag(_Character, _Tag)'
+    )) { Require-Condition -Model $removeTag[0] -Condition $condition -Context 'grant tag ownership removal' }
+
+    $sync = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncGrants')
+    Require ($sync.Count -eq 1) 'grant 统一同步过程必须唯一'
+    $clearIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ClearGrantDesired(_Character);')
+    $collectIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_CollectGrantDesired(_Character);')
+    $applyIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ApplyGrantOptions(_Character);')
+    Require ($clearIndex -ge 0 -and $collectIndex -gt $clearIndex -and $applyIndex -gt $collectIndex) 'grant 同步必须按 clear -> collect -> apply 执行'
+
+    $toggle = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ToggleGrantOption' | Where-Object { $_.Actions -ccontains 'DB_COS_GrantSetting(_Character, _Key, _Next);' })
+    Require ($toggle.Count -eq 1) 'grant 已解析 child 切换过程必须唯一'
+    $toggleClearIndex = [Array]::IndexOf($toggle[0].Actions, 'PROC_COS_ClearGrantDesired(_Character);')
+    $toggleCollectIndex = [Array]::IndexOf($toggle[0].Actions, 'PROC_COS_CollectGrantDesired(_Character);')
+    $toggleApplyIndex = [Array]::IndexOf($toggle[0].Actions, 'PROC_COS_ApplyGrantOptions(_Character);')
+    Require ($toggleClearIndex -ge 0 -and $toggleCollectIndex -gt $toggleClearIndex -and $toggleApplyIndex -gt $toggleCollectIndex) 'grant child 切换必须在 apply 前重建 effective desired'
+}
+
+function Assert-BaseGrantCategoryContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ConfigContent,
+
+        [Parameter(Mandatory)]
+        [string]$BaseContent
+    )
+
+    $models = @(Get-OsirisRuleModels -Content $BaseContent)
+    $coreAdds = @($models | Where-Object {
+        ($_.Conditions -match '^DB_COS_Core(?:Passive|Spell)\(').Count -gt 0 -and
+        ($_.Actions -match '^(?:AddPassive|AddSpell)\(').Count -gt 0
+    })
+    Require ($coreAdds.Count -eq 2) 'Core 基础被动/法术发放规则枚举漂移'
+    foreach ($model in $coreAdds) {
+        Require-Condition -Model $model -Condition 'DB_COS_ConfigCategory(_Character, "Core", 1)' -Context "Core 基础发放 $($model.Head)"
+    }
+    $coreRemovals = @($models | Where-Object {
+        $_.Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Core", 0)' -and
+        ($_.Actions -match '^(?:RemovePassive|RemoveSpell)\(').Count -gt 0
+    })
+    Require ($coreRemovals.Count -eq 2) 'Core 暂停必须清理模块基础被动与法术'
+
+    $originEffects = @($models | Where-Object {
+        ($_.Conditions -match '^DB_COS_OriginIdentity(?:Toggle|Spell|Passive)\(').Count -gt 0 -and
+        ($_.Actions -match '^(?:SetTag|AddSpell|AddPassive)\(').Count -gt 0 -and
+        -not ($_.Actions -ccontains 'AddPassive(_Character, _Passive);')
+    })
+    Require ($originEffects.Count -eq 6) 'Origin 实际效果发放规则枚举漂移'
+    foreach ($model in $originEffects) {
+        Require-Condition -Model $model -Condition 'DB_COS_ConfigCategory(_Character, "Origin", 1)' -Context "Origin 实际效果 $($model.Head)"
+        $ownershipActions = @($model.Actions | Where-Object { $_ -match '^DB_COS_Origin(?:Tag|Spell|Passive)Owned\(' })
+        Require ($ownershipActions.Count -eq 1) "Origin 实际效果必须记录唯一所有权: $($model.Head)"
+    }
+
+    $originRemovals = @($models | Where-Object {
+        ($_.Actions -match '^(?:ClearTag|RemoveSpell|RemovePassive)\(').Count -gt 0 -and
+        ($_.Conditions -match '^DB_COS_OriginIdentity(?:Toggle|Spell|Passive)\(').Count -gt 0
+    })
+    Require ($originRemovals.Count -ge 6) 'Origin 暂停/状态移除清理规则不足'
+    foreach ($model in $originRemovals) {
+        $hasOwned = @($model.Conditions | Where-Object { $_ -match '^DB_COS_Origin(?:Tag|Spell|Passive)Owned\(' }).Count -eq 1
+        Require $hasOwned "Origin 清理不得移除 unowned 效果: $($model.Head)"
+    }
+
+    $startingBagSection = [regex]::Match(($BaseContent -replace '\r\n', "`n"), '(?s)PROC_COS_TryStartingBag\(.*?ENDEXITSECTION').Value
+    Require (-not $startingBagSection.Contains('DB_COS_ConfigCategory(')) '开局冒险家袋不得受分类总开关影响'
+
+    $sync = @(Get-ProcedureModels -Content $ConfigContent -Name 'PROC_COS_ConfigSyncCharacter')
+    Require ($sync.Count -eq 1 -and $sync[0].Actions -ccontains 'PROC_COS_SyncBaseAfterCreation(_Character);') '统一同步必须刷新 Core/Origin 基础实际效果'
+}
+
+function Assert-CoreRuntimeProjectionContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $suspend = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSuspendCoreRuntime')
+    Require ($suspend.Count -eq 1) 'Core 分类暂停运行态清理过程必须唯一'
+    Require-ExactConditions -Model $suspend[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, "Core", 0)'
+    ) -Context 'Core 分类暂停运行态'
+    Require-ExactActions -Model $suspend[0] -Expected @(
+        'PROC_COS_ClearFateAction(_Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_FATE_ENABLED", _Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_POWER_STACK", _Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_GENESIS_READY", _Character);',
+        'PROC_COS_ClearAllIn(_Character);',
+        'PROC_COS_ClearDelayedDualityForOwner(_Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", _Character);',
+        'RemoveStatus(_Character, "COS_CHAOS_KILL", _Character);',
+        'PROC_COS_ConfigSuspendMastery(_Character);'
+    ) -Context 'Core 分类暂停运行态'
+
+    $resume = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigResumeCoreRuntime')
+    Require ($resume.Count -eq 1) 'Core 分类恢复运行态投影过程必须唯一'
+    Require-ExactConditions -Model $resume[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, "Core", 1)',
+        'DB_COS_ConfigMechanic(_Character, _Key, _Enabled)'
+    ) -Context 'Core 分类恢复运行态'
+    Require-ExactActions -Model $resume[0] -Expected @(
+        'PROC_COS_ConfigApplyMechanic(_Character, _Key, _Enabled);'
+    ) -Context 'Core 分类恢复运行态'
+
+    $sync = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCharacter')
+    Require ($sync.Count -eq 1) '统一角色同步过程必须唯一'
+    $ensureIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ConfigEnsureMechanics(_Character);')
+    $suspendIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ConfigSuspendCoreRuntime(_Character);')
+    $resumeIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_ConfigResumeCoreRuntime(_Character);')
+    $fateIndex = [Array]::IndexOf($sync[0].Actions, 'PROC_COS_SyncFateToggle(_Character);')
+    Require ($ensureIndex -ge 0 -and $suspendIndex -gt $ensureIndex -and $resumeIndex -gt $suspendIndex -and $fateIndex -gt $resumeIndex) 'Core 运行态必须在 mechanics 初始化后按 suspend -> resume -> Fate 重投影'
+
+    $fateEnable = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_SyncFateToggle' | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigMechanic(_Character, "Fate", 1)' })
+    Require ($fateEnable.Count -eq 1) 'Fate 开启同步分支必须唯一'
+    Require-Condition -Model $fateEnable[0] -Condition 'DB_COS_ConfigCategory(_Character, "Core", 1)' -Context 'Fate 开启同步'
+}
+
+function Assert-LegacyOriginOwnershipMigrationContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $capture = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_CaptureLegacyOriginOwnership')
+    Require ($capture.Count -eq 3) 'Legacy Origin ownership 迁移必须精确覆盖 tag/spell/passive'
+    foreach ($model in $capture) {
+        foreach ($condition in @(
+            'DB_COS_ConfigPreexisting(_Character)',
+            'DB_COS_GrantOrigin(_Key, _TogglePassive, _Status, _Mirror)',
+            'HasPassive(_Character, _TogglePassive, 1)',
+            'HasActiveStatus(_Character, _Status, 1)'
+        )) { Require-Condition -Model $model -Condition $condition -Context 'Legacy Origin 可证明模块来源' }
+        Require (@($model.Actions | Where-Object { $_ -match '^DB_COS_Origin(?:Tag|Spell|Passive)Owned\(' }).Count -eq 1) 'Legacy Origin 迁移必须只写一条 ownership'
+        Require (-not ($model.Actions -match '^(?:SetTag|AddSpell|AddPassive|ClearTag|RemoveSpell|RemovePassive)\(')) 'Legacy Origin ownership 迁移不得改写实际效果'
+    }
+}
+
+function Assert-RacialCategoryGatingContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $apply = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigApplyRacialPassive')
+    $grant = @($apply | Where-Object { $_.Actions -ccontains 'AddPassive(_Character, _Passive);' })
+    Require ($grant.Count -eq 1) '种族被动模块发放路径必须唯一'
+    Require-Condition -Model $grant[0] -Condition 'DB_COS_ConfigCategory(_Character, "RacialAbilities", 1)' -Context '种族被动发放'
+    Require ($grant[0].Conditions -ccontains 'HasPassive(_Character, _Passive, 0)') '种族被动发放必须只捕获原本缺失的被动'
+    Require ($grant[0].Actions -ccontains 'DB_COS_RacialPassiveGranted(_Character, _Passive);') '种族被动发放必须记录模块所有权'
+
+    $removals = @($apply | Where-Object { $_.Actions -ccontains 'RemovePassive(_Character, _Passive);' })
+    Require ($removals.Count -eq 2) '种族被动必须有 child 关闭与分类暂停两个移除路径'
+    foreach ($model in $removals) {
+        Require-Condition -Model $model -Condition 'DB_COS_RacialPassiveGranted(_Character, _Passive)' -Context '种族被动 ownership removal'
+        Require ($model.Actions -ccontains 'NOT DB_COS_RacialPassiveGranted(_Character, _Passive);') '种族被动移除后必须清理模块所有权'
+    }
+    Require (@($removals | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "RacialAbilities", 0)' }).Count -eq 1) '种族能力分类暂停清理分支缺失'
+}
+
+function Assert-ConvenienceCategoryGatingContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ConfigContent,
+
+        [Parameter(Mandatory)]
+        [string]$CarryContent
+    )
+
+    $fixed = @(Get-ProcedureModels -Content $ConfigContent -Name 'PROC_COS_EnsureFixedGuidance')
+    Require ($fixed.Count -eq 2) '固定 +30 必须有分类开启发放与分类暂停清理两个分支'
+    $fixedAdd = @($fixed | Where-Object { $_.Actions -ccontains 'AddPassive(_Character, "COS_FixedGuidance30");' })
+    $fixedRemove = @($fixed | Where-Object { $_.Actions -ccontains 'RemovePassive(_Character, "COS_FixedGuidance30");' })
+    Require ($fixedAdd.Count -eq 1 -and $fixedAdd[0].Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Convenience", 1)') '固定 +30 发放缺少 Convenience 门禁'
+    Require ($fixedRemove.Count -eq 1 -and $fixedRemove[0].Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Convenience", 0)') '固定 +30 暂停清理缺失'
+
+    $tagCollect = @(Get-ProcedureModels -Content $ConfigContent -Name 'PROC_COS_CollectTagSpellDesired')
+    Require ($tagCollect.Count -eq 1) '标签法术 desired 收集路径必须唯一'
+    Require-Condition -Model $tagCollect[0] -Condition 'DB_COS_ConfigCategory(_Character, "Convenience", 1)' -Context '标签法术 desired 收集'
+
+    $voloApply = @(Get-ProcedureModels -Content $ConfigContent -Name 'PROC_COS_ApplyVoloEye' | Where-Object { ($_.Actions -match '^ApplyStatus\(').Count -gt 0 })
+    Require ($voloApply.Count -eq 2) '瓦罗之眼模块发放路径枚举漂移'
+    foreach ($model in $voloApply) {
+        Require-Condition -Model $model -Condition 'DB_COS_ConfigCategory(_Character, "Convenience", 1)' -Context '瓦罗之眼发放'
+    }
+    $voloSuspend = @(Get-ProcedureModels -Content $ConfigContent -Name 'PROC_COS_SuspendVoloEye')
+    Require ($voloSuspend.Count -eq 1) '瓦罗之眼分类暂停清理过程必须唯一'
+    Require-Condition -Model $voloSuspend[0] -Condition 'DB_COS_ConfigCategory(_Character, "Convenience", 0)' -Context '瓦罗之眼分类暂停'
+    Require-ExactActions -Model $voloSuspend[0] -Expected @(
+        'RemoveStatus(_Character, "COS_VOLO_EYE", _Character);',
+        'RemoveStatus(_Character, "COS_VOLO_EYE_DISABLED", _Character);'
+    ) -Context '瓦罗之眼分类暂停'
+
+    $carry = @(Get-ProcedureModels -Content $CarryContent -Name 'PROC_COS_ApplyCarrySetting')
+    $carryAdd = @($carry | Where-Object { $_.Actions -ccontains 'AddPassive(_Character, "COS_GlobalCarryCapacity50x");' })
+    Require ($carryAdd.Count -eq 1 -and $carryAdd[0].Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Convenience", 1)') '负重发放缺少 Convenience 门禁'
+    $carryPause = @($carry | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Convenience", 0)' })
+    Require ($carryPause.Count -eq 1 -and $carryPause[0].Actions -ccontains 'RemovePassive(_Character, "COS_GlobalCarryCapacity50x");') '负重分类暂停清理分支缺失'
+}
+
+function Assert-CategoryMutationEventContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ConfigContent,
+
+        [Parameter(Mandatory)]
+        [string]$CarryContent
+    )
+
+    $configEvents = @(Get-OsirisRuleModels -Content $ConfigContent | Where-Object { $_.Kind -ceq 'IF' -and ($_.Conditions -match '^TutorialEvent\(').Count -eq 1 })
+    $carryEvents = @(Get-OsirisRuleModels -Content $CarryContent | Where-Object { $_.Kind -ceq 'IF' -and ($_.Conditions -match '^TutorialEvent\(').Count -eq 1 })
+
+    $contracts = @(
+        [pscustomobject]@{ Name = 'Core mechanic'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigMechanicEvent(_Event, _Key)' }); Category = 'Core'; Count = 1 },
+        [pscustomobject]@{ Name = 'Core reset'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigResetCoreEvent(_Event)' }); Category = 'Core'; Count = 1 },
+        [pscustomobject]@{ Name = 'Core cost step'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCostStepEvent(_Event, _Key, _Delta)' }); Category = 'Core'; Count = 1 },
+        [pscustomobject]@{ Name = 'Core cost reset'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCostResetEvent(_Event, _Key)' }); Category = 'Core'; Count = 1 },
+        [pscustomobject]@{ Name = 'Racial individual'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigRacialEvent(_Event, _Passive)' }); Category = 'RacialAbilities'; Count = 1 },
+        [pscustomobject]@{ Name = 'Racial bulk'; Models = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigRacialBulkEvent(_Event, _Enabled)' }); Category = 'RacialAbilities'; Count = 1 },
+        [pscustomobject]@{ Name = 'Tag spells'; Models = @($configEvents | Where-Object { $_.Actions -ccontains 'NOT DB_COS_TagSpellsSetting(_Character, _Current);' }); Category = 'Convenience'; Count = 1 },
+        [pscustomobject]@{ Name = 'Volo eye'; Models = @($configEvents | Where-Object { $_.Actions -ccontains 'NOT DB_COS_VoloEyeSetting(_Character, _Value);' }); Category = 'Convenience'; Count = 1 },
+        [pscustomobject]@{ Name = 'Carry'; Models = @($carryEvents | Where-Object { $_.Actions -ccontains 'PROC_COS_ToggleCarrySetting(_Character);' }); Category = 'Convenience'; Count = 1 }
+    )
+    foreach ($contract in $contracts) {
+        Require ($contract.Models.Count -eq $contract.Count) "$($contract.Name) mutation event 枚举漂移"
+        foreach ($model in $contract.Models) {
+            Require-Condition -Model $model -Condition "DB_COS_ConfigCategory(_Character, `"$($contract.Category)`", 1)" -Context "$($contract.Name) mutation event"
+        }
+    }
+
+    $fateEvents = @(Get-OsirisRuleModels -Content $ConfigContent | Where-Object {
+        $_.Kind -ceq 'IF' -and
+        (($_.Conditions -match '^Status(?:Applied|Removed)\(_Character, "COS_CHAOS_FATE_ENABLED"').Count -eq 1) -and
+        ($_.Actions -match '^PROC_COS_AcceptFateToggle\(').Count -eq 1
+    })
+    Require ($fateEvents.Count -eq 2) 'Fate 外部状态 mutation event 枚举漂移'
+    foreach ($model in $fateEvents) {
+        Require-Condition -Model $model -Condition 'DB_COS_ConfigCategory(_Character, "Core", 1)' -Context 'Fate 外部状态 mutation event'
+    }
+
+    $grantEvents = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_GrantEvent(_Event, _Key)' -and $_.Actions -ccontains 'PROC_COS_ToggleGrantOption(_Character, _Key);' })
+    Require ($grantEvents.Count -eq 2) 'grant individual 必须拆为 mapped category 与 Instrument 两条 mutation event'
+    $mappedGrant = @($grantEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_GrantGroupCategory(_Group, _Category)' })
+    Require ($mappedGrant.Count -eq 1) 'grant mapped individual mutation event 缺失或重复'
+    Require-Condition -Model $mappedGrant[0] -Condition 'DB_COS_BulkMember(_Group, _Key)' -Context 'grant mapped individual'
+    Require-Condition -Model $mappedGrant[0] -Condition 'DB_COS_ConfigCategory(_Character, _Category, 1)' -Context 'grant mapped individual'
+    $instrumentGrant = @($grantEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_BulkMember("Instrument", _Key)' })
+    Require ($instrumentGrant.Count -eq 1) 'Instrument individual mutation event 必须独立且不受七分类门禁'
+    Require (-not ($instrumentGrant[0].Conditions -match '^DB_COS_ConfigCategory\(')) 'Instrument individual mutation event 不得进入七分类门禁'
+
+    $originEvents = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_GrantOrigin(_Key, _Passive, _Status, _Mirror)' -and $_.Actions -ccontains 'TogglePassive(_Character, _Passive);' })
+    Require ($originEvents.Count -eq 1) 'Origin identity mutation event 枚举漂移'
+    Require-Condition -Model $originEvents[0] -Condition 'DB_COS_ConfigCategory(_Character, "Origin", 1)' -Context 'Origin identity mutation event'
+
+    $bulkEvents = @($configEvents | Where-Object { $_.Conditions -ccontains 'DB_COS_BulkEvent(_Event, _Group, _Mode)' -and $_.Actions -ccontains 'PROC_COS_BulkGrant(_Character, _Group, _Mode);' })
+    Require ($bulkEvents.Count -eq 1) 'grant bulk mutation event 枚举漂移'
+    foreach ($condition in @('DB_COS_GrantGroupCategory(_Group, _Category)', 'DB_COS_ConfigCategory(_Character, _Category, 1)')) {
+        Require-Condition -Model $bulkEvents[0] -Condition $condition -Context 'grant bulk mutation event'
+    }
+}
+
+function Assert-CategoryPausePreservesChildContract {
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$Contents
+    )
+
+    $childTables = @(
+        'DB_COS_ConfigMechanic',
+        'DB_COS_ConfigCost',
+        'DB_COS_ConfigRacial',
+        'DB_COS_GrantSetting',
+        'DB_COS_TagSpellsSetting',
+        'DB_COS_VoloEyeSetting',
+        'DB_COS_CarryEnabled'
+    )
+    foreach ($content in $Contents) {
+        $pauseModels = @(Get-OsirisRuleModels -Content $content | Where-Object { ($_.Conditions -match '^DB_COS_ConfigCategory\([^,]+,\s*"[^"]+",\s*0\)$').Count -gt 0 })
+        foreach ($model in $pauseModels) {
+            foreach ($action in $model.Actions) {
+                foreach ($table in $childTables) {
+                    Require (-not [regex]::IsMatch($action, "^(?:NOT\s+)?$table\(")) "分类暂停不得改写 child DB: $action"
+                }
+            }
+        }
+    }
+}
+
+function Assert-CategoryActualStateContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [string[]]$Categories
+    )
+
+    $tokens = [ordered]@{
+        Core = 'CORE'
+        Origin = 'ORIGIN'
+        RaceTags = 'RACETAGS'
+        WeaponProficiencies = 'WEAPON'
+        ArmorProficiencies = 'ARMOR'
+        RacialAbilities = 'RACIAL'
+        Convenience = 'CONVENIENCE'
+    }
+    $states = @('ACTIVE', 'PAUSED', 'WAITING_CONDITION', 'MISSING_CONFIG', 'SYNC_FAILED')
+    $expectedMap = @(
+        foreach ($category in $Categories) {
+            foreach ($state in $states) {
+                "$category|$state|COS_CATEGORY_ACTUAL_$($tokens[$category])_$state"
+            }
+        }
+    )
+
+    $seed = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSeedCategoryActualMap')
+    Require ($seed.Count -eq 1) 'actual-state 映射 seed 过程必须唯一'
+    $actualMap = @(
+        foreach ($action in $seed[0].Actions) {
+            $match = [regex]::Match($action, '^DB_COS_ConfigCategoryActualMap\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\);$')
+            Require $match.Success "actual-state seed 含未批准动作: $action"
+            "$($match.Groups[1].Value)|$($match.Groups[2].Value)|$($match.Groups[3].Value)"
+        }
+    )
+    Require (Test-ExactOrdinalSet -Actual $actualMap -Expected $expectedMap) 'actual-state 35 条 category/state/status 映射不精确'
+
+    $sync = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSyncCategoryActual')
+    Require ($sync.Count -eq 1) 'actual-state 统一同步过程必须唯一'
+    Require-ExactActions -Model $sync[0] -Expected @(
+        'PROC_COS_ConfigSeedCategoryActualMap();',
+        'PROC_COS_ConfigClearCategoryActualIssues(_Character);',
+        'PROC_COS_ConfigClearCategoryActualSelected(_Character);',
+        'PROC_COS_ConfigClearOriginActualSources(_Character);',
+        'PROC_COS_ConfigCollectOriginActualSources(_Character);',
+        'PROC_COS_ConfigMarkCategoryActualMissing(_Character);',
+        'PROC_COS_ConfigMarkCategoryActualPaused(_Character);',
+        'PROC_COS_ConfigMarkCategoryActualSyncFailed(_Character);',
+        'PROC_COS_ConfigMarkCategoryActualWaiting(_Character);',
+        'PROC_COS_ConfigSelectCategoryActual(_Character, "MISSING_CONFIG");',
+        'PROC_COS_ConfigSelectCategoryActual(_Character, "PAUSED");',
+        'PROC_COS_ConfigSelectCategoryActual(_Character, "SYNC_FAILED");',
+        'PROC_COS_ConfigSelectCategoryActual(_Character, "WAITING_CONDITION");',
+        'PROC_COS_ConfigSelectCategoryActualActive(_Character);',
+        'PROC_COS_ConfigApplyCategoryActual(_Character);'
+    ) -Context 'actual-state 优先级同步'
+
+    $select = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSelectCategoryActual')
+    Require ($select.Count -eq 1) 'actual-state issue 选择过程必须唯一'
+    Require-ExactConditions -Model $select[0] -Expected @(
+        'DB_COS_ConfigCategoryActualIssue(_Character, _Category, _State)',
+        'NOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _)'
+    ) -Context 'actual-state issue 选择'
+    Require-ExactActions -Model $select[0] -Expected @(
+        'DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State);'
+    ) -Context 'actual-state issue 选择'
+
+    $selectActive = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigSelectCategoryActualActive')
+    Require ($selectActive.Count -eq 1) 'actual-state active 选择过程必须唯一'
+    Require-ExactConditions -Model $selectActive[0] -Expected @(
+        'DB_COS_ConfigCategoryMap(_Category, _Mirror)',
+        'NOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _)'
+    ) -Context 'actual-state active 选择'
+    Require-ExactActions -Model $selectActive[0] -Expected @(
+        'DB_COS_ConfigCategoryActualSelected(_Character, _Category, "ACTIVE");'
+    ) -Context 'actual-state active 选择'
+
+    $apply = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigApplyCategoryActual')
+    Require ($apply.Count -eq 1) 'actual-state 应用过程必须唯一'
+    Require-ExactConditions -Model $apply[0] -Expected @(
+        'DB_COS_ConfigCategoryActualSelected(_Character, _Category, _State)',
+        'DB_COS_ConfigCategoryActualMap(_Category, _State, _Status)'
+    ) -Context 'actual-state 应用'
+    Require-ExactActions -Model $apply[0] -Expected @(
+        'ApplyStatus(_Character, _Status, -1.0, 1, _Character);'
+    ) -Context 'actual-state 应用'
+
+    $missing = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigMarkCategoryActualMissing')
+    Require ($missing.Count -ge 7) 'actual-state 缺记录检查覆盖不足'
+    $missingCategory = @($missing | Where-Object { $_.Conditions -ccontains 'NOT DB_COS_ConfigCategory(_Character, _Category, _)' })
+    Require ($missingCategory.Count -eq 1) 'actual-state 缺分类记录必须明确报 MISSING_CONFIG'
+    Require ($missingCategory[0].Actions -ccontains 'DB_COS_ConfigCategoryActualIssue(_Character, _Category, "MISSING_CONFIG");') '缺分类记录不得猜默认值'
+
+    $paused = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigMarkCategoryActualPaused')
+    Require ($paused.Count -eq 1) 'actual-state PAUSED 规则必须唯一'
+    Require-ExactConditions -Model $paused[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, _Category, 0)'
+    ) -Context 'actual-state PAUSED'
+    Require-ExactActions -Model $paused[0] -Expected @(
+        'DB_COS_ConfigCategoryActualIssue(_Character, _Category, "PAUSED");'
+    ) -Context 'actual-state PAUSED'
+
+    $clearOrigin = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigClearOriginActualSources')
+    Require ($clearOrigin.Count -eq 1) 'actual-state Origin source 清理过程必须唯一'
+    Require-ExactConditions -Model $clearOrigin[0] -Expected @(
+        'DB_COS_ConfigOriginActualSource(_Character)'
+    ) -Context 'actual-state Origin source 清理'
+    Require-ExactActions -Model $clearOrigin[0] -Expected @(
+        'NOT DB_COS_ConfigOriginActualSource(_Character);'
+    ) -Context 'actual-state Origin source 清理'
+
+    $collectOrigin = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigCollectOriginActualSources')
+    Require ($collectOrigin.Count -eq 1) 'actual-state Origin source 收集过程必须唯一'
+    foreach ($condition in @(
+        'DB_COS_ConfigCategory(_Character, "Origin", 1)',
+        'DB_COS_OriginIdentityToggle(_, _Status, _Tag)',
+        'HasActiveStatus(_Character, _Status, 1)'
+    )) { Require-Condition -Model $collectOrigin[0] -Condition $condition -Context 'actual-state Origin source 收集' }
+    Require-ExactActions -Model $collectOrigin[0] -Expected @(
+        'DB_COS_ConfigOriginActualSource(_Character);'
+    ) -Context 'actual-state Origin source 收集'
+
+    $waiting = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigMarkCategoryActualWaiting')
+    Require ($waiting.Count -eq 1) 'actual-state WAITING_CONDITION 必须只有真实 Origin 等待来源'
+    Require-ExactConditions -Model $waiting[0] -Expected @(
+        'DB_COS_ConfigCategory(_Character, "Origin", 1)',
+        'NOT DB_COS_ConfigOriginActualSource(_Character)'
+    ) -Context 'actual-state WAITING_CONDITION'
+    Require-ExactActions -Model $waiting[0] -Expected @(
+        'DB_COS_ConfigCategoryActualIssue(_Character, "Origin", "WAITING_CONDITION");'
+    ) -Context 'actual-state WAITING_CONDITION'
+
+    $failed = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigMarkCategoryActualSyncFailed')
+    Require ($failed.Count -ge 12) 'actual-state SYNC_FAILED 检查覆盖不足'
+    foreach ($category in $Categories) {
+        $literal = "DB_COS_ConfigCategoryActualIssue(_Character, `"$category`", `"SYNC_FAILED`");"
+        $dynamicGrant = $category -in @('RaceTags', 'WeaponProficiencies', 'ArmorProficiencies') -and @($failed | Where-Object { $_.Actions -ccontains 'DB_COS_ConfigCategoryActualIssue(_Character, _Category, "SYNC_FAILED");' }).Count -gt 0
+        Require ($dynamicGrant -or @($failed | Where-Object { $_.Actions -ccontains $literal }).Count -gt 0) "actual-state SYNC_FAILED 缺分类覆盖: $category"
+    }
+    $ownershipChecks = @($failed | Where-Object {
+        ($_.Conditions -match '^DB_COS_(?:GrantTagOwned|Origin(?:Tag|Spell|Passive)Owned|RacialPassiveGranted)\(').Count -gt 0
+    })
+    Require ($ownershipChecks.Count -ge 3) 'actual-state 不得把 unowned 效果判为模块同步失败'
+
+    $coreObservableContracts = @(
+        [pscustomobject]@{ Name = 'Power enabled'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Power", 1)', 'DB_COS_Power(_Character, _Power)', 'HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 0)') },
+        [pscustomobject]@{ Name = 'Power disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Power", 0)', 'HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 1)') },
+        [pscustomobject]@{ Name = 'Genesis ready'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Genesis", 1)', 'DB_COS_ConfigMechanic(_Character, "Power", 1)', 'DB_COS_Power(_Character, _Power)', 'DB_COS_ConfigCost(_Character, "Genesis", _Cost)', '_Power >= _Cost', 'HasActiveStatus(_Character, "COS_CHAOS_GENESIS_READY", 0)') },
+        [pscustomobject]@{ Name = 'Fate enabled'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Fate", 1)', 'HasPassive(_Character, "COS_FateRevision", 1)', 'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 0)') },
+        [pscustomobject]@{ Name = 'Fate disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Fate", 0)', 'HasActiveStatus(_Character, "COS_CHAOS_FATE_ENABLED", 1)') },
+        [pscustomobject]@{ Name = 'Mastery available'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Mastery", 1)', 'DB_COS_MasteryAvailableCount(_Character, _Count)', '_Count > 0', 'HasSpell(_Character, "Shout_COS_ChaosMastery", 0)') },
+        [pscustomobject]@{ Name = 'Mastery exhausted'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Mastery", 1)', 'DB_COS_MasteryAvailableCount(_Character, 0)', 'HasSpell(_Character, "Shout_COS_ChaosMastery", 1)') },
+        [pscustomobject]@{ Name = 'AllIn disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "AllIn", 0)', 'HasActiveStatus(_Character, "COS_CHAOS_ALLIN_TOGGLE", 1)') },
+        [pscustomobject]@{ Name = 'Strike disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Strike", 0)', 'HasActiveStatus(_Character, "COS_CHAOS_STRIKE_ACTIVE", 1)') },
+        [pscustomobject]@{ Name = 'KillPower disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "KillPower", 0)', 'HasActiveStatus(_Character, "COS_CHAOS_KILL", 1)') },
+        [pscustomobject]@{ Name = 'Duality disabled residual'; Conditions = @('DB_COS_ConfigMechanic(_Character, "Duality", 0)', 'DB_COS_DualityDelayedOwnerTotal(_Character, _Target, _Contribution)') }
+    )
+    foreach ($contract in $coreObservableContracts) {
+        $matches = @($failed | Where-Object {
+            $_.Actions -ccontains 'DB_COS_ConfigCategoryActualIssue(_Character, "Core", "SYNC_FAILED");' -and
+            (Test-ExactOrdinalSet -Actual @($_.Conditions | Where-Object { $_ -cne 'DB_COS_ConfigCategory(_Character, "Core", 1)' }) -Expected $contract.Conditions)
+        })
+        Require ($matches.Count -eq 1) "actual-state Core observable SYNC_FAILED 缺失或重复: $($contract.Name)"
+    }
+
+    $toggle = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_ConfigToggleCategory')
+    Require ($toggle.Count -eq 1) '分类总开关过程必须唯一'
+    Require-ExactActions -Model $toggle[0] -Expected @(
+        'NOT DB_COS_ConfigCategory(_Character, _Key, _Current);',
+        'DB_COS_ConfigCategory(_Character, _Key, _Next);',
+        'PROC_COS_ConfigSyncCharacter(_Character);',
+        'PROC_COS_ConfigSyncCategoryActual(_Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    ) -Context 'Task4 分类切换固定顺序'
+    Require (-not ($toggle[0].Actions -match '^PROC_COS_PresetDetect\(')) 'Task4 不得提前调用 PresetDetect'
 }
 
 function Assert-PresetWorkflowContract {
@@ -2118,6 +2684,7 @@ function Assert-PackageContract {
 
 $paths = [ordered]@{
     Config = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_Config.txt'
+    Base = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_BaseAfterCreation.txt'
     Mechanics = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_ChaosMechanics.txt'
     GlobalBenefits = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_GlobalPlayerBenefits.txt'
     Mastery = Join-Path $Root 'Mods\ChaosOriginsStory\Story\RawFiles\Goals\COS_ChaosMastery.txt'
@@ -2128,6 +2695,7 @@ $paths = [ordered]@{
 }
 
 $config = Read-Required $paths.Config
+$base = Read-Required $paths.Base
 $mechanics = Read-Required $paths.Mechanics
 $globalBenefits = Read-Required $paths.GlobalBenefits
 $mastery = Read-Required $paths.Mastery
@@ -2218,6 +2786,104 @@ $legacyWriterEntrypoints = [ordered]@{
 Assert-OsirisParserContract
 Assert-MutationHarnessContract
 
+if ($Focus -ceq 'Task4') {
+    Assert-CoreGameplayGuardContract -ContentByGoal ([ordered]@{
+        ChaosMechanics = $mechanics
+        ChaosMastery = $mastery
+    })
+    $grantMenu = @(Read-Required (Join-Path $Root 'grant-menu.json') | ConvertFrom-Json)
+    Assert-GrantCategoryGatingContract -Content $config -GrantMenu $grantMenu
+    Assert-BaseGrantCategoryContract -ConfigContent $config -BaseContent $base
+    Assert-CoreRuntimeProjectionContract -Content $config
+    Assert-LegacyOriginOwnershipMigrationContract -Content $base
+    Assert-RacialCategoryGatingContract -Content $config
+    Assert-ConvenienceCategoryGatingContract -ConfigContent $config -CarryContent $globalBenefits
+    Assert-CategoryMutationEventContract -ConfigContent $config -CarryContent $globalBenefits
+    Assert-CategoryPausePreservesChildContract -Contents @($config, $base, $globalBenefits)
+    Assert-CategoryActualStateContract -Content $config -Categories @($categories.Keys)
+
+    $coreGuardMutation = Replace-FirstLiteral -Content $mechanics -OldValue "DB_COS_ConfigCategory((CHARACTER)_Character, `"Core`", 1)`nAND`n" -NewValue "DB_COS_ConfigCategory((CHARACTER)_Character, `"Core`", 0)`nAND`n" -ProbeName 'task4-core-consumer-without-guard'
+    Assert-MutationRejected -Name 'task4-core-consumer-without-guard' -ExpectedMessagePattern '^Core gameplay consumer 缺少唯一分类门禁:' -Probe {
+        Assert-CoreGameplayGuardContract -ContentByGoal ([ordered]@{ ChaosMechanics = $coreGuardMutation; ChaosMastery = $mastery })
+    }
+
+    $coreSuspendModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigSuspendCoreRuntime')[0]
+    $coreSuspendMutationBlock = Replace-FirstLiteral -Content $coreSuspendModel.Block -OldValue 'RemoveStatus(_Character, "COS_CHAOS_KILL", _Character);' -NewValue '// mutation: stale kill status retained' -ProbeName 'task4-core-pause-leaks-runtime'
+    $coreSuspendMutation = Replace-RuleBlock -Content $config -OldBlock $coreSuspendModel.Block -NewBlock $coreSuspendMutationBlock -ProbeName 'task4-core-pause-leaks-runtime'
+    Assert-MutationRejected -Name 'task4-core-pause-leaks-runtime' -ExpectedMessagePattern '^Core 分类暂停运行态 THEN 动作序列不精确$' -Probe {
+        Assert-CoreRuntimeProjectionContract -Content $coreSuspendMutation
+    }
+
+    $legacyOriginModel = @(Get-ProcedureModels -Content $base -Name 'PROC_COS_CaptureLegacyOriginOwnership' | Where-Object { $_.Actions -ccontains 'DB_COS_OriginTagOwned(_Character, _Tag);' })[0]
+    $legacyOriginMutationBlock = Replace-FirstLiteral -Content $legacyOriginModel.Block -OldValue 'HasActiveStatus(_Character, _Status, 1)' -NewValue 'HasPassive(_Character, _TogglePassive, 1)' -ProbeName 'task4-origin-legacy-unproven-ownership'
+    $legacyOriginMutation = Replace-RuleBlock -Content $base -OldBlock $legacyOriginModel.Block -NewBlock $legacyOriginMutationBlock -ProbeName 'task4-origin-legacy-unproven-ownership'
+    Assert-MutationRejected -Name 'task4-origin-legacy-unproven-ownership' -ExpectedMessagePattern '^Legacy Origin 可证明模块来源 缺少或重复真实条件:' -Probe {
+        Assert-LegacyOriginOwnershipMigrationContract -Content $legacyOriginMutation
+    }
+
+    $carryPauseModel = @(Get-ProcedureModels -Content $globalBenefits -Name 'PROC_COS_ApplyCarrySetting' | Where-Object { $_.Conditions -ccontains 'DB_COS_ConfigCategory(_Character, "Convenience", 0)' })[0]
+    $carryChildMutationBlock = Replace-FirstLiteral -Content $carryPauseModel.Block -OldValue 'THEN' -NewValue "THEN`nNOT DB_COS_CarryEnabled(_Character, 1);" -ProbeName 'task4-category-pause-mutates-child'
+    $carryChildMutation = Replace-RuleBlock -Content $globalBenefits -OldBlock $carryPauseModel.Block -NewBlock $carryChildMutationBlock -ProbeName 'task4-category-pause-mutates-child'
+    Assert-MutationRejected -Name 'task4-category-pause-mutates-child' -ExpectedMessagePattern '^分类暂停不得改写 child DB:' -Probe {
+        Assert-CategoryPausePreservesChildContract -Contents @($config, $base, $carryChildMutation)
+    }
+
+    $instrumentModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_CollectGrantDesired' | Where-Object { $_.Conditions -ccontains 'DB_COS_BulkMember("Instrument", _Key)' })[0]
+    $instrumentMutationBlock = Replace-FirstLiteral -Content $instrumentModel.Block -OldValue 'DB_COS_BulkMember("Instrument", _Key)' -NewValue 'DB_COS_ConfigCategory(_Character, "Convenience", 1)' -ProbeName 'task4-instrument-categorized'
+    $instrumentMutation = Replace-RuleBlock -Content $config -OldBlock $instrumentModel.Block -NewBlock $instrumentMutationBlock -ProbeName 'task4-instrument-categorized'
+    Assert-MutationRejected -Name 'task4-instrument-categorized' -ExpectedMessagePattern '^Instrument desired 收集分支缺失或重复$' -Probe {
+        Assert-GrantCategoryGatingContract -Content $instrumentMutation -GrantMenu $grantMenu
+    }
+
+    $grantRemovalModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ApplyGrantOptions' | Where-Object { $_.Actions -ccontains 'ClearTag(_Character, _Tag);' })[0]
+    $unownedMutationBlock = Replace-FirstLiteral -Content $grantRemovalModel.Block -OldValue "DB_COS_GrantTagOwned(_Character, _Tag)`nAND`n" -NewValue "DB_COS_GrantOption(_Key, _Mirror)`nAND`n" -ProbeName 'task4-unowned-tag-removal'
+    $unownedMutation = Replace-RuleBlock -Content $config -OldBlock $grantRemovalModel.Block -NewBlock $unownedMutationBlock -ProbeName 'task4-unowned-tag-removal'
+    Assert-MutationRejected -Name 'task4-unowned-tag-removal' -ExpectedMessagePattern '^grant tag ownership removal 缺少或重复真实条件:' -Probe {
+        Assert-GrantCategoryGatingContract -Content $unownedMutation -GrantMenu $grantMenu
+    }
+
+    $coreEventModel = @(Get-OsirisRuleModels -Content $config | Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_ConfigMechanicEvent(_Event, _Key)' })[0]
+    $eventGuardMutationBlock = Replace-FirstLiteral -Content $coreEventModel.Block -OldValue "DB_COS_ConfigCategory(_Character, `"Core`", 1)`nAND`n" -NewValue "DB_COS_ConfigCategory(_Character, `"Core`", 0)`nAND`n" -ProbeName 'task4-mutation-event-without-category'
+    $eventGuardMutation = Replace-RuleBlock -Content $config -OldBlock $coreEventModel.Block -NewBlock $eventGuardMutationBlock -ProbeName 'task4-mutation-event-without-category'
+    Assert-MutationRejected -Name 'task4-mutation-event-without-category' -ExpectedMessagePattern '^Core mechanic mutation event 缺少或重复真实条件:' -Probe {
+        Assert-CategoryMutationEventContract -ConfigContent $eventGuardMutation -CarryContent $globalBenefits
+    }
+
+    $actualSyncModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigSyncCategoryActual')[0]
+    $priorityMutationBlock = Replace-FirstLiteral -Content $actualSyncModel.Block -OldValue "PROC_COS_ConfigSelectCategoryActual(_Character, `"MISSING_CONFIG`");`nPROC_COS_ConfigSelectCategoryActual(_Character, `"PAUSED`");" -NewValue "PROC_COS_ConfigSelectCategoryActual(_Character, `"PAUSED`");`nPROC_COS_ConfigSelectCategoryActual(_Character, `"MISSING_CONFIG`");" -ProbeName 'task4-actual-priority-swapped'
+    $priorityMutation = Replace-RuleBlock -Content $config -OldBlock $actualSyncModel.Block -NewBlock $priorityMutationBlock -ProbeName 'task4-actual-priority-swapped'
+    Assert-MutationRejected -Name 'task4-actual-priority-swapped' -ExpectedMessagePattern '^actual-state 优先级同步 THEN 动作序列不精确$' -Probe {
+        Assert-CategoryActualStateContract -Content $priorityMutation -Categories @($categories.Keys)
+    }
+
+    $selectModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigSelectCategoryActual')[0]
+    $uniqueMutationBlock = Replace-FirstLiteral -Content $selectModel.Block -OldValue "AND`nNOT DB_COS_ConfigCategoryActualSelected(_Character, _Category, _)`n" -NewValue "AND`nDB_COS_ConfigCategoryActualSelected(_Character, _Category, _)`n" -ProbeName 'task4-actual-nonunique-selection'
+    $uniqueMutation = Replace-RuleBlock -Content $config -OldBlock $selectModel.Block -NewBlock $uniqueMutationBlock -ProbeName 'task4-actual-nonunique-selection'
+    Assert-MutationRejected -Name 'task4-actual-nonunique-selection' -ExpectedMessagePattern '^actual-state issue 选择 条件集合不精确$' -Probe {
+        Assert-CategoryActualStateContract -Content $uniqueMutation -Categories @($categories.Keys)
+    }
+
+    $waitingModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigMarkCategoryActualWaiting')[0]
+    $waitingMutationBlock = Replace-FirstLiteral -Content $waitingModel.Block -OldValue 'NOT DB_COS_ConfigOriginActualSource(_Character)' -NewValue 'DB_COS_ConfigOriginActualSource(_Character)' -ProbeName 'task4-waiting-not-mutually-exclusive'
+    $waitingMutation = Replace-RuleBlock -Content $config -OldBlock $waitingModel.Block -NewBlock $waitingMutationBlock -ProbeName 'task4-waiting-not-mutually-exclusive'
+    Assert-MutationRejected -Name 'task4-waiting-not-mutually-exclusive' -ExpectedMessagePattern '^actual-state WAITING_CONDITION 条件集合不精确$' -Probe {
+        Assert-CategoryActualStateContract -Content $waitingMutation -Categories @($categories.Keys)
+    }
+
+    $powerActualModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigMarkCategoryActualSyncFailed' | Where-Object {
+        $_.Conditions -ccontains 'DB_COS_ConfigMechanic(_Character, "Power", 1)' -and
+        $_.Conditions -ccontains 'HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 0)'
+    })[0]
+    $powerActualMutationBlock = Replace-FirstLiteral -Content $powerActualModel.Block -OldValue 'HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 0)' -NewValue 'HasActiveStatus(_Character, "COS_CHAOS_POWER_STACK", 1)' -ProbeName 'task4-core-actual-power-inverted'
+    $powerActualMutation = Replace-RuleBlock -Content $config -OldBlock $powerActualModel.Block -NewBlock $powerActualMutationBlock -ProbeName 'task4-core-actual-power-inverted'
+    Assert-MutationRejected -Name 'task4-core-actual-power-inverted' -ExpectedMessagePattern '^actual-state Core observable SYNC_FAILED 缺失或重复: Power enabled$' -Probe {
+        Assert-CategoryActualStateContract -Content $powerActualMutation -Categories @($categories.Keys)
+    }
+
+    Write-Output 'Task 4 category runtime gating contract: PASS'
+    exit 0
+}
+
 if ($Focus -ceq 'Task3') {
     Assert-CategoryMappingContract -Content $config -ExpectedCategories $categories
     Assert-LegacyDetectionContract -Content $config -ExpectedProbes $task3LegacyProbes
@@ -2226,7 +2892,7 @@ if ($Focus -ceq 'Task3') {
     Assert-LegacyWriterInitializationContract -Entrypoints $legacyWriterEntrypoints
     Assert-CategoryMirrorContract -Content $config
     Assert-CategoryEventContract -Content $config
-    Assert-CategoryToggleContract -Content $config -Task3Stage
+    Assert-CategoryToggleContract -Content $config -Task4Stage
 
     $newInitModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_ConfigInitializeNew')[0]
     $newLifeMutationBlock = Replace-FirstLiteral -Content $newInitModel.Block -OldValue 'DB_COS_ConfigLifeSkill(_Character, 0);' -NewValue 'DB_COS_ConfigLifeSkill(_Character, 5);' -ProbeName 'task3-new-life-not-zero'

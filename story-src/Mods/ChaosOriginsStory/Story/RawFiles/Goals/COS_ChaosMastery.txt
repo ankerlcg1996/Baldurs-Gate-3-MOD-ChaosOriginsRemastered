@@ -131,6 +131,8 @@ DB_COS_MasteryCorrectCount(_Character, 0);
 PROC
 PROC_COS_ApplyMasteryRouteStatus((CHARACTER)_Character, (STRING)_Status, (INTEGER)_Count)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 _Count > 0
@@ -143,6 +145,8 @@ ApplyStatus(_Character, _Status, _Duration, 100, _Character);
 
 PROC
 PROC_COS_SyncMasteryStatuses((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
@@ -186,6 +190,8 @@ PROC_COS_MigrateMasterySchema46To47(_Character);
 PROC
 PROC_COS_SyncMastery((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryTuneCount(_Character, _)
@@ -226,6 +232,8 @@ DB_COS_MasteryAvailableCount(_Character, _Next);
 
 PROC
 PROC_COS_ConsumeMasteryAvailable((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
@@ -278,6 +286,8 @@ PROC_COS_UpdateMasterySpell(_Character);
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryAvailableCount(_Character, _Count)
@@ -290,6 +300,8 @@ AddSpell(_Character, "Shout_COS_ChaosMastery", 0, 1);
 
 PROC
 PROC_COS_UpdateMasterySpell((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
@@ -375,6 +387,8 @@ CastedSpell(_Character, "Shout_COS_ChaosMasteryTune", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 DB_COS_MasteryTuneCount((CHARACTER)_Character, _Count)
@@ -390,6 +404,8 @@ IF
 CastedSpell(_Character, "Shout_COS_ChaosMasteryCorrect", _, _, _)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
@@ -447,6 +463,8 @@ PROC_COS_SyncOverview((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic(_Character, "Wound", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "Mastery", 0)
@@ -457,6 +475,8 @@ PROC
 PROC_COS_SyncOverview((CHARACTER)_Character)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "Wound", 1)
 AND

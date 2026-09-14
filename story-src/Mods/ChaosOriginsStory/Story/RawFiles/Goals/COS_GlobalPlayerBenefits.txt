@@ -16,6 +16,8 @@ PROC_COS_ApplyCarrySetting((CHARACTER)_Character)
 AND
 DB_Players(_Character)
 AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
+AND
 DB_COS_CarryEnabled(_Character, 1)
 AND
 HasPassive(_Character, "COS_GlobalCarryCapacity50x", 0)
@@ -28,6 +30,17 @@ AND
 DB_Players(_Character)
 AND
 DB_COS_CarryEnabled(_Character, 0)
+AND
+HasPassive(_Character, "COS_GlobalCarryCapacity50x", 1)
+THEN
+RemovePassive(_Character, "COS_GlobalCarryCapacity50x");
+
+PROC
+PROC_COS_ApplyCarrySetting((CHARACTER)_Character)
+AND
+DB_Players(_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 0)
 AND
 HasPassive(_Character, "COS_GlobalCarryCapacity50x", 1)
 THEN
@@ -60,6 +73,8 @@ IF
 TutorialEvent(_Character, (TUTORIALEVENT)COS_CFG_CARRY_7e000000-0000-4000-8000-000000000001)
 AND
 DB_Players(_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Convenience", 1)
 AND
 HasPassive(_Character, "COS_ChaosOriginMarker", 1)
 AND

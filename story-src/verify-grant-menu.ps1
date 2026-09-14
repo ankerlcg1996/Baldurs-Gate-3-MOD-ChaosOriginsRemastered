@@ -40,7 +40,11 @@ if (!$config.Contains('PROC_COS_SeedGrantMap();') -or !$config.Contains('DB_COS_
 if ($config -notmatch 'NOT DB_COS_NativeGrantTag\(_Character, _Tag\)') { throw 'Native tags are not protected.' }
 if ($config -notmatch 'NOT DB_COS_GrantSetting\(_Character, _Key, _\)') { throw 'Missing-only configuration initialization required.' }
 if ($goal -match '(?s)DB_COS_RaceIdentityTag\(_Tag\)\s*AND\s*IsTagged\(_Character, _Tag, 0\)\s*THEN\s*SetTag') { throw 'Unconditional legacy tag restoration remains.' }
-$removal = [regex]::Match($config, '(?ms)^PROC\r?\nPROC_COS_ApplyGrantOptions\(.*?DB_COS_GrantSetting\(_Character, _Key, 0\).*?ClearTag\(_Character, _Tag\);').Value
+$applyBlocks = @([regex]::Matches($config.Replace("`r`n", "`n"), '(?ms)^PROC\nPROC_COS_ApplyGrantOptions\([^\n]*\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)') | ForEach-Object Value)
+$removalBlocks = @($applyBlocks | Where-Object { $_.Contains('ClearTag(_Character, _Tag);') })
+if ($removalBlocks.Count -ne 1) { throw 'Grant tag removal path must be unique.' }
+$removal = $removalBlocks[0]
+if (!$removal.Contains('NOT DB_COS_GrantDesired(_Character, _Key)')) { throw 'Removal must consume the effective desired complement.' }
 foreach ($guard in @('DB_COS_GrantTagOwned(_Character, _Tag)', 'NOT DB_COS_NativeGrantTag(_Character, _Tag)')) {
     if (!$removal.Contains($guard)) { throw "Missing removal guard: $guard" }
 }
@@ -48,6 +52,9 @@ if (!$config.Contains('NOT DB_COS_GrantUnresolved(_Character, _Key)') -or !$conf
 if (!$config.Contains('DB_COS_GrantSetting(_Character, _Key, 1);') -or !$config.Contains('TogglePassive(_Character, _Passive);')) { throw 'Default or origin toggle synchronization missing.' }
 'GRANT_MENU_STATIC=PASS; OPTIONS=74; IN_GAME=PENDING'
 foreach ($action in @('SetTag', 'ClearTag')) {
-    $syncPattern = 'DB_COS_OriginIdentityToggle\(_, _Status, _Tag\)\s*THEN\s*' + $action + '\(_Character, _Tag\);\s*PROC_COS_SyncOriginGrantMirrors\(\(CHARACTER\)_Character\);'
-    if ($goal -notmatch $syncPattern) { throw "Origin status handler does not sync menu: $action" }
+    $originBlocks = @([regex]::Matches($goal.Replace("`r`n", "`n"), '(?ms)^IF\nStatus(?:Applied|Removed)\(_Character, _Status, _, _\).*?(?=^(?:PROC|IF|EXITSECTION)\b|\z)') | ForEach-Object Value)
+    $matching = @($originBlocks | Where-Object { $_.Contains("$action(_Character, _Tag);") -and $_.Contains('DB_COS_OriginIdentityToggle(_, _Status, _Tag)') })
+    if ($matching.Count -ne 1 -or !$matching[0].Contains('PROC_COS_SyncOriginGrantMirrors((CHARACTER)_Character);')) { throw "Origin status handler does not sync menu: $action" }
+    if ($action -eq 'SetTag' -and (!$matching[0].Contains('DB_COS_ConfigCategory(_Character, "Origin", 1)') -or !$matching[0].Contains('DB_COS_OriginTagOwned(_Character, _Tag);'))) { throw 'Origin tag grant must be category-gated and ownership-recorded.' }
+    if ($action -eq 'ClearTag' -and (!$matching[0].Contains('DB_COS_OriginTagOwned(_Character, _Tag)') -or !$matching[0].Contains('NOT DB_COS_OriginTagOwned(_Character, _Tag);'))) { throw 'Origin tag removal must require and clear ownership.' }
 }

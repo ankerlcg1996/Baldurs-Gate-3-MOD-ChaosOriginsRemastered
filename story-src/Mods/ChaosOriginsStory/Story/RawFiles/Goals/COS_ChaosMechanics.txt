@@ -297,6 +297,8 @@ ApplyStatus(_Character, "COS_CHAOS_POWER_STACK", -1.0, 100, _Character);
 PROC
 PROC_COS_ApplyGenesisReady((CHARACTER)_Character, (INTEGER)_Power)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
@@ -326,6 +328,8 @@ PROC
 PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)
 AND
 HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "Power", 1)
 AND
@@ -360,6 +364,8 @@ PROC_COS_MigrateLegacyFatePending((CHARACTER)_Character)
 AND
 HasActiveStatus(_Character, "COS_CHAOS_FATE_PENDING", 1)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic(_Character, "Power", 1)
 AND
 NOT DB_COS_Power(_Character, _)
@@ -368,6 +374,8 @@ RemoveStatus(_Character, "COS_CHAOS_FATE_PENDING", _Character);
 
 PROC
 PROC_COS_SyncPowerFromDatabase((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "Power", 1)
 AND
@@ -457,6 +465,8 @@ NOT DB_COS_WoundConsumed(_Character);
 PROC
 PROC_COS_AddPower((CHARACTER)_Character, (INTEGER)_Amount)
 AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic(_Character, "Power", 1)
 AND
 DB_COS_Power(_Character, _OldPower)
@@ -469,6 +479,8 @@ PROC_COS_SyncPowerDisplay(_Character, _NewPower);
 
 PROC
 PROC_COS_AddLost((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "Power", 1)
 AND
@@ -526,6 +538,8 @@ PROC_COS_AddPower(_Character, 3);
 
 PROC
 PROC_COS_RegisterKill((CHARACTER)_Character)
+AND
+DB_COS_ConfigCategory(_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic(_Character, "KillPower", 1)
 AND
@@ -665,6 +679,8 @@ PROC_COS_AppendWoundCandidate(_Character, _Outcome);
 PROC
 PROC_COS_AddMasteryGiftWoundCandidates((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
 GetLevel(_Character, _Level)
@@ -767,6 +783,8 @@ PROC
 PROC_COS_RollWoundTrial((CHARACTER)_Character, (INTEGER)_Damage, (INTEGER)_PowerEligible, (INTEGER)_Remaining, (INTEGER)_HasBest, (INTEGER)_BestOutcome, (INTEGER)_BestRank)
 AND
 _Remaining > 0
+AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Mastery", 1)
 AND
@@ -1382,6 +1400,8 @@ PROC_COS_Sync(_Character);
 IF
 UsingSpell(_Character, "Shout_COS_ChaosGenesis", _, _, _)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Genesis", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Power", 1)
@@ -1404,6 +1424,8 @@ UsingSpell(_Character, _, _, _, _StoryActionID)
 AND
 DB_COS_Character((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "Fate", 1)
 AND
 HasPassive(_Character, "COS_FateRevision", 1)
@@ -1418,6 +1440,8 @@ StatusApplied(_Character, "COS_CHAOS_ALLIN_TOGGLE", _, _)
 AND
 DB_COS_Character((CHARACTER)_Character)
 AND
+DB_COS_ConfigCategory((CHARACTER)_Character, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_Character, "AllIn", 1)
 AND
 GetLevel(_Character, _Level)
@@ -1430,6 +1454,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
 AND
@@ -1457,6 +1483,8 @@ _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
@@ -1482,6 +1510,8 @@ _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
@@ -1505,6 +1535,8 @@ _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
@@ -1525,6 +1557,8 @@ _AttackOwner == _Attacker
 AND
 DB_COS_Character(_AttackOwner)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "AllIn", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 1)
@@ -1541,6 +1575,8 @@ AND
 _Target != _AttackOwner
 AND
 DB_COS_Character((CHARACTER)_Target)
+AND
+DB_COS_ConfigCategory((CHARACTER)_Target, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_Target, "Wound", 1)
 AND
@@ -1561,6 +1597,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
@@ -1584,6 +1622,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
@@ -1610,6 +1650,8 @@ _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Fate", 1)
@@ -1635,6 +1677,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
@@ -1664,6 +1708,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
@@ -1699,6 +1745,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Duality", 1)
 AND
@@ -1756,6 +1804,8 @@ DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 0)
 AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
+AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_STRIKE_ACTIVE", 1)
@@ -1776,6 +1826,8 @@ AND
 DB_COS_Character((CHARACTER)_AttackOwner)
 AND
 HasActiveStatus(_AttackOwner, "COS_CHAOS_ALLIN_TOGGLE", 0)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "Strike", 1)
 AND
@@ -1808,6 +1860,8 @@ AND
 _AttackOwner == _Attacker
 AND
 DB_COS_Character((CHARACTER)_AttackOwner)
+AND
+DB_COS_ConfigCategory((CHARACTER)_AttackOwner, "Core", 1)
 AND
 DB_COS_ConfigMechanic((CHARACTER)_AttackOwner, "KillPower", 1)
 AND
