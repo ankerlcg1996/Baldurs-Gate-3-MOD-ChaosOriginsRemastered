@@ -2241,6 +2241,14 @@ $legacyProbes = [ordered]@{
     DB_COS_CarryEnabled = [pscustomobject]@{ Procedure = 'PROC_COS_ConfigProbeLegacyCarry'; Arity = 2 }
 }
 Assert-LegacyDetectionContract -Content $config -ExpectedProbes $legacyProbes
+Assert-CategorySeedContract -Content $config -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($legacyProbes.Keys)
+
+$coreCategorySeedGuard = 'NOT DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")'
+$coreCategorySeedMutation = Replace-FirstLiteral -Content $config -OldValue $coreCategorySeedGuard -NewValue 'DB_COS_ConfigCategoryMap("Core", "COS_CFG_CATEGORY_CORE")' -ProbeName 'default-all-category-seed-missing-not-guard'
+Assert-MutationRejected -Name 'default-all-category-seed-missing-not-guard' -ExpectedMessagePattern '^分类 seed 幂等条件与数据动作不匹配: DB_COS_ConfigCategoryMap\("Core", "COS_CFG_CATEGORY_CORE"\)$' -Probe {
+    Assert-CategorySeedContract -Content $coreCategorySeedMutation -ExpectedCategories $categories -ExpectedEvents $task3CategoryEvents -ExpectedLegacyTables @($legacyProbes.Keys)
+}
+Write-Output 'Default All category seed contract and missing-NOT mutation: PASS'
 
 $presetOrder = @('AllConvenience', 'Balanced', 'NearVanilla', 'PureChaos', 'Custom')
 Assert-PresetDetectionOrderContract -Content $config -ExpectedOrder $presetOrder
