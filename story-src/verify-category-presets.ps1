@@ -2648,10 +2648,23 @@ function Assert-UiPageContract {
 
     $panelNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetPanel')
     Require ($panelNodes.Count -eq 1) "$PageName 分类/预设面板缺失或重复"
+    $mutationNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSMutationPanel')
+    Require ($mutationNodes.Count -eq 1) "$PageName 共同 mutation 容器缺失或重复"
+    Require ([object]::ReferenceEquals($panelNodes[0].ParentNode, $mutationNodes[0])) "$PageName COSPresetPanel 必须是共同 mutation 容器的直接子级"
+
+    $expectedPresetNames = @($ExpectedNamedNodes | Where-Object { $_.StartsWith('COSPreset', [System.StringComparison]::Ordinal) })
+    $actualPresetNames = @(
+        Get-XamlName -Node $panelNodes[0]
+        $panelNodes[0].SelectNodes('.//*') |
+            ForEach-Object { Get-XamlName -Node $_ } |
+            Where-Object { $_.StartsWith('COSPreset', [System.StringComparison]::Ordinal) }
+    )
+    Require (Test-ExactOrdinalSet -Actual $actualPresetNames -Expected $expectedPresetNames) "$PageName COSPresetPanel 命名内容集合错误"
+
     foreach ($featureName in $ExpectedNamedNodes) {
         $featureNodes = @(Get-XamlNamedNodes -Document $document -Name $featureName)
         Require ($featureNodes.Count -eq 1) "$PageName 新增命名节点缺失或重复: $featureName"
-        if ($featureName -cne 'COSPresetPanel') {
+        if ($featureName.StartsWith('COSPreset', [System.StringComparison]::Ordinal) -and $featureName -cne 'COSPresetPanel') {
             $insidePanel = $false
             $ancestor = $featureNodes[0].ParentNode
             while ($null -ne $ancestor) {
@@ -2663,13 +2676,34 @@ function Assert-UiPageContract {
             }
             Require $insidePanel "$PageName 新增命名节点不在 COSPresetPanel 内: $featureName"
         }
+        elseif ($featureName.StartsWith('COSCategory', [System.StringComparison]::Ordinal)) {
+            Require (-not (Test-XamlDescendantOrSelf -Node $featureNodes[0] -Scope $panelNodes[0])) "$PageName 分类节点不得位于 COSPresetPanel 内: $featureName"
+        }
     }
+
+    $previewNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetPreview')
+    $noticeNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetPreviewNotice')
+    $actionNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSPresetActions')
+    $panelElementChildren = @($panelNodes[0].ChildNodes | Where-Object { $_.NodeType -eq [System.Xml.XmlNodeType]::Element })
+    $previewIndex = [Array]::IndexOf($panelElementChildren, $previewNodes[0])
+    $noticeIndex = [Array]::IndexOf($panelElementChildren, $noticeNodes[0])
+    $actionIndex = [Array]::IndexOf($panelElementChildren, $actionNodes[0])
+    Require ($previewIndex -ge 0 -and $noticeIndex -eq ($previewIndex + 1) -and $actionIndex -eq ($noticeIndex + 1)) "$PageName 预设 actions 必须紧跟 preview/notice 并位于 panel 闭合前"
+
+    $mutationDirectNames = @(
+        $mutationNodes[0].ChildNodes |
+            Where-Object { $_.NodeType -eq [System.Xml.XmlNodeType]::Element } |
+            ForEach-Object { Get-XamlName -Node $_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+    Require (Test-ExactOrdinalSequence -Actual $mutationDirectNames -Expected (@('COSPresetPanel') + $ExpectedCategorySections)) "$PageName mutation 容器直接区域顺序错误"
 
     $stateScopes = [System.Collections.Generic.List[System.Xml.XmlElement]]::new()
     $stateScopes.Add($panelNodes[0])
     foreach ($sectionName in $ExpectedCategorySections) {
         $sectionNodes = @(Get-XamlNamedNodes -Document $document -Name $sectionName)
         Require ($sectionNodes.Count -eq 1) "$PageName 分类 section 缺失或重复: $sectionName"
+        Require ([object]::ReferenceEquals($sectionNodes[0].ParentNode, $mutationNodes[0])) "$PageName 分类 section 必须是 COSPresetPanel 后的独立兄弟: $sectionName"
         $stateScopes.Add($sectionNodes[0])
         $token = $sectionName.Substring('COSCategory'.Length, $sectionName.Length - 'COSCategory'.Length - 'Section'.Length)
         $expectedSectionNames = @(
@@ -2722,7 +2756,7 @@ function Assert-UiPageContract {
         }
     }
     $allEventActions = @(
-        $panelNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]') |
+        $mutationNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]') |
             ForEach-Object { $_ }
     )
     $expectedEventValues = @($ButtonOrder | ForEach-Object { $ButtonEvents[$_] })
@@ -2760,22 +2794,22 @@ function Assert-UiPageContract {
     }
 
     $mirrorValues = @(
-        $panelNodes[0].SelectNodes('.//*[local-name()="DataTrigger" and @Binding="{Binding Name.Str}" and @Value]') |
+        $mutationNodes[0].SelectNodes('.//*[local-name()="DataTrigger" and @Binding="{Binding Name.Str}" and @Value]') |
             ForEach-Object { $_.GetAttribute('Value') } |
             Where-Object { $_.StartsWith('COS_CFG_CATEGORY_', [System.StringComparison]::Ordinal) }
     )
     Require (Test-ExactOrdinalSequence -Actual $mirrorValues -Expected $ExpectedMirrors) "$PageName 分类 mirror 过滤集合或顺序错误"
 
     $combatTriggers = @(
-        $panelNodes[0].SelectNodes('.//*[local-name()="DataTrigger"]') |
+        $mutationNodes[0].SelectNodes('.//*[local-name()="DataTrigger"]') |
             Where-Object { [regex]::IsMatch($_.GetAttribute('Binding'), '(?:^|[^A-Za-z0-9_])IsInCombat(?:[^A-Za-z0-9_]|$)') }
     )
     Require ($combatTriggers.Count -eq 1) "$PageName 战斗只读条件数量不精确"
     Require ($combatTriggers[0].GetAttribute('Binding') -ceq '{Binding CurrentPlayer.SelectedCharacter.IsInCombat}') "$PageName 战斗只读 Binding 错误"
     Require ($combatTriggers[0].GetAttribute('Value') -ceq 'True') "$PageName 战斗只读条件值必须为 True"
-    Require ($combatTriggers[0].ParentNode.LocalName -ceq 'Style.Triggers' -and $combatTriggers[0].ParentNode.ParentNode.LocalName -ceq 'Style') "$PageName 战斗只读条件必须位于 COSPresetPanel Style"
+    Require ($combatTriggers[0].ParentNode.LocalName -ceq 'Style.Triggers' -and $combatTriggers[0].ParentNode.ParentNode.LocalName -ceq 'Style') "$PageName 战斗只读条件必须位于共同 mutation 容器 Style"
     $styleProperty = $combatTriggers[0].ParentNode.ParentNode.ParentNode
-    Require ($styleProperty.LocalName -ceq "$($panelNodes[0].LocalName).Style" -and [object]::ReferenceEquals($styleProperty.ParentNode, $panelNodes[0])) "$PageName 战斗只读条件未覆盖 COSPresetPanel"
+    Require ($styleProperty.LocalName -ceq "$($mutationNodes[0].LocalName).Style" -and [object]::ReferenceEquals($styleProperty.ParentNode, $mutationNodes[0])) "$PageName 战斗只读条件未覆盖共同 mutation 容器"
     $readonlySetters = @($combatTriggers[0].SelectNodes('./*[local-name()="Setter" and @Property="IsHitTestVisible" and @Value="False"]'))
     Require ($readonlySetters.Count -eq 1) "$PageName 战斗时必须禁用面板交互"
 
@@ -3735,13 +3769,14 @@ $expectedFeatureNamedNodes = @(
 $expectedCategorySections = @($categoryUiTokens.Keys | ForEach-Object { "COSCategory${_}Section" })
 $panelOrder = @(
     'COSRuntimeDiagnosticPanel',
+    'COSMutationPanel',
     'COSPresetPanel',
     'COSPresetCurrent',
     'COSPresetButtons',
     'COSPresetPreview',
     'COSPresetPreviewNotice'
+    'COSPresetActions'
     foreach ($sectionName in $expectedCategorySections) { $sectionName }
-    'COSPresetActions',
     'COSConfigOverview'
 )
 $buttonOrder = @(
@@ -3749,15 +3784,15 @@ $buttonOrder = @(
     'COSPresetPureChaosButton',
     'COSPresetBalancedButton',
     'COSPresetAllConvenienceButton',
+    'COSPresetApplyButton',
+    'COSPresetCancelButton',
     'COSCategoryCoreToggle',
     'COSCategoryOriginToggle',
     'COSCategoryRaceTagsToggle',
     'COSCategoryWeaponToggle',
     'COSCategoryArmorToggle',
     'COSCategoryRacialToggle',
-    'COSCategoryConvenienceToggle',
-    'COSPresetApplyButton',
-    'COSPresetCancelButton'
+    'COSCategoryConvenienceToggle'
 )
 
 $controllerNavigation = [ordered]@{
@@ -4128,7 +4163,7 @@ $controllerProbeArguments = [ordered]@{
 
 [xml]$visibleHandleMutationDocument = $controllerXaml
 $visibleHandleMutationNode = @(Get-XamlNamedNodes -Document $visibleHandleMutationDocument -Name 'COSCategoryCoreToggle')[0]
-$visibleHandleMutationNode.SetAttribute('Content', "{Binding Source='$($categoryHandleContracts.COSCategoryCoreToggle.Machine)', Converter={StaticResource TranslatedStringConverter}}")
+[void]$visibleHandleMutationNode.SetAttribute('Content', "{Binding Source='$($categoryHandleContracts.COSCategoryCoreToggle.Machine)', Converter={StaticResource TranslatedStringConverter}}")
 Assert-MutationRejected -Name 'category-visible-machine-handle' -ExpectedMessagePattern '^controller-probe 分类可见名称 handle 错误: COSCategoryCoreToggle$' -Probe {
     $visibleHandleMutationContract = Assert-UiPageContract -Content $visibleHandleMutationDocument.OuterXml @controllerProbeArguments
     Assert-CategoryDisplayHandleContract -UiContract $visibleHandleMutationContract -CategoryHandleContracts $categoryHandleContracts -MachineKeyByHandle $machineKeyByHandle -Context 'controller-probe'
@@ -4137,7 +4172,7 @@ Assert-MutationRejected -Name 'category-visible-machine-handle' -ExpectedMessage
 [xml]$controllerEventMutationDocument = $controllerXaml
 $controllerPresetButton = @(Get-XamlNamedNodes -Document $controllerEventMutationDocument -Name 'COSPresetNearVanillaButton')[0]
 $controllerPresetAction = @($controllerPresetButton.SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))[0]
-$controllerPresetAction.SetAttribute('CommandParameter', $presetEvents.PureChaos)
+[void]$controllerPresetAction.SetAttribute('CommandParameter', $presetEvents.PureChaos)
 $controllerEventMutation = $controllerEventMutationDocument.OuterXml
 Assert-MutationRejected -Name 'controller-event-drift' -ExpectedMessagePattern '^controller-probe 按钮 Click 事件错误: COSPresetNearVanillaButton$' -Probe {
     [void](Assert-UiPageContract -Content $controllerEventMutation @controllerProbeArguments)
@@ -4146,7 +4181,7 @@ Assert-MutationRejected -Name 'controller-event-drift' -ExpectedMessagePattern '
 [xml]$extraEventDocument = $controllerXaml
 $extraEventPanel = @(Get-XamlNamedNodes -Document $extraEventDocument -Name 'COSPresetPanel')[0]
 $extraEventAction = $extraEventDocument.CreateElement('b', 'InvokeCommandAction', 'http://schemas.microsoft.com/xaml/behaviors')
-$extraEventAction.SetAttribute('CommandParameter', '7e990000-0000-4000-8000-000000000099')
+[void]$extraEventAction.SetAttribute('CommandParameter', '7e990000-0000-4000-8000-000000000099')
 [void]$extraEventPanel.AppendChild($extraEventAction)
 Assert-MutationRejected -Name 'xaml-extra-event' -ExpectedMessagePattern '^controller-probe 旧 child 事件集合或数量漂移$' -Probe {
     [void](Assert-UiPageContract -Content $extraEventDocument.OuterXml @controllerProbeArguments)
@@ -4156,7 +4191,7 @@ Assert-MutationRejected -Name 'xaml-extra-event' -ExpectedMessagePattern '^contr
 $previewNode = @(Get-XamlNamedNodes -Document $extraStatusDocument -Name 'COSPresetPreview')[0]
 $firstPreviewTrigger = @($previewNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
 $extraPreviewTrigger = $firstPreviewTrigger.CloneNode($true)
-$extraPreviewTrigger.SetAttribute('Value', 'COS_PRESET_PREVIEW_UNAPPROVED')
+[void]$extraPreviewTrigger.SetAttribute('Value', 'COS_PRESET_PREVIEW_UNAPPROVED')
 [void]$firstPreviewTrigger.ParentNode.AppendChild($extraPreviewTrigger)
 Assert-MutationRejected -Name 'xaml-extra-preview-status' -ExpectedMessagePattern '^controller-probe 状态过滤集合或顺序错误: COSPresetPreview$' -Probe {
     [void](Assert-UiPageContract -Content $extraStatusDocument.OuterXml @controllerProbeArguments)
@@ -4165,7 +4200,7 @@ Assert-MutationRejected -Name 'xaml-extra-preview-status' -ExpectedMessagePatter
 [xml]$hiddenStatusDocument = $controllerXaml
 $hiddenStatusPanel = @(Get-XamlNamedNodes -Document $hiddenStatusDocument -Name 'COSPresetPanel')[0]
 $hiddenTrigger = $hiddenStatusDocument.CreateElement('DataTrigger', $hiddenStatusPanel.NamespaceURI)
-$hiddenTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_UNKNOWN_ACTIVE')
+[void]$hiddenTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_UNKNOWN_ACTIVE')
 [void]$hiddenStatusPanel.AppendChild($hiddenTrigger)
 Assert-MutationRejected -Name 'xaml-hidden-unknown-state' -ExpectedMessagePattern '^controller-probe 包含未批准状态引用: COS_CATEGORY_ACTUAL_UNKNOWN_ACTIVE$' -Probe {
     [void](Assert-UiPageContract -Content $hiddenStatusDocument.OuterXml @controllerProbeArguments)
@@ -4173,14 +4208,14 @@ Assert-MutationRejected -Name 'xaml-hidden-unknown-state' -ExpectedMessagePatter
 
 [xml]$wrongDirectionDocument = $controllerXaml
 $wrongDirectionButton = @(Get-XamlNamedNodes -Document $wrongDirectionDocument -Name 'COSPresetNearVanillaButton')[0]
-$wrongDirectionButton.SetAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code', 'COSPresetCancelButton')
+[void]$wrongDirectionButton.SetAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code', 'COSPresetCancelButton')
 Assert-MutationRejected -Name 'controller-wrong-direction' -ExpectedMessagePattern '^controller-probe 手柄焦点方向错误: COSPresetNearVanillaButton Up$' -Probe {
     [void](Assert-UiPageContract -Content $wrongDirectionDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$missingDirectionDocument = $controllerXaml
 $missingDirectionButton = @(Get-XamlNamedNodes -Document $missingDirectionDocument -Name 'COSPresetNearVanillaButton')[0]
-$missingDirectionButton.RemoveAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code')
+[void]$missingDirectionButton.RemoveAttribute('MoveFocus.Up', 'clr-namespace:ls;assembly=Code')
 Assert-MutationRejected -Name 'controller-missing-direction' -ExpectedMessagePattern '^controller-probe 手柄焦点方向缺失: COSPresetNearVanillaButton Up$' -Probe {
     [void](Assert-UiPageContract -Content $missingDirectionDocument.OuterXml @controllerProbeArguments)
 }
@@ -4198,7 +4233,7 @@ Assert-MutationRejected -Name 'controller-button-order' -ExpectedMessagePattern 
 [xml]$wrongBindingDocument = $controllerXaml
 $currentNode = @(Get-XamlNamedNodes -Document $wrongBindingDocument -Name 'COSPresetCurrent')[0]
 $currentTrigger = @($currentNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
-$currentTrigger.SetAttribute('Binding', '{Binding Name.Str}')
+[void]$currentTrigger.SetAttribute('Binding', '{Binding Name.Str}')
 Assert-MutationRejected -Name 'xaml-wrong-status-binding' -ExpectedMessagePattern '^controller-probe DataTrigger Binding 错误: COSPresetCurrent COS_PRESET_CURRENT_NEAR_VANILLA$' -Probe {
     [void](Assert-UiPageContract -Content $wrongBindingDocument.OuterXml @controllerProbeArguments)
 }
@@ -4206,15 +4241,16 @@ Assert-MutationRejected -Name 'xaml-wrong-status-binding' -ExpectedMessagePatter
 [xml]$crossPausedDocument = $controllerXaml
 $corePausedNode = @(Get-XamlNamedNodes -Document $crossPausedDocument -Name 'COSCategoryCorePausedOverlay')[0]
 $corePausedTrigger = @($corePausedNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
-$corePausedTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_ARMOR_PAUSED')
+[void]$corePausedTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_ARMOR_PAUSED')
 Assert-MutationRejected -Name 'xaml-cross-category-paused' -ExpectedMessagePattern '^controller-probe 状态过滤集合或顺序错误: COSCategoryCorePausedOverlay$' -Probe {
     [void](Assert-UiPageContract -Content $crossPausedDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$movedCombatDocument = $controllerXaml
+$movedCombatContainer = @(Get-XamlNamedNodes -Document $movedCombatDocument -Name 'COSMutationPanel')[0]
 $movedCombatPanel = @(Get-XamlNamedNodes -Document $movedCombatDocument -Name 'COSPresetPanel')[0]
 $movedCombatTrigger = @(
-    $movedCombatPanel.SelectNodes('.//*[local-name()="DataTrigger"]') |
+    $movedCombatContainer.SelectNodes('.//*[local-name()="DataTrigger"]') |
         Where-Object { [regex]::IsMatch($_.GetAttribute('Binding'), '(?:^|[^A-Za-z0-9_])IsInCombat(?:[^A-Za-z0-9_]|$)') }
 )[0]
 [void]$movedCombatTrigger.ParentNode.RemoveChild($movedCombatTrigger)
@@ -4227,7 +4263,7 @@ $textBlockTriggers = $movedCombatDocument.CreateElement('Style.Triggers', $moved
 [void]$textBlockStyleProperty.AppendChild($textBlockStyle)
 [void]$textBlock.AppendChild($textBlockStyleProperty)
 [void]$movedCombatPanel.AppendChild($textBlock)
-Assert-MutationRejected -Name 'xaml-combat-trigger-wrong-scope' -ExpectedMessagePattern '^controller-probe 战斗只读条件未覆盖 COSPresetPanel$' -Probe {
+Assert-MutationRejected -Name 'xaml-combat-trigger-wrong-scope' -ExpectedMessagePattern '^controller-probe 战斗只读条件未覆盖共同 mutation 容器$' -Probe {
     [void](Assert-UiPageContract -Content $movedCombatDocument.OuterXml @controllerProbeArguments)
 }
 
