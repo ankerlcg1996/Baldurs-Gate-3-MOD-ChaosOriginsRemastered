@@ -1141,8 +1141,8 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000204" version="1">The current preset is Pure Chaos.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000205" version="1">Current preset: Balanced</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000206" version="1">The current preset is Balanced.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000207" version="1">Current preset: All Convenience</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000208" version="1">The current preset is All Convenience.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000207" version="1">Current preset: All Convenience Features</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000208" version="1">The current preset is All Convenience Features.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000209" version="1">Current preset: Custom</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000210" version="1">The current preset is Custom.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000211" version="1">Pending preset: Near Vanilla</content>
@@ -1151,118 +1151,118 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000214" version="1">The pending preset is Pure Chaos.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000215" version="1">Pending preset: Balanced</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000216" version="1">The pending preset is Balanced.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000217" version="1">Pending preset: All Convenience</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000218" version="1">The pending preset is All Convenience.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000219" version="1">Preset preview: Core category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000220" version="1">The preset preview shows the Core category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000221" version="1">Preset preview: Core category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000222" version="1">The preset preview shows the Core category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000223" version="1">Preset preview: Origin category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000224" version="1">The preset preview shows the Origin category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000225" version="1">Preset preview: Origin category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000226" version="1">The preset preview shows the Origin category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000227" version="1">Preset preview: Race Tags category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000228" version="1">The preset preview shows the Race Tags category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000229" version="1">Preset preview: Race Tags category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000230" version="1">The preset preview shows the Race Tags category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000231" version="1">Preset preview: Weapon Proficiencies category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000232" version="1">The preset preview shows the Weapon Proficiencies category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000233" version="1">Preset preview: Weapon Proficiencies category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000234" version="1">The preset preview shows the Weapon Proficiencies category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000235" version="1">Preset preview: Armor Proficiencies category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000236" version="1">The preset preview shows the Armor Proficiencies category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000237" version="1">Preset preview: Armor Proficiencies category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000238" version="1">The preset preview shows the Armor Proficiencies category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000239" version="1">Preset preview: Racial Abilities category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000240" version="1">The preset preview shows the Racial Abilities category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000241" version="1">Preset preview: Racial Abilities category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000242" version="1">The preset preview shows the Racial Abilities category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000243" version="1">Preset preview: Convenience category on</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000244" version="1">The preset preview shows the Convenience category as on.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000245" version="1">Preset preview: Convenience category off</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000246" version="1">The preset preview shows the Convenience category as off.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000247" version="1">Preset preview: Life setting 0</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000248" version="1">The preset preview shows the Life setting at 0.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000249" version="1">Preset preview: Life setting 5</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000250" version="1">The preset preview shows the Life setting at 5.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000251" version="1">Preset preview: Life setting 20</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000252" version="1">The preset preview shows the Life setting at 20.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000253" version="1">Actual Core category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000254" version="1">The actual Core category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000255" version="1">Actual Core category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000256" version="1">The actual Core category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000257" version="1">Actual Core category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000258" version="1">The actual Core category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000259" version="1">Actual Core category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000260" version="1">The actual Core category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000261" version="1">Actual Core category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000262" version="1">The actual Core category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000263" version="1">Actual Origin category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000264" version="1">The actual Origin category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000265" version="1">Actual Origin category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000266" version="1">The actual Origin category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000267" version="1">Actual Origin category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000268" version="1">The actual Origin category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000269" version="1">Actual Origin category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000270" version="1">The actual Origin category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000271" version="1">Actual Origin category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000272" version="1">The actual Origin category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000273" version="1">Actual Race Tags category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000274" version="1">The actual Race Tags category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000275" version="1">Actual Race Tags category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000276" version="1">The actual Race Tags category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000277" version="1">Actual Race Tags category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000278" version="1">The actual Race Tags category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000279" version="1">Actual Race Tags category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000280" version="1">The actual Race Tags category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000281" version="1">Actual Race Tags category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000282" version="1">The actual Race Tags category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000283" version="1">Actual Weapon Proficiencies category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000284" version="1">The actual Weapon Proficiencies category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000285" version="1">Actual Weapon Proficiencies category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000286" version="1">The actual Weapon Proficiencies category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000287" version="1">Actual Weapon Proficiencies category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000288" version="1">The actual Weapon Proficiencies category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000289" version="1">Actual Weapon Proficiencies category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000290" version="1">The actual Weapon Proficiencies category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000291" version="1">Actual Weapon Proficiencies category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000292" version="1">The actual Weapon Proficiencies category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000293" version="1">Actual Armor Proficiencies category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000294" version="1">The actual Armor Proficiencies category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000295" version="1">Actual Armor Proficiencies category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000296" version="1">The actual Armor Proficiencies category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000297" version="1">Actual Armor Proficiencies category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000298" version="1">The actual Armor Proficiencies category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000299" version="1">Actual Armor Proficiencies category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000300" version="1">The actual Armor Proficiencies category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000301" version="1">Actual Armor Proficiencies category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000302" version="1">The actual Armor Proficiencies category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000303" version="1">Actual Racial Abilities category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000304" version="1">The actual Racial Abilities category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000305" version="1">Actual Racial Abilities category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000306" version="1">The actual Racial Abilities category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000307" version="1">Actual Racial Abilities category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000308" version="1">The actual Racial Abilities category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000309" version="1">Actual Racial Abilities category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000310" version="1">The actual Racial Abilities category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000311" version="1">Actual Racial Abilities category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000312" version="1">The actual Racial Abilities category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000313" version="1">Actual Convenience category: active</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000314" version="1">The actual Convenience category state is active.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000315" version="1">Actual Convenience category: paused</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000316" version="1">The actual Convenience category state is paused.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000317" version="1">Actual Convenience category: waiting for condition</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000318" version="1">The actual Convenience category state is waiting for condition.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000319" version="1">Actual Convenience category: missing configuration</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000320" version="1">The actual Convenience category state is missing configuration.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000321" version="1">Actual Convenience category: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000322" version="1">The actual Convenience category state is sync failed.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000323" version="1">Preset error: no selection</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000324" version="1">A preset error occurred: no selection.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000325" version="1">Preset error: combat read-only</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000326" version="1">A preset error occurred: combat read-only.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000327" version="1">Preset error: configuration incomplete</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">A preset error occurred: configuration incomplete.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">Preset error: sync failed</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">A preset error occurred: sync failed.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000217" version="1">Pending preset: All Convenience Features</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000218" version="1">The pending preset is All Convenience Features.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000219" version="1">Preset preview: Core category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000220" version="1">In the preset preview, the Core category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000221" version="1">Preset preview: Core category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000222" version="1">In the preset preview, the Core category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000223" version="1">Preset preview: Origin category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000224" version="1">In the preset preview, the Origin category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000225" version="1">Preset preview: Origin category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000226" version="1">In the preset preview, the Origin category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000227" version="1">Preset preview: Race Tags category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000228" version="1">In the preset preview, the Race Tags category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000229" version="1">Preset preview: Race Tags category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000230" version="1">In the preset preview, the Race Tags category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000231" version="1">Preset preview: Weapon Proficiencies category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000232" version="1">In the preset preview, the Weapon Proficiencies category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000233" version="1">Preset preview: Weapon Proficiencies category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000234" version="1">In the preset preview, the Weapon Proficiencies category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000235" version="1">Preset preview: Armor Proficiencies category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000236" version="1">In the preset preview, the Armor Proficiencies category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000237" version="1">Preset preview: Armor Proficiencies category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000238" version="1">In the preset preview, the Armor Proficiencies category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000239" version="1">Preset preview: Racial Abilities category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000240" version="1">In the preset preview, the Racial Abilities category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000241" version="1">Preset preview: Racial Abilities category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000242" version="1">In the preset preview, the Racial Abilities category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000243" version="1">Preset preview: Convenience category is on</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000244" version="1">In the preset preview, the Convenience category is on.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000245" version="1">Preset preview: Convenience category is off</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000246" version="1">In the preset preview, the Convenience category is off.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000247" version="1">Preset preview: Life setting is 0</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000248" version="1">The preset preview sets Life to 0.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000249" version="1">Preset preview: Life setting is 5</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000250" version="1">The preset preview sets Life to 5.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000251" version="1">Preset preview: Life setting is 20</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000252" version="1">The preset preview sets Life to 20.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000253" version="1">Actual Core category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000254" version="1">The Core category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000255" version="1">Actual Core category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000256" version="1">The Core category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000257" version="1">Actual Core category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000258" version="1">The Core category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000259" version="1">Actual Core category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000260" version="1">The Core category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000261" version="1">Actual Core category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000262" version="1">The Core category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000263" version="1">Actual Origin category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000264" version="1">The Origin category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000265" version="1">Actual Origin category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000266" version="1">The Origin category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000267" version="1">Actual Origin category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000268" version="1">The Origin category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000269" version="1">Actual Origin category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000270" version="1">The Origin category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000271" version="1">Actual Origin category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000272" version="1">The Origin category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000273" version="1">Actual Race Tags category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000274" version="1">The Race Tags category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000275" version="1">Actual Race Tags category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000276" version="1">The Race Tags category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000277" version="1">Actual Race Tags category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000278" version="1">The Race Tags category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000279" version="1">Actual Race Tags category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000280" version="1">The Race Tags category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000281" version="1">Actual Race Tags category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000282" version="1">The Race Tags category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000283" version="1">Actual Weapon Proficiencies category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000284" version="1">The Weapon Proficiencies category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000285" version="1">Actual Weapon Proficiencies category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000286" version="1">The Weapon Proficiencies category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000287" version="1">Actual Weapon Proficiencies category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000288" version="1">The Weapon Proficiencies category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000289" version="1">Actual Weapon Proficiencies category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000290" version="1">The Weapon Proficiencies category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000291" version="1">Actual Weapon Proficiencies category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000292" version="1">The Weapon Proficiencies category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000293" version="1">Actual Armor Proficiencies category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000294" version="1">The Armor Proficiencies category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000295" version="1">Actual Armor Proficiencies category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000296" version="1">The Armor Proficiencies category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000297" version="1">Actual Armor Proficiencies category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000298" version="1">The Armor Proficiencies category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000299" version="1">Actual Armor Proficiencies category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000300" version="1">The Armor Proficiencies category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000301" version="1">Actual Armor Proficiencies category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000302" version="1">The Armor Proficiencies category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000303" version="1">Actual Racial Abilities category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000304" version="1">The Racial Abilities category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000305" version="1">Actual Racial Abilities category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000306" version="1">The Racial Abilities category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000307" version="1">Actual Racial Abilities category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000308" version="1">The Racial Abilities category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000309" version="1">Actual Racial Abilities category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000310" version="1">The Racial Abilities category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000311" version="1">Actual Racial Abilities category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000312" version="1">The Racial Abilities category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000313" version="1">Actual Convenience category is active</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000314" version="1">The Convenience category's actual state is active.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000315" version="1">Actual Convenience category is paused</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000316" version="1">The Convenience category's actual state is paused.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000317" version="1">Actual Convenience category is waiting for a condition</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000318" version="1">The Convenience category's actual state is waiting for a required condition.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000319" version="1">Actual Convenience category is missing configuration</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000320" version="1">The Convenience category's actual state indicates missing configuration.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000321" version="1">Actual Convenience category has a sync failure</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000322" version="1">The Convenience category's actual state indicates a sync failure.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000323" version="1">Preset error: no preset selection was made</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000324" version="1">Preset error: no preset selection was made.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000325" version="1">Preset error: presets are read-only during combat</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000326" version="1">Preset error: presets are read-only during combat.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000327" version="1">Preset error: configuration is incomplete</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">Preset error: the preset configuration is incomplete.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">Preset error: preset sync failed</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">Preset error: the preset failed to sync.</content>
 </contentList>

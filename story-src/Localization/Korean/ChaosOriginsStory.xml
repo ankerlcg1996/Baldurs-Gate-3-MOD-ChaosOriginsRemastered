@@ -1135,134 +1135,134 @@
   <content contentuid="h7e990000g0000g4000g8000g000000000112" version="1">종족 능력 분류의 읽기 전용 미러입니다.</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000113" version="1">분류: 편의</content>
   <content contentuid="h7e990000g0000g4000g8000g000000000114" version="1">편의 분류의 읽기 전용 미러입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">현재 프리셋: 바닐라에 가까움</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">현재 프리셋은 바닐라에 가까움입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000203" version="1">현재 프리셋: 순수 카오스</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000204" version="1">현재 프리셋은 순수 카오스입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000205" version="1">현재 프리셋: 균형</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000206" version="1">현재 프리셋은 균형입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000207" version="1">현재 프리셋: 편의 기능 모두 사용</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000208" version="1">현재 프리셋은 편의 기능 모두 사용입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000209" version="1">현재 프리셋: 사용자 지정</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000210" version="1">현재 프리셋은 사용자 지정입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000211" version="1">대기 중인 프리셋: 바닐라에 가까움</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000212" version="1">대기 중인 프리셋은 바닐라에 가까움입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000213" version="1">대기 중인 프리셋: 순수 카오스</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000214" version="1">대기 중인 프리셋은 순수 카오스입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000215" version="1">대기 중인 프리셋: 균형</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000216" version="1">대기 중인 프리셋은 균형입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000217" version="1">대기 중인 프리셋: 편의 기능 모두 사용</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000218" version="1">대기 중인 프리셋은 편의 기능 모두 사용입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000219" version="1">프리셋 미리보기: 핵심 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000220" version="1">프리셋 미리보기에서 핵심 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000221" version="1">프리셋 미리보기: 핵심 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000222" version="1">프리셋 미리보기에서 핵심 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000223" version="1">프리셋 미리보기: 기원 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000224" version="1">프리셋 미리보기에서 기원 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000225" version="1">프리셋 미리보기: 기원 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000226" version="1">프리셋 미리보기에서 기원 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000227" version="1">프리셋 미리보기: 종족 태그 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000228" version="1">프리셋 미리보기에서 종족 태그 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000229" version="1">프리셋 미리보기: 종족 태그 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000230" version="1">프리셋 미리보기에서 종족 태그 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000231" version="1">프리셋 미리보기: 무기 숙련 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000232" version="1">프리셋 미리보기에서 무기 숙련 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000233" version="1">프리셋 미리보기: 무기 숙련 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000234" version="1">프리셋 미리보기에서 무기 숙련 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000235" version="1">프리셋 미리보기: 방어구 숙련 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000236" version="1">프리셋 미리보기에서 방어구 숙련 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000237" version="1">프리셋 미리보기: 방어구 숙련 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000238" version="1">프리셋 미리보기에서 방어구 숙련 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000239" version="1">프리셋 미리보기: 종족 능력 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000240" version="1">프리셋 미리보기에서 종족 능력 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000241" version="1">프리셋 미리보기: 종족 능력 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000242" version="1">프리셋 미리보기에서 종족 능력 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000243" version="1">프리셋 미리보기: 편의 분류 켜짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000244" version="1">프리셋 미리보기에서 편의 분류는 켜짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000245" version="1">프리셋 미리보기: 편의 분류 꺼짐</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000246" version="1">프리셋 미리보기에서 편의 분류는 꺼짐입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000247" version="1">프리셋 미리보기: 생활 설정 0</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000248" version="1">프리셋 미리보기의 생활 설정은 0입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000249" version="1">프리셋 미리보기: 생활 설정 5</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000250" version="1">프리셋 미리보기의 생활 설정은 5입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000251" version="1">프리셋 미리보기: 생활 설정 20</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000252" version="1">프리셋 미리보기의 생활 설정은 20입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000253" version="1">실제 핵심 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000254" version="1">실제 핵심 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000255" version="1">실제 핵심 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000256" version="1">실제 핵심 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000257" version="1">실제 핵심 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000258" version="1">실제 핵심 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000259" version="1">실제 핵심 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000260" version="1">실제 핵심 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000261" version="1">실제 핵심 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000262" version="1">실제 핵심 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000263" version="1">실제 기원 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000264" version="1">실제 기원 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000265" version="1">실제 기원 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000266" version="1">실제 기원 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000267" version="1">실제 기원 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000268" version="1">실제 기원 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000269" version="1">실제 기원 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000270" version="1">실제 기원 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000271" version="1">실제 기원 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000272" version="1">실제 기원 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000273" version="1">실제 종족 태그 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000274" version="1">실제 종족 태그 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000275" version="1">실제 종족 태그 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000276" version="1">실제 종족 태그 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000277" version="1">실제 종족 태그 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000278" version="1">실제 종족 태그 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000279" version="1">실제 종족 태그 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000280" version="1">실제 종족 태그 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000281" version="1">실제 종족 태그 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000282" version="1">실제 종족 태그 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000283" version="1">실제 무기 숙련 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000284" version="1">실제 무기 숙련 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000285" version="1">실제 무기 숙련 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000286" version="1">실제 무기 숙련 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000287" version="1">실제 무기 숙련 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000288" version="1">실제 무기 숙련 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000289" version="1">실제 무기 숙련 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000290" version="1">실제 무기 숙련 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000291" version="1">실제 무기 숙련 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000292" version="1">실제 무기 숙련 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000293" version="1">실제 방어구 숙련 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000294" version="1">실제 방어구 숙련 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000295" version="1">실제 방어구 숙련 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000296" version="1">실제 방어구 숙련 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000297" version="1">실제 방어구 숙련 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000298" version="1">실제 방어구 숙련 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000299" version="1">실제 방어구 숙련 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000300" version="1">실제 방어구 숙련 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000301" version="1">실제 방어구 숙련 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000302" version="1">실제 방어구 숙련 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000303" version="1">실제 종족 능력 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000304" version="1">실제 종족 능력 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000305" version="1">실제 종족 능력 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000306" version="1">실제 종족 능력 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000307" version="1">실제 종족 능력 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000308" version="1">실제 종족 능력 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000309" version="1">실제 종족 능력 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000310" version="1">실제 종족 능력 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000311" version="1">실제 종족 능력 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000312" version="1">실제 종족 능력 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000313" version="1">실제 편의 분류: 활성</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000314" version="1">실제 편의 분류 상태는 활성입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000315" version="1">실제 편의 분류: 일시 중지</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000316" version="1">실제 편의 분류 상태는 일시 중지입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000317" version="1">실제 편의 분류: 조건 대기</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000318" version="1">실제 편의 분류 상태는 조건 대기입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000319" version="1">실제 편의 분류: 설정 누락</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000320" version="1">실제 편의 분류 상태는 설정 누락입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000321" version="1">실제 편의 분류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000322" version="1">실제 편의 분류 상태는 동기화 실패입니다.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000323" version="1">프리셋 오류: 선택 없음</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000324" version="1">프리셋 오류가 발생했습니다: 선택 없음.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000325" version="1">프리셋 오류: 전투 중 읽기 전용</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000326" version="1">프리셋 오류가 발생했습니다: 전투 중 읽기 전용.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000327" version="1">프리셋 오류: 설정 불완전</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">프리셋 오류가 발생했습니다: 설정 불완전.</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">프리셋 오류: 동기화 실패</content>
-  <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">프리셋 오류가 발생했습니다: 동기화 실패.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000201" version="1">현재 프리셋: ‘바닐라에 가까운 설정’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000202" version="1">현재 프리셋은 ‘바닐라에 가까운 설정’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000203" version="1">현재 프리셋: ‘순수 카오스’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000204" version="1">현재 프리셋은 ‘순수 카오스’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000205" version="1">현재 프리셋: ‘균형’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000206" version="1">현재 프리셋은 ‘균형’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000207" version="1">현재 프리셋: ‘편의 기능을 모두 사용’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000208" version="1">현재 프리셋은 ‘편의 기능을 모두 사용’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000209" version="1">현재 프리셋: ‘사용자 지정’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000210" version="1">현재 프리셋은 ‘사용자 지정’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000211" version="1">대기 중인 프리셋: ‘바닐라에 가까운 설정’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000212" version="1">대기 중인 프리셋은 ‘바닐라에 가까운 설정’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000213" version="1">대기 중인 프리셋: ‘순수 카오스’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000214" version="1">대기 중인 프리셋은 ‘순수 카오스’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000215" version="1">대기 중인 프리셋: ‘균형’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000216" version="1">대기 중인 프리셋은 ‘균형’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000217" version="1">대기 중인 프리셋: ‘편의 기능을 모두 사용’</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000218" version="1">대기 중인 프리셋은 ‘편의 기능을 모두 사용’입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000219" version="1">프리셋 미리보기에서 핵심 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000220" version="1">프리셋 미리보기에서는 핵심 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000221" version="1">프리셋 미리보기에서 핵심 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000222" version="1">프리셋 미리보기에서는 핵심 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000223" version="1">프리셋 미리보기에서 기원 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000224" version="1">프리셋 미리보기에서는 기원 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000225" version="1">프리셋 미리보기에서 기원 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000226" version="1">프리셋 미리보기에서는 기원 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000227" version="1">프리셋 미리보기에서 종족 태그 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000228" version="1">프리셋 미리보기에서는 종족 태그 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000229" version="1">프리셋 미리보기에서 종족 태그 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000230" version="1">프리셋 미리보기에서는 종족 태그 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000231" version="1">프리셋 미리보기에서 무기 숙련 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000232" version="1">프리셋 미리보기에서는 무기 숙련 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000233" version="1">프리셋 미리보기에서 무기 숙련 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000234" version="1">프리셋 미리보기에서는 무기 숙련 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000235" version="1">프리셋 미리보기에서 방어구 숙련 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000236" version="1">프리셋 미리보기에서는 방어구 숙련 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000237" version="1">프리셋 미리보기에서 방어구 숙련 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000238" version="1">프리셋 미리보기에서는 방어구 숙련 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000239" version="1">프리셋 미리보기에서 종족 능력 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000240" version="1">프리셋 미리보기에서는 종족 능력 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000241" version="1">프리셋 미리보기에서 종족 능력 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000242" version="1">프리셋 미리보기에서는 종족 능력 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000243" version="1">프리셋 미리보기에서 편의 분류는 ‘켜짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000244" version="1">프리셋 미리보기에서는 편의 분류를 ‘켜짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000245" version="1">프리셋 미리보기에서 편의 분류는 ‘꺼짐’ 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000246" version="1">프리셋 미리보기에서는 편의 분류를 ‘꺼짐’으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000247" version="1">프리셋 미리보기의 생활 설정값은 0입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000248" version="1">프리셋 미리보기에서는 생활 설정값을 0으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000249" version="1">프리셋 미리보기의 생활 설정값은 5입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000250" version="1">프리셋 미리보기에서는 생활 설정값을 5으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000251" version="1">프리셋 미리보기의 생활 설정값은 20입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000252" version="1">프리셋 미리보기에서는 생활 설정값을 20으로 표시합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000253" version="1">실제 핵심 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000254" version="1">핵심 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000255" version="1">실제 핵심 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000256" version="1">핵심 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000257" version="1">실제 핵심 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000258" version="1">핵심 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000259" version="1">실제 핵심 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000260" version="1">핵심 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000261" version="1">실제 핵심 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000262" version="1">핵심 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000263" version="1">실제 기원 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000264" version="1">기원 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000265" version="1">실제 기원 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000266" version="1">기원 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000267" version="1">실제 기원 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000268" version="1">기원 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000269" version="1">실제 기원 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000270" version="1">기원 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000271" version="1">실제 기원 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000272" version="1">기원 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000273" version="1">실제 종족 태그 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000274" version="1">종족 태그 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000275" version="1">실제 종족 태그 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000276" version="1">종족 태그 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000277" version="1">실제 종족 태그 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000278" version="1">종족 태그 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000279" version="1">실제 종족 태그 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000280" version="1">종족 태그 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000281" version="1">실제 종족 태그 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000282" version="1">종족 태그 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000283" version="1">실제 무기 숙련 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000284" version="1">무기 숙련 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000285" version="1">실제 무기 숙련 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000286" version="1">무기 숙련 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000287" version="1">실제 무기 숙련 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000288" version="1">무기 숙련 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000289" version="1">실제 무기 숙련 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000290" version="1">무기 숙련 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000291" version="1">실제 무기 숙련 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000292" version="1">무기 숙련 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000293" version="1">실제 방어구 숙련 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000294" version="1">방어구 숙련 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000295" version="1">실제 방어구 숙련 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000296" version="1">방어구 숙련 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000297" version="1">실제 방어구 숙련 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000298" version="1">방어구 숙련 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000299" version="1">실제 방어구 숙련 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000300" version="1">방어구 숙련 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000301" version="1">실제 방어구 숙련 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000302" version="1">방어구 숙련 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000303" version="1">실제 종족 능력 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000304" version="1">종족 능력 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000305" version="1">실제 종족 능력 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000306" version="1">종족 능력 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000307" version="1">실제 종족 능력 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000308" version="1">종족 능력 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000309" version="1">실제 종족 능력 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000310" version="1">종족 능력 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000311" version="1">실제 종족 능력 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000312" version="1">종족 능력 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000313" version="1">실제 편의 분류는 활성 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000314" version="1">편의 분류의 실제 상태는 활성 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000315" version="1">실제 편의 분류는 일시 중지 상태입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000316" version="1">편의 분류의 실제 상태는 일시 중지 상태입니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000317" version="1">실제 편의 분류는 조건이 충족될 때까지 대기합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000318" version="1">편의 분류의 실제 상태는 조건이 충족될 때까지 대기합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000319" version="1">실제 편의 분류에는 필요한 설정이 누락되어 있습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000320" version="1">편의 분류의 실제 상태에는 필요한 설정이 누락되어 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000321" version="1">실제 편의 분류는 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000322" version="1">편의 분류의 실제 상태에서 동기화 실패가 감지되었습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000323" version="1">프리셋 오류: 선택된 프리셋이 없습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000324" version="1">프리셋 오류: 선택된 프리셋이 없습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000325" version="1">프리셋 오류: 전투 중에는 프리셋이 읽기 전용입니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000326" version="1">프리셋 오류: 전투 중에는 프리셋을 읽기 전용으로만 사용할 수 있습니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000327" version="1">프리셋 오류: 설정이 불완전합니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000328" version="1">프리셋 오류: 프리셋 설정이 불완전합니다.</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000329" version="1">프리셋 오류: 프리셋 동기화에 실패했습니다</content>
+  <content contentuid="h7e990000g0000g4000g8000g000000000330" version="1">프리셋 오류: 프리셋 동기화에 실패했습니다.</content>
 </contentList>
