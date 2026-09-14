@@ -934,8 +934,7 @@ function Assert-EventGuardContract {
                 'DB_COS_PresetApplyEvent(_Event)',
                 'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
                 'IsControlled(_Character, 1)',
-                'IsInCombat(_Character, 1)',
-                'DB_COS_ConfigCategorySchema(_Character, 1)'
+                'IsInCombat(_Character, 1)'
             ) -Context '预设应用战斗只读错误'
             Require-ExactActions -Model $combatModels[0] -Expected @(
                 'PROC_COS_PresetValidate(_Character, -1);'
@@ -949,8 +948,10 @@ function Assert-EventGuardContract {
             $families[$family].Condition,
             'HasPassive(_Character, "COS_ChaosOriginMarker", 1)',
             'IsControlled(_Character, 1)',
-            'IsInCombat(_Character, 0)',
-            'DB_COS_ConfigCategorySchema(_Character, 1)'
+            'IsInCombat(_Character, 0)'
+            if ($family -cne 'PresetApply') {
+                'DB_COS_ConfigCategorySchema(_Character, 1)'
+            }
         )
         Require-ExactConditions -Model $models[0] -Expected $expectedConditions -Context "修改事件 $family"
         switch ($family) {
@@ -1839,6 +1840,97 @@ function Assert-PresetWorkflowContract {
     }
 }
 
+function Assert-PresetFailureContract {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Content
+    )
+
+    $models = @(Get-ProcedureModels -Content $Content -Name 'PROC_COS_PresetValidate')
+
+    $schemaMissing = @($models | Where-Object {
+        $_.Conditions -ccontains '_Phase == 0' -and
+        $_.Conditions -ccontains 'NOT DB_COS_ConfigCategorySchema(_Character, 1)'
+    })
+    Require ($schemaMissing.Count -eq 1) '缺失 schema 的 ConfigIncomplete 规则缺失或重复'
+    Require-ExactConditions -Model $schemaMissing[0] -Expected @(
+        '_Phase == 0',
+        'DB_COS_PresetPending(_Character, _Preset)',
+        'NOT DB_COS_ConfigCategorySchema(_Character, 1)',
+        'DB_COS_PresetErrorStatus("ConfigIncomplete", _Status)'
+    ) -Context '缺失 schema 的 ConfigIncomplete'
+    Require-ExactActions -Model $schemaMissing[0] -Expected @(
+        'ApplyStatus(_Character, _Status, -1.0, 1, _Character);'
+    ) -Context '缺失 schema 的 ConfigIncomplete'
+
+    $categoryMissing = @($models | Where-Object {
+        $_.Conditions -ccontains '_Phase == 0' -and
+        $_.Conditions -ccontains 'DB_COS_ConfigCategoryMap(_Category, _Mirror)' -and
+        $_.Conditions -ccontains 'NOT DB_COS_ConfigCategory(_Character, _Category, _)'
+    })
+    Require ($categoryMissing.Count -eq 1) '缺失分类行的 ConfigIncomplete 规则缺失或重复'
+    Require-ExactConditions -Model $categoryMissing[0] -Expected @(
+        '_Phase == 0',
+        'DB_COS_PresetPending(_Character, _Preset)',
+        'DB_COS_ConfigCategoryMap(_Category, _Mirror)',
+        'NOT DB_COS_ConfigCategory(_Character, _Category, _)',
+        'DB_COS_PresetErrorStatus("ConfigIncomplete", _Status)'
+    ) -Context '缺失分类行的 ConfigIncomplete'
+    Require-ExactActions -Model $categoryMissing[0] -Expected @(
+        'ApplyStatus(_Character, _Status, -1.0, 1, _Character);'
+    ) -Context '缺失分类行的 ConfigIncomplete'
+
+    $lifeMissing = @($models | Where-Object {
+        $_.Conditions -ccontains '_Phase == 0' -and
+        $_.Conditions -ccontains 'NOT DB_COS_ConfigLifeSkill(_Character, _)'
+    })
+    Require ($lifeMissing.Count -eq 1) '缺失生活加值的 ConfigIncomplete 规则缺失或重复'
+    Require-ExactConditions -Model $lifeMissing[0] -Expected @(
+        '_Phase == 0',
+        'DB_COS_PresetPending(_Character, _Preset)',
+        'NOT DB_COS_ConfigLifeSkill(_Character, _)',
+        'DB_COS_PresetErrorStatus("ConfigIncomplete", _Status)'
+    ) -Context '缺失生活加值的 ConfigIncomplete'
+    Require-ExactActions -Model $lifeMissing[0] -Expected @(
+        'ApplyStatus(_Character, _Status, -1.0, 1, _Character);'
+    ) -Context '缺失生活加值的 ConfigIncomplete'
+
+    $phase0Success = @($models | Where-Object { $_.Actions -ccontains 'DB_COS_PresetValidated(_Character, _Preset, 0);' })
+    Require ($phase0Success.Count -eq 1) 'phase0 完整配置验证规则缺失或重复'
+    Require-ExactConditions -Model $phase0Success[0] -Expected @(
+        '_Phase == 0',
+        'DB_COS_PresetPending(_Character, _Preset)',
+        'DB_COS_ConfigCategorySchema(_Character, 1)',
+        'DB_COS_ConfigCategory(_Character, "Core", _Core)',
+        'DB_COS_ConfigCategory(_Character, "Origin", _Origin)',
+        'DB_COS_ConfigCategory(_Character, "RaceTags", _RaceTags)',
+        'DB_COS_ConfigCategory(_Character, "WeaponProficiencies", _Weapon)',
+        'DB_COS_ConfigCategory(_Character, "ArmorProficiencies", _Armor)',
+        'DB_COS_ConfigCategory(_Character, "RacialAbilities", _Racial)',
+        'DB_COS_ConfigCategory(_Character, "Convenience", _Convenience)',
+        'DB_COS_ConfigLifeSkill(_Character, _Life)'
+    ) -Context 'phase0 完整配置验证'
+    Require-ExactActions -Model $phase0Success[0] -Expected @(
+        'DB_COS_PresetValidated(_Character, _Preset, 0);'
+    ) -Context 'phase0 完整配置验证'
+
+    $syncFailed = @($models | Where-Object {
+        $_.Conditions -ccontains '_Phase == 1' -and
+        $_.Conditions -ccontains 'DB_COS_PresetMismatch(_Character, _Preset, _, 1)' -and
+        $_.Conditions -ccontains 'DB_COS_PresetErrorStatus("SyncFailed", _Status)'
+    })
+    Require ($syncFailed.Count -eq 1) 'phase1 SyncFailed 规则缺失或重复'
+    Require-ExactConditions -Model $syncFailed[0] -Expected @(
+        '_Phase == 1',
+        'DB_COS_PresetMismatch(_Character, _Preset, _, 1)',
+        'DB_COS_PresetErrorStatus("SyncFailed", _Status)'
+    ) -Context 'phase1 SyncFailed'
+    Require-ExactActions -Model $syncFailed[0] -Expected @(
+        'ApplyStatus(_Character, _Status, -1.0, 1, _Character);',
+        'PROC_COS_RuntimeDiagnosticUpdate(_Character);'
+    ) -Context 'phase1 SyncFailed'
+}
+
 function Assert-PresetCurrentSelectionContract {
     param(
         [Parameter(Mandatory)]
@@ -2047,7 +2139,7 @@ function Assert-PresetWriteContract {
                     PROC_COS_PresetSetCategory { @() }
                     PROC_COS_PresetDetect { @('PROC_COS_PresetValidate', 'PROC_COS_PresetSetCurrent') }
                     PROC_COS_PresetSetCurrent { @() }
-                    PROC_COS_PresetValidate { @() }
+                    PROC_COS_PresetValidate { @('PROC_COS_RuntimeDiagnosticUpdate') }
                 }
                 Require ($allowedForProcedure -ccontains $procedure) "$procedureName 调用未批准过程: $procedure"
                 if ($procedure -ceq 'PROC_COS_ConfigSetLifeSkill') {
@@ -3011,6 +3103,7 @@ if ($Focus -ceq 'Task5') {
     Assert-CategoryToggleContract -Content $config
     Assert-PresetLifecycleContract -Content $config
     Assert-PresetWorkflowContract -Content $config
+    Assert-PresetFailureContract -Content $config
     Assert-PresetCurrentSelectionContract -Content $config
     Assert-PresetWriteContract -Content $config -ExpectedProcedureNames $task5ExpectedProcedures -ApprovedStatusIds @($task5CurrentStatuses + $task5PendingStatuses + $task5PreviewStatuses + $task5ActualStatuses + $task5ErrorStatuses) -ExpectedDetectionOrder $task5PresetOrder
 
@@ -3019,6 +3112,8 @@ if ($Focus -ceq 'Task5') {
     $task5ClearModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetClearPreview')[0]
     $task5SetCategoryModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetSetCategory')[0]
     $task5CombatApplyModel = @(Get-OsirisRuleModels -Content $config | Where-Object { $_.Kind -ceq 'IF' -and $_.Conditions -ccontains 'DB_COS_PresetApplyEvent(_Event)' -and $_.Conditions -ccontains 'IsInCombat(_Character, 1)' })[0]
+    $task5SchemaMissingModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetValidate' | Where-Object { $_.Conditions -ccontains 'NOT DB_COS_ConfigCategorySchema(_Character, 1)' })[0]
+    $task5SyncFailedModel = @(Get-ProcedureModels -Content $config -Name 'PROC_COS_PresetValidate' | Where-Object { $_.Conditions -ccontains 'DB_COS_PresetErrorStatus("SyncFailed", _Status)' })[0]
 
     $wildcardBlock = Replace-FirstLiteral -Content $task5SetCategoryModel.Block -OldValue '_Target != -1' -NewValue '_Target == -1' -ProbeName 'task5-wildcard-origin-write'
     $wildcardMutation = Replace-RuleBlock -Content $config -OldBlock $task5SetCategoryModel.Block -NewBlock $wildcardBlock -ProbeName 'task5-wildcard-origin-write'
@@ -3062,8 +3157,16 @@ if ($Focus -ceq 'Task5') {
     $duplicateCurrentMutation = Replace-RuleBlock -Content $config -OldBlock $balancedCurrentModel.Block -NewBlock $duplicateCurrentBlock -ProbeName 'task5-duplicate-current'
     Assert-MutationRejected -Name 'task5-duplicate-current' -ExpectedMessagePattern '^当前预设优先级 Balanced 条件集合不精确$' -Probe { Assert-PresetCurrentSelectionContract -Content $duplicateCurrentMutation }
 
+    $schemaMissingSyncBlock = Replace-FirstLiteral -Content $task5SchemaMissingModel.Block -OldValue 'ApplyStatus(_Character, _Status, -1.0, 1, _Character);' -NewValue 'PROC_COS_ConfigSyncCharacter(_Character);' -ProbeName 'task5-schema-missing-sync'
+    $schemaMissingSyncMutation = Replace-RuleBlock -Content $config -OldBlock $task5SchemaMissingModel.Block -NewBlock $schemaMissingSyncBlock -ProbeName 'task5-schema-missing-sync'
+    Assert-MutationRejected -Name 'task5-schema-missing-sync' -ExpectedMessagePattern '^缺失 schema 的 ConfigIncomplete THEN 动作序列不精确$' -Probe { Assert-PresetFailureContract -Content $schemaMissingSyncMutation }
+
+    $syncFailedClearBlock = Replace-FirstLiteral -Content $task5SyncFailedModel.Block -OldValue 'PROC_COS_RuntimeDiagnosticUpdate(_Character);' -NewValue 'PROC_COS_PresetClearPreview(_Character);' -ProbeName 'task5-sync-failed-clear'
+    $syncFailedClearMutation = Replace-RuleBlock -Content $config -OldBlock $task5SyncFailedModel.Block -NewBlock $syncFailedClearBlock -ProbeName 'task5-sync-failed-clear'
+    Assert-MutationRejected -Name 'task5-sync-failed-clear' -ExpectedMessagePattern '^phase1 SyncFailed THEN 动作序列不精确$' -Probe { Assert-PresetFailureContract -Content $syncFailedClearMutation }
+
     Write-Output 'Task 5 preset workflow contract: PASS'
-    Write-Output 'Task 5 mutation probes: wildcard=PASS; select-sync=PASS; clear-scope=PASS; child-write=PASS; no-pending=PASS; combat=PASS; early-clear=PASS; sync-count=PASS; current-order=PASS'
+    Write-Output 'Task 5 mutation probes: wildcard=PASS; select-sync=PASS; clear-scope=PASS; child-write=PASS; no-pending=PASS; combat=PASS; early-clear=PASS; sync-count=PASS; current-order=PASS; schema-error=PASS; sync-diagnostic=PASS'
     exit 0
 }
 
@@ -3371,6 +3474,7 @@ Assert-CategoryInitializationContract -Content $config -NewCategories $newCatego
 Assert-EventGuardContract -Content $config
 Assert-CategoryToggleContract -Content $config
 Assert-PresetWorkflowContract -Content $config
+Assert-PresetFailureContract -Content $config
 
 foreach ($goalContract in @(
     [pscustomobject]@{ Name = 'COS_ChaosMechanics'; Content = $mechanics },
