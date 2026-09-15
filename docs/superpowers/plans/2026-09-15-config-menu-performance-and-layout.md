@@ -47,7 +47,7 @@ foreach ($page in $pages) {
         Require ($text -match "COSCategory${category}Toggle") "缺少分类总开关: $category"
     }
     Require ($text -notmatch 'COSRuntimeDiagnosticPanel') '主页面仍渲染大型运行诊断框'
-    Require (([regex]::Matches($text, 'CurrentPlayer.SelectedCharacter.StatusEffects')).Count -le 2) '状态列表绑定仍会重建页面'
+    Require (([regex]::Matches($text, 'CurrentPlayer.SelectedCharacter.StatusEffects')).Count -le 4) '状态列表绑定仍会重建分类内容'
 }
 ```
 

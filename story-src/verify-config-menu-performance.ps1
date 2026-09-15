@@ -64,7 +64,10 @@ foreach ($relativePath in $pagePaths) {
 
     Require (-not $text.Contains('COSRuntimeDiagnosticPanel')) "主页面仍渲染大型运行诊断框: $relativePath"
     $statusBindingCount = [regex]::Matches($text, 'CurrentPlayer\.SelectedCharacter\.StatusEffects').Count
-    Require ($statusBindingCount -le 2) "状态列表绑定仍会重建页面: $relativePath ($statusBindingCount)"
+    # Four small read-only consumers remain: current preset, preset preview,
+    # preview notice, and the pre-existing chaos overview.  Category content
+    # must never add more StatusEffects-driven visual trees.
+    Require ($statusBindingCount -le 4) "状态列表绑定仍会重建分类内容: $relativePath ($statusBindingCount)"
 
     $gitPath = $relativePath.Replace('\\', '/')
     $baseline = (& git -C (Split-Path $root -Parent) show "54c1f8c^:story-src/$gitPath" 2>&1) -join "`n"
