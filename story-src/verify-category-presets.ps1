@@ -2892,10 +2892,7 @@ function Assert-UiPageContract {
             "COSCategory${token}MasterRow",
             "COSCategory${token}Toggle",
             "COSCategory${token}Mirror",
-            "COSCategory${token}Actual",
-            "COSCategory${token}Children",
-            "COSCategory${token}ChildMutation",
-            "COSCategory${token}PausedOverlay"
+            "COSCategory${token}Children"
         )
         $actualSectionNames = @(
             Get-XamlName -Node $sectionNodes[0]
@@ -2908,48 +2905,15 @@ function Assert-UiPageContract {
         )
         Require (Test-ExactOrdinalSet -Actual $actualSectionNames -Expected $expectedSectionNames) "$PageName 分类 section 新增命名节点集合错误: $sectionName"
         $childrenNodes = @(Get-XamlNamedNodes -Document $document -Name "COSCategory${token}Children")
-        $childMutationNodes = @(Get-XamlNamedNodes -Document $document -Name "COSCategory${token}ChildMutation")
-        $pausedNodes = @(Get-XamlNamedNodes -Document $document -Name "COSCategory${token}PausedOverlay")
-        Require ($childrenNodes.Count -eq 1 -and $childMutationNodes.Count -eq 1 -and $pausedNodes.Count -eq 1) "$PageName child mutation/paused overlay 缺失或重复: $sectionName"
-        Require ([object]::ReferenceEquals($childMutationNodes[0].ParentNode, $childrenNodes[0]) -and [object]::ReferenceEquals($pausedNodes[0].ParentNode, $childrenNodes[0])) "$PageName child mutation 与 paused overlay 必须是 child grid 直接兄弟: $sectionName"
-        $childLayerElements = @($childrenNodes[0].ChildNodes | Where-Object { $_.NodeType -eq [System.Xml.XmlNodeType]::Element })
-        Require ([Array]::IndexOf($childLayerElements, $childMutationNodes[0]) -lt [Array]::IndexOf($childLayerElements, $pausedNodes[0])) "$PageName paused overlay 必须位于 child mutation 上层: $sectionName"
-        Require ($pausedNodes[0].GetAttribute('IsHitTestVisible') -ceq 'True') "$PageName paused overlay 必须阻断 child grid: $sectionName"
+        Require ($childrenNodes.Count -eq 1) "$PageName 静态 child 容器缺失或重复: $sectionName"
+        Require ([object]::ReferenceEquals($childrenNodes[0].ParentNode, $sectionNodes[0])) "$PageName 静态 child 容器必须是分类 section 的直接子级: $sectionName"
+        $masterNodes = @(Get-XamlNamedNodes -Document $document -Name "COSCategory${token}MasterRow")
+        Require ($masterNodes.Count -eq 1 -and (Test-XamlDescendantOrSelf -Node $masterNodes[0] -Scope $childrenNodes[0])) "$PageName 分类总开关必须嵌入静态内容标题: $sectionName"
+        $categoryStatusBindings = @($sectionNodes[0].SelectNodes('.//*[@ItemsSource="{Binding CurrentPlayer.SelectedCharacter.StatusEffects}"]'))
+        Require ($categoryStatusBindings.Count -eq 0) "$PageName 分类 section 不得绑定 StatusEffects: $sectionName"
         $expectedMirror = $ExpectedMirrors[[Array]::IndexOf($ExpectedCategorySections, $sectionName)]
-        $statusToken = $expectedMirror.Substring('COS_CFG_CATEGORY_'.Length)
-        $childStateValues = @(
-            "COS_CATEGORY_ACTUAL_${statusToken}_ACTIVE"
-            "COS_CATEGORY_ACTUAL_${statusToken}_PAUSED"
-            "COS_CATEGORY_ACTUAL_${statusToken}_WAITING_CONDITION"
-            "COS_CATEGORY_ACTUAL_${statusToken}_MISSING_CONFIG"
-            "COS_CATEGORY_ACTUAL_${statusToken}_SYNC_FAILED"
-        )
-        Require ($childMutationNodes[0].GetAttribute('ItemsSource') -ceq '{Binding CurrentPlayer.SelectedCharacter.StatusEffects}') "$PageName child mutation 状态源错误: $sectionName"
-        Require ($childMutationNodes[0].GetAttribute('Focusable') -ceq 'False') "$PageName child mutation 状态容器必须不可聚焦: $sectionName"
-        $childItemTemplates = @($childMutationNodes[0].SelectNodes('./*[local-name()="ItemsControl.ItemTemplate"]/*[local-name()="DataTemplate"]'))
-        Require ($childItemTemplates.Count -eq 1) "$PageName child mutation 必须有唯一状态 ItemTemplate: $sectionName"
-        $childStateTriggers = @($childItemTemplates[0].SelectNodes('./*[local-name()="DataTemplate.Triggers"]/*[local-name()="DataTrigger" and @Value]'))
-        Require (($childStateTriggers | ForEach-Object { $_.GetAttribute('Binding') } | Where-Object { $_ -cne '{Binding StatusId}' }).Count -eq 0) "$PageName child mutation 状态绑定错误: $sectionName"
-        Require (Test-ExactOrdinalSequence -Actual @($childStateTriggers | ForEach-Object { $_.GetAttribute('Value') }) -Expected $childStateValues) "$PageName child mutation 状态过滤集合或顺序错误: $sectionName"
-        $childTemplateKey = "COSCategory${token}ChildTemplate"
-        $childTemplates = @($childMutationNodes[0].SelectNodes('./*[local-name()="ItemsControl.Resources"]/*[local-name()="DataTemplate"]') | Where-Object { $_.GetAttribute('Key', 'http://schemas.microsoft.com/winfx/2006/xaml') -ceq $childTemplateKey })
-        Require ($childTemplates.Count -eq 1) "$PageName child mutation 必须有唯一 child DataTemplate: $sectionName"
-        $childStateNodes = @($childMutationNodes[0].SelectNodes('.//*') | Where-Object { (Get-XamlName -Node $_) -ceq 'CategoryChildState' })
-        Require ($childStateNodes.Count -eq 1 -and $childStateNodes[0].GetAttribute('IsEnabled') -ceq 'True') "$PageName child mutation 必须有可继承 IsEnabled 根: $sectionName"
-        $childContentNodes = @($childMutationNodes[0].SelectNodes('.//*') | Where-Object { (Get-XamlName -Node $_) -ceq 'CategoryChildContent' })
-        Require ($childContentNodes.Count -eq 1) "$PageName child mutation 必须有唯一惰性 child 承载器: $sectionName"
-        foreach ($childStateTrigger in $childStateTriggers) {
-            $stateVisibleSetters = @($childStateTrigger.SelectNodes('./*[local-name()="Setter" and @TargetName="CategoryChildState" and @Property="Visibility" and @Value="Visible"]'))
-            $contentTemplateSetters = @($childStateTrigger.SelectNodes('./*[local-name()="Setter" and @TargetName="CategoryChildContent" and @Property="ContentTemplate"]') | Where-Object { $_.GetAttribute('Value') -ceq "{StaticResource $childTemplateKey}" })
-            Require ($stateVisibleSetters.Count -eq 1 -and $contentTemplateSetters.Count -eq 1) "$PageName child mutation 状态必须惰性装载全部 child: $sectionName / $($childStateTrigger.GetAttribute('Value'))"
-        }
-        $childActions = @($childMutationNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))
-        $templatedChildActions = @($childTemplates[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))
-        Require ($childActions.Count -gt 0 -and $childActions.Count -eq $templatedChildActions.Count) "$PageName 全部 child mutation 动作必须位于可禁用模板内: $sectionName"
-        $pausedChildTrigger = @($childStateTriggers | Where-Object { $_.GetAttribute('Value') -ceq "COS_CATEGORY_ACTUAL_${statusToken}_PAUSED" })
-        $pausedDisableSetters = @($pausedChildTrigger[0].SelectNodes('./*[local-name()="Setter" and @TargetName="CategoryChildState" and @Property="IsEnabled" and @Value="False"]'))
-        Require ($pausedChildTrigger.Count -eq 1 -and $pausedDisableSetters.Count -eq 1) "$PageName PAUSED 必须继承禁用全部 child mutation: $sectionName"
-        [void](Assert-XamlStateNodeContract -Document $document -NodeName "COSCategory${token}PausedOverlay" -ExpectedValues @("COS_CATEGORY_ACTUAL_${statusToken}_PAUSED") -ExpectedBinding '{Binding StatusId}' -ExpectedItemsSource '{Binding CurrentPlayer.SelectedCharacter.StatusEffects}' -Context $PageName)
+        $childActions = @($childrenNodes[0].SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))
+        Require ($childActions.Count -gt 1) "$PageName 静态分类必须保留总开关和逐项动作: $sectionName"
         [void](Assert-XamlStateNodeContract -Document $document -NodeName "COSCategory${token}Mirror" -ExpectedValues @($expectedMirror) -ExpectedBinding '{Binding Name.Str}' -ExpectedItemsSource '{Binding CurrentPlayer.SelectedCharacter.Stats.Passives}' -Context $PageName)
     }
     $stateReferences = [System.Collections.Generic.List[string]]::new()
@@ -4031,9 +3995,6 @@ $categoryUiTokens = [ordered]@{
     Racial = 'RACIAL'
     Convenience = 'CONVENIENCE'
 }
-foreach ($token in $categoryUiTokens.Keys) {
-    $statusNodeSets["COSCategory${token}Actual"] = @($actualStatuses | Where-Object { $_.StartsWith("COS_CATEGORY_ACTUAL_$($categoryUiTokens[$token])_", [System.StringComparison]::Ordinal) })
-}
 $uiHandleDescriptors = [ordered]@{
     COSPresetNearVanillaButton = 'PRESET_NEAR_VANILLA'
     COSPresetPureChaosButton = 'PRESET_PURE_CHAOS'
@@ -4071,15 +4032,11 @@ $expectedFeatureNamedNodes = @(
         "COSCategory${token}MasterRow"
         "COSCategory${token}Toggle"
         "COSCategory${token}Mirror"
-        "COSCategory${token}Actual"
         "COSCategory${token}Children"
-        "COSCategory${token}ChildMutation"
-        "COSCategory${token}PausedOverlay"
     }
 )
 $expectedCategorySections = @($categoryUiTokens.Keys | ForEach-Object { "COSCategory${_}Section" })
 $panelOrder = @(
-    'COSRuntimeDiagnosticPanel',
     'COSMutationPanel',
     'COSPresetPanel',
     'COSPresetCurrent',
@@ -4550,12 +4507,11 @@ Assert-MutationRejected -Name 'xaml-wrong-status-binding' -ExpectedMessagePatter
     [void](Assert-UiPageContract -Content $wrongBindingDocument.OuterXml @controllerProbeArguments)
 }
 
-[xml]$crossPausedDocument = $controllerXaml
-$corePausedNode = @(Get-XamlNamedNodes -Document $crossPausedDocument -Name 'COSCategoryCorePausedOverlay')[0]
-$corePausedTrigger = @($corePausedNode.SelectNodes('.//*[local-name()="DataTrigger" and @Value]'))[0]
-[void]$corePausedTrigger.SetAttribute('Value', 'COS_CATEGORY_ACTUAL_ARMOR_PAUSED')
-Assert-MutationRejected -Name 'xaml-cross-category-paused' -ExpectedMessagePattern '^controller-probe 状态过滤集合或顺序错误: COSCategoryCorePausedOverlay$' -Probe {
-    [void](Assert-UiPageContract -Content $crossPausedDocument.OuterXml @controllerProbeArguments)
+[xml]$categoryStatusBindingDocument = $controllerXaml
+$coreChildrenNode = @(Get-XamlNamedNodes -Document $categoryStatusBindingDocument -Name 'COSCategoryCoreChildren')[0]
+[void]$coreChildrenNode.SetAttribute('ItemsSource', '{Binding CurrentPlayer.SelectedCharacter.StatusEffects}')
+Assert-MutationRejected -Name 'xaml-category-status-binding' -ExpectedMessagePattern '^controller-probe 分类 section 不得绑定 StatusEffects: COSCategoryCoreSection$' -Probe {
+    [void](Assert-UiPageContract -Content $categoryStatusBindingDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$previewContainerMutationDocument = $controllerXaml
@@ -4576,13 +4532,14 @@ Assert-MutationRejected -Name 'xaml-notice-empty-spacing' -ExpectedMessagePatter
     [void](Assert-UiPageContract -Content $noticeSpacingMutationDocument.OuterXml @controllerProbeArguments)
 }
 
-[xml]$pausedChildEnabledDocument = $controllerXaml
-$pausedChildMutationNode = @(Get-XamlNamedNodes -Document $pausedChildEnabledDocument -Name 'COSCategoryCoreChildMutation')[0]
-$pausedChildStateTrigger = @($pausedChildMutationNode.SelectNodes('./*[local-name()="ItemsControl.ItemTemplate"]/*[local-name()="DataTemplate"]/*[local-name()="DataTemplate.Triggers"]/*[local-name()="DataTrigger" and @Value="COS_CATEGORY_ACTUAL_CORE_PAUSED"]'))[0]
-$pausedChildDisableSetter = @($pausedChildStateTrigger.SelectNodes('./*[local-name()="Setter" and @TargetName="CategoryChildState" and @Property="IsEnabled"]'))[0]
-[void]$pausedChildStateTrigger.RemoveChild($pausedChildDisableSetter)
-Assert-MutationRejected -Name 'xaml-paused-child-enabled' -ExpectedMessagePattern '^controller-probe PAUSED 必须继承禁用全部 child mutation: COSCategoryCoreSection$' -Probe {
-    [void](Assert-UiPageContract -Content $pausedChildEnabledDocument.OuterXml @controllerProbeArguments)
+[xml]$missingStaticChildActionDocument = $controllerXaml
+$coreStaticChildren = @(Get-XamlNamedNodes -Document $missingStaticChildActionDocument -Name 'COSCategoryCoreChildren')[0]
+$coreCategoryToggle = @(Get-XamlNamedNodes -Document $missingStaticChildActionDocument -Name 'COSCategoryCoreToggle')[0]
+$coreCategoryAction = @($coreCategoryToggle.SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]'))[0]
+$staticChildAction = @($coreStaticChildren.SelectNodes('.//*[local-name()="InvokeCommandAction" and @CommandParameter]') | Where-Object { -not [object]::ReferenceEquals($_, $coreCategoryAction) })[0]
+[void]$staticChildAction.ParentNode.RemoveChild($staticChildAction)
+Assert-MutationRejected -Name 'xaml-static-child-action' -ExpectedMessagePattern '^controller-probe 旧 child 事件集合或数量漂移$' -Probe {
+    [void](Assert-UiPageContract -Content $missingStaticChildActionDocument.OuterXml @controllerProbeArguments)
 }
 
 [xml]$movedCombatDocument = $controllerXaml
