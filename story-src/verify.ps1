@@ -284,6 +284,7 @@ Require ($compileStorySource.Contains('Assert-CompiledStoryIr') -and
 
 & (Join-Path $PSScriptRoot 'verify-category-presets.ps1')
 & (Join-Path $PSScriptRoot 'verify-category-runtime-bootstrap.ps1')
+& (Join-Path $PSScriptRoot 'verify-config-menu-performance.ps1')
 
 $compiledStoryPath = Join-Path $root 'work\compiled-story\story.div.osi'
 $compiledDebugInfoPath = Join-Path $root 'work\compiled-story\story.debug-info.pb'
