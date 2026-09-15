@@ -83,7 +83,7 @@ git commit -m "test(ui): require static complete config layout"
 
 - [ ] Remove each category's `Actual` ItemsControl and its 560-pixel actual-state column. Keep the total category switch, its fixed TutorialEvent UUID, and its passive mirror.
 
-- [ ] Restyle each master row as a centered compact native row. Use the existing `li_bg.png`, 640-pixel width, a flexible label column, and an 80-pixel check column. Keep the old detailed decorative headers below it.
+- [ ] Move the total switch and passive mirror into the existing centered decorative category header. Reuse the ordinary child checkbox template, keep an 80-pixel check target on the right, and remove the separate full-width category row. Give the resulting header the existing `COSCategory<Category>MasterRow` name so keyboard/controller parity and tests remain explicit.
 
 - [ ] Remove `COSRuntimeDiagnosticPanel`. Keep Story diagnostic statuses and procedures unchanged so logs and future diagnostic pages retain the data.
 
