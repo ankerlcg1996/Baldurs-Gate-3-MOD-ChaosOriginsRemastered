@@ -32,7 +32,14 @@
 
 ## 安装与验收边界
 
-候选包安装后需在游戏内确认：
+已安装到：
+
+- `C:\Users\ankerlcg\AppData\Local\Larian Studios\Baldur's Gate 3\Mods\ChaosOriginsStory.pak`
+- `C:\Users\ankerlcg\Desktop\博德之门3mod\ChaosOriginsStory-1.0.1.102.pak`
+
+源码候选、桌面归档和游戏目录三份 PAK 的大小均为 `657411` 字节，SHA-256 均为 `4E37CA5F69F5C35B58C01DB2BDB6C27F833C65337A77B528BBBC659ACDB8BEAE`。`modsettings.lsx` 中本模块只有一个活动条目，Version64 为 `36028799166447718`。没有创建桌面备份目录。
+
+仍需在游戏内确认：
 
 1. 所有细分设置持续可见，不再只显示分类行。
 2. 普通逐项开关点击没有明显延迟。
