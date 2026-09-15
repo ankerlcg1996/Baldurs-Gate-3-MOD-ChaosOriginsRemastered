@@ -283,6 +283,7 @@ Require ($compileStorySource.Contains('Assert-CompiledStoryIr') -and
     'compile-story.ps1 必须执行独立 IR root 验证并生成哈希证明'
 
 & (Join-Path $PSScriptRoot 'verify-category-presets.ps1')
+& (Join-Path $PSScriptRoot 'verify-category-runtime-bootstrap.ps1')
 
 $compiledStoryPath = Join-Path $root 'work\compiled-story\story.div.osi'
 $compiledDebugInfoPath = Join-Path $root 'work\compiled-story\story.debug-info.pb'

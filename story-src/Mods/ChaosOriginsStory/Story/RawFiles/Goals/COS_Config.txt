@@ -2968,6 +2968,20 @@ PROC_COS_ConfigSyncCosts(_Character);
 PROC_COS_ConfigSyncRacialPassives(_Character);
 PROC_COS_SyncOverview(_Character);
 PROC_COS_PresetDetect(_Character);
+RealtimeObjectTimerLaunch(_Character, "COS_ConfigPostSeedRefresh", 100);
+
+// Runtime map rows are produced by PROC rules.  Consume them on the next
+// story turn so a character upgraded from an older save gets the new category
+// and preset TutorialEvents during the first menu open, not the second reload.
+IF
+ObjectTimerFinished(_Object, "COS_ConfigPostSeedRefresh")
+AND
+HasPassive(_Object, "COS_ChaosOriginMarker", 1)
+THEN
+PROC_COS_ConfigEnableEvents((CHARACTER)_Object);
+PROC_COS_PresetDetect((CHARACTER)_Object);
+PROC_COS_ConfigSyncCategoryActual((CHARACTER)_Object);
+PROC_COS_RuntimeDiagnosticUpdate((CHARACTER)_Object);
 
 PROC
 PROC_COS_ConfigToggleCategory((CHARACTER)_Character, (STRING)_Key)
