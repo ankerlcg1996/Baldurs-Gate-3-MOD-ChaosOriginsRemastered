@@ -732,6 +732,64 @@ function Test-RuntimeDiagnosticUiParity {
     }
 }
 
+function Assert-RuntimeDiagnosticUiAbsenceContract {
+    param(
+        [Parameter(Mandatory)] [string]$Content,
+        [Parameter(Mandatory)] [string]$PageName
+    )
+
+    [xml]$document = $Content
+    $xamlNamespace = 'http://schemas.microsoft.com/winfx/2006/xaml'
+    $diagnosticNamedNodes = @(
+        $document.SelectNodes('//*') |
+            Where-Object {
+                $_.GetAttribute('Name', $xamlNamespace).StartsWith(
+                    'COSRuntimeDiagnostic',
+                    [System.StringComparison]::OrdinalIgnoreCase
+                )
+            }
+    )
+    Require ($diagnosticNamedNodes.Count -eq 0) "主配置页不得渲染运行诊断控件: $PageName"
+
+    $rowsNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSConfigRows')
+    $mutationPanelNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSMutationPanel')
+    $overviewNodes = @(Get-XamlNamedNodes -Document $document -Name 'COSConfigOverview')
+    Require ($rowsNodes.Count -eq 1 -and $mutationPanelNodes.Count -eq 1 -and $overviewNodes.Count -eq 1) "设置页缺少 COSConfigRows、COSMutationPanel 或 COSConfigOverview: $PageName"
+
+    $loadedTriggers = @(
+        $document.SelectNodes('//*[local-name()="EventTrigger"]') |
+            Where-Object { $_.GetAttribute('EventName') -ceq 'Loaded' }
+    )
+    Require ($loadedTriggers.Count -eq 1) "设置页必须保留唯一 Loaded 事件: $PageName"
+    $loadedActions = @($loadedTriggers[0].SelectNodes('.//*[local-name()="InvokeCommandAction"]'))
+    Require ($loadedActions.Count -eq 1) "设置页 Loaded 必须只包含一个 InvokeCommandAction: $PageName"
+    Require (
+        $loadedActions[0].GetAttribute('Name', $xamlNamespace) -ceq 'COSConfigOpenOnLoaded' -and
+        $loadedActions[0].GetAttribute('Command') -ceq '{Binding DataContext.TutorialEvent, RelativeSource={RelativeSource AncestorType={x:Type ls:UIWidget}}}' -and
+        $loadedActions[0].GetAttribute('CommandParameter') -ceq '65247962-a3b0-417d-9044-85e4aad38079'
+    ) "设置页 Loaded 必须仍只发送固定 UI_OPENED TutorialEvent: $PageName"
+
+    [pscustomobject]@{
+        PageName = $PageName
+        DiagnosticNodeCount = $diagnosticNamedNodes.Count
+    }
+}
+
+function Test-RuntimeDiagnosticUiAbsenceContract {
+    param(
+        [Parameter(Mandatory)] [string]$Content,
+        [Parameter(Mandatory)] [string]$PageName
+    )
+
+    try {
+        [void](Assert-RuntimeDiagnosticUiAbsenceContract -Content $Content -PageName $PageName)
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
 function ConvertFrom-MarkdownTableLine {
     param(
         [Parameter(Mandatory)]
@@ -1994,70 +2052,28 @@ $keyboardPageContent = Get-RequiredText $keyboardPagePath
 $controllerPageContent = Get-RequiredText $controllerPagePath
 $expectedUiHandleValues = @($uiHandles.Values)
 
-$keyboardUiContract = Assert-RuntimeDiagnosticUiPageContract -Content $keyboardPageContent -PageName 'COS_ConfigMenu.xaml' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues
-$controllerUiContract = Assert-RuntimeDiagnosticUiPageContract -Content $controllerPageContent -PageName 'COS_ConfigMenu_c.xaml' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues
-Require ($keyboardUiContract.PanelOuterXml -ceq $controllerUiContract.PanelOuterXml) '键鼠与手柄运行诊断面板结构、ID、handle 或过滤集合发生漂移'
+$keyboardUiContract = Assert-RuntimeDiagnosticUiAbsenceContract -Content $keyboardPageContent -PageName 'COS_ConfigMenu.xaml'
+$controllerUiContract = Assert-RuntimeDiagnosticUiAbsenceContract -Content $controllerPageContent -PageName 'COS_ConfigMenu_c.xaml'
+Require ($keyboardUiContract.DiagnosticNodeCount -eq 0 -and $controllerUiContract.DiagnosticNodeCount -eq 0) '键鼠与手柄主配置页必须同时隐藏运行诊断面板'
 
-[xml]$missingPanelDocument = $keyboardPageContent
-$missingPanel = @(Get-XamlNamedNodes -Document $missingPanelDocument -Name 'COSRuntimeDiagnosticPanel')[0]
-[void]$missingPanel.ParentNode.RemoveChild($missingPanel)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $missingPanelDocument.OuterXml -PageName 'missing-panel-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '删除诊断面板变异探针失败'
+[xml]$injectedDiagnosticDocument = $keyboardPageContent
+$rowsWithInjection = @(Get-XamlNamedNodes -Document $injectedDiagnosticDocument -Name 'COSConfigRows')[0]
+$injectedPanel = $injectedDiagnosticDocument.CreateElement('Border', $injectedDiagnosticDocument.DocumentElement.NamespaceURI)
+$injectedName = $injectedDiagnosticDocument.CreateAttribute('x', 'Name', 'http://schemas.microsoft.com/winfx/2006/xaml')
+$injectedName.Value = 'COSRuntimeDiagnosticPanel'
+[void]$injectedPanel.Attributes.Append($injectedName)
+[void]$rowsWithInjection.AppendChild($injectedPanel)
+Require (-not (Test-RuntimeDiagnosticUiAbsenceContract -Content $injectedDiagnosticDocument.OuterXml -PageName 'injected-diagnostic-probe')) '重新注入诊断面板变异探针失败'
 
-[xml]$extraStateDocument = $keyboardPageContent
-$stateControl = @(Get-XamlNamedNodes -Document $extraStateDocument -Name 'COSRuntimeDiagnosticState')[0]
-$stateTrigger = @($stateControl.SelectNodes('.//*[local-name()="DataTrigger"]'))[0]
-$extraStateTrigger = $stateTrigger.CloneNode($true)
-$extraStateTrigger.SetAttribute('Value', 'COS_DIAG_STATE_UNAPPROVED')
-[void]$stateTrigger.ParentNode.AppendChild($extraStateTrigger)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $extraStateDocument.OuterXml -PageName 'extra-state-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '混入第五个 current-state 变异探针失败'
-
-[xml]$missingLastDocument = $keyboardPageContent
-$lastControl = @(Get-XamlNamedNodes -Document $missingLastDocument -Name 'COSRuntimeDiagnosticLast')[0]
-[void]$lastControl.ParentNode.RemoveChild($lastControl)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $missingLastDocument.OuterXml -PageName 'missing-last-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '删除 last-issue 控件变异探针失败'
-
-[xml]$controllerMissingReadyDocument = $controllerPageContent
-$controllerStateControl = @(Get-XamlNamedNodes -Document $controllerMissingReadyDocument -Name 'COSRuntimeDiagnosticState')[0]
-$controllerReadyTrigger = @(
-    $controllerStateControl.SelectNodes('.//*[local-name()="DataTrigger"]') |
-        Where-Object { $_.GetAttribute('Value') -ceq 'COS_DIAG_STATE_READY' }
+[xml]$missingLoadedDocument = $controllerPageContent
+$loadedTrigger = @(
+    $missingLoadedDocument.SelectNodes('//*[local-name()="EventTrigger"]') |
+        Where-Object { $_.GetAttribute('EventName') -ceq 'Loaded' }
 )[0]
-[void]$controllerReadyTrigger.ParentNode.RemoveChild($controllerReadyTrigger)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $controllerMissingReadyDocument.OuterXml -PageName 'controller-missing-ready-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '手柄页删除 COS_DIAG_STATE_READY 变异探针失败'
+[void]$loadedTrigger.ParentNode.RemoveChild($loadedTrigger)
+Require (-not (Test-RuntimeDiagnosticUiAbsenceContract -Content $missingLoadedDocument.OuterXml -PageName 'missing-loaded-probe')) '删除设置页 Loaded 诊断刷新事件变异探针失败'
 
-[xml]$wrongResourceDocument = $keyboardPageContent
-$powerControl = @(Get-XamlNamedNodes -Document $wrongResourceDocument -Name 'COSRuntimeDiagnosticPower')[0]
-$powerTrigger = @($powerControl.SelectNodes('.//*[local-name()="DataTrigger"]'))[0]
-$powerTrigger.SetAttribute('Value', 'COS_ChaosMasteryPoint')
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $wrongResourceDocument.OuterXml -PageName 'wrong-resource-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '资源过滤串线变异探针失败'
-
-[xml]$buttonDocument = $keyboardPageContent
-$buttonPanel = @(Get-XamlNamedNodes -Document $buttonDocument -Name 'COSRuntimeDiagnosticPanel')[0]
-$button = $buttonDocument.CreateElement('Button', $buttonDocument.DocumentElement.NamespaceURI)
-[void]$buttonPanel.AppendChild($button)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $buttonDocument.OuterXml -PageName 'button-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '诊断面板按钮注入变异探针失败'
-
-[xml]$eventDocument = $keyboardPageContent
-$eventPanel = @(Get-XamlNamedNodes -Document $eventDocument -Name 'COSRuntimeDiagnosticPanel')[0]
-$eventTrigger = $eventDocument.CreateElement('b', 'EventTrigger', 'http://schemas.microsoft.com/xaml/behaviors')
-$eventTrigger.SetAttribute('EventName', 'Click')
-[void]$eventPanel.AppendChild($eventTrigger)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $eventDocument.OuterXml -PageName 'event-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '诊断面板事件注入变异探针失败'
-
-[xml]$controllerDriftDocument = $controllerPageContent
-$controllerDriftPanel = @(Get-XamlNamedNodes -Document $controllerDriftDocument -Name 'COSRuntimeDiagnosticPanel')[0]
-$controllerDriftPanel.SetAttribute('Margin', '1')
-Require (-not (Test-RuntimeDiagnosticUiParity -KeyboardContent $keyboardPageContent -ControllerContent $controllerDriftDocument.OuterXml -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '键鼠与手柄面板漂移变异探针失败'
-
-[xml]$panelAfterOverviewDocument = $keyboardPageContent
-$panelAfterOverview = @(Get-XamlNamedNodes -Document $panelAfterOverviewDocument -Name 'COSRuntimeDiagnosticPanel')[0]
-$overviewBeforePanel = @(Get-XamlNamedNodes -Document $panelAfterOverviewDocument -Name 'COSConfigOverview')[0]
-$rowsContainingPanel = $panelAfterOverview.ParentNode
-[void]$rowsContainingPanel.RemoveChild($panelAfterOverview)
-[void]$rowsContainingPanel.InsertAfter($panelAfterOverview, $overviewBeforePanel)
-Require (-not (Test-RuntimeDiagnosticUiPageContract -Content $panelAfterOverviewDocument.OuterXml -PageName 'panel-after-overview-probe' -ExpectedStateStatuses $expectedStateStatuses -ExpectedLastStatuses $expectedLastStatuses -ExpectedUiHandles $expectedUiHandleValues)) '诊断面板移到 COSConfigOverview 之后变异探针失败'
-
-Write-Output 'Runtime diagnostic UI pages: keyboard/controller read-only parity PASS'
-Write-Output 'Runtime diagnostic UI mutations: missing-panel=PASS; extra-state=PASS; missing-last=PASS; controller-missing-ready=PASS; wrong-resource=PASS; button=PASS; event=PASS; parity-drift=PASS; panel-order=PASS'
+Write-Output 'Runtime diagnostic UI pages: hidden on keyboard/controller; Story diagnostics retained PASS'
+Write-Output 'Runtime diagnostic UI mutations: injected-panel=PASS; missing-loaded=PASS'
 
 Write-Output 'ChaosOriginsStory runtime diagnostics verification: ok'
