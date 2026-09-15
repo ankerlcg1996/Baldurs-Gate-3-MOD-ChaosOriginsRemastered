@@ -3268,8 +3268,6 @@ IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigStepLifeSkill(_Character, _Delta);
 PROC_COS_PresetDetect(_Character);
-PROC_COS_ConfigSyncCategoryActual(_Character);
-PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 IF
 TutorialEvent(_Character, _Event)
@@ -3286,8 +3284,6 @@ IsInCombat(_Character, 0)
 THEN
 PROC_COS_ConfigSetLifeSkill(_Character, _Default);
 PROC_COS_PresetDetect(_Character);
-PROC_COS_ConfigSyncCategoryActual(_Character);
-PROC_COS_RuntimeDiagnosticUpdate(_Character);
 
 IF
 TutorialEvent(_Character, _Event)
